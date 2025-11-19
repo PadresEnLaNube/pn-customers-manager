@@ -1,0 +1,2 @@
+# This file ensures the tags directory is included in the generated plugin
+# The tags directory is used for version control and plugin organization 
