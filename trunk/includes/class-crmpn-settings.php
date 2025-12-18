@@ -13,15 +13,19 @@
 class CRMPN_Settings {
   public function crmpn_get_options() {
     $crmpn_options = [];
-    $crmpn_options['crmpn'] = [
-      'id' => 'crmpn',
-      'class' => 'crmpn-input crmpn-width-100-percent',
-      'input' => 'input',
-      'type' => 'text',
-      'label' => __('Funnel slug', 'crmpn'),
-      'placeholder' => __('Funnel slug', 'crmpn'),
-      'description' => __('This option sets the slug of the main Funnel archive page, and the Funnel pages. By default they will be:', 'crmpn') . '<br><a href="' . esc_url(home_url('/crmpn-funnel')) . '" target="_blank">' . esc_url(home_url('/crmpn-funnel')) . '</a><br>' . esc_url(home_url('/crmpn-funnel/funnel-name')),
-    ];
+    
+    foreach (CRMPN_CPTS as $crmpn_cpt) {
+      $crmpn_options['crmpn_' . $crmpn_cpt . '_slug'] = [
+        'id' => 'crmpn_' . $crmpn_cpt . '_slug',
+        'class' => 'crmpn-input crmpn-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => __($crmpn_cpt . ' slug', 'crmpn'),
+        'placeholder' => __($crmpn_cpt . ' slug', 'crmpn'),
+        'description' => __('This option sets the slug of the ' . $crmpn_cpt . ' archive page, and the ' . $crmpn_cpt . ' pages. By default they will be:', 'crmpn') . '<br><a href="' . esc_url(home_url('/' . $crmpn_cpt . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $crmpn_cpt . '-slug')) . '</a><br>' . esc_url(home_url('/' . $crmpn_cpt . '-slug/' . $crmpn_cpt)),
+      ];
+    }
+
     $crmpn_options['crmpn_options_remove'] = [
       'id' => 'crmpn_options_remove',
       'class' => 'crmpn-input crmpn-width-100-percent',
@@ -54,21 +58,23 @@ class CRMPN_Settings {
     add_menu_page(
       esc_html__('Customers Manager - PN', 'crmpn'), 
       esc_html__('Customers Manager - PN', 'crmpn'), 
-      'administrator', 
+      'edit_crmpn_funnel', 
       'crmpn_options', 
       [$this, 'crmpn_options'], 
       esc_url(CRMPN_URL . 'assets/media/crmpn-menu-icon.svg'),
     );
 		
     add_submenu_page(
-      // 'edit.php?post_type=crmpn_funnel', 
       'crmpn_options',
       esc_html__('Settings', 'crmpn'), 
       esc_html__('Settings', 'crmpn'), 
-      'manage_crmpn_options', 
-      'crmpn-options', 
+      'edit_crmpn_funnel', 
+      'crmpn_options', 
       [$this, 'crmpn_options'], 
     );
+
+    // CPTs already appear automatically as submenus (show_in_menu => crmpn_options).
+    // The explicit submenu entries were removed to avoid duplicates.
 	}
 
 	public function crmpn_options() {
@@ -139,4 +145,5 @@ class CRMPN_Settings {
       
       return $links;
   }
+
 }

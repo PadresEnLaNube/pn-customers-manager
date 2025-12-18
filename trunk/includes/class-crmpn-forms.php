@@ -180,9 +180,18 @@ class CRMPN_Forms {
             <?php
             break;
           case 'submit':
+            $post_id_value = '';
+            if (!empty($crmpn_input['post_id'])) {
+              $post_id_value = esc_attr($crmpn_input['post_id']);
+            } elseif (!empty($crmpn_id) && $crmpn_type === 'post') {
+              $post_id_value = esc_attr($crmpn_id);
+            } elseif (!empty(get_the_ID())) {
+              $post_id_value = esc_attr(get_the_ID());
+            }
+            $post_type_value = !empty($crmpn_input['post_type']) ? esc_attr($crmpn_input['post_type']) : '';
             ?>
               <div class="crmpn-text-align-right">
-                <input type="submit" value="<?php echo esc_attr($crmpn_input['value']); ?>" name="<?php echo esc_attr($crmpn_input['id']); ?>" id="<?php echo esc_attr($crmpn_input['id']); ?>" name="<?php echo esc_attr($crmpn_input['id']); ?>" class="crmpn-btn" data-crmpn-type="<?php echo esc_attr($crmpn_type); ?>" data-crmpn-subtype="<?php echo ((array_key_exists('subtype', $crmpn_input)) ? esc_attr($crmpn_input['subtype']) : ''); ?>" data-crmpn-user-id="<?php echo esc_attr($crmpn_id); ?>" data-crmpn-post-id="<?php echo !empty(get_the_ID()) ? esc_attr(get_the_ID()) : ''; ?>"/><?php esc_html(CRMPN_Data::crmpn_loader()); ?>
+                <input type="submit" value="<?php echo esc_attr($crmpn_input['value']); ?>" name="<?php echo esc_attr($crmpn_input['id']); ?>" id="<?php echo esc_attr($crmpn_input['id']); ?>" class="crmpn-btn" data-crmpn-type="<?php echo esc_attr($crmpn_type); ?>" data-crmpn-subtype="<?php echo ((array_key_exists('subtype', $crmpn_input)) ? esc_attr($crmpn_input['subtype']) : ''); ?>" data-crmpn-user-id="<?php echo esc_attr($crmpn_id); ?>" data-crmpn-post-id="<?php echo $post_id_value; ?>" <?php echo !empty($post_type_value) ? 'data-crmpn-post-type="' . $post_type_value . '"' : ''; ?>/><?php esc_html(CRMPN_Data::crmpn_loader()); ?>
               </div>
             <?php
             break;

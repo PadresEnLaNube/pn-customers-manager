@@ -151,7 +151,7 @@ class CRMPN_Post_Type_Funnel {
       'exclude_from_search' => false,
       'publicly_queryable'  => true,
       'capability_type'     => 'page',
-      'capabilities'        => CRMPN_ROLE_CRMPN_BASECPT_CAPABILITIES,
+      'capabilities'        => CRMPN_ROLE_CRMPN_FUNNEL_CAPABILITIES,
       'taxonomies'          => ['crmpn_funnel_category'],
       'show_in_rest'        => true, /* REST API */
     ];
@@ -479,7 +479,7 @@ class CRMPN_Post_Type_Funnel {
     $funnel = get_posts($funnel_atts);
 
     // Filter assets based on user permissions
-    $funnel = CRMPN_Functions_User::funnel_filter_user_posts($funnel, 'funnel_funnel');
+    $funnel = CRMPN_Functions_User::crmpn_filter_user_posts($funnel, 'crmpn_funnel');
 
     ob_start();
     ?>

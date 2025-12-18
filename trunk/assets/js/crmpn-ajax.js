@@ -1,11 +1,77 @@
 (function($) {
   'use strict';
 
+  // Helper function to extract content from response HTML
+  function extractPopupContent(html) {
+    var $temp = $('<div>').html(html);
+    var $contentWrapper = $temp.find('.crmpn-popup-content');
+    if ($contentWrapper.length) {
+      // If response includes the wrapper, extract only the inner content
+      return $contentWrapper.html();
+    }
+    // Otherwise return the HTML as is
+    return html;
+  }
+
+  // Helper function to ensure close button is present in popup
+  function ensureCloseButton(popupElement) {
+    var popupContent = popupElement.find('.crmpn-popup-content');
+    if (!popupContent.length) {
+      return;
+    }
+    
+    // Check if close button already exists
+    var existingButton = popupContent.find('.crmpn-popup-close-wrapper, .crmpn-popup-close');
+    if (existingButton.length) {
+      // Make sure it's properly positioned and has the click handler
+      if (!existingButton.hasClass('crmpn-popup-close-wrapper')) {
+        existingButton.remove();
+      } else {
+        // Button exists and is correct, just ensure it's at the top
+        var firstChild = popupContent.children().first();
+        if (!firstChild.hasClass('crmpn-popup-close-wrapper')) {
+          existingButton.detach();
+          popupContent.prepend(existingButton);
+        }
+        return;
+      }
+    }
+    
+    // Remove any existing close buttons first (in case of duplicates)
+    popupContent.find('.crmpn-popup-close-wrapper, .crmpn-popup-close').remove();
+    
+    // Add the close button
+    var closeButton = $('<button class="crmpn-popup-close-wrapper" type="button"><i class="material-icons-outlined">close</i></button>');
+    closeButton.on('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      CRMPN_Popups.close();
+    });
+    popupContent.prepend(closeButton);
+  }
+
   $(document).ready(function() {
+    console.log('CRMPN AJAX - Form submit handler registered');
+    
+    // Also bind directly to forms that might be added dynamically
     $(document).on('submit', '.crmpn-form', function(e){
+      console.log('CRMPN AJAX - Form submit event triggered');
+      e.preventDefault();
+      e.stopPropagation();
+      
       var crmpn_form = $(this);
       var crmpn_btn = crmpn_form.find('input[type="submit"]');
+      
+      console.log('CRMPN AJAX - Form found:', crmpn_form.attr('id'), 'Submit button:', crmpn_btn.length);
+      
+      if (crmpn_btn.length === 0) {
+        console.log('CRMPN AJAX - No submit button found, aborting');
+        return false;
+      }
+      
       crmpn_btn.addClass('crmpn-link-disabled').siblings('.crmpn-waiting').removeClass('crmpn-display-none');
+      
+      console.log('Form submitted:', crmpn_form.attr('id'));
 
       var ajax_url = crmpn_ajax.ajax_url;
       var data = {
@@ -40,14 +106,12 @@
               window['crmpn_window_vars']['form_field_' + element.name].push($(element).val());
             } else {
               // For unchecked checkboxes in multiple fields, push empty string to maintain array structure
-              window['gptconn_window_vars']['form_field_' + element.name].push('');
+              window['crmpn_window_vars']['form_field_' + element.name].push('');
             }
           } else {
             // For non-checkbox multiple fields, push the value as before
             window['crmpn_window_vars']['form_field_' + element.name].push($(element).val());
           }
-
-          window['crmpn_window_vars']['form_field_' + element.name].push($(element).val());
 
           data[element.name] = window['crmpn_window_vars']['form_field_' + element.name];
         }else{
@@ -95,13 +159,27 @@
           crmpn_get_main_message(crmpn_i18n.saved_successfully);
         }
 
-        if (response_json['update_list']) {
-          $('.crmpn-' + data.crmpn_form_post_type + '-list').html(response_json['update_html']);
+        if (response_json['update_list'] && response_json['update_html']) {
+          // Build selector based on post type
+          var list_selector = '.crmpn-cpt-list-wrapper.crmpn-' + data.crmpn_form_post_type + '-list-wrapper';
+          if (!$(list_selector).length) {
+            // Fallback: try without the cpt-list-wrapper prefix
+            list_selector = '.crmpn-' + data.crmpn_form_post_type + '-list-wrapper';
+          }
+          if ($(list_selector).length && response_json['update_html']) {
+            $(list_selector).html(response_json['update_html']);
         }
 
-        if (response_json['popup_close']) {
+
+        // Check popup_close with multiple conditions
+        console.log('popup_close value:', response_json['popup_close'], 'type:', typeof response_json['popup_close']);
+        console.log('Full response:', response_json);
+        if (response_json['popup_close'] === true || response_json['popup_close'] === 'true' || response_json['popup_close'] === 1 || response_json['popup_close'] === '1') {
+          console.log('Closing popup...');
           CRMPN_Popups.close();
           $('.crmpn-menu-more-overlay').fadeOut('fast');
+        } else {
+          console.log('Not closing popup. popup_close is:', response_json['popup_close']);
         }
 
         if (response_json['check'] == 'post_check') {
@@ -121,12 +199,29 @@
       return false;
     });
 
+    // Backup handler: click on submit button inside .crmpn-form
+    $(document).on('click', '.crmpn-form input[type="submit"], .crmpn-form button[type="submit"]', function(e) {
+      var $btn = $(this);
+      var $form = $btn.closest('.crmpn-form');
+      
+      // Only handle if form validation passes
+      if ($form.length && $form[0].checkValidity && !$form[0].checkValidity()) {
+        // Let browser handle validation
+        return true;
+      }
+      
+      // If form has novalidate or validation passes, trigger submit
+      // The submit handler above will catch it
+      console.log('CRMPN AJAX - Submit button clicked, form will submit');
+    });
+
     $(document).on('click', '.crmpn-popup-open-ajax', function(e) {
       e.preventDefault();
 
       var crmpn_btn = $(this);
       var crmpn_ajax_type = crmpn_btn.attr('data-crmpn-ajax-type');
-      var crmpn_funnel_id = crmpn_btn.closest('.crmpn-funnel').attr('data-crmpn_funnel-id');
+      var crmpn_funnel_id = crmpn_btn.closest('.crmpn-funnel').attr('data-crmpn_funnel-id') || crmpn_btn.attr('data-crmpn_funnel-id') || '';
+      var crmpn_organization_id = crmpn_btn.closest('.crmpn-organization').attr('data-crmpn_organization-id') || crmpn_btn.closest('.crmpn-crmpn_organization-list-item').attr('data-crmpn_organization-id') || crmpn_btn.attr('data-crmpn_organization-id') || '';
       var crmpn_popup_element = $('#' + crmpn_btn.attr('data-crmpn-popup-id'));
 
       CRMPN_Popups.open(crmpn_popup_element, {
@@ -138,6 +233,7 @@
             crmpn_ajax_nonce: crmpn_ajax.crmpn_ajax_nonce,
             crmpn_get_nonce: crmpn_action.crmpn_get_nonce,
             crmpn_funnel_id: crmpn_funnel_id ? crmpn_funnel_id : '',
+            crmpn_organization_id: crmpn_organization_id ? crmpn_organization_id : '',
           };
 
           // Log the data being sent
@@ -161,7 +257,20 @@
                   } catch (parseError) {
                     // If parsing fails, assume it's HTML content
                     console.log('CRMPN AJAX - Response appears to be HTML content');
-                    crmpn_popup_element.find('.crmpn-popup-content').html(response);
+                    var contentHtml = extractPopupContent(response);
+                    crmpn_popup_element.find('.crmpn-popup-content').html(contentHtml);
+                    
+                    // Wait a bit for scripts to execute, then ensure close button is present
+                    // Use multiple timeouts to ensure button stays even if scripts modify DOM
+                    setTimeout(function() {
+                      ensureCloseButton(crmpn_popup_element);
+                    }, 50);
+                    setTimeout(function() {
+                      ensureCloseButton(crmpn_popup_element);
+                    }, 200);
+                    setTimeout(function() {
+                      ensureCloseButton(crmpn_popup_element);
+                    }, 500);
                     
                     // Initialize media uploaders if function exists
                     if (typeof initMediaUpload === 'function') {
@@ -182,7 +291,7 @@
                 // Handle JSON response
                 if (response_json.error_key) {
                   console.log('CRMPN AJAX - Server returned error:', response_json.error_key);
-                  var errorMessage = response_json.error_message || crmpn_i18n.an_error_has_occurred;
+                  var errorMessage = response_json.error_content || response_json.error_message || crmpn_i18n.an_error_has_occurred;
                   crmpn_get_main_message(errorMessage);
                   return;
                 }
@@ -190,7 +299,20 @@
                 // Handle successful JSON response with HTML content
                 if (response_json.html) {
                   console.log('CRMPN AJAX - HTML content received in JSON response');
-                  crmpn_popup_element.find('.crmpn-popup-content').html(response_json.html);
+                  var contentHtml = extractPopupContent(response_json.html);
+                  crmpn_popup_element.find('.crmpn-popup-content').html(contentHtml);
+                  
+                  // Wait a bit for scripts to execute, then ensure close button is present
+                  // Use multiple timeouts to ensure button stays even if scripts modify DOM
+                  setTimeout(function() {
+                    ensureCloseButton(crmpn_popup_element);
+                  }, 50);
+                  setTimeout(function() {
+                    ensureCloseButton(crmpn_popup_element);
+                  }, 200);
+                  setTimeout(function() {
+                    ensureCloseButton(crmpn_popup_element);
+                  }, 500);
                   
                   // Initialize media uploaders if function exists
                   if (typeof initMediaUpload === 'function') {
@@ -241,8 +363,8 @@
 
     // Generate event listeners for duplicate and remove functions based on CPTs
     var crmpn_cpts_mapping = {
-      'crmpn_asset': 'assets',
-      'crmpn_liability': 'liabilities'
+      'crmpn_funnel': 'crmpn_funnel',
+      'crmpn_organization': 'crmpn_organization'
     };
 
     // Loop through CPTs to create duplicate event listeners

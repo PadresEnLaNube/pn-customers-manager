@@ -70,6 +70,7 @@ class CRMPN {
 		self::crmpn_load_templates();
 		self::crmpn_load_settings();
 		self::crmpn_load_shortcodes();
+		self::crmpn_define_client_hooks();
 	}
 			
 	/**
@@ -138,6 +139,11 @@ class CRMPN {
 		require_once CRMPN_DIR . 'includes/class-crmpn-taxonomies-funnel.php';
 
 		/**
+		 * The class responsible for create the Organization custom post type.
+		 */
+		require_once CRMPN_DIR . 'includes/class-crmpn-post-type-organization.php';
+
+		/**
 		 * The class responsible for plugin templates.
 		 */
 		require_once CRMPN_DIR . 'includes/class-crmpn-templates.php';
@@ -193,6 +199,12 @@ class CRMPN {
 		require_once CRMPN_DIR . 'includes/class-crmpn-validation.php';
 
 		/**
+		 * Client form helper.
+		 */
+		require_once CRMPN_DIR . 'includes/class-crmpn-client-form.php';
+
+
+		/**
 		 * The class responsible for popups functionality.
 		 */
 		require_once CRMPN_DIR . 'includes/class-crmpn-popups.php';
@@ -238,6 +250,9 @@ class CRMPN {
 
 		$plugin_post_type_funnel = new CRMPN_Post_Type_Funnel();
 		$this->crmpn_loader->crmpn_add_action('crmpn_funnel_form_save', $plugin_post_type_funnel, 'crmpn_funnel_form_save', 999, 5);
+
+		$plugin_post_type_organization = new CRMPN_Post_Type_organization();
+		$this->crmpn_loader->crmpn_add_action('crmpn_organization_form_save', $plugin_post_type_organization, 'crmpn_organization_form_save', 999, 5);
 	}
 
 	/**
@@ -281,6 +296,14 @@ class CRMPN {
 		$this->crmpn_loader->crmpn_add_filter('single_template', $plugin_post_type_funnel, 'crmpn_funnel_single_template', 10, 3);
 		$this->crmpn_loader->crmpn_add_filter('archive_template', $plugin_post_type_funnel, 'crmpn_funnel_archive_template', 10, 3);
 		$this->crmpn_loader->crmpn_add_shortcode('crmpn-funnel-list', $plugin_post_type_funnel, 'crmpn_funnel_list_wrapper');
+
+		$plugin_post_type_organization = new CRMPN_Post_Type_organization();
+		$this->crmpn_loader->crmpn_add_action('init', $plugin_post_type_organization, 'crmpn_organization_register_post_type');
+		$this->crmpn_loader->crmpn_add_action('admin_init', $plugin_post_type_organization, 'crmpn_organization_add_meta_box');
+		$this->crmpn_loader->crmpn_add_action('save_post_crmpn_organization', $plugin_post_type_organization, 'crmpn_organization_save_post', 10, 3);
+		$this->crmpn_loader->crmpn_add_filter('single_template', $plugin_post_type_organization, 'crmpn_organization_single_template', 10, 3);
+		$this->crmpn_loader->crmpn_add_filter('archive_template', $plugin_post_type_organization, 'crmpn_organization_archive_template', 10, 3);
+		$this->crmpn_loader->crmpn_add_shortcode('crmpn-organization-list', $plugin_post_type_organization, 'crmpn_organization_list_wrapper');
 	}
 
 	/**
@@ -375,7 +398,18 @@ class CRMPN {
 		$this->crmpn_loader->crmpn_add_shortcode('crmpn-funnel', $plugin_shortcodes, 'crmpn_funnel');
 		$this->crmpn_loader->crmpn_add_shortcode('crmpn-test', $plugin_shortcodes, 'crmpn_test');
 		$this->crmpn_loader->crmpn_add_shortcode('crmpn-call-to-action', $plugin_shortcodes, 'crmpn_call_to_action');
+		$this->crmpn_loader->crmpn_add_shortcode('crmpn-client-form', $plugin_shortcodes, 'crmpn_client_form');
 	}
+
+	/**
+	 * Register hooks related to the client registration form.
+	 */
+	private function crmpn_define_client_hooks() {
+		$client_form = new CRMPN_Client_Form(self::crmpn_get_plugin_name(), self::crmpn_get_version());
+		$this->crmpn_loader->crmpn_add_action('init', $client_form, 'register_block');
+		$this->crmpn_loader->crmpn_add_action('crmpn_form_save', $client_form, 'handle_form_save', 10, 4);
+	}
+
 
 	/**
 	 * Run the loader to execute all of the hooks with WordPress. Then it flushes the rewrite rules if needed.

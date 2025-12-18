@@ -203,7 +203,18 @@ class CRMPN_Ajax_Nopriv {
                     }
                   }
 
+                  // Dispara el hook genérico.
                   do_action('crmpn_form_save', $post_id, $crmpn_key_value, $crmpn_form_type, $crmpn_form_subtype, $post_type);
+
+                  // Si el formulario apunta al CPT de organización, delega también en la lógica específica.
+                  if (!empty($post_type) && $post_type === 'crmpn_organization') {
+                    /**
+                     * Permite que la clase del CPT de organización gestione la creación/edición
+                     * a partir de los datos enviados desde el frontal, aunque el usuario
+                     * no tenga permisos de administrador.
+                     */
+                    do_action('crmpn_organization_form_save', $post_id, $crmpn_key_value, $crmpn_form_type, $crmpn_form_subtype);
+                  }
                   break;
                 case 'option':
                   if (CRMPN_Functions_User::crmpn_user_is_admin(get_current_user_id())) {
@@ -258,6 +269,10 @@ class CRMPN_Ajax_Nopriv {
                   case 'crmpn_funnel':
                     $plugin_post_type_funnel = new CRMPN_Post_Type_Funnel();
                     $update_html = $plugin_post_type_funnel->crmpn_funnel_list();
+                    break;
+                  case 'crmpn_organization':
+                    $plugin_post_type_organization = new CRMPN_Post_Type_organization();
+                    $update_html = $plugin_post_type_organization->crmpn_organization_list();
                     break;
                 }
               }else{

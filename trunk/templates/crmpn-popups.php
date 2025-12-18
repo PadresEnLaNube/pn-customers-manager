@@ -17,7 +17,7 @@
 <div class="crmpn-menu-more-overlay crmpn-display-none-soft"></div>
 
 <?php foreach (CRMPN_CPTS as $cpt => $cpt_name) : ?>
-  <div id="crmpn-popup-<?php echo esc_attr($cpt); ?>-add" class="crmpn-popup crmpn-popup-size-medium crmpn-display-none-soft">
+  <div id="crmpn-popup-<?php echo esc_attr($cpt); ?>-add" class="crmpn-popup crmpn-popup-size-medium crmpn-display-none-soft" data-crmpn-popup-disable-esc="true" data-crmpn-popup-disable-overlay-close="true">
     <?php CRMPN_Data::crmpn_popup_loader(); ?>
   </div>
 
@@ -29,7 +29,7 @@
     <?php CRMPN_Data::crmpn_popup_loader(); ?>
   </div>
 
-  <div id="crmpn-popup-<?php echo esc_attr($cpt); ?>-edit" class="crmpn-popup crmpn-popup-size-medium crmpn-display-none-soft">
+  <div id="crmpn-popup-<?php echo esc_attr($cpt); ?>-edit" class="crmpn-popup crmpn-popup-size-large crmpn-display-none-soft" data-crmpn-popup-disable-esc="true" data-crmpn-popup-disable-overlay-close="true">
     <?php CRMPN_Data::crmpn_popup_loader(); ?>
   </div>
 
@@ -51,3 +51,7 @@
     </div>
   </div>
 <?php endforeach; ?>
+
+<div id="crmpn-popup-crmpn_contact-add" class="crmpn-popup crmpn-popup-size-medium crmpn-display-none-soft">
+  <?php CRMPN_Data::crmpn_popup_loader(); ?>
+</div>

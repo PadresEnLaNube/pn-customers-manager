@@ -39,6 +39,9 @@ define('CRMPN_DIR', plugin_dir_path(__FILE__));
 define('CRMPN_URL', plugin_dir_url(__FILE__));
 define('CRMPN_CPTS', [
 	'crmpn_funnel' => 'Funnel',
+	'crmpn_organization' => 'Organization',
+	'crmpn_organization' => 'Organization',
+	'crmpn_form' => 'Form',
 ]);
 
 /**
@@ -208,7 +211,9 @@ $crmpn_kses = [
 ];
 
 foreach (CRMPN_CPTS as $cpt_key => $cpt_value) {
-	$crmpn_kses['li']['data-' . $cpt_key . '-id'] = [];
+	$custom_data_attr = 'data-' . $cpt_key . '-id';
+	$crmpn_kses['li'][$custom_data_attr] = [];
+	$crmpn_kses['a'][$custom_data_attr] = [];
 }
 
 // Now define the constant with the complete array

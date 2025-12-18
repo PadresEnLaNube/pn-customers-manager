@@ -49,7 +49,7 @@ class CRMPN_Taxonomies_Funnel {
 				'query_var'         		=> true,
 				'rewrite'           		=> true,
 				'show_in_rest'      		=> true,
-	    		'capabilities'      		=> CRMPN_ROLE_CRMPN_BASECPT_CAPABILITIES,
+	    		'capabilities'      		=> CRMPN_ROLE_CRMPN_FUNNEL_CAPABILITIES,
 			];
 
 			if ($options['archive']) {

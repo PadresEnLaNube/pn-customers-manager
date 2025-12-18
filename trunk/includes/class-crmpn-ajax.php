@@ -49,6 +49,7 @@ class CRMPN_Ajax {
       }, wp_unslash($_POST['crmpn_ajax_keys'])) : [];
 
       $crmpn_funnel_id = !empty($_POST['crmpn_funnel_id']) ? CRMPN_Forms::crmpn_sanitizer(wp_unslash($_POST['crmpn_funnel_id'])) : 0;
+      $crmpn_organization_id = !empty($_POST['crmpn_organization_id']) ? CRMPN_Forms::crmpn_sanitizer(wp_unslash($_POST['crmpn_organization_id'])) : 0;
       
       $crmpn_key_value = [];
 
@@ -145,28 +146,10 @@ class CRMPN_Ajax {
 
           echo wp_json_encode([
             'error_key' => '', 
-            'html' => $plugin_post_type_funnel->crmpn_funnel_new($crmpn_funnel_id), 
+            'html' => $plugin_post_type_funnel->crmpn_funnel_new(), 
           ]);
 
           exit;
-          break;
-        case 'crmpn_funnel_check':
-          if (!empty($crmpn_funnel_id)) {
-            $plugin_post_type_funnel = new CRMPN_Post_Type_Funnel();
-            echo wp_json_encode([
-              'error_key' => '', 
-              'html' => $plugin_post_type_funnel->crmpn_funnel_check($crmpn_funnel_id), 
-            ]);
-
-            exit;
-          }else{
-            echo wp_json_encode([
-              'error_key' => 'crmpn_funnel_check_error', 
-              'error_content' => esc_html(__('An error occurred while checking the Funnel.', 'crmpn')), 
-              ]);
-
-            exit;
-          }
           break;
         case 'crmpn_funnel_duplicate':
           if (!empty($crmpn_funnel_id)) {
@@ -209,14 +192,103 @@ class CRMPN_Ajax {
             exit;
           }
           break;
-        case 'crmpn_funnel_share':
-          $plugin_post_type_funnel = new CRMPN_Post_Type_Funnel();
+        case 'crmpn_organization_view':
+          if (!empty($crmpn_organization_id)) {
+            $plugin_post_type_organization = new CRMPN_Post_Type_organization();
+            echo wp_json_encode([
+              'error_key' => '', 
+              'html' => $plugin_post_type_organization->crmpn_organization_view($crmpn_organization_id), 
+            ]);
+
+            exit;
+          }else{
+            echo wp_json_encode([
+              'error_key' => 'crmpn_organization_view_error', 
+              'error_content' => esc_html(__('An error occurred while showing the Organization.', 'crmpn')), 
+            ]);
+
+            exit;
+          }
+          break;
+        case 'crmpn_organization_edit':
+          // Check if the Organization exists
+          $crmpn_organization = get_post($crmpn_organization_id);
+          
+          if (!empty($crmpn_organization_id) && !empty($crmpn_organization) && $crmpn_organization->post_type == 'crmpn_organization') {
+            $plugin_post_type_organization = new CRMPN_Post_Type_organization();
+            echo wp_json_encode([
+              'error_key' => '', 
+              'html' => $plugin_post_type_organization->crmpn_organization_edit($crmpn_organization_id), 
+            ]);
+
+            exit;
+          }else{
+            echo wp_json_encode([
+              'error_key' => 'crmpn_organization_edit_error', 
+              'error_content' => esc_html(__('An error occurred while showing the Organization.', 'crmpn')), 
+            ]);
+
+            exit;
+          }
+          break;
+        case 'crmpn_organization_new':
+          if (!is_user_logged_in()) {
+            echo wp_json_encode([
+              'error_key' => 'not_logged_in',
+              'error_content' => esc_html(__('You must be logged in to create a new asset.', 'crmpn')),
+            ]);
+            exit;
+          }
+
+          $plugin_post_type_organization = new CRMPN_Post_Type_organization();
+
           echo wp_json_encode([
             'error_key' => '', 
-            'html' => $plugin_post_type_funnel->crmpn_funnel_share(), 
+            'html' => $plugin_post_type_organization->crmpn_organization_new(), 
           ]);
 
           exit;
+          break;
+        case 'crmpn_organization_duplicate':
+          if (!empty($crmpn_organization_id)) {
+            $plugin_post_type_post = new CRMPN_Functions_Post();
+            $plugin_post_type_post->crmpn_duplicate_post($crmpn_organization_id, 'publish');
+            
+            $plugin_post_type_organization = new CRMPN_Post_Type_organization();
+            echo wp_json_encode([
+              'error_key' => '', 
+              'html' => $plugin_post_type_organization->crmpn_organization_list(), 
+            ]);
+
+            exit;
+          }else{
+            echo wp_json_encode([
+              'error_key' => 'crmpn_organization_duplicate_error', 
+              'error_content' => esc_html(__('An error occurred while duplicating the Organization.', 'crmpn')), 
+            ]);
+
+            exit;
+          }
+          break;
+        case 'crmpn_organization_remove':
+          if (!empty($crmpn_organization_id)) {
+            wp_delete_post($crmpn_organization_id, true);
+
+            $plugin_post_type_organization = new CRMPN_Post_Type_organization();
+            echo wp_json_encode([
+              'error_key' => '', 
+              'html' => $plugin_post_type_organization->crmpn_organization_list(), 
+            ]);
+
+            exit;
+          }else{
+            echo wp_json_encode([
+              'error_key' => 'crmpn_organization_remove_error', 
+              'error_content' => esc_html(__('An error occurred while removing the Organization.', 'crmpn')), 
+            ]);
+
+            exit;
+          }
           break;
       }
 
