@@ -171,7 +171,7 @@ https://github.com/Alex-D/Trumbowyg/blob/develop/src/trumbowyg.js
 
 == Installation ==
 
-1. Upload `customers-manager-pn.php` to the `/wp-content/plugins/` directory
+1. Upload `crmpn.php` to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==

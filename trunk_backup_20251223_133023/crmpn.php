@@ -38,9 +38,10 @@ define('CUSTOMERS_MANAGER_PN_VERSION', '1.0.0');
 define('CUSTOMERS_MANAGER_PN_DIR', plugin_dir_path(__FILE__));
 define('CUSTOMERS_MANAGER_PN_URL', plugin_dir_url(__FILE__));
 define('CUSTOMERS_MANAGER_PN_CPTS', [
-	'cm_pn_funnel' => 'Funnel',
-	'cm_pn_org' => 'Organization',
-	'cm_pn_form' => 'Form',
+	'customers_manager_pn_funnel' => 'Funnel',
+	'customers_manager_pn_organization' => 'Organization',
+	'customers_manager_pn_organization' => 'Organization',
+	'customers_manager_pn_form' => 'Form',
 ]);
 
 /**
@@ -250,7 +251,7 @@ register_deactivation_hook(__FILE__, 'customers_manager_pn_deactivation_cleanup'
 /**
  * The core plugin class that is used to define internationalization, admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path(__FILE__) . 'includes/class-customers-manager-pn.php';
+require plugin_dir_path(__FILE__) . 'includes/class-crmpn.php';
 
 /**
  * Begins execution of the plugin.
