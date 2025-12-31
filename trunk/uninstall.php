@@ -22,7 +22,7 @@
  * @link       padresenlanube.com/
  * @since      1.0.0
  *
- * @package    CUSTOMERS_MANAGER_PN
+ * @package    PN_CUSTOMERS_MANAGER
  */
 
 // If uninstall not called from WordPress, then exit.

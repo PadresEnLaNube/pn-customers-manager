@@ -2,8 +2,8 @@
 Contributors: felixmartinez, hamlet237
 Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
-Requires at least: 3.5
-Tested up to: 6.8
+Requires at least: 3.0
+Tested up to: 6.9
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -62,12 +62,12 @@ PN Customers Manager integrates seamlessly with WordPress, WooCommerce, contact 
   * User name formatting utilities
 
 * **Shortcodes**:
-  * `[customers-manager-pn-funnel]` - Display individual funnels with all their details
-  * `[customers-manager-pn-funnel-list]` - Display lists of funnels with customizable layouts
-  * `[customers-manager-pn-organization-list]` - Display lists of organizations
-  * `[customers-manager-pn-client-form]` - Public client registration form (also available as Gutenberg block)
-  * `[customers-manager-pn-call-to-action]` - Create call-to-action blocks with icons, titles, content, and customizable buttons
-  * `[customers-manager-pn-test]` - Display course/test content with video popups and resource links
+  * `[pn-customers-manager-funnel]` - Display individual funnels with all their details
+  * `[pn-customers-manager-funnel-list]` - Display lists of funnels with customizable layouts
+  * `[pn-customers-manager-organization-list]` - Display lists of organizations
+  * `[pn-customers-manager-client-form]` - Public client registration form (also available as Gutenberg block)
+  * `[pn-customers-manager-call-to-action]` - Create call-to-action blocks with icons, titles, content, and customizable buttons
+  * `[pn-customers-manager-test]` - Display course/test content with video popups and resource links
 
 * **Client Registration System**:
   * Public-facing client registration form
@@ -171,14 +171,14 @@ https://github.com/Alex-D/Trumbowyg/blob/develop/src/trumbowyg.js
 
 == Installation ==
 
-1. Upload `customers-manager-pn.php` to the `/wp-content/plugins/` directory
+1. Upload `pn-customers-manager.php` to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
 
 = How do I install the PN Customers Manager plugin? =
 
-To install the PN Customers Manager plugin, you can either upload the plugin files to the /wp-content/plugins/customers-manager-pn directory, or install the plugin through the WordPress plugins screen directly. After uploading, activate the plugin through the 'Plugins' screen in WordPress.
+To install the PN Customers Manager plugin, you can either upload the plugin files to the /wp-content/plugins/pn-customers-manager directory, or install the plugin through the WordPress plugins screen directly. After uploading, activate the plugin through the 'Plugins' screen in WordPress.
 
 = Can I customize the look and feel of my listings? =
 
