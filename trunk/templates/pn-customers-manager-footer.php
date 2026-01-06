@@ -21,10 +21,10 @@
     );
   }
 
-  $PN_CUSTOMERS_MANAGER_data = $GLOBALS['PN_CUSTOMERS_MANAGER_data'];
+  $pn_customers_manager_data = $GLOBALS['PN_CUSTOMERS_MANAGER_data'];
 ?>
 
-<div id="pn-customers-manager-main-message" class="pn-customers-manager-main-message pn-customers-manager-display-none-soft pn-customers-manager-z-index-top" style="display:none;" data-user-id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_data['user_id']); ?>" data-post-id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_data['post_id']); ?>">
+<div id="pn-customers-manager-main-message" class="pn-customers-manager-main-message pn-customers-manager-display-none-soft pn-customers-manager-z-index-top" style="display:none;" data-user-id="<?php echo esc_attr($pn_customers_manager_data['user_id']); ?>" data-post-id="<?php echo esc_attr($pn_customers_manager_data['post_id']); ?>">
   <span id="pn-customers-manager-main-message-span"></span><i class="material-icons-outlined pn-customers-manager-vertical-align-bottom pn-customers-manager-ml-20 pn-customers-manager-cursor-pointer pn-customers-manager-color-white pn-customers-manager-close-icon">close</i>
 
   <div id="pn-customers-manager-bar-wrapper">

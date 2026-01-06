@@ -149,9 +149,9 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
     })(jQuery);
     </script>
     <?php
-    $PN_CUSTOMERS_MANAGER_return_string = ob_get_contents(); 
+    $pn_customers_manager_return_string = ob_get_contents(); 
     ob_end_clean(); 
-    return $PN_CUSTOMERS_MANAGER_return_string;
+    return $pn_customers_manager_return_string;
 	}
 
   public function PN_CUSTOMERS_MANAGER_call_to_action($atts) {
@@ -171,27 +171,27 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
 
     ob_start();
     ?>
-      <div class="pn-customers-manager-call-to-action pn-customers-manager-text-align-center pn-customers-manager-pt-30 pn-customers-manager-pb-50 <?php echo esc_attr($PN_CUSTOMERS_MANAGER_call_to_action_class); ?>">
+      <div class="pn-customers-manager-call-to-action pn-customers-manager-text-align-center pn-customers-manager-pt-30 pn-customers-manager-pb-50 <?php echo esc_attr($pn_customers_manager_call_to_action_class); ?>">
         <div class="pn-customers-manager-call-to-action-icon">
-          <i class="material-icons-outlined pn-customers-manager-font-size-75 pn-customers-manager-color-main-0"><?php echo esc_html($PN_CUSTOMERS_MANAGER_call_to_action_icon); ?></i>
+          <i class="material-icons-outlined pn-customers-manager-font-size-75 pn-customers-manager-color-main-0"><?php echo esc_html($pn_customers_manager_call_to_action_icon); ?></i>
         </div>
 
-        <h4 class="pn-customers-manager-call-to-action-title pn-customers-manager-text-align-center pn-customers-manager-mt-10 pn-customers-manager-mb-20"><?php echo esc_html($PN_CUSTOMERS_MANAGER_call_to_action_title); ?></h4>
+        <h4 class="pn-customers-manager-call-to-action-title pn-customers-manager-text-align-center pn-customers-manager-mt-10 pn-customers-manager-mb-20"><?php echo esc_html($pn_customers_manager_call_to_action_title); ?></h4>
         
-        <?php if (!empty($PN_CUSTOMERS_MANAGER_call_to_action_content)): ?>
-          <p class="pn-customers-manager-text-align-center"><?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_call_to_action_content); ?></p>
+        <?php if (!empty($pn_customers_manager_call_to_action_content)): ?>
+          <p class="pn-customers-manager-text-align-center"><?php echo wp_kses_post($pn_customers_manager_call_to_action_content); ?></p>
         <?php endif ?>
 
-        <?php if (!empty($PN_CUSTOMERS_MANAGER_call_to_action_button_text)): ?>
+        <?php if (!empty($pn_customers_manager_call_to_action_button_text)): ?>
           <div class="pn-customers-manager-text-align-center pn-customers-manager-mt-20">
-            <a class="pn-customers-manager-btn pn-customers-manager-btn-transparent pn-customers-manager-margin-auto <?php echo esc_attr($PN_CUSTOMERS_MANAGER_call_to_action_button_class); ?>" <?php echo ($PN_CUSTOMERS_MANAGER_call_to_action_button_blank) ? 'target="_blank"' : ''; ?> href="<?php echo esc_url($PN_CUSTOMERS_MANAGER_call_to_action_button_link); ?>" <?php echo (!empty($PN_CUSTOMERS_MANAGER_call_to_action_button_data_key) && !empty($PN_CUSTOMERS_MANAGER_call_to_action_button_data_value)) ? esc_attr($PN_CUSTOMERS_MANAGER_call_to_action_button_data_key) . '="' . esc_attr($PN_CUSTOMERS_MANAGER_call_to_action_button_data_value) . '"' : ''; ?>><?php echo esc_html($PN_CUSTOMERS_MANAGER_call_to_action_button_text); ?></a>
+            <a class="pn-customers-manager-btn pn-customers-manager-btn-transparent pn-customers-manager-margin-auto <?php echo esc_attr($pn_customers_manager_call_to_action_button_class); ?>" <?php echo ($pn_customers_manager_call_to_action_button_blank) ? 'target="_blank"' : ''; ?> href="<?php echo esc_url($pn_customers_manager_call_to_action_button_link); ?>" <?php echo (!empty($pn_customers_manager_call_to_action_button_data_key) && !empty($pn_customers_manager_call_to_action_button_data_value)) ? esc_attr($pn_customers_manager_call_to_action_button_data_key) . '="' . esc_attr($pn_customers_manager_call_to_action_button_data_value) . '"' : ''; ?>><?php echo esc_html($pn_customers_manager_call_to_action_button_text); ?></a>
           </div>
         <?php endif ?>
       </div>
     <?php 
-    $PN_CUSTOMERS_MANAGER_return_string = ob_get_contents(); 
+    $pn_customers_manager_return_string = ob_get_contents(); 
     ob_end_clean(); 
-    return $PN_CUSTOMERS_MANAGER_return_string;
+    return $pn_customers_manager_return_string;
   }
 
   /**

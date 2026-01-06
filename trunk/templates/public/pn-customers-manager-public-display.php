@@ -10,6 +10,8 @@
  * @package    PN_CUSTOMERS_MANAGER
  * @subpackage PN_CUSTOMERS_MANAGER/public/templates
  */
-?>
 
-<!-- This file should primarily consist of HTML with a little bit of PHP. -->
+ if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>

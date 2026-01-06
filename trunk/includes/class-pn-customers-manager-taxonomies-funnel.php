@@ -18,7 +18,7 @@ class PN_CUSTOMERS_MANAGER_Taxonomies_Funnel {
 	 */
 	public static function PN_CUSTOMERS_MANAGER_register_taxonomies() {
 		$taxonomies = [
-			'cm_pn_funnel_category' => [
+			'pn_cm_funnel_category' => [
 				'name'              		=> _x('Funnel category', 'Taxonomy general name', 'pn-customers-manager'),
 				'singular_name'     		=> _x('Funnel category', 'Taxonomy singular name', 'pn-customers-manager'),
 				'search_items'     			=> esc_html(__('Search Funnel categories', 'pn-customers-manager')),
@@ -49,7 +49,7 @@ class PN_CUSTOMERS_MANAGER_Taxonomies_Funnel {
 				'query_var'         		=> true,
 				'rewrite'           		=> true,
 				'show_in_rest'      		=> true,
-	    		'capabilities'      		=> PN_CUSTOMERS_MANAGER_ROLE_CM_PN_FUNNEL_CAPABILITIES,
+	    		'capabilities'      		=> PN_CUSTOMERS_MANAGER_ROLE_PN_CM_FUNNEL_CAPABILITIES,
 			];
 
 			if ($options['archive']) {
@@ -63,8 +63,8 @@ class PN_CUSTOMERS_MANAGER_Taxonomies_Funnel {
 				];
 			}
 
-			register_taxonomy($taxonomy, 'cm_pn_funnel', $args);
-			register_taxonomy_for_object_type($taxonomy, 'cm_pn_funnel');
+			register_taxonomy($taxonomy, 'pn_cm_funnel', $args);
+			register_taxonomy_for_object_type($taxonomy, 'pn_cm_funnel');
 		}
 	}
 }

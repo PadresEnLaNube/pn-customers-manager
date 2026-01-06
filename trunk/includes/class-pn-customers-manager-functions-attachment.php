@@ -30,19 +30,16 @@ class PN_CUSTOMERS_MANAGER_Functions_Attachment {
 	 * @since    1.0.0
 	 */
 	public function insert_attachment_from_url($url, $parent_post_id = null) {
-    if(!class_exists('WP_Http')){
-      require_once(ABSPATH . 'wp-includes/class-http.php'); 
-    }
-
-    $http = new WP_Http();
-    $response = $http->request($url);
+    // Use WordPress HTTP API instead of deprecated WP_Http class
+    $response = wp_remote_get($url);
     $file_extension = pathinfo($url, PATHINFO_EXTENSION);
 
     if (is_wp_error($response)) {
       return false;
     }
 
-    $upload = wp_upload_bits(basename($url . '.' . $file_extension), null, $response['body']);
+    $response_body = wp_remote_retrieve_body($response);
+    $upload = wp_upload_bits(basename($url . '.' . $file_extension), null, $response_body);
 
     if(!empty($upload['error'])) {
       return false;
@@ -63,7 +60,12 @@ class PN_CUSTOMERS_MANAGER_Functions_Attachment {
     ];
 
     $attach_id = wp_insert_attachment($post_info, $file_path, $parent_post_id);
+    
+    // Generate attachment metadata immediately after requiring the file
     require_once(ABSPATH . 'wp-admin/includes/file.php');
+    require_once(ABSPATH . 'wp-admin/includes/image.php');
+    $attach_data = wp_generate_attachment_metadata($attach_id, $file_path);
+    wp_update_attachment_metadata($attach_id, $attach_data);
 
     return $attach_id;
   }

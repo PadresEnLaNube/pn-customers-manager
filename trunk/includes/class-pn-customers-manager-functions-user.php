@@ -57,52 +57,52 @@ class PN_CUSTOMERS_MANAGER_Functions_User {
     return false;
   }
 
-  public static function PN_CUSTOMERS_MANAGER_user_insert($PN_CUSTOMERS_MANAGER_user_login, $PN_CUSTOMERS_MANAGER_user_password, $PN_CUSTOMERS_MANAGER_user_email = '', $PN_CUSTOMERS_MANAGER_first_name = '', $PN_CUSTOMERS_MANAGER_last_name = '', $PN_CUSTOMERS_MANAGER_display_name = '', $PN_CUSTOMERS_MANAGER_user_nicename = '', $PN_CUSTOMERS_MANAGER_user_nickname = '', $PN_CUSTOMERS_MANAGER_user_description = '', $PN_CUSTOMERS_MANAGER_user_role = [], $PN_CUSTOMERS_MANAGER_array_usermeta = [/*['PN_CUSTOMERS_MANAGER_key' => 'PN_CUSTOMERS_MANAGER_value'], */]) {
-    /* $this->insert_user($PN_CUSTOMERS_MANAGER_user_login, $PN_CUSTOMERS_MANAGER_user_password, $PN_CUSTOMERS_MANAGER_user_email = '', $PN_CUSTOMERS_MANAGER_first_name = '', $PN_CUSTOMERS_MANAGER_last_name = '', $PN_CUSTOMERS_MANAGER_display_name = '', $PN_CUSTOMERS_MANAGER_user_nicename = '', $PN_CUSTOMERS_MANAGER_user_nickname = '', $PN_CUSTOMERS_MANAGER_user_description = '', $PN_CUSTOMERS_MANAGER_user_role = [], $PN_CUSTOMERS_MANAGER_array_usermeta = [['PN_CUSTOMERS_MANAGER_key' => 'PN_CUSTOMERS_MANAGER_value'], ],); */
+  public static function PN_CUSTOMERS_MANAGER_user_insert($pn_customers_manager_user_login, $pn_customers_manager_user_password, $pn_customers_manager_user_email = '', $pn_customers_manager_first_name = '', $pn_customers_manager_last_name = '', $pn_customers_manager_display_name = '', $pn_customers_manager_user_nicename = '', $pn_customers_manager_user_nickname = '', $pn_customers_manager_user_description = '', $pn_customers_manager_user_role = [], $pn_customers_manager_array_usermeta = [/*['PN_CUSTOMERS_MANAGER_key' => 'PN_CUSTOMERS_MANAGER_value'], */]) {
+    /* $this->insert_user($pn_customers_manager_user_login, $pn_customers_manager_user_password, $pn_customers_manager_user_email = '', $pn_customers_manager_first_name = '', $pn_customers_manager_last_name = '', $pn_customers_manager_display_name = '', $pn_customers_manager_user_nicename = '', $pn_customers_manager_user_nickname = '', $pn_customers_manager_user_description = '', $pn_customers_manager_user_role = [], $pn_customers_manager_array_usermeta = [['PN_CUSTOMERS_MANAGER_key' => 'PN_CUSTOMERS_MANAGER_value'], ],); */
 
-    $PN_CUSTOMERS_MANAGER_user_array = [
-      'first_name' => $PN_CUSTOMERS_MANAGER_first_name,
-      'last_name' => $PN_CUSTOMERS_MANAGER_last_name,
-      'display_name' => $PN_CUSTOMERS_MANAGER_display_name,
-      'user_nicename' => $PN_CUSTOMERS_MANAGER_user_nicename,
-      'nickname' => $PN_CUSTOMERS_MANAGER_user_nickname,
-      'description' => $PN_CUSTOMERS_MANAGER_user_description,
+    $pn_customers_manager_user_array = [
+      'first_name' => $pn_customers_manager_first_name,
+      'last_name' => $pn_customers_manager_last_name,
+      'display_name' => $pn_customers_manager_display_name,
+      'user_nicename' => $pn_customers_manager_user_nicename,
+      'nickname' => $pn_customers_manager_user_nickname,
+      'description' => $pn_customers_manager_user_description,
     ];
 
-    if (!empty($PN_CUSTOMERS_MANAGER_user_email)) {
-      if (!email_exists($PN_CUSTOMERS_MANAGER_user_email)) {
-        if (username_exists($PN_CUSTOMERS_MANAGER_user_login)) {
-          $user_id = wp_create_user($PN_CUSTOMERS_MANAGER_user_email, $PN_CUSTOMERS_MANAGER_user_password, $PN_CUSTOMERS_MANAGER_user_email);
+    if (!empty($pn_customers_manager_user_email)) {
+      if (!email_exists($pn_customers_manager_user_email)) {
+        if (username_exists($pn_customers_manager_user_login)) {
+          $user_id = wp_create_user($pn_customers_manager_user_email, $pn_customers_manager_user_password, $pn_customers_manager_user_email);
         } else {
-          $user_id = wp_create_user($PN_CUSTOMERS_MANAGER_user_login, $PN_CUSTOMERS_MANAGER_user_password, $PN_CUSTOMERS_MANAGER_user_email);
+          $user_id = wp_create_user($pn_customers_manager_user_login, $pn_customers_manager_user_password, $pn_customers_manager_user_email);
         }
       } else {
-        $user_id = get_user_by('email', $PN_CUSTOMERS_MANAGER_user_email)->ID;
+        $user_id = get_user_by('email', $pn_customers_manager_user_email)->ID;
       }
     } else {
-      if (!username_exists($PN_CUSTOMERS_MANAGER_user_login)) {
-        $user_id = wp_create_user($PN_CUSTOMERS_MANAGER_user_login, $PN_CUSTOMERS_MANAGER_user_password);
+      if (!username_exists($pn_customers_manager_user_login)) {
+        $user_id = wp_create_user($pn_customers_manager_user_login, $pn_customers_manager_user_password);
       } else {
-        $user_id = get_user_by('login', $PN_CUSTOMERS_MANAGER_user_login)->ID;
+        $user_id = get_user_by('login', $pn_customers_manager_user_login)->ID;
       }
     }
 
     if ($user_id && !is_wp_error($user_id)) {
-      wp_update_user(array_merge(['ID' => $user_id], $PN_CUSTOMERS_MANAGER_user_array));
+      wp_update_user(array_merge(['ID' => $user_id], $pn_customers_manager_user_array));
     } else {
       return false;
     }
 
     $user = new WP_User($user_id);
-    if (!empty($PN_CUSTOMERS_MANAGER_user_role)) {
-      foreach ($PN_CUSTOMERS_MANAGER_user_role as $new_role) {
+    if (!empty($pn_customers_manager_user_role)) {
+      foreach ($pn_customers_manager_user_role as $new_role) {
         $user->add_role($new_role);
       }
     }
 
-    if (!empty($PN_CUSTOMERS_MANAGER_array_usermeta)) {
-      foreach ($PN_CUSTOMERS_MANAGER_array_usermeta as $PN_CUSTOMERS_MANAGER_usermeta) {
-        foreach ($PN_CUSTOMERS_MANAGER_usermeta as $meta_key => $meta_value) {
+    if (!empty($pn_customers_manager_array_usermeta)) {
+      foreach ($pn_customers_manager_array_usermeta as $pn_customers_manager_usermeta) {
+        foreach ($pn_customers_manager_usermeta as $meta_key => $meta_value) {
           if ((!empty($meta_value) || !empty(get_user_meta($user_id, $meta_key, true))) && !is_null($meta_value)) {
             update_user_meta($user_id, $meta_key, $meta_value);
           }

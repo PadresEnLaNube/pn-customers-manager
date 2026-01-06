@@ -12,41 +12,41 @@
  */
 class PN_CUSTOMERS_MANAGER_Settings {
   public function PN_CUSTOMERS_MANAGER_get_options() {
-    $PN_CUSTOMERS_MANAGER_options = [];
+    $pn_customers_manager_options = [];
     
-    foreach (PN_CUSTOMERS_MANAGER_CPTS as $PN_CUSTOMERS_MANAGER_cpt) {
-      $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_' . $PN_CUSTOMERS_MANAGER_cpt . '_slug'] = [
-        'id' => 'PN_CUSTOMERS_MANAGER_' . $PN_CUSTOMERS_MANAGER_cpt . '_slug',
+    foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
+      $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_' . $pn_customers_manager_cpt_key . '_slug'] = [
+        'id' => 'PN_CUSTOMERS_MANAGER_' . $pn_customers_manager_cpt_key . '_slug',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
         'type' => 'text',
         'label' => sprintf(
           /* translators: %s: Post type name */
           __('%s slug', 'pn-customers-manager'),
-          $PN_CUSTOMERS_MANAGER_cpt
+          $pn_customers_manager_cpt_value
         ),
         'placeholder' => sprintf(
           /* translators: %s: Post type name */
           __('%s slug', 'pn-customers-manager'),
-          $PN_CUSTOMERS_MANAGER_cpt
+          $pn_customers_manager_cpt_value
         ),
         'description' => sprintf(
           /* translators: %1$s: Post type name, %2$s: Archive URL, %3$s: Archive URL, %4$s: Single post URL */
           __('This option sets the slug of the %1$s archive page, and the %1$s pages. By default they will be:', 'pn-customers-manager'),
-          $PN_CUSTOMERS_MANAGER_cpt
-        ) . '<br><a href="' . esc_url(home_url('/' . $PN_CUSTOMERS_MANAGER_cpt . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $PN_CUSTOMERS_MANAGER_cpt . '-slug')) . '</a><br>' . esc_url(home_url('/' . $PN_CUSTOMERS_MANAGER_cpt . '-slug/' . $PN_CUSTOMERS_MANAGER_cpt)),
+          $pn_customers_manager_cpt_value
+        ) . '<br><a href="' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '</a><br>' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug/' . $pn_customers_manager_cpt_key)),
       ];
     }
 
     // Color customization section
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_colors_section_start'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_colors_section_start'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_colors_section_start',
       'section' => 'start',
       'label' => __('Color Customization', 'pn-customers-manager'),
       'description' => __('Customize the colors used throughout the plugin by modifying the CSS root variables.', 'pn-customers-manager'),
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_color_main'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_color_main'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_color_main',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -56,7 +56,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#d45500',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_bg_color_main'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_bg_color_main'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_bg_color_main',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -66,7 +66,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#d45500',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_border_color_main'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_border_color_main'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_border_color_main',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -76,7 +76,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#d45500',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_color_main_alt'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_color_main_alt'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_color_main_alt',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -86,7 +86,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#232323',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_bg_color_main_alt'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_bg_color_main_alt'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_bg_color_main_alt',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -96,7 +96,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#232323',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_border_color_main_alt'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_border_color_main_alt'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_border_color_main_alt',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -106,7 +106,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#232323',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_color_main_blue'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_color_main_blue'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_color_main_blue',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -116,7 +116,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#6e6eff',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_color_main_grey'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_color_main_grey'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_color_main_grey',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
@@ -126,32 +126,32 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '#f5f5f5',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_colors_section_end'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_colors_section_end'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_colors_section_end',
       'section' => 'end',
     ];
 
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_options_remove'] = [
-      'id' => 'PN_CUSTOMERS_MANAGER_options_remove',
+    $pn_customers_manager_options['pn_customers_manager_options_remove'] = [
+      'id' => 'pn_customers_manager_options_remove',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
       'type' => 'checkbox',
       'label' => __('Remove plugin options on deactivation', 'pn-customers-manager'),
       'description' => __('If you activate this option the plugin will remove all options on deactivation. Please, be careful. This process cannot be undone.', 'pn-customers-manager'),
     ];
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_nonce'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_nonce'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_nonce',
       'input' => 'input',
       'type' => 'nonce',
     ];
-    $PN_CUSTOMERS_MANAGER_options['PN_CUSTOMERS_MANAGER_submit'] = [
+    $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_submit'] = [
       'id' => 'PN_CUSTOMERS_MANAGER_submit',
       'input' => 'input',
       'type' => 'submit',
       'value' => __('Save options', 'pn-customers-manager'),
     ];
 
-    return $PN_CUSTOMERS_MANAGER_options;
+    return $pn_customers_manager_options;
   }
 
 	/**
@@ -163,14 +163,14 @@ class PN_CUSTOMERS_MANAGER_Settings {
     // Determine the capability to use for the main menu
     // Use the first available capability, or manage_options as fallback
     $menu_cap = 'manage_options';
-    if (current_user_can('edit_cm_pn_funnel')) {
-      $menu_cap = 'edit_cm_pn_funnel';
-    } elseif (current_user_can('edit_cm_pn_org')) {
-      $menu_cap = 'edit_cm_pn_org';
+    if (current_user_can('edit_pn_cm_funnel')) {
+      $menu_cap = 'edit_pn_cm_funnel';
+    } elseif (current_user_can('edit_pn_cm_organization')) {
+      $menu_cap = 'edit_pn_cm_organization';
     }
     
     // Check if user has any of the required capabilities
-    $has_cap = current_user_can('edit_cm_pn_funnel') || current_user_can('edit_cm_pn_org') || current_user_can('manage_options');
+    $has_cap = current_user_can('edit_pn_cm_funnel') || current_user_can('edit_pn_cm_organization') || current_user_can('manage_options');
     
     if (!$has_cap) {
       return;
@@ -180,44 +180,44 @@ class PN_CUSTOMERS_MANAGER_Settings {
       esc_html__('PN Customers Manager', 'pn-customers-manager'), 
       esc_html__('PN Customers Manager', 'pn-customers-manager'), 
       $menu_cap, 
-      'PN_CUSTOMERS_MANAGER_options', 
-      [$this, 'PN_CUSTOMERS_MANAGER_options'], 
+      'pn_customers_manager_options', 
+      [$this, 'pn_customers_manager_options'], 
       esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/pn-customers-manager-menu-icon.svg'),
     );
 		
     add_submenu_page(
-      'PN_CUSTOMERS_MANAGER_options',
+      'pn_customers_manager_options',
       esc_html__('Settings', 'pn-customers-manager'), 
       esc_html__('Settings', 'pn-customers-manager'), 
       $menu_cap, 
-      'PN_CUSTOMERS_MANAGER_options', 
-      [$this, 'PN_CUSTOMERS_MANAGER_options'], 
+      'pn_customers_manager_options', 
+      [$this, 'pn_customers_manager_options'], 
     );
 
     // Add Funnels submenu (only if user has the capability)
-    if (current_user_can('edit_cm_pn_funnel')) {
+    if (current_user_can('edit_pn_cm_funnel')) {
       add_submenu_page(
-        'PN_CUSTOMERS_MANAGER_options',
+        'pn_customers_manager_options',
         esc_html__('Funnels', 'pn-customers-manager'),
         esc_html__('Funnels', 'pn-customers-manager'),
-        'edit_cm_pn_funnel',
-        'edit.php?post_type=cm_pn_funnel'
+        'edit_pn_cm_funnel',
+        'edit.php?post_type=pn_cm_funnel'
       );
     }
 
     // Add Organizations submenu (only if user has the capability)
-    if (current_user_can('edit_cm_pn_org')) {
+    if (current_user_can('edit_pn_cm_organization')) {
       add_submenu_page(
-        'PN_CUSTOMERS_MANAGER_options',
+        'pn_customers_manager_options',
         esc_html__('Organizations', 'pn-customers-manager'),
         esc_html__('Organizations', 'pn-customers-manager'),
-        'edit_cm_pn_org',
-        'edit.php?post_type=cm_pn_org'
+        'edit_pn_cm_organization',
+        'edit.php?post_type=pn_cm_organization'
       );
     }
 	}
 
-	public function PN_CUSTOMERS_MANAGER_options() {
+	public function pn_customers_manager_options() {
 	  ?>
 	    <div class="pn-customers-manager-options pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mt-50 pn-customers-manager-mb-50">
         <img src="<?php echo esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/banner-1544x500.png'); ?>" alt="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" title="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" class="pn-customers-manager-width-100-percent pn-customers-manager-border-radius-20 pn-customers-manager-mb-30">
@@ -227,8 +227,8 @@ class PN_CUSTOMERS_MANAGER_Settings {
           <?php 
             $options = self::PN_CUSTOMERS_MANAGER_get_options();
 
-            foreach ($options as $PN_CUSTOMERS_MANAGER_option) {
-              cm_pn_forms::PN_CUSTOMERS_MANAGER_input_wrapper_builder($PN_CUSTOMERS_MANAGER_option, 'option', 0, 0, 'half');
+            foreach ($options as $pn_customers_manager_option) {
+              PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_option, 'option', 0, 0, 'half');
             }
           ?>
           </form> 
@@ -260,7 +260,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
     }
 
     if (get_transient('PN_CUSTOMERS_MANAGER_just_activated')) {
-      $target_url = admin_url('admin.php?page=PN_CUSTOMERS_MANAGER_options');
+      $target_url = admin_url('admin.php?page=pn_customers_manager_options');
       
       if ($target_url) {
         // Mark that we're in the redirection process
@@ -280,7 +280,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
    * Adds the Settings link to the plugin list
    */
   public function PN_CUSTOMERS_MANAGER_plugin_action_links($links) {
-      $settings_link = '<a href="admin.php?page=PN_CUSTOMERS_MANAGER_options">' . esc_html__('Settings', 'pn-customers-manager') . '</a>';
+      $settings_link = '<a href="admin.php?page=pn_customers_manager_options">' . esc_html__('Settings', 'pn-customers-manager') . '</a>';
       array_unshift($links, $settings_link);
       
       return $links;

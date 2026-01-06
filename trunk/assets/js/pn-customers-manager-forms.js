@@ -426,7 +426,7 @@
       var searchWrapper = searchToggle.closest('.pn-customers-manager-cpt-search-wrapper');
       var list = searchToggle.closest('.pn-customers-manager-cpt-list');
       
-      // Find the list wrapper - it could be cm_pn_org-list-wrapper or cm_pn_funnel-list-wrapper
+      // Find the list wrapper - it could be pn_cm_organization-list-wrapper or pn_cm_funnel-list-wrapper
       var listWrapper = list.siblings('.pn-customers-manager-cpt-list-wrapper');
       if (!listWrapper.length) {
         // Try finding it within the list container
@@ -469,10 +469,10 @@
       
       // Determine the CPT type from the list classes
       var cptKey = '';
-      if (list.hasClass('pn-customers-manager-cm_pn_org-list')) {
-        cptKey = 'cm_pn_org';
-      } else if (list.hasClass('pn-customers-manager-cm_pn_funnel-list')) {
-        cptKey = 'cm_pn_funnel';
+      if (list.hasClass('pn-customers-manager-pn_cm_organization-list')) {
+        cptKey = 'pn_cm_organization';
+      } else if (list.hasClass('pn-customers-manager-pn_cm_funnel-list')) {
+        cptKey = 'pn_cm_funnel';
       }
       
       var addNewSelector = '.pn-customers-manager-add-new-cpt[data-' + cptKey + '-id="0"]';

@@ -38,9 +38,8 @@ define('PN_CUSTOMERS_MANAGER_VERSION', '1.0.0');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
 define('PN_CUSTOMERS_MANAGER_CPTS', [
-	'cm_pn_funnel' => 'Funnel',
-	'cm_pn_org' => 'Organization',
-	'cm_pn_form' => 'Form',
+	'pn_cm_funnel' => 'Funnel',
+	'pn_cm_organization' => 'Organization',
 ]);
 
 /**
@@ -50,37 +49,37 @@ $pn_customers_manager_role_cpt_capabilities = [];
 
 foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
 	$pn_customers_manager_role_cpt_capabilities[$pn_customers_manager_cpt_key] = [
-		'edit_post' 				=> 'edit_' . $pn_customers_manager_cpt_key,
-		'edit_posts' 				=> 'edit_' . $pn_customers_manager_cpt_key,
-		'edit_private_posts' 		=> 'edit_private_' . $pn_customers_manager_cpt_key,
-		'edit_published_posts' 		=> 'edit_published_' . $pn_customers_manager_cpt_key,
-		'edit_others_posts' 		=> 'edit_others_' . $pn_customers_manager_cpt_key,
-		'publish_posts' 			=> 'publish_' . $pn_customers_manager_cpt_key,
+		'edit_post' => 'edit_' . $pn_customers_manager_cpt_key,
+		'edit_posts' => 'edit_' . $pn_customers_manager_cpt_key,
+		'edit_private_posts' => 'edit_private_' . $pn_customers_manager_cpt_key,
+		'edit_published_posts' => 'edit_published_' . $pn_customers_manager_cpt_key,
+		'edit_others_posts' => 'edit_others_' . $pn_customers_manager_cpt_key,
+		'publish_posts' => 'publish_' . $pn_customers_manager_cpt_key,
 
 		// Post reading capabilities
-		'read_post' 				=> 'read_' . $pn_customers_manager_cpt_key,
-		'read_private_posts' 		=> 'read_private_' . $pn_customers_manager_cpt_key,
-		
+		'read_post' => 'read_' . $pn_customers_manager_cpt_key,
+		'read_private_posts' => 'read_private_' . $pn_customers_manager_cpt_key,
+
 		// Post deletion capabilities
-		'delete_post' 				=> 'delete_' . $pn_customers_manager_cpt_key,
-		'delete_posts' 				=> 'delete_' . $pn_customers_manager_cpt_key,
-		'delete_private_posts' 		=> 'delete_private_' . $pn_customers_manager_cpt_key,
-		'delete_published_posts' 	=> 'delete_published_' . $pn_customers_manager_cpt_key,
-		'delete_others_posts'		=> 'delete_others_' . $pn_customers_manager_cpt_key,
+		'delete_post' => 'delete_' . $pn_customers_manager_cpt_key,
+		'delete_posts' => 'delete_' . $pn_customers_manager_cpt_key,
+		'delete_private_posts' => 'delete_private_' . $pn_customers_manager_cpt_key,
+		'delete_published_posts' => 'delete_published_' . $pn_customers_manager_cpt_key,
+		'delete_others_posts' => 'delete_others_' . $pn_customers_manager_cpt_key,
 
 		// Media capabilities
-		'upload_files' 				=> 'upload_files',
+		'upload_files' => 'upload_files',
 
 		// Taxonomy capabilities
-		'manage_terms' 				=> 'manage_' . $pn_customers_manager_cpt_key . '_category',
-		'edit_terms' 				=> 'edit_' . $pn_customers_manager_cpt_key . '_category',
-		'delete_terms' 				=> 'delete_' . $pn_customers_manager_cpt_key . '_category',
-		'assign_terms' 				=> 'assign_' . $pn_customers_manager_cpt_key . '_category',
+		'manage_terms' => 'manage_' . $pn_customers_manager_cpt_key . '_category',
+		'edit_terms' => 'edit_' . $pn_customers_manager_cpt_key . '_category',
+		'delete_terms' => 'delete_' . $pn_customers_manager_cpt_key . '_category',
+		'assign_terms' => 'assign_' . $pn_customers_manager_cpt_key . '_category',
 
 		// Options capabilities
-		'manage_options' 			=> 'manage_' . $pn_customers_manager_cpt_key . '_options'
+		'manage_options' => 'manage_' . $pn_customers_manager_cpt_key . '_options'
 	];
-	
+
 	define('PN_CUSTOMERS_MANAGER_ROLE_' . strtoupper($pn_customers_manager_cpt_key) . '_CAPABILITIES', $pn_customers_manager_role_cpt_capabilities[$pn_customers_manager_cpt_key]);
 }
 
@@ -89,7 +88,12 @@ foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_custo
  */
 $pn_customers_manager_kses = [
 	// Basic text elements
-	'div' => ['id' => [], 'class' => []],
+	'div' => [
+		'id' => [],
+		'class' => [],
+		'data-pn-customers-manager-popup-disable-esc' => [],
+		'data-pn-customers-manager-popup-disable-overlay-close' => [],
+	],
 	'section' => ['id' => [], 'class' => []],
 	'article' => ['id' => [], 'class' => []],
 	'aside' => ['id' => [], 'class' => []],
@@ -138,8 +142,8 @@ $pn_customers_manager_kses = [
 		'title' => [],
 	],
 	'i' => [
-		'id' => [], 
-		'class' => [], 
+		'id' => [],
+		'class' => [],
 		'title' => []
 	],
 
@@ -222,13 +226,14 @@ define('PN_CUSTOMERS_MANAGER_KSES', $pn_customers_manager_kses);
  * The code that runs during plugin activation.
  * This action is documented in includes/class-pn-customers-manager-activator.php
  */
-function pn_customers_manager_activation_hook() {
+function pn_customers_manager_activation_hook()
+{
 	require_once plugin_dir_path(__FILE__) . 'includes/class-pn-customers-manager-activator.php';
 	PN_CUSTOMERS_MANAGER_Activator::pn_customers_manager_activate();
-	
+
 	// Clear any previous state
-	delete_option('pn_customers_manager_redirecting');
-	
+	delete_option('PN_CUSTOMERS_MANAGER_redirecting');
+
 	// Set transient only if it doesn't exist
 	if (!get_transient('pn_customers_manager_just_activated')) {
 		set_transient('pn_customers_manager_just_activated', true, 30);
@@ -242,8 +247,9 @@ register_activation_hook(__FILE__, 'pn_customers_manager_activation_hook');
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-pn-customers-manager-deactivator.php
  */
-function pn_customers_manager_deactivation_cleanup() {
-	delete_option('pn_customers_manager_redirecting');
+function pn_customers_manager_deactivation_cleanup()
+{
+	delete_option('PN_CUSTOMERS_MANAGER_redirecting');
 }
 register_deactivation_hook(__FILE__, 'pn_customers_manager_deactivation_cleanup');
 
@@ -259,7 +265,8 @@ require plugin_dir_path(__FILE__) . 'includes/class-pn-customers-manager.php';
  *
  * @since    1.0.0
  */
-function pn_customers_manager_run() {
+function pn_customers_manager_run()
+{
 	$plugin = new PN_CUSTOMERS_MANAGER();
 	$plugin->pn_customers_manager_run();
 }

@@ -36,9 +36,9 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
         exit;
       }
 
-      $PN_CUSTOMERS_MANAGER_ajax_nopriv_type = cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['pn_customers_manager_ajax_nopriv_type']));
+      $pn_customers_manager_ajax_nopriv_type = PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['pn_customers_manager_ajax_nopriv_type']));
       
-      $PN_CUSTOMERS_MANAGER_ajax_keys = !empty($_POST['pn_customers_manager_ajax_keys']) ? array_map(function($key) {
+      $pn_customers_manager_ajax_keys = !empty($_POST['pn_customers_manager_ajax_keys']) ? array_map(function($key) {
         $sanitized_key = wp_unslash($key);
         return array(
           'id' => sanitize_key($sanitized_key['id']),
@@ -48,65 +48,65 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
         );
       }, wp_unslash($_POST['pn_customers_manager_ajax_keys'])) : [];
 
-      $PN_CUSTOMERS_MANAGER_key_value = [];
+      $pn_customers_manager_key_value = [];
 
-      if (!empty($PN_CUSTOMERS_MANAGER_ajax_keys)) {
-        foreach ($PN_CUSTOMERS_MANAGER_ajax_keys as $PN_CUSTOMERS_MANAGER_key) {
-          if ($PN_CUSTOMERS_MANAGER_key['multiple'] == 'true') {
-            $PN_CUSTOMERS_MANAGER_clear_key = str_replace('[]', '', $PN_CUSTOMERS_MANAGER_key['id']);
-            ${$PN_CUSTOMERS_MANAGER_clear_key} = $PN_CUSTOMERS_MANAGER_key_value[$PN_CUSTOMERS_MANAGER_clear_key] = [];
+      if (!empty($pn_customers_manager_ajax_keys)) {
+        foreach ($pn_customers_manager_ajax_keys as $pn_customers_manager_key) {
+          if ($pn_customers_manager_key['multiple'] == 'true') {
+            $pn_customers_manager_clear_key = str_replace('[]', '', $pn_customers_manager_key['id']);
+            ${$pn_customers_manager_clear_key} = $pn_customers_manager_key_value[$pn_customers_manager_clear_key] = [];
 
-            if (!empty($_POST[$PN_CUSTOMERS_MANAGER_clear_key])) {
-              $unslashed_array = wp_unslash($_POST[$PN_CUSTOMERS_MANAGER_clear_key]);
+            if (!empty($_POST[$pn_customers_manager_clear_key])) {
+              $unslashed_array = wp_unslash($_POST[$pn_customers_manager_clear_key]);
               
               if (!is_array($unslashed_array)) {
                 $unslashed_array = array($unslashed_array);
               }
 
-              $sanitized_array = array_map(function($value) use ($PN_CUSTOMERS_MANAGER_key) {
-                return cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(
+              $sanitized_array = array_map(function($value) use ($pn_customers_manager_key) {
+                return PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(
                   $value,
-                  $PN_CUSTOMERS_MANAGER_key['node'],
-                  $PN_CUSTOMERS_MANAGER_key['type'],
-                  $PN_CUSTOMERS_MANAGER_key['field_config'] ?? [],
+                  $pn_customers_manager_key['node'],
+                  $pn_customers_manager_key['type'],
+                  $pn_customers_manager_key['field_config'] ?? [],
                 );
               }, $unslashed_array);
               
               foreach ($sanitized_array as $multi_key => $multi_value) {
                 $final_value = !empty($multi_value) ? $multi_value : '';
-                ${$PN_CUSTOMERS_MANAGER_clear_key}[$multi_key] = $PN_CUSTOMERS_MANAGER_key_value[$PN_CUSTOMERS_MANAGER_clear_key][$multi_key] = $final_value;
+                ${$pn_customers_manager_clear_key}[$multi_key] = $pn_customers_manager_key_value[$pn_customers_manager_clear_key][$multi_key] = $final_value;
               }
             } else {
-              ${$PN_CUSTOMERS_MANAGER_clear_key} = '';
-              $PN_CUSTOMERS_MANAGER_key_value[$PN_CUSTOMERS_MANAGER_clear_key][$multi_key] = '';
+              ${$pn_customers_manager_clear_key} = '';
+              $pn_customers_manager_key_value[$pn_customers_manager_clear_key][$multi_key] = '';
             }
           } else {
-            $sanitized_key = sanitize_key($PN_CUSTOMERS_MANAGER_key['id']);
+            $sanitized_key = sanitize_key($pn_customers_manager_key['id']);
             $unslashed_value = !empty($_POST[$sanitized_key]) ? wp_unslash($_POST[$sanitized_key]) : '';
             
-            $PN_CUSTOMERS_MANAGER_key_id = !empty($unslashed_value) ? 
-              cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(
+            $pn_customers_manager_key_id = !empty($unslashed_value) ? 
+              PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(
                 $unslashed_value, 
-                $PN_CUSTOMERS_MANAGER_key['node'], 
-                $PN_CUSTOMERS_MANAGER_key['type'],
-                $PN_CUSTOMERS_MANAGER_key['field_config'] ?? [],
+                $pn_customers_manager_key['node'], 
+                $pn_customers_manager_key['type'],
+                $pn_customers_manager_key['field_config'] ?? [],
               ) : '';
             
-              ${$PN_CUSTOMERS_MANAGER_key['id']} = $PN_CUSTOMERS_MANAGER_key_value[$PN_CUSTOMERS_MANAGER_key['id']] = $PN_CUSTOMERS_MANAGER_key_id;
+              ${$pn_customers_manager_key['id']} = $pn_customers_manager_key_value[$pn_customers_manager_key['id']] = $pn_customers_manager_key_id;
           }
         }
       }
 
-      switch ($PN_CUSTOMERS_MANAGER_ajax_nopriv_type) {
+      switch ($pn_customers_manager_ajax_nopriv_type) {
         case 'cm_pn_form_save':
-          $cm_pn_form_type = !empty($_POST['cm_pn_form_type']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['cm_pn_form_type'])) : '';
+          $cm_pn_form_type = !empty($_POST['cm_pn_form_type']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['cm_pn_form_type'])) : '';
 
-          if (!empty($PN_CUSTOMERS_MANAGER_key_value) && !empty($cm_pn_form_type)) {
-            $cm_pn_form_id = !empty($_POST['cm_pn_form_id']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['cm_pn_form_id'])) : 0;
-            $cm_pn_form_subtype = !empty($_POST['cm_pn_form_subtype']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['cm_pn_form_subtype'])) : '';
-            $user_id = !empty($_POST['cm_pn_form_user_id']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['cm_pn_form_user_id'])) : 0;
-            $post_id = !empty($_POST['cm_pn_form_post_id']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['cm_pn_form_post_id'])) : 0;
-            $post_type = !empty($_POST['cm_pn_form_post_type']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['cm_pn_form_post_type'])) : '';
+          if (!empty($pn_customers_manager_key_value) && !empty($cm_pn_form_type)) {
+            $cm_pn_form_id = !empty($_POST['cm_pn_form_id']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['cm_pn_form_id'])) : 0;
+            $cm_pn_form_subtype = !empty($_POST['cm_pn_form_subtype']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['cm_pn_form_subtype'])) : '';
+            $user_id = !empty($_POST['cm_pn_form_user_id']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['cm_pn_form_user_id'])) : 0;
+            $post_id = !empty($_POST['cm_pn_form_post_id']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['cm_pn_form_post_id'])) : 0;
+            $post_type = !empty($_POST['cm_pn_form_post_type']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['cm_pn_form_post_type'])) : '';
 
             if (($cm_pn_form_type == 'user' && empty($user_id) && !in_array($cm_pn_form_subtype, ['user_alt_new'])) || ($cm_pn_form_type == 'post' && (empty($post_id) && !(!empty($cm_pn_form_subtype) && in_array($cm_pn_form_subtype, ['post_new', 'post_edit'])))) || ($cm_pn_form_type == 'option' && !is_user_logged_in())) {
               session_start();
@@ -114,7 +114,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
               $_SESSION['cm_pn_form'] = [];
               $_SESSION['cm_pn_form'][$cm_pn_form_id] = [];
               $_SESSION['cm_pn_form'][$cm_pn_form_id]['form_type'] = $cm_pn_form_type;
-              $_SESSION['cm_pn_form'][$cm_pn_form_id]['values'] = $PN_CUSTOMERS_MANAGER_key_value;
+              $_SESSION['cm_pn_form'][$cm_pn_form_id]['values'] = $pn_customers_manager_key_value;
 
               if (!empty($post_id)) {
                 $_SESSION['cm_pn_form'][$cm_pn_form_id]['post_id'] = $post_id;
@@ -127,136 +127,136 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                   if (!in_array($cm_pn_form_subtype, ['user_alt_new'])) {
                     if (empty($user_id)) {
                       if (PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_is_admin(get_current_user_id())) {
-                        $user_login = !empty($_POST['user_login']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['user_login'])) : 0;
-                        $user_password = !empty($_POST['user_password']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['user_password'])) : 0;
-                        $user_email = !empty($_POST['user_email']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST['user_email'])) : 0;
+                        $user_login = !empty($_POST['user_login']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['user_login'])) : 0;
+                        $user_password = !empty($_POST['user_password']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['user_password'])) : 0;
+                        $user_email = !empty($_POST['user_email']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['user_email'])) : 0;
 
                         $user_id = PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_insert($user_login, $user_password, $user_email);
                       }
                     }
 
                     if (!empty($user_id)) {
-                      foreach ($PN_CUSTOMERS_MANAGER_key_value as $PN_CUSTOMERS_MANAGER_key => $PN_CUSTOMERS_MANAGER_value) {
+                      foreach ($pn_customers_manager_key_value as $pn_customers_manager_key => $pn_customers_manager_value) {
                         // Skip action and ajax type keys
-                        if (in_array($PN_CUSTOMERS_MANAGER_key, ['action', 'PN_CUSTOMERS_MANAGER_ajax_nopriv_type'])) {
+                        if (in_array($pn_customers_manager_key, ['action', 'PN_CUSTOMERS_MANAGER_ajax_nopriv_type'])) {
                           continue;
                         }
 
                         // Ensure option name is prefixed with PN_CUSTOMERS_MANAGER_
                         // Special case: if key is just 'pn-customers-manager', don't add prefix as it's already the main option
-                        if ($PN_CUSTOMERS_MANAGER_key !== 'pn-customers-manager' && strpos((string)$PN_CUSTOMERS_MANAGER_key, 'PN_CUSTOMERS_MANAGER_') !== 0) {
-                          $PN_CUSTOMERS_MANAGER_key = 'PN_CUSTOMERS_MANAGER_' . $PN_CUSTOMERS_MANAGER_key;
+                        if ($pn_customers_manager_key !== 'pn-customers-manager' && strpos((string)$pn_customers_manager_key, 'PN_CUSTOMERS_MANAGER_') !== 0) {
+                          $pn_customers_manager_key = 'PN_CUSTOMERS_MANAGER_' . $pn_customers_manager_key;
                         } else {
                           // Key already has correct prefix
                         }
 
-                        update_user_meta($user_id, $PN_CUSTOMERS_MANAGER_key, $PN_CUSTOMERS_MANAGER_value);
+                        update_user_meta($user_id, $pn_customers_manager_key, $pn_customers_manager_value);
                       }
                     }
                   }
 
-                  do_action('PN_CUSTOMERS_MANAGER_form_save', $user_id, $PN_CUSTOMERS_MANAGER_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
+                  do_action('PN_CUSTOMERS_MANAGER_form_save', $user_id, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
                   break;
                 case 'post':
                   if (empty($cm_pn_form_subtype) || in_array($cm_pn_form_subtype, ['post_new', 'post_edit'])) {
                     if (empty($post_id)) {
                       if (PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_is_admin(get_current_user_id())) {
                         $post_functions = new PN_CUSTOMERS_MANAGER_Functions_Post();
-                        $title = !empty($_POST[$post_type . '_title']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST[$post_type . '_title'])) : '';
-                        $description = !empty($_POST[$post_type . '_description']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_POST[$post_type . '_description'])) : '';
+                        $title = !empty($_POST[$post_type . '_title']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST[$post_type . '_title'])) : '';
+                        $description = !empty($_POST[$post_type . '_description']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST[$post_type . '_description'])) : '';
                         
                         $post_id = $post_functions->PN_CUSTOMERS_MANAGER_insert_post($title, $description, '', sanitize_title($title), $post_type, 'publish', get_current_user_id());
                       }
                     }
 
                     if (!empty($post_id)) {
-                      foreach ($PN_CUSTOMERS_MANAGER_key_value as $PN_CUSTOMERS_MANAGER_key => $PN_CUSTOMERS_MANAGER_value) {
-                        if ($PN_CUSTOMERS_MANAGER_key == $post_type . '_title') {
+                      foreach ($pn_customers_manager_key_value as $pn_customers_manager_key => $pn_customers_manager_value) {
+                        if ($pn_customers_manager_key == $post_type . '_title') {
                           wp_update_post([
                             'ID' => $post_id,
-                            'post_title' => esc_html($PN_CUSTOMERS_MANAGER_value),
+                            'post_title' => esc_html($pn_customers_manager_value),
                           ]);
                         }
 
-                        if ($PN_CUSTOMERS_MANAGER_key == $post_type . '_description') {
+                        if ($pn_customers_manager_key == $post_type . '_description') {
                           wp_update_post([
                             'ID' => $post_id,
-                            'post_content' => esc_html($PN_CUSTOMERS_MANAGER_value),
+                            'post_content' => esc_html($pn_customers_manager_value),
                           ]);
                         }
 
                         // Skip action and ajax type keys
-                        if (in_array($PN_CUSTOMERS_MANAGER_key, ['action', 'PN_CUSTOMERS_MANAGER_ajax_nopriv_type'])) {
+                        if (in_array($pn_customers_manager_key, ['action', 'PN_CUSTOMERS_MANAGER_ajax_nopriv_type'])) {
                           continue;
                         }
 
                         // Ensure option name is prefixed with PN_CUSTOMERS_MANAGER_
                         // Special case: if key is just 'pn-customers-manager', don't add prefix as it's already the main option
-                        if ($PN_CUSTOMERS_MANAGER_key !== 'pn-customers-manager' && strpos((string)$PN_CUSTOMERS_MANAGER_key, 'PN_CUSTOMERS_MANAGER_') !== 0) {
-                          $PN_CUSTOMERS_MANAGER_key = 'PN_CUSTOMERS_MANAGER_' . $PN_CUSTOMERS_MANAGER_key;
+                        if ($pn_customers_manager_key !== 'pn-customers-manager' && strpos((string)$pn_customers_manager_key, 'PN_CUSTOMERS_MANAGER_') !== 0) {
+                          $pn_customers_manager_key = 'PN_CUSTOMERS_MANAGER_' . $pn_customers_manager_key;
                         } else {
                           // Key already has correct prefix
                         }
 
-                        update_post_meta($post_id, $PN_CUSTOMERS_MANAGER_key, $PN_CUSTOMERS_MANAGER_value);
+                        update_post_meta($post_id, $pn_customers_manager_key, $pn_customers_manager_value);
                       }
                     }
                   }
 
                   // Dispara el hook genérico.
-                  do_action('PN_CUSTOMERS_MANAGER_form_save', $post_id, $PN_CUSTOMERS_MANAGER_key_value, $cm_pn_form_type, $cm_pn_form_subtype, $post_type);
+                  do_action('PN_CUSTOMERS_MANAGER_form_save', $post_id, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype, $post_type);
 
                   // Si el formulario apunta al CPT de organización, delega también en la lógica específica.
-                  if (!empty($post_type) && $post_type === 'cm_pn_org') {
+                  if (!empty($post_type) && $post_type === 'pn_cm_organization') {
                     /**
                      * Permite que la clase del CPT de organización gestione la creación/edición
                      * a partir de los datos enviados desde el frontal, aunque el usuario
                      * no tenga permisos de administrador.
                      */
-                    do_action('PN_CUSTOMERS_MANAGER_org_form_save', $post_id, $PN_CUSTOMERS_MANAGER_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
+                    do_action('Pn_cm_organization_form_save', $post_id, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
                   }
                   break;
                 case 'option':
                   if (PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_is_admin(get_current_user_id())) {
-                    $PN_CUSTOMERS_MANAGER_settings = new PN_CUSTOMERS_MANAGER_Settings();
-                    $PN_CUSTOMERS_MANAGER_options = $PN_CUSTOMERS_MANAGER_settings->PN_CUSTOMERS_MANAGER_get_options();
-                    $PN_CUSTOMERS_MANAGER_allowed_options = array_keys($PN_CUSTOMERS_MANAGER_options);
+                    $pn_customers_manager_settings = new PN_CUSTOMERS_MANAGER_Settings();
+                    $pn_customers_manager_options = $pn_customers_manager_settings->PN_CUSTOMERS_MANAGER_get_options();
+                    $pn_customers_manager_allowed_options = array_keys($pn_customers_manager_options);
 
                     // First, add html_multi field IDs to allowed options temporarily
-                    foreach ($PN_CUSTOMERS_MANAGER_options as $option_key => $option_config) {
+                    foreach ($pn_customers_manager_options as $option_key => $option_config) {
                       if (isset($option_config['input']) && $option_config['input'] === 'html_multi' && 
                           isset($option_config['html_multi_fields']) && is_array($option_config['html_multi_fields'])) {
                         foreach ($option_config['html_multi_fields'] as $multi_field) {
                           if (isset($multi_field['id'])) {
-                            $PN_CUSTOMERS_MANAGER_allowed_options[] = $multi_field['id'];
+                            $pn_customers_manager_allowed_options[] = $multi_field['id'];
                           }
                         }
                       }
                     }
 
                     // Process remaining individual fields
-                    foreach ($PN_CUSTOMERS_MANAGER_key_value as $PN_CUSTOMERS_MANAGER_key => $PN_CUSTOMERS_MANAGER_value) {
+                    foreach ($pn_customers_manager_key_value as $pn_customers_manager_key => $pn_customers_manager_value) {
                       // Skip action and ajax type keys
-                      if (in_array($PN_CUSTOMERS_MANAGER_key, ['action', 'PN_CUSTOMERS_MANAGER_ajax_nopriv_type'])) {
+                      if (in_array($pn_customers_manager_key, ['action', 'PN_CUSTOMERS_MANAGER_ajax_nopriv_type'])) {
                         continue;
                       }
 
                       // Ensure option name is prefixed with PN_CUSTOMERS_MANAGER_
                       // Special case: if key is just 'pn-customers-manager', don't add prefix as it's already the main option
-                      if ($PN_CUSTOMERS_MANAGER_key !== 'pn-customers-manager' && strpos((string)$PN_CUSTOMERS_MANAGER_key, 'PN_CUSTOMERS_MANAGER_') !== 0) {
-                        $PN_CUSTOMERS_MANAGER_key = 'PN_CUSTOMERS_MANAGER_' . $PN_CUSTOMERS_MANAGER_key;
+                      if ($pn_customers_manager_key !== 'pn-customers-manager' && strpos((string)$pn_customers_manager_key, 'PN_CUSTOMERS_MANAGER_') !== 0) {
+                        $pn_customers_manager_key = 'PN_CUSTOMERS_MANAGER_' . $pn_customers_manager_key;
                       } else {
                         // Key already has correct prefix
                       }
 
                       // Only update if option is in allowed options list
-                      if (in_array($PN_CUSTOMERS_MANAGER_key, $PN_CUSTOMERS_MANAGER_allowed_options)) {
-                        update_option($PN_CUSTOMERS_MANAGER_key, $PN_CUSTOMERS_MANAGER_value);
+                      if (in_array($pn_customers_manager_key, $pn_customers_manager_allowed_options)) {
+                        update_option($pn_customers_manager_key, $pn_customers_manager_value);
                       }
                     }
                   }
 
-                  do_action('PN_CUSTOMERS_MANAGER_form_save', 0, $PN_CUSTOMERS_MANAGER_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
+                  do_action('PN_CUSTOMERS_MANAGER_form_save', 0, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
                   break;
               }
 
@@ -266,13 +266,13 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
               
               if ($update_list && !empty($post_type)) {
                 switch ($post_type) {
-                  case 'cm_pn_funnel':
+                  case 'pn_cm_funnel':
                     $plugin_post_type_funnel = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
-                    $update_html = $plugin_post_type_funnel->cm_pn_funnel_list();
+                    $update_html = $plugin_post_type_funnel->pn_cm_funnel_list();
                     break;
-                  case 'cm_pn_org':
+                  case 'pn_cm_organization':
                     $plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
-                    $update_html = $plugin_post_type_organization->cm_pn_org_list();
+                    $update_html = $plugin_post_type_organization->pn_cm_organization_list();
                     break;
                 }
               }else{

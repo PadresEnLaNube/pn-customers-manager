@@ -6,9 +6,9 @@
   const { PanelBody, TextControl, ToggleControl, CheckboxControl } = components;
 
   // Campos públicos del CPT Organization obtenidos desde PHP
-  // Se obtienen dinámicamente desde crmpnOrganizationFields (localizado desde PHP)
-  const ORGANIZATION_FIELDS = (typeof crmpnOrganizationFields !== 'undefined' && Array.isArray(crmpnOrganizationFields))
-    ? crmpnOrganizationFields
+  // Se obtienen dinámicamente desde pnCustomersManagerOrganizationFields (localizado desde PHP)
+  const ORGANIZATION_FIELDS = (typeof pnCustomersManagerOrganizationFields !== 'undefined' && Array.isArray(pnCustomersManagerOrganizationFields))
+    ? pnCustomersManagerOrganizationFields
     : [];
 
   registerBlockType('pn-customers-manager/client-form', {

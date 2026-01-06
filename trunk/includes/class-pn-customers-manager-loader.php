@@ -13,6 +13,11 @@
  * @subpackage PN_CUSTOMERS_MANAGER/includes
  * @author     Padres en la Nube
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class PN_CUSTOMERS_MANAGER_Loader {
 	/**
 	 * The array of actions registered with WordPress.

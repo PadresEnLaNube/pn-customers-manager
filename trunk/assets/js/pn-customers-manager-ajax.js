@@ -51,21 +51,16 @@
   }
 
   $(document).ready(function () {
-    console.log('pn-customers-manager AJAX - Form submit handler registered');
-
     // Also bind directly to forms that might be added dynamically
     $(document).on('submit', '.pn-customers-manager-form', function (e) {
-      console.log('pn-customers-manager AJAX - Form submit event triggered');
       e.preventDefault();
       e.stopPropagation();
 
       var cm_pn_form = $(this);
       var pn_customers_manager_btn = cm_pn_form.find('input[type="submit"]');
 
-      console.log('pn-customers-manager AJAX - Form found:', cm_pn_form.attr('id'), 'Submit button:', pn_customers_manager_btn.length);
 
       if (pn_customers_manager_btn.length === 0) {
-        console.log('pn-customers-manager AJAX - No submit button found, aborting');
         return false;
       }
 
@@ -212,17 +207,56 @@
 
       // If form has novalidate or validation passes, trigger submit
       // The submit handler above will catch it
-      console.log('pn-customers-manager AJAX - Submit button clicked, form will submit');
     });
 
     $(document).on('click', '.pn-customers-manager-popup-open-ajax', function (e) {
       e.preventDefault();
 
+      // Check if pn_customers_manager_Popups is available
+      if (typeof pn_customers_manager_Popups === 'undefined' || typeof pn_customers_manager_Popups.open !== 'function') {
+        console.error('pn-customers-manager AJAX - pn_customers_manager_Popups is not defined');
+        return;
+      }
+
       var pn_customers_manager_btn = $(this);
       var pn_customers_manager_ajax_type = pn_customers_manager_btn.attr('data-pn-customers-manager-ajax-type');
-      var cm_pn_funnel_id = pn_customers_manager_btn.closest('.pn-customers-manager-funnel').attr('data-cm_pn_funnel-id') || pn_customers_manager_btn.attr('data-cm_pn_funnel-id') || '';
-      var cm_pn_org_id = pn_customers_manager_btn.closest('.pn-customers-manager-organization').attr('data-cm_pn_org-id') || pn_customers_manager_btn.closest('.pn-customers-manager-cm_pn_org-list-item').attr('data-cm_pn_org-id') || pn_customers_manager_btn.attr('data-cm_pn_org-id') || '';
-      var pn_customers_manager_popup_element = $('#' + pn_customers_manager_btn.attr('data-pn-customers-manager-popup-id'));
+      var pn_cm_funnel_id = pn_customers_manager_btn.closest('.pn-customers-manager-funnel').attr('data-pn_cm_funnel-id') || pn_customers_manager_btn.attr('data-pn_cm_funnel-id') || '';
+      
+      // Get organization ID - try multiple methods to ensure we get it
+      // First try directly from the button attribute (most reliable)
+      var pn_cm_organization_id = pn_customers_manager_btn.attr('data-pn_cm_organization-id') || '';
+      
+      // If not found, try from parent elements
+      if (!pn_cm_organization_id) {
+        pn_cm_organization_id = pn_customers_manager_btn.closest('.pn-customers-manager-pn_cm_organization-list-item').attr('data-pn_cm_organization-id') || '';
+      }
+      if (!pn_cm_organization_id) {
+        pn_cm_organization_id = pn_customers_manager_btn.closest('.pn-customers-manager-organization').attr('data-pn_cm_organization-id') || '';
+      }
+      
+      // Debug log (can be removed later)
+      if (pn_customers_manager_ajax_type === 'pn_cm_organization_edit' && !pn_cm_organization_id) {
+        console.warn('pn-customers-manager AJAX - Organization ID not found for edit action. Button attributes:', {
+          'data-pn_cm_organization-id': pn_customers_manager_btn.attr('data-pn_cm_organization-id'),
+          'data-pn-customers-manager-ajax-type': pn_customers_manager_ajax_type,
+          'closest-list-item': pn_customers_manager_btn.closest('.pn-customers-manager-pn_cm_organization-list-item').attr('data-pn_cm_organization-id'),
+          'closest-organization': pn_customers_manager_btn.closest('.pn-customers-manager-organization').attr('data-pn_cm_organization-id')
+        });
+      }
+      var pn_customers_manager_popup_id = pn_customers_manager_btn.attr('data-pn-customers-manager-popup-id');
+      
+      if (!pn_customers_manager_popup_id) {
+        console.error('pn-customers-manager AJAX - Popup ID not found in data attribute');
+        return;
+      }
+
+      var pn_customers_manager_popup_element = $('#' + pn_customers_manager_popup_id);
+
+      // If popup doesn't exist, create it
+      if (!pn_customers_manager_popup_element.length) {
+        pn_customers_manager_popup_element = $('<div id="' + pn_customers_manager_popup_id + '" class="pn-customers-manager-popup pn-customers-manager-display-none-soft"><div class="pn-customers-manager-popup-overlay"></div><div class="pn-customers-manager-popup-content"><div class="pn-customers-manager-loader-circle-wrapper"><div class="pn-customers-manager-text-align-center"><div class="pn-customers-manager-loader-circle"><div></div><div></div><div></div><div></div></div></div></div></div></div>');
+        $('body').append(pn_customers_manager_popup_element);
+      }
 
       pn_customers_manager_Popups.open(pn_customers_manager_popup_element, {
         beforeShow: function (instance, popup) {
@@ -232,12 +266,11 @@
             pn_customers_manager_ajax_type: pn_customers_manager_ajax_type,
             pn_customers_manager_ajax_nonce: pn_customers_manager_ajax.pn_customers_manager_ajax_nonce,
             pn_customers_manager_get_nonce: pn_customers_manager_action.pn_customers_manager_get_nonce,
-            cm_pn_funnel_id: cm_pn_funnel_id ? cm_pn_funnel_id : '',
-            cm_pn_org_id: cm_pn_org_id ? cm_pn_org_id : '',
+            pn_cm_funnel_id: pn_cm_funnel_id ? pn_cm_funnel_id : '',
+            pn_cm_organization_id: pn_cm_organization_id ? pn_cm_organization_id : '',
           };
 
           // Log the data being sent
-          console.log('pn-customers-manager AJAX - Sending request with data:', data);
 
           $.ajax({
             url: ajax_url,
@@ -245,7 +278,6 @@
             data: data,
             success: function (response) {
               try {
-                console.log('pn-customers-manager AJAX - Raw response received:', response);
 
                 // Check if response is already an object (parsed JSON)
                 var response_json = typeof response === 'object' ? response : null;
@@ -256,7 +288,6 @@
                     response_json = JSON.parse(response);
                   } catch (parseError) {
                     // If parsing fails, assume it's HTML content
-                    console.log('pn-customers-manager AJAX - Response appears to be HTML content');
                     var contentHtml = extractPopupContent(response);
                     pn_customers_manager_popup_element.find('.pn-customers-manager-popup-content').html(contentHtml);
 
@@ -290,7 +321,6 @@
 
                 // Handle JSON response
                 if (response_json.error_key) {
-                  console.log('pn-customers-manager AJAX - Server returned error:', response_json.error_key);
                   var errorMessage = response_json.error_content || response_json.error_message || pn_customers_manager_i18n.an_error_has_occurred;
                   pn_customers_manager_get_main_message(errorMessage);
                   return;
@@ -298,7 +328,6 @@
 
                 // Handle successful JSON response with HTML content
                 if (response_json.html) {
-                  console.log('pn-customers-manager AJAX - HTML content received in JSON response');
                   var contentHtml = extractPopupContent(response_json.html);
                   pn_customers_manager_popup_element.find('.pn-customers-manager-popup-content').html(contentHtml);
 
@@ -327,17 +356,14 @@
                     });
                   }
                 } else {
-                  console.log('pn-customers-manager AJAX - Response missing HTML content');
                   pn_customers_manager_get_main_message(pn_customers_manager_i18n.an_error_has_occurred);
                 }
               } catch (e) {
-                console.log('pn-customers-manager AJAX - Error processing response:', e);
                 console.log('Raw response:', response);
                 pn_customers_manager_get_main_message(pn_customers_manager_i18n.an_error_has_occurred);
               }
             },
             error: function (xhr, status, error) {
-              console.log('pn-customers-manager AJAX - Request failed:', status, error);
               console.log('Response:', xhr.responseText);
               console.log(pn_customers_manager_i18n.an_error_has_occurred);
             }
@@ -378,29 +404,29 @@
 
     // Generate event listeners for duplicate and remove functions based on CPTs
     var pn_customers_manager_cpts_mapping = {
-      'cm_pn_funnel': 'cm_pn_funnel',
-      'cm_pn_org': 'cm_pn_org'
+      'pn_cm_funnel': 'pn_cm_funnel',
+      'pn_cm_organization': 'pn_cm_organization'
     };
 
     // Mapping for data attribute names and AJAX parameter names
     var pn_customers_manager_cpts_data_attr = {
-      'cm_pn_funnel': 'data-cm_pn_funnel-id',
-      'cm_pn_org': 'data-cm_pn_org-id'
+      'pn_cm_funnel': 'data-pn_cm_funnel-id',
+      'pn_cm_organization': 'data-pn_cm_organization-id'
     };
 
     var pn_customers_manager_cpts_ajax_param = {
-      'cm_pn_funnel': 'cm_pn_funnel_id',
-      'cm_pn_org': 'cm_pn_org_id'
+      'pn_cm_funnel': 'pn_cm_funnel_id',
+      'pn_cm_organization': 'pn_cm_organization_id'
     };
 
     var pn_customers_manager_cpts_ajax_type = {
-      'cm_pn_funnel': {
-        'duplicate': 'cm_pn_funnel_duplicate',
-        'remove': 'cm_pn_funnel_remove'
+      'pn_cm_funnel': {
+        'duplicate': 'pn_cm_funnel_duplicate',
+        'remove': 'pn_cm_funnel_remove'
       },
-      'cm_pn_org': {
-        'duplicate': 'cm_pn_org_duplicate',
-        'remove': 'cm_pn_org_remove'
+      'pn_cm_organization': {
+        'duplicate': 'pn_cm_organization_duplicate',
+        'remove': 'pn_cm_organization_remove'
       }
     };
 
@@ -419,7 +445,7 @@
         }
 
         var container_class = '.pn-customers-manager-' + pn_customers_manager_cpts_mapping[cpt] + '-list-wrapper';
-        var list_class = '.pn-customers-manager-' + (cpt_short === 'cm_pn_funnel' ? 'funnels' : 'organizations');
+        var list_class = '.pn-customers-manager-' + (cpt_short === 'pn_cm_funnel' ? 'funnels' : 'organizations');
         var data_attr = pn_customers_manager_cpts_data_attr[cpt_short];
         var ajax_type = pn_customers_manager_cpts_ajax_type[cpt_short]['duplicate'];
         var ajax_param = pn_customers_manager_cpts_ajax_param[cpt_short];

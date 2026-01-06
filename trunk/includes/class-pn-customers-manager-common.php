@@ -10,7 +10,8 @@
  * @subpackage PN_CUSTOMERS_MANAGER/includes
  * @author     Padres en la Nube
  */
-class PN_CUSTOMERS_MANAGER_Common {
+class PN_CUSTOMERS_MANAGER_Common
+{
 
 	/**
 	 * The ID of this plugin.
@@ -37,7 +38,8 @@ class PN_CUSTOMERS_MANAGER_Common {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version) {
+	public function __construct($plugin_name, $version)
+	{
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 	}
@@ -47,33 +49,34 @@ class PN_CUSTOMERS_MANAGER_Common {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_enqueue_styles() {
+	public function PN_CUSTOMERS_MANAGER_enqueue_styles()
+	{
 		if (!wp_style_is($this->plugin_name . '-material-icons-outlined', 'enqueued')) {
 			wp_enqueue_style($this->plugin_name . '-material-icons-outlined', PN_CUSTOMERS_MANAGER_URL . 'assets/css/material-icons-outlined.min.css', [], $this->version, 'all');
-    }
+		}
 
-    if (!wp_style_is($this->plugin_name . '-popups', 'enqueued')) {
+		if (!wp_style_is($this->plugin_name . '-popups', 'enqueued')) {
 			wp_enqueue_style($this->plugin_name . '-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-popups.css', [], $this->version, 'all');
-    }
+		}
 
-    if (!wp_style_is($this->plugin_name . '-selector', 'enqueued')) {
+		if (!wp_style_is($this->plugin_name . '-selector', 'enqueued')) {
 			wp_enqueue_style($this->plugin_name . '-selector', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-selector.css', [], $this->version, 'all');
-    }
+		}
 
-    if (!wp_style_is($this->plugin_name . '-trumbowyg', 'enqueued')) {
+		if (!wp_style_is($this->plugin_name . '-trumbowyg', 'enqueued')) {
 			wp_enqueue_style($this->plugin_name . '-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/css/trumbowyg.min.css', [], $this->version, 'all');
-    }
+		}
 
-    if (!wp_style_is($this->plugin_name . '-tooltipster', 'enqueued')) {
+		if (!wp_style_is($this->plugin_name . '-tooltipster', 'enqueued')) {
 			wp_enqueue_style($this->plugin_name . '-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/css/tooltipster.min.css', [], $this->version, 'all');
-    }
+		}
 
-    if (!wp_style_is($this->plugin_name . '-owl', 'enqueued')) {
+		if (!wp_style_is($this->plugin_name . '-owl', 'enqueued')) {
 			wp_enqueue_style($this->plugin_name . '-owl', PN_CUSTOMERS_MANAGER_URL . 'assets/css/owl.min.css', [], $this->version, 'all');
-    }
+		}
 
 		wp_enqueue_style($this->plugin_name, PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager.css', [], $this->version, 'all');
-		
+
 		// Enqueue dynamic CSS for color customization
 		$this->PN_CUSTOMERS_MANAGER_enqueue_dynamic_colors();
 	}
@@ -83,7 +86,8 @@ class PN_CUSTOMERS_MANAGER_Common {
 	 *
 	 * @since    1.0.0
 	 */
-	private function PN_CUSTOMERS_MANAGER_enqueue_dynamic_colors() {
+	private function PN_CUSTOMERS_MANAGER_enqueue_dynamic_colors()
+	{
 		// Get color values from options, with defaults
 		$colors = [
 			'color_main' => get_option('PN_CUSTOMERS_MANAGER_color_main', '#d45500'),
@@ -135,39 +139,40 @@ class PN_CUSTOMERS_MANAGER_Common {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_enqueue_scripts() {
-    if(!wp_script_is('jquery-ui-sortable', 'enqueued')) {
+	public function PN_CUSTOMERS_MANAGER_enqueue_scripts()
+	{
+		if (!wp_script_is('jquery-ui-sortable', 'enqueued')) {
 			wp_enqueue_script('jquery-ui-sortable');
-    }
+		}
 
-    if(!wp_script_is($this->plugin_name . '-trumbowyg', 'enqueued')) {
+		if (!wp_script_is($this->plugin_name . '-trumbowyg', 'enqueued')) {
 			wp_enqueue_script($this->plugin_name . '-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/js/trumbowyg.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
-    }
+		}
 
 		wp_localize_script($this->plugin_name . '-trumbowyg', 'pn_customers_manager_trumbowyg', [
 			'path' => PN_CUSTOMERS_MANAGER_URL . 'assets/media/trumbowyg-icons.svg',
 		]);
 
-    if(!wp_script_is($this->plugin_name . '-popups', 'enqueued')) {
-      wp_enqueue_script($this->plugin_name . '-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
-    }
+		if (!wp_script_is($this->plugin_name . '-popups', 'enqueued')) {
+			wp_enqueue_script($this->plugin_name . '-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		}
 
-    if(!wp_script_is($this->plugin_name . '-selector', 'enqueued')) {
-      wp_enqueue_script($this->plugin_name . '-selector', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-selector.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
-    }
+		if (!wp_script_is($this->plugin_name . '-selector', 'enqueued')) {
+			wp_enqueue_script($this->plugin_name . '-selector', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-selector.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		}
 
-    if(!wp_script_is($this->plugin_name . '-tooltipster', 'enqueued')) {
+		if (!wp_script_is($this->plugin_name . '-tooltipster', 'enqueued')) {
 			wp_enqueue_script($this->plugin_name . '-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/js/tooltipster.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
-    }
+		}
 
-    if(!wp_script_is($this->plugin_name . '-owl', 'enqueued')) {
+		if (!wp_script_is($this->plugin_name . '-owl', 'enqueued')) {
 			wp_enqueue_script($this->plugin_name . '-owl', PN_CUSTOMERS_MANAGER_URL . 'assets/js/owl.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
-    }
+		}
 
 		wp_enqueue_script($this->plugin_name, PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		wp_enqueue_script($this->plugin_name . '-aux', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-aux.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		wp_enqueue_script($this->plugin_name . '-forms', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-forms.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
-		wp_enqueue_script($this->plugin_name . '-ajax', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-ajax.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		wp_enqueue_script($this->plugin_name . '-ajax', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-ajax.js', [$this->plugin_name . '-popups', 'jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 
 		wp_localize_script($this->plugin_name . '-ajax', 'pn_customers_manager_ajax', [
 			'ajax_url' => admin_url('admin-ajax.php'),
@@ -184,23 +189,23 @@ class PN_CUSTOMERS_MANAGER_Common {
 		}
 
 		// Only process GET parameters if nonce is verified
-		$PN_CUSTOMERS_MANAGER_action = '';
-		$PN_CUSTOMERS_MANAGER_btn_id = '';
-		$PN_CUSTOMERS_MANAGER_popup = '';
-		$PN_CUSTOMERS_MANAGER_tab = '';
+		$pn_customers_manager_action = '';
+		$pn_customers_manager_btn_id = '';
+		$pn_customers_manager_popup = '';
+		$pn_customers_manager_tab = '';
 
 		if ($nonce_verified) {
-			$PN_CUSTOMERS_MANAGER_action = !empty($_GET['PN_CUSTOMERS_MANAGER_action']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_action'])) : '';
-			$PN_CUSTOMERS_MANAGER_btn_id = !empty($_GET['PN_CUSTOMERS_MANAGER_btn_id']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_btn_id'])) : '';
-			$PN_CUSTOMERS_MANAGER_popup = !empty($_GET['PN_CUSTOMERS_MANAGER_popup']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_popup'])) : '';
-			$PN_CUSTOMERS_MANAGER_tab = !empty($_GET['PN_CUSTOMERS_MANAGER_tab']) ? cm_pn_forms::PN_CUSTOMERS_MANAGER_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_tab'])) : '';
+			$pn_customers_manager_action = !empty($_GET['PN_CUSTOMERS_MANAGER_action']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_action'])) : '';
+			$pn_customers_manager_btn_id = !empty($_GET['PN_CUSTOMERS_MANAGER_btn_id']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_btn_id'])) : '';
+			$pn_customers_manager_popup = !empty($_GET['PN_CUSTOMERS_MANAGER_popup']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_popup'])) : '';
+			$pn_customers_manager_tab = !empty($_GET['PN_CUSTOMERS_MANAGER_tab']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_GET['PN_CUSTOMERS_MANAGER_tab'])) : '';
 		}
-		
+
 		wp_localize_script($this->plugin_name, 'pn_customers_manager_action', [
-			'action' => $PN_CUSTOMERS_MANAGER_action,
-			'btn_id' => $PN_CUSTOMERS_MANAGER_btn_id,
-			'popup' => $PN_CUSTOMERS_MANAGER_popup,
-			'tab' => $PN_CUSTOMERS_MANAGER_tab,
+			'action' => $pn_customers_manager_action,
+			'btn_id' => $pn_customers_manager_btn_id,
+			'popup' => $pn_customers_manager_popup,
+			'tab' => $pn_customers_manager_tab,
 			'pn_customers_manager_get_nonce' => wp_create_nonce('pn-customers-manager-get-nonce'),
 		]);
 
@@ -266,20 +271,21 @@ class PN_CUSTOMERS_MANAGER_Common {
 		PN_CUSTOMERS_MANAGER_Selector::instance();
 	}
 
-  public function PN_CUSTOMERS_MANAGER_body_classes($classes) {
-	  $classes[] = 'pn-customers-manager-body';
+	public function PN_CUSTOMERS_MANAGER_body_classes($classes)
+	{
+		$classes[] = 'pn-customers-manager-body';
 
-	  if (!is_user_logged_in()) {
-      $classes[] = 'pn-customers-manager-body-unlogged';
-    } else {
-      $classes[] = 'pn-customers-manager-body-logged-in';
+		if (!is_user_logged_in()) {
+			$classes[] = 'pn-customers-manager-body-unlogged';
+		} else {
+			$classes[] = 'pn-customers-manager-body-logged-in';
 
-      $user = new WP_User(get_current_user_id());
-      foreach ($user->roles as $role) {
-        $classes[] = 'pn-customers-manager-body-' . $role;
-      }
-    }
+			$user = new WP_User(get_current_user_id());
+			foreach ($user->roles as $role) {
+				$classes[] = 'pn-customers-manager-body-' . $role;
+			}
+		}
 
-	  return $classes;
-  }
+		return $classes;
+	}
 }

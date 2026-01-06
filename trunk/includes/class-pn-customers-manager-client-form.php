@@ -45,28 +45,28 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
     }
 
     $organization_post_type = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
-    $all_fields = $organization_post_type->cm_pn_org_get_fields_meta(0);
+    $all_fields = $organization_post_type->pn_cm_organization_get_fields_meta(0);
 
     $available_fields = [];
 
     // Fields to exclude from public form
     $excluded_fields = [
-      'cm_pn_org_section_basic_start',
-      'cm_pn_org_section_basic_end',
-      'cm_pn_org_section_advanced_start',
-      'cm_pn_org_section_advanced_end',
-      'cm_pn_org_section_funnel_start',
-      'cm_pn_org_section_funnel_end',
-      'cm_pn_org_contacts_block', // HTML field
-      'cm_pn_org_owner', // Requires user selection
-      'cm_pn_org_collaborators', // Requires user selection
-      'cm_pn_org_funnel_id', // Requires funnel selection
-      'cm_pn_org_funnel_stage', // Requires funnel selection
-      'cm_pn_org_funnel_status', // Requires funnel selection
-      'cm_pn_org_last_contact_date', // Internal field
-      'cm_pn_org_last_contact_channel', // Internal field
-      'cm_pn_org_next_action', // Internal field
-      'cm_pn_org_form', // Hidden field
+      'pn_cm_organization_section_basic_start',
+      'pn_cm_organization_section_basic_end',
+      'pn_cm_organization_section_advanced_start',
+      'pn_cm_organization_section_advanced_end',
+      'pn_cm_organization_section_funnel_start',
+      'pn_cm_organization_section_funnel_end',
+      'pn_cm_organization_contacts_block', // HTML field
+      'pn_cm_organization_owner', // Requires user selection
+      'pn_cm_organization_collaborators', // Requires user selection
+      'pn_cm_organization_funnel_id', // Requires funnel selection
+      'pn_cm_organization_funnel_stage', // Requires funnel selection
+      'pn_cm_organization_funnel_status', // Requires funnel selection
+      'pn_cm_organization_last_contact_date', // Internal field
+      'pn_cm_organization_last_contact_channel', // Internal field
+      'pn_cm_organization_next_action', // Internal field
+      'pn_cm_organization_form', // Hidden field
       'PN_CUSTOMERS_MANAGER_ajax_nonce', // Nonce field
     ];
 
@@ -124,7 +124,7 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
     $organization_fields = self::get_available_organization_fields();
     wp_localize_script(
       'pn-customers-manager-client-form-block',
-      'crmpnOrganizationFields',
+      'pnCustomersManagerOrganizationFields',
       $organization_fields
     );
 
@@ -349,7 +349,7 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
 
       <form id="<?php echo esc_attr($form_id); ?>" class="pn-customers-manager-form pn-customers-manager-client-form" method="post" novalidate>
         <?php foreach ($fields as $field): ?>
-          <?php echo wp_kses(cm_pn_forms::PN_CUSTOMERS_MANAGER_input_wrapper_builder($field, 'post', 0, 0, 'full'), PN_CUSTOMERS_MANAGER_KSES); ?>
+          <?php echo wp_kses(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($field, 'post', 0, 0, 'full'), PN_CUSTOMERS_MANAGER_KSES); ?>
         <?php endforeach; ?>
       </form>
     </div>
@@ -367,7 +367,7 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
 
     // Campos básicos obligatorios: título y descripción de la organización.
     $fields[] = [
-      'id'          => 'cm_pn_org_title',
+      'id'          => 'pn_cm_organization_title',
       'label'       => esc_html__('Título de la organización', 'pn-customers-manager'),
       'input'       => 'input',
       'type'        => 'text',
@@ -376,7 +376,7 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
     ];
 
     $fields[] = [
-      'id'          => 'cm_pn_org_description',
+      'id'          => 'pn_cm_organization_description',
       'label'       => esc_html__('Descripción de la organización', 'pn-customers-manager'),
       'input'       => 'textarea',
       'required'    => true,
@@ -388,31 +388,31 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
 
     // Mapa de campos públicos permitidos basados en el CPT Organization.
     $allowed_meta_fields = [
-      'cm_pn_org_legal_name',
-      'cm_pn_org_trade_name',
-      'cm_pn_org_segment',
-      'cm_pn_org_industry',
-      'cm_pn_org_team_size',
-      'cm_pn_org_annual_revenue',
-      'cm_pn_org_phone',
-      'cm_pn_org_email',
-      'cm_pn_org_website',
-      'cm_pn_org_linkedin',
-      'cm_pn_org_country',
-      'cm_pn_org_region',
-      'cm_pn_org_city',
-      'cm_pn_org_address',
-      'cm_pn_org_postal_code',
-      'cm_pn_org_lead_source',
-      'cm_pn_org_lifecycle_stage',
-      'cm_pn_org_priority',
-      'cm_pn_org_health',
-      'cm_pn_org_lead_score',
-      'cm_pn_org_billing_email',
-      'cm_pn_org_billing_phone',
-      'cm_pn_org_billing_address',
-      'cm_pn_org_tags',
-      'cm_pn_org_notes',
+      'pn_cm_organization_legal_name',
+      'pn_cm_organization_trade_name',
+      'pn_cm_organization_segment',
+      'pn_cm_organization_industry',
+      'pn_cm_organization_team_size',
+      'pn_cm_organization_annual_revenue',
+      'pn_cm_organization_phone',
+      'pn_cm_organization_email',
+      'pn_cm_organization_website',
+      'pn_cm_organization_linkedin',
+      'pn_cm_organization_country',
+      'pn_cm_organization_region',
+      'pn_cm_organization_city',
+      'pn_cm_organization_address',
+      'pn_cm_organization_postal_code',
+      'pn_cm_organization_lead_source',
+      'pn_cm_organization_lifecycle_stage',
+      'pn_cm_organization_priority',
+      'pn_cm_organization_health',
+      'pn_cm_organization_lead_score',
+      'pn_cm_organization_billing_email',
+      'pn_cm_organization_billing_phone',
+      'pn_cm_organization_billing_address',
+      'pn_cm_organization_tags',
+      'pn_cm_organization_notes',
     ];
 
     if (!empty($selected_org_fields)) {
@@ -421,7 +421,7 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
 
     if (!empty($allowed_meta_fields) && class_exists('PN_CUSTOMERS_MANAGER_Post_Type_organization')) {
       $organization_cpt = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
-      $all_meta_fields  = $organization_cpt->cm_pn_org_get_fields_meta(0);
+      $all_meta_fields  = $organization_cpt->pn_cm_organization_get_fields_meta(0);
 
       foreach ($all_meta_fields as $meta_field) {
         if (
@@ -442,7 +442,7 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
 
     // Campos ocultos necesarios para el sistema de formularios.
     $fields[] = [
-      'id'    => 'cm_pn_org_form',
+      'id'    => 'pn_cm_organization_form',
       'input' => 'input',
       'type'  => 'hidden',
       'value' => '1',
@@ -454,14 +454,14 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
       'type'  => 'nonce',
     ];
 
-    // Botón de envío: crea una nueva organización (post_new) del CPT cm_pn_org.
+    // Botón de envío: crea una nueva organización (post_new) del CPT pn_cm_organization.
     $fields[] = [
-      'id'        => 'cm_pn_org_form_submit',
+      'id'        => 'pn_cm_organization_form_submit',
       'input'     => 'input',
       'type'      => 'submit',
       'value'     => esc_html__('Crear organización', 'pn-customers-manager'),
       'subtype'   => 'post_new',
-      'post_type' => 'cm_pn_org',
+      'post_type' => 'pn_cm_organization',
     ];
 
     return $fields;

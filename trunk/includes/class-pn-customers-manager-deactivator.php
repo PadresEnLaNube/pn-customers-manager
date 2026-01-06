@@ -32,23 +32,23 @@ class PN_CUSTOMERS_MANAGER_Deactivator {
 	public static function PN_CUSTOMERS_MANAGER_deactivate() {
 		$plugin_post = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
 		
-		if (get_option('PN_CUSTOMERS_MANAGER_options_remove') == 'on') {
+		if (get_option('pn_customers_manager_options_remove') == 'on') {
       remove_role('PN_CUSTOMERS_MANAGER_role_manager');
       remove_role('PN_CUSTOMERS_MANAGER_role_client');
 
-      $cm_pn_funnel = get_posts(['fields' => 'ids', 'numberposts' => -1, 'post_type' => 'cm_pn_funnel', 'post_status' => 'any', ]);
+      $pn_cm_funnel = get_posts(['fields' => 'ids', 'numberposts' => -1, 'post_type' => 'pn_cm_funnel', 'post_status' => 'any', ]);
 
-      if (!empty($cm_pn_funnel)) {
-        foreach ($cm_pn_funnel as $post_id) {
+      if (!empty($pn_cm_funnel)) {
+        foreach ($pn_cm_funnel as $post_id) {
           wp_delete_post($post_id, true);
         }
       }
 
-      foreach ($plugin_post->PN_CUSTOMERS_MANAGER_get_fields() as $PN_CUSTOMERS_MANAGER_option) {
-        delete_option($PN_CUSTOMERS_MANAGER_option['id']);
+      foreach ($plugin_post->PN_CUSTOMERS_MANAGER_get_fields() as $pn_customers_manager_option) {
+        delete_option($pn_customers_manager_option['id']);
       }
     }
 
-    update_option('PN_CUSTOMERS_MANAGER_options_changed', true);
+    update_option('pn_customers_manager_options_changed', true);
 	}
 }

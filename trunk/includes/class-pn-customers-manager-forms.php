@@ -10,7 +10,7 @@
  * @subpackage PN_CUSTOMERS_MANAGER/includes
  * @author     Padres en la Nube
  */
-class cm_pn_forms {
+class PN_CUSTOMERS_MANAGER_Forms {
   /**
    * Plaform forms.
    *
@@ -21,44 +21,44 @@ class cm_pn_forms {
    * Get the current value of a field based on its type and storage
    * 
    * @param string $field_id The field ID
-   * @param string $PN_CUSTOMERS_MANAGER_type The type of field (user, post, option)
-   * @param int $PN_CUSTOMERS_MANAGER_id The ID of the user/post/option
-   * @param int $PN_CUSTOMERS_MANAGER_meta_array Whether the field is part of a meta array
-   * @param int $PN_CUSTOMERS_MANAGER_array_index The index in the meta array
-   * @param array $PN_CUSTOMERS_MANAGER_input The input array containing field configuration
+   * @param string $pn_customers_manager_type The type of field (user, post, option)
+   * @param int $pn_customers_manager_id The ID of the user/post/option
+   * @param int $pn_customers_manager_meta_array Whether the field is part of a meta array
+   * @param int $pn_customers_manager_array_index The index in the meta array
+   * @param array $pn_customers_manager_input The input array containing field configuration
    * @return mixed The current value of the field
    */
-  private static function PN_CUSTOMERS_MANAGER_get_field_value($field_id, $PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id = 0, $PN_CUSTOMERS_MANAGER_meta_array = 0, $PN_CUSTOMERS_MANAGER_array_index = 0, $PN_CUSTOMERS_MANAGER_input = []) {
+  private static function PN_CUSTOMERS_MANAGER_get_field_value($field_id, $pn_customers_manager_type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0, $pn_customers_manager_input = []) {
     $current_value = '';
 
-    if ($PN_CUSTOMERS_MANAGER_meta_array) {
-      switch ($PN_CUSTOMERS_MANAGER_type) {
+    if ($pn_customers_manager_meta_array) {
+      switch ($pn_customers_manager_type) {
         case 'user':
-          $meta = get_user_meta($PN_CUSTOMERS_MANAGER_id, $field_id, true);
-          if (is_array($meta) && isset($meta[$PN_CUSTOMERS_MANAGER_array_index])) {
-            $current_value = $meta[$PN_CUSTOMERS_MANAGER_array_index];
+          $meta = get_user_meta($pn_customers_manager_id, $field_id, true);
+          if (is_array($meta) && isset($meta[$pn_customers_manager_array_index])) {
+            $current_value = $meta[$pn_customers_manager_array_index];
           }
           break;
         case 'post':
-          $meta = get_post_meta($PN_CUSTOMERS_MANAGER_id, $field_id, true);
-          if (is_array($meta) && isset($meta[$PN_CUSTOMERS_MANAGER_array_index])) {
-            $current_value = $meta[$PN_CUSTOMERS_MANAGER_array_index];
+          $meta = get_post_meta($pn_customers_manager_id, $field_id, true);
+          if (is_array($meta) && isset($meta[$pn_customers_manager_array_index])) {
+            $current_value = $meta[$pn_customers_manager_array_index];
           }
           break;
         case 'option':
           $option = get_option($field_id);
-          if (is_array($option) && isset($option[$PN_CUSTOMERS_MANAGER_array_index])) {
-            $current_value = $option[$PN_CUSTOMERS_MANAGER_array_index];
+          if (is_array($option) && isset($option[$pn_customers_manager_array_index])) {
+            $current_value = $option[$pn_customers_manager_array_index];
           }
           break;
       }
     } else {
-      switch ($PN_CUSTOMERS_MANAGER_type) {
+      switch ($pn_customers_manager_type) {
         case 'user':
-          $current_value = get_user_meta($PN_CUSTOMERS_MANAGER_id, $field_id, true);
+          $current_value = get_user_meta($pn_customers_manager_id, $field_id, true);
           break;
         case 'post':
-          $current_value = get_post_meta($PN_CUSTOMERS_MANAGER_id, $field_id, true);
+          $current_value = get_post_meta($pn_customers_manager_id, $field_id, true);
           break;
         case 'option':
           $current_value = get_option($field_id);
@@ -68,37 +68,37 @@ class cm_pn_forms {
 
     // If no value is found and there's a default value in the input config, use it
     // BUT NOT for checkboxes in multiple fields, as empty string and 'off' are valid states (unchecked)
-    if (empty($current_value) && !empty($PN_CUSTOMERS_MANAGER_input['value'])) {
+    if (empty($current_value) && !empty($pn_customers_manager_input['value'])) {
       // For checkboxes in multiple fields, don't override empty values or 'off' with default
-      if (!($PN_CUSTOMERS_MANAGER_meta_array && isset($PN_CUSTOMERS_MANAGER_input['type']) && $PN_CUSTOMERS_MANAGER_input['type'] === 'checkbox')) {
-        $current_value = $PN_CUSTOMERS_MANAGER_input['value'];
+      if (!($pn_customers_manager_meta_array && isset($pn_customers_manager_input['type']) && $pn_customers_manager_input['type'] === 'checkbox')) {
+        $current_value = $pn_customers_manager_input['value'];
       }
     }
     
     // For checkboxes in multiple fields, normalize 'off' to empty string for display
-    if ($PN_CUSTOMERS_MANAGER_meta_array && isset($PN_CUSTOMERS_MANAGER_input['type']) && $PN_CUSTOMERS_MANAGER_input['type'] === 'checkbox' && $current_value === 'off') {
+    if ($pn_customers_manager_meta_array && isset($pn_customers_manager_input['type']) && $pn_customers_manager_input['type'] === 'checkbox' && $current_value === 'off') {
       $current_value = '';
     }
 
     return $current_value;
   }
 
-  public static function PN_CUSTOMERS_MANAGER_input_builder($PN_CUSTOMERS_MANAGER_input, $PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id = 0, $disabled = 0, $PN_CUSTOMERS_MANAGER_meta_array = 0, $PN_CUSTOMERS_MANAGER_array_index = 0) {
+  public static function PN_CUSTOMERS_MANAGER_input_builder($pn_customers_manager_input, $pn_customers_manager_type, $pn_customers_manager_id = 0, $disabled = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0) {
     // Get the current value using the new function
-    $PN_CUSTOMERS_MANAGER_value = self::PN_CUSTOMERS_MANAGER_get_field_value($PN_CUSTOMERS_MANAGER_input['id'], $PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_meta_array, $PN_CUSTOMERS_MANAGER_array_index, $PN_CUSTOMERS_MANAGER_input);
+    $pn_customers_manager_value = self::PN_CUSTOMERS_MANAGER_get_field_value($pn_customers_manager_input['id'], $pn_customers_manager_type, $pn_customers_manager_id, $pn_customers_manager_meta_array, $pn_customers_manager_array_index, $pn_customers_manager_input);
 
-    $PN_CUSTOMERS_MANAGER_parent_block = (!empty($PN_CUSTOMERS_MANAGER_input['parent']) ? 'data-pn-customers-manager-parent="' . $PN_CUSTOMERS_MANAGER_input['parent'] . '"' : '') . ' ' . (!empty($PN_CUSTOMERS_MANAGER_input['parent_option']) ? 'data-pn-customers-manager-parent-option="' . $PN_CUSTOMERS_MANAGER_input['parent_option'] . '"' : '');
+    $pn_customers_manager_parent_block = (!empty($pn_customers_manager_input['parent']) ? 'data-pn-customers-manager-parent="' . $pn_customers_manager_input['parent'] . '"' : '') . ' ' . (!empty($pn_customers_manager_input['parent_option']) ? 'data-pn-customers-manager-parent-option="' . $pn_customers_manager_input['parent_option'] . '"' : '');
 
-    switch ($PN_CUSTOMERS_MANAGER_input['input']) {
+    switch ($pn_customers_manager_input['input']) {
       case 'input':        
-        switch ($PN_CUSTOMERS_MANAGER_input['type']) {
+        switch ($pn_customers_manager_input['type']) {
           case 'file':
             ?>
-              <?php if (empty($PN_CUSTOMERS_MANAGER_value)): ?>
+              <?php if (empty($pn_customers_manager_value)): ?>
                 <p class="pn-customers-manager-m-10"><?php esc_html_e('No file found', 'pn-customers-manager'); ?></p>
               <?php else: ?>
                 <p class="pn-customers-manager-m-10">
-                  <a href="<?php echo esc_url(get_post_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['id'], true)['url']); ?>" target="_blank"><?php echo esc_html(basename(get_post_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['id'], true)['url'])); ?></a>
+                  <a href="<?php echo esc_url(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['id'], true)['url']); ?>" target="_blank"><?php echo esc_html(basename(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['id'], true)['url'])); ?></a>
                 </p>
               <?php endif ?>
             <?php
@@ -106,7 +106,7 @@ class cm_pn_forms {
           case 'checkbox':
             ?>
               <label class="pn-customers-manager-switch">
-                <input id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" class="<?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?> pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-customers-manager-field" type="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['type']); ?>" <?php echo $PN_CUSTOMERS_MANAGER_value == 'on' ? 'checked="checked"' : ''; ?> <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?> <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] ? 'multiple' : ''); ?> <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
+                <input id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" class="<?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?> pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-customers-manager-field" type="<?php echo esc_attr($pn_customers_manager_input['type']); ?>" <?php echo $pn_customers_manager_value == 'on' ? 'checked="checked"' : ''; ?> <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?> <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 'multiple' : ''); ?> <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
                 <span class="pn-customers-manager-slider pn-customers-manager-round"></span>
               </label>
             <?php
@@ -114,18 +114,18 @@ class cm_pn_forms {
           case 'radio':
             ?>
               <div class="pn-customers-manager-input-radio-wrapper">
-                <?php if (!empty($PN_CUSTOMERS_MANAGER_input['radio_options'])): ?>
-                  <?php foreach ($PN_CUSTOMERS_MANAGER_input['radio_options'] as $radio_option): ?>
+                <?php if (!empty($pn_customers_manager_input['radio_options'])): ?>
+                  <?php foreach ($pn_customers_manager_input['radio_options'] as $radio_option): ?>
                     <div class="pn-customers-manager-input-radio-item">
                       <label for="<?php echo esc_attr($radio_option['id']); ?>">
                         <?php echo wp_kses_post(wp_specialchars_decode($radio_option['label'])); ?>
                         
-                        <input type="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['type']); ?>"
+                        <input type="<?php echo esc_attr($pn_customers_manager_input['type']); ?>"
                           id="<?php echo esc_attr($radio_option['id']); ?>"
-                          name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>"
+                          name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>"
                           value="<?php echo esc_attr($radio_option['value']); ?>"
-                          <?php echo $PN_CUSTOMERS_MANAGER_value == $radio_option['value'] ? 'checked="checked"' : ''; ?>
-                          <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == 'true') ? 'required' : ''); ?>>
+                          <?php echo $pn_customers_manager_value == $radio_option['value'] ? 'checked="checked"' : ''; ?>
+                          <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == 'true') ? 'required' : ''); ?>>
 
                         <div class="pn-customers-manager-radio-control"></div>
                       </label>
@@ -139,77 +139,77 @@ class cm_pn_forms {
             ?>
               <div class="pn-customers-manager-input-range-wrapper">
                 <div class="pn-customers-manager-width-100-percent">
-                  <?php if (!empty($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_min'])): ?>
-                    <p class="pn-customers-manager-input-range-label-min"><?php echo esc_html($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_min']); ?></p>
+                  <?php if (!empty($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_min'])): ?>
+                    <p class="pn-customers-manager-input-range-label-min"><?php echo esc_html($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_min']); ?></p>
                   <?php endif ?>
 
-                  <?php if (!empty($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_max'])): ?>
-                    <p class="pn-customers-manager-input-range-label-max"><?php echo esc_html($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_max']); ?></p>
+                  <?php if (!empty($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_max'])): ?>
+                    <p class="pn-customers-manager-input-range-label-max"><?php echo esc_html($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_max']); ?></p>
                   <?php endif ?>
                 </div>
 
-                <input type="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['type']); ?>" id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" class="pn-customers-manager-input-range <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?> <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo (isset($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_max']) ? 'max=' . esc_attr($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_max']) : ''); ?> <?php echo (isset($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_min']) ? 'min=' . esc_attr($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_min']) : ''); ?> <?php echo (((array_key_exists('step', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['step'] != '')) ? 'step="' . esc_attr($PN_CUSTOMERS_MANAGER_input['step']) . '"' : ''); ?> <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] ? 'multiple' : ''); ?> value="<?php echo (!empty($PN_CUSTOMERS_MANAGER_input['button_text']) ? esc_html($PN_CUSTOMERS_MANAGER_input['button_text']) : esc_html($PN_CUSTOMERS_MANAGER_value)); ?>"/>
+                <input type="<?php echo esc_attr($pn_customers_manager_input['type']); ?>" id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" class="pn-customers-manager-input-range <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?> <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo (isset($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_max']) ? 'max=' . esc_attr($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_max']) : ''); ?> <?php echo (isset($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_min']) ? 'min=' . esc_attr($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_min']) : ''); ?> <?php echo (((array_key_exists('step', $pn_customers_manager_input) && $pn_customers_manager_input['step'] != '')) ? 'step="' . esc_attr($pn_customers_manager_input['step']) . '"' : ''); ?> <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 'multiple' : ''); ?> value="<?php echo (!empty($pn_customers_manager_input['button_text']) ? esc_html($pn_customers_manager_input['button_text']) : esc_html($pn_customers_manager_value)); ?>"/>
                 <h3 class="pn-customers-manager-input-range-output"></h3>
               </div>
             <?php
             break;
           case 'stars':
-            $PN_CUSTOMERS_MANAGER_stars = !empty($PN_CUSTOMERS_MANAGER_input['stars_number']) ? $PN_CUSTOMERS_MANAGER_input['stars_number'] : 5;
+            $pn_customers_manager_stars = !empty($pn_customers_manager_input['stars_number']) ? $pn_customers_manager_input['stars_number'] : 5;
             ?>
               <div class="pn-customers-manager-input-stars-wrapper">
                 <div class="pn-customers-manager-width-100-percent">
-                  <?php if (!empty($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_min'])): ?>
-                    <p class="pn-customers-manager-input-stars-label-min"><?php echo esc_html($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_min']); ?></p>
+                  <?php if (!empty($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_min'])): ?>
+                    <p class="pn-customers-manager-input-stars-label-min"><?php echo esc_html($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_min']); ?></p>
                   <?php endif ?>
 
-                  <?php if (!empty($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_max'])): ?>
-                    <p class="pn-customers-manager-input-stars-label-max"><?php echo esc_html($PN_CUSTOMERS_MANAGER_input['PN_CUSTOMERS_MANAGER_label_max']); ?></p>
+                  <?php if (!empty($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_max'])): ?>
+                    <p class="pn-customers-manager-input-stars-label-max"><?php echo esc_html($pn_customers_manager_input['PN_CUSTOMERS_MANAGER_label_max']); ?></p>
                   <?php endif ?>
                 </div>
 
                 <div class="pn-customers-manager-input-stars pn-customers-manager-text-align-center pn-customers-manager-pt-20">
-                  <?php foreach (range(1, $PN_CUSTOMERS_MANAGER_stars) as $index => $star): ?>
+                  <?php foreach (range(1, $pn_customers_manager_stars) as $index => $star): ?>
                     <i class="material-icons-outlined pn-customers-manager-input-star">
-                      <?php echo ($index < intval($PN_CUSTOMERS_MANAGER_value)) ? 'star' : 'star_outlined'; ?>
+                      <?php echo ($index < intval($pn_customers_manager_value)) ? 'star' : 'star_outlined'; ?>
                     </i>
                   <?php endforeach ?>
                 </div>
 
-                <input type="number" <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?> <?php echo ((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') ? 'disabled' : ''); ?> id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" class="pn-customers-manager-input-hidden-stars <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" min="1" max="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_stars) ?>" value="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_value); ?>">
+                <input type="number" <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?> <?php echo ((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') ? 'disabled' : ''); ?> id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" class="pn-customers-manager-input-hidden-stars <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" min="1" max="<?php echo esc_attr($pn_customers_manager_stars) ?>" value="<?php echo esc_attr($pn_customers_manager_value); ?>">
               </div>
             <?php
             break;
           case 'submit':
             $post_id_value = '';
-            if (!empty($PN_CUSTOMERS_MANAGER_input['post_id'])) {
-              $post_id_value = $PN_CUSTOMERS_MANAGER_input['post_id'];
-            } elseif (!empty($PN_CUSTOMERS_MANAGER_id) && $PN_CUSTOMERS_MANAGER_type === 'post') {
-              $post_id_value = $PN_CUSTOMERS_MANAGER_id;
+            if (!empty($pn_customers_manager_input['post_id'])) {
+              $post_id_value = $pn_customers_manager_input['post_id'];
+            } elseif (!empty($pn_customers_manager_id) && $pn_customers_manager_type === 'post') {
+              $post_id_value = $pn_customers_manager_id;
             } elseif (!empty(get_the_ID())) {
               $post_id_value = get_the_ID();
             }
-            $post_type_value = !empty($PN_CUSTOMERS_MANAGER_input['post_type']) ? $PN_CUSTOMERS_MANAGER_input['post_type'] : '';
+            $post_type_value = !empty($pn_customers_manager_input['post_type']) ? $pn_customers_manager_input['post_type'] : '';
             ?>
               <div class="pn-customers-manager-text-align-right">
-                <input type="submit" value="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['value']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" class="pn-customers-manager-btn" data-pn-customers-manager-type="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_type); ?>" data-pn-customers-manager-subtype="<?php echo ((array_key_exists('subtype', $PN_CUSTOMERS_MANAGER_input)) ? esc_attr($PN_CUSTOMERS_MANAGER_input['subtype']) : ''); ?>" data-pn-customers-manager-user-id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_id); ?>" data-pn-customers-manager-post-id="<?php echo esc_attr($post_id_value); ?>" <?php echo !empty($post_type_value) ? 'data-pn-customers-manager-post-type="' . esc_attr($post_type_value) . '"' : ''; ?>/><?php esc_html(PN_CUSTOMERS_MANAGER_Data::PN_CUSTOMERS_MANAGER_loader()); ?>
+                <input type="submit" value="<?php echo esc_attr($pn_customers_manager_input['value']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-btn" data-pn-customers-manager-type="<?php echo esc_attr($pn_customers_manager_type); ?>" data-pn-customers-manager-subtype="<?php echo ((array_key_exists('subtype', $pn_customers_manager_input)) ? esc_attr($pn_customers_manager_input['subtype']) : ''); ?>" data-pn-customers-manager-user-id="<?php echo esc_attr($pn_customers_manager_id); ?>" data-pn-customers-manager-post-id="<?php echo esc_attr($post_id_value); ?>" <?php echo !empty($post_type_value) ? 'data-pn-customers-manager-post-type="' . esc_attr($post_type_value) . '"' : ''; ?>/><?php esc_html(PN_CUSTOMERS_MANAGER_Data::PN_CUSTOMERS_MANAGER_loader()); ?>
               </div>
             <?php
             break;
           case 'hidden':
             ?>
-              <input type="hidden" id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" value="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_value); ?>" <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] == 'true' ? 'multiple' : ''); ?>>
+              <input type="hidden" id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" value="<?php echo esc_attr($pn_customers_manager_value); ?>" <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] == 'true' ? 'multiple' : ''); ?>>
             <?php
             break;
           case 'nonce':
             ?>
-              <input type="hidden" id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" value="<?php echo esc_attr(wp_create_nonce('pn-customers-manager-nonce')); ?>">
+              <input type="hidden" id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" value="<?php echo esc_attr(wp_create_nonce('pn-customers-manager-nonce')); ?>">
             <?php
             break;
           case 'password':
             ?>
               <div class="pn-customers-manager-password-checker">
                 <div class="pn-customers-manager-password-input pn-customers-manager-position-relative">
-                  <input id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] == 'true') ? '[]' : ''); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] == 'true') ? '[]' : ''); ?>" <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] == 'true' ? 'multiple' : ''); ?> class="pn-customers-manager-field pn-customers-manager-password-strength <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" type="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['type']); ?>" <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == 'true') ? 'required' : ''); ?> <?php echo ((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') ? 'disabled' : ''); ?> value="<?php echo (!empty($PN_CUSTOMERS_MANAGER_input['button_text']) ? esc_html($PN_CUSTOMERS_MANAGER_input['button_text']) : esc_attr($PN_CUSTOMERS_MANAGER_value)); ?>" placeholder="<?php echo (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['placeholder']) : ''); ?>" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>/>
+                  <input id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] == 'true') ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] == 'true') ? '[]' : ''); ?>" <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] == 'true' ? 'multiple' : ''); ?> class="pn-customers-manager-field pn-customers-manager-password-strength <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" type="<?php echo esc_attr($pn_customers_manager_input['type']); ?>" <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == 'true') ? 'required' : ''); ?> <?php echo ((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') ? 'disabled' : ''); ?> value="<?php echo (!empty($pn_customers_manager_input['button_text']) ? esc_html($pn_customers_manager_input['button_text']) : esc_attr($pn_customers_manager_value)); ?>" placeholder="<?php echo (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['placeholder']) : ''); ?>" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>/>
 
                   <a href="#" class="pn-customers-manager-show-pass pn-customers-manager-cursor-pointer pn-customers-manager-display-none-soft">
                     <i class="material-icons-outlined pn-customers-manager-font-size-20">visibility</i>
@@ -246,65 +246,65 @@ class cm_pn_forms {
             break;
           case 'color':
             ?>
-              <input id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] ? 'multiple' : ''); ?> class="pn-customers-manager-field <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" type="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['type']); ?>" <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?> <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> value="<?php echo (!empty($PN_CUSTOMERS_MANAGER_value) ? esc_attr($PN_CUSTOMERS_MANAGER_value) : '#000000'); ?>" placeholder="<?php echo (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['placeholder']) : ''); ?>" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>/>
+              <input id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 'multiple' : ''); ?> class="pn-customers-manager-field <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" type="<?php echo esc_attr($pn_customers_manager_input['type']); ?>" <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?> <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> value="<?php echo (!empty($pn_customers_manager_value) ? esc_attr($pn_customers_manager_value) : '#000000'); ?>" placeholder="<?php echo (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['placeholder']) : ''); ?>" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>/>
             <?php
             break;
           default:
             ?>
               <input 
                 <?php /* ID and name attributes */ ?>
-                id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" 
-                name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>"
+                id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" 
+                name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>"
                 
                 <?php /* Type and styling */ ?>
-                class="pn-customers-manager-field <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" 
-                type="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['type']); ?>"
+                class="pn-customers-manager-field <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" 
+                type="<?php echo esc_attr($pn_customers_manager_input['type']); ?>"
                 
                 <?php /* State attributes */ ?>
-                <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?>
-                <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>
-                <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] ? 'multiple' : ''); ?>
+                <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?>
+                <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>
+                <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 'multiple' : ''); ?>
                 
                 <?php /* Validation and limits */ ?>
-                <?php echo (((array_key_exists('step', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['step'] != '')) ? 'step="' . esc_attr($PN_CUSTOMERS_MANAGER_input['step']) . '"' : ''); ?>
-                <?php echo (isset($PN_CUSTOMERS_MANAGER_input['max']) ? 'max="' . esc_attr($PN_CUSTOMERS_MANAGER_input['max']) . '"' : ''); ?>
-                <?php echo (isset($PN_CUSTOMERS_MANAGER_input['min']) ? 'min="' . esc_attr($PN_CUSTOMERS_MANAGER_input['min']) . '"' : ''); ?>
-                <?php echo (isset($PN_CUSTOMERS_MANAGER_input['maxlength']) ? 'maxlength="' . esc_attr($PN_CUSTOMERS_MANAGER_input['maxlength']) . '"' : ''); ?>
-                <?php echo (isset($PN_CUSTOMERS_MANAGER_input['pattern']) ? 'pattern="' . esc_attr($PN_CUSTOMERS_MANAGER_input['pattern']) . '"' : ''); ?>
+                <?php echo (((array_key_exists('step', $pn_customers_manager_input) && $pn_customers_manager_input['step'] != '')) ? 'step="' . esc_attr($pn_customers_manager_input['step']) . '"' : ''); ?>
+                <?php echo (isset($pn_customers_manager_input['max']) ? 'max="' . esc_attr($pn_customers_manager_input['max']) . '"' : ''); ?>
+                <?php echo (isset($pn_customers_manager_input['min']) ? 'min="' . esc_attr($pn_customers_manager_input['min']) . '"' : ''); ?>
+                <?php echo (isset($pn_customers_manager_input['maxlength']) ? 'maxlength="' . esc_attr($pn_customers_manager_input['maxlength']) . '"' : ''); ?>
+                <?php echo (isset($pn_customers_manager_input['pattern']) ? 'pattern="' . esc_attr($pn_customers_manager_input['pattern']) . '"' : ''); ?>
                 
                 <?php /* Content attributes */ ?>
-                value="<?php echo (!empty($PN_CUSTOMERS_MANAGER_input['button_text']) ? esc_html($PN_CUSTOMERS_MANAGER_input['button_text']) : esc_html($PN_CUSTOMERS_MANAGER_value)); ?>"
-                placeholder="<?php echo (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) ? esc_html($PN_CUSTOMERS_MANAGER_input['placeholder']) : ''); ?>"
+                value="<?php echo (!empty($pn_customers_manager_input['button_text']) ? esc_html($pn_customers_manager_input['button_text']) : esc_html($pn_customers_manager_value)); ?>"
+                placeholder="<?php echo (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_html($pn_customers_manager_input['placeholder']) : ''); ?>"
                 
                 <?php /* Custom data attributes */ ?>
-                <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>
+                <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>
               />
             <?php
             break;
         }
         break;
       case 'select':
-        if (!empty($PN_CUSTOMERS_MANAGER_input['options']) && is_array($PN_CUSTOMERS_MANAGER_input['options'])) {
+        if (!empty($pn_customers_manager_input['options']) && is_array($pn_customers_manager_input['options'])) {
           ?>
           <select 
-            id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" 
-            name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" 
-            class="pn-customers-manager-field <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>"
-            <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? 'multiple' : ''; ?>
-            <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?>
-            <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>
-            <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>
+            id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" 
+            name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" 
+            class="pn-customers-manager-field <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>"
+            <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? 'multiple' : ''; ?>
+            <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?>
+            <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>
+            <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>
           >
-            <?php if (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) && !empty($PN_CUSTOMERS_MANAGER_input['placeholder'])): ?>
-              <option value=""><?php echo esc_html($PN_CUSTOMERS_MANAGER_input['placeholder']); ?></option>
+            <?php if (array_key_exists('placeholder', $pn_customers_manager_input) && !empty($pn_customers_manager_input['placeholder'])): ?>
+              <option value=""><?php echo esc_html($pn_customers_manager_input['placeholder']); ?></option>
             <?php endif; ?>
             
             <?php 
-            $selected_values = array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] ? 
-              (is_array($PN_CUSTOMERS_MANAGER_value) ? $PN_CUSTOMERS_MANAGER_value : array()) : 
-              array($PN_CUSTOMERS_MANAGER_value);
+            $selected_values = array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 
+              (is_array($pn_customers_manager_value) ? $pn_customers_manager_value : array()) : 
+              array($pn_customers_manager_value);
             
-            foreach ($PN_CUSTOMERS_MANAGER_input['options'] as $value => $label): 
+            foreach ($pn_customers_manager_input['options'] as $value => $label): 
               $is_selected = in_array($value, $selected_values);
             ?>
               <option 
@@ -320,131 +320,131 @@ class cm_pn_forms {
         break;
       case 'textarea':
         ?>
-          <textarea id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']) . ((array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? '[]' : ''); ?>" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?> class="pn-customers-manager-field <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?> <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple'] ? 'multiple' : ''); ?> placeholder="<?php echo (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['placeholder']) : ''); ?>"><?php echo esc_html($PN_CUSTOMERS_MANAGER_value); ?></textarea>
+          <textarea id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?> class="pn-customers-manager-field <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?> <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 'multiple' : ''); ?> placeholder="<?php echo (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['placeholder']) : ''); ?>"><?php echo esc_html($pn_customers_manager_value); ?></textarea>
         <?php
         break;
       case 'image':
         ?>
-          <div class="pn-customers-manager-field pn-customers-manager-images-block" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?> data-pn-customers-manager-multiple="<?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? 'true' : 'false'; ?>">
-            <?php if (!empty($PN_CUSTOMERS_MANAGER_value)): ?>
+          <div class="pn-customers-manager-field pn-customers-manager-images-block" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?> data-pn-customers-manager-multiple="<?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? 'true' : 'false'; ?>">
+            <?php if (!empty($pn_customers_manager_value)): ?>
               <div class="pn-customers-manager-images">
-                <?php foreach (explode(',', $PN_CUSTOMERS_MANAGER_value) as $PN_CUSTOMERS_MANAGER_image): ?>
-                  <?php echo wp_get_attachment_image($PN_CUSTOMERS_MANAGER_image, 'medium'); ?>
+                <?php foreach (explode(',', $pn_customers_manager_value) as $pn_customers_manager_image): ?>
+                  <?php echo wp_get_attachment_image($pn_customers_manager_image, 'medium'); ?>
                 <?php endforeach ?>
               </div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-image-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Edit images', 'pn-customers-manager')) : esc_html(__('Edit image', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-image-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Edit images', 'pn-customers-manager')) : esc_html(__('Edit image', 'pn-customers-manager')); ?></a></div>
             <?php else: ?>
               <div class="pn-customers-manager-images"></div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-image-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Add images', 'pn-customers-manager')) : esc_html(__('Add image', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-image-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Add images', 'pn-customers-manager')) : esc_html(__('Add image', 'pn-customers-manager')); ?></a></div>
             <?php endif ?>
 
-            <input id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-image-input" type="text" value="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_value); ?>"/>
+            <input id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-image-input" type="text" value="<?php echo esc_attr($pn_customers_manager_value); ?>"/>
           </div>
         <?php
         break;
       case 'video':
         ?>
-        <div class="pn-customers-manager-field pn-customers-manager-videos-block" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
-            <?php if (!empty($PN_CUSTOMERS_MANAGER_value)): ?>
+        <div class="pn-customers-manager-field pn-customers-manager-videos-block" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
+            <?php if (!empty($pn_customers_manager_value)): ?>
               <div class="pn-customers-manager-videos">
-                <?php foreach (explode(',', $PN_CUSTOMERS_MANAGER_value) as $PN_CUSTOMERS_MANAGER_video): ?>
-                  <div class="pn-customers-manager-video pn-customers-manager-tooltip" title="<?php echo esc_html(get_the_title($PN_CUSTOMERS_MANAGER_video)); ?>"><i class="dashicons dashicons-media-video"></i></div>
+                <?php foreach (explode(',', $pn_customers_manager_value) as $pn_customers_manager_video): ?>
+                  <div class="pn-customers-manager-video pn-customers-manager-tooltip" title="<?php echo esc_html(get_the_title($pn_customers_manager_video)); ?>"><i class="dashicons dashicons-media-video"></i></div>
                 <?php endforeach ?>
               </div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-video-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Edit videos', 'pn-customers-manager')) : esc_html(__('Edit video', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-video-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Edit videos', 'pn-customers-manager')) : esc_html(__('Edit video', 'pn-customers-manager')); ?></a></div>
             <?php else: ?>
               <div class="pn-customers-manager-videos"></div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-video-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Add videos', 'pn-customers-manager')) : esc_html(__('Add video', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-video-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Add videos', 'pn-customers-manager')) : esc_html(__('Add video', 'pn-customers-manager')); ?></a></div>
             <?php endif ?>
 
-            <input id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-video-input" type="text" value="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_value); ?>"/>
+            <input id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-video-input" type="text" value="<?php echo esc_attr($pn_customers_manager_value); ?>"/>
           </div>
         <?php
         break;
       case 'audio':
         ?>
-          <div class="pn-customers-manager-field pn-customers-manager-audios-block" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
-            <?php if (!empty($PN_CUSTOMERS_MANAGER_value)): ?>
+          <div class="pn-customers-manager-field pn-customers-manager-audios-block" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
+            <?php if (!empty($pn_customers_manager_value)): ?>
               <div class="pn-customers-manager-audios">
-                <?php foreach (explode(',', $PN_CUSTOMERS_MANAGER_value) as $PN_CUSTOMERS_MANAGER_audio): ?>
-                  <div class="pn-customers-manager-audio pn-customers-manager-tooltip" title="<?php echo esc_html(get_the_title($PN_CUSTOMERS_MANAGER_audio)); ?>"><i class="dashicons dashicons-media-audio"></i></div>
+                <?php foreach (explode(',', $pn_customers_manager_value) as $pn_customers_manager_audio): ?>
+                  <div class="pn-customers-manager-audio pn-customers-manager-tooltip" title="<?php echo esc_html(get_the_title($pn_customers_manager_audio)); ?>"><i class="dashicons dashicons-media-audio"></i></div>
                 <?php endforeach ?>
               </div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-audio-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Edit audios', 'pn-customers-manager')) : esc_html(__('Edit audio', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-audio-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Edit audios', 'pn-customers-manager')) : esc_html(__('Edit audio', 'pn-customers-manager')); ?></a></div>
             <?php else: ?>
               <div class="pn-customers-manager-audios"></div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-audio-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Add audios', 'pn-customers-manager')) : esc_html(__('Add audio', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-audio-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Add audios', 'pn-customers-manager')) : esc_html(__('Add audio', 'pn-customers-manager')); ?></a></div>
             <?php endif ?>
 
-            <input id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-audio-input" type="text" value="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_value); ?>"/>
+            <input id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-audio-input" type="text" value="<?php echo esc_attr($pn_customers_manager_value); ?>"/>
           </div>
         <?php
         break;
       case 'file':
         ?>
-          <div class="pn-customers-manager-field pn-customers-manager-files-block" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
-            <?php if (!empty($PN_CUSTOMERS_MANAGER_value)): ?>
+          <div class="pn-customers-manager-field pn-customers-manager-files-block" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
+            <?php if (!empty($pn_customers_manager_value)): ?>
               <div class="pn-customers-manager-files pn-customers-manager-text-align-center">
-                <?php foreach (explode(',', $PN_CUSTOMERS_MANAGER_value) as $PN_CUSTOMERS_MANAGER_file): ?>
-                  <embed src="<?php echo esc_url(wp_get_attachment_url($PN_CUSTOMERS_MANAGER_file)); ?>" type="application/pdf" class="pn-customers-manager-embed-file"/>
+                <?php foreach (explode(',', $pn_customers_manager_value) as $pn_customers_manager_file): ?>
+                  <embed src="<?php echo esc_url(wp_get_attachment_url($pn_customers_manager_file)); ?>" type="application/pdf" class="pn-customers-manager-embed-file"/>
                 <?php endforeach ?>
               </div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-file-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Edit files', 'pn-customers-manager')) : esc_html(__('Edit file', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-file-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Edit files', 'pn-customers-manager')) : esc_html(__('Edit file', 'pn-customers-manager')); ?></a></div>
             <?php else: ?>
               <div class="pn-customers-manager-files"></div>
 
-              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-mini pn-customers-manager-file-btn"><?php echo (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) ? esc_html(__('Add files', 'pn-customers-manager')) : esc_html(__('Add file', 'pn-customers-manager')); ?></a></div>
+              <div class="pn-customers-manager-text-align-center pn-customers-manager-position-relative"><a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-mini pn-customers-manager-file-btn"><?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? esc_html(__('Add files', 'pn-customers-manager')) : esc_html(__('Add file', 'pn-customers-manager')); ?></a></div>
             <?php endif ?>
 
-            <input id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-file-input pn-customers-manager-btn-mini" type="text" value="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_value); ?>"/>
+            <input id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-display-none pn-customers-manager-file-input pn-customers-manager-btn-mini" type="text" value="<?php echo esc_attr($pn_customers_manager_value); ?>"/>
           </div>
         <?php
         break;
       case 'editor':
         ?>
-          <div class="pn-customers-manager-field" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
-            <textarea id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-wysiwyg"><?php echo ((empty($PN_CUSTOMERS_MANAGER_value)) ? (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['placeholder']) : '') : esc_html($PN_CUSTOMERS_MANAGER_value)); ?></textarea>
+          <div class="pn-customers-manager-field" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
+            <textarea id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-wysiwyg"><?php echo ((empty($pn_customers_manager_value)) ? (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['placeholder']) : '') : esc_html($pn_customers_manager_value)); ?></textarea>
           </div>
         <?php
         break;
       case 'html':
         ?>
-          <div class="pn-customers-manager-field" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
-            <?php echo !empty($PN_CUSTOMERS_MANAGER_input['html_content']) ? wp_kses(do_shortcode($PN_CUSTOMERS_MANAGER_input['html_content']), PN_CUSTOMERS_MANAGER_KSES) : ''; ?>
+          <div class="pn-customers-manager-field" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
+            <?php echo !empty($pn_customers_manager_input['html_content']) ? wp_kses(do_shortcode($pn_customers_manager_input['html_content']), PN_CUSTOMERS_MANAGER_KSES) : ''; ?>
           </div>
         <?php
         break;
       case 'html_multi':
-        switch ($PN_CUSTOMERS_MANAGER_type) {
+        switch ($pn_customers_manager_type) {
           case 'user':
-            $html_multi_fields_length = !empty(get_user_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) ? count(get_user_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) : 0;
+            $html_multi_fields_length = !empty(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
             break;
           case 'post':
-            $html_multi_fields_length = !empty(get_post_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) ? count(get_post_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) : 0;
+            $html_multi_fields_length = !empty(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
             break;
           case 'option':
-            $html_multi_fields_length = !empty(get_option($PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'])) ? count(get_option($PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'])) : 0;
+            $html_multi_fields_length = !empty(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) ? count(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) : 0;
         }
 
         ?>
-          <div class="pn-customers-manager-field pn-customers-manager-html-multi-wrapper pn-customers-manager-mb-50" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
+          <div class="pn-customers-manager-field pn-customers-manager-html-multi-wrapper pn-customers-manager-mb-50" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
             <?php if ($html_multi_fields_length): ?>
               <?php foreach (range(0, ($html_multi_fields_length - 1)) as $length_index): ?>
                 <div class="pn-customers-manager-html-multi-group pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-30">
                   <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
-                    <?php foreach ($PN_CUSTOMERS_MANAGER_input['html_multi_fields'] as $index => $html_multi_field): ?>
+                    <?php foreach ($pn_customers_manager_input['html_multi_fields'] as $index => $html_multi_field): ?>
                       <?php if (isset($html_multi_field['label']) && !empty($html_multi_field['label'])): ?>
                         <label><?php echo esc_html($html_multi_field['label']); ?></label>
                       <?php endif; ?>
 
-                      <?php self::PN_CUSTOMERS_MANAGER_input_builder($html_multi_field, $PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id, false, true, $length_index); ?>
+                      <?php self::PN_CUSTOMERS_MANAGER_input_builder($html_multi_field, $pn_customers_manager_type, $pn_customers_manager_id, false, true, $length_index); ?>
                     <?php endforeach ?>
                   </div>
                   <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-center">
@@ -459,8 +459,8 @@ class cm_pn_forms {
             <?php else: ?>
               <div class="pn-customers-manager-html-multi-group pn-customers-manager-mb-50">
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
-                  <?php foreach ($PN_CUSTOMERS_MANAGER_input['html_multi_fields'] as $html_multi_field): ?>
-                    <?php self::PN_CUSTOMERS_MANAGER_input_builder($html_multi_field, $PN_CUSTOMERS_MANAGER_type); ?>
+                  <?php foreach ($pn_customers_manager_input['html_multi_fields'] as $html_multi_field): ?>
+                    <?php self::PN_CUSTOMERS_MANAGER_input_builder($html_multi_field, $pn_customers_manager_type); ?>
                   <?php endforeach ?>
                 </div>
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-center">
@@ -499,14 +499,14 @@ class cm_pn_forms {
             <div class="pn-customers-manager-audio-recorder-controls">
               <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent">
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-50-percent pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-text-align-center pn-customers-manager-mb-20">
-                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-primary pn-customers-manager-start-recording" <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
+                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-primary pn-customers-manager-start-recording" <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
                     <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">mic</i>
                     <?php esc_html_e('Start recording', 'pn-customers-manager'); ?>
                   </button>
                 </div>
 
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-50-percent pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-text-align-center pn-customers-manager-mb-20">
-                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-stop-recording" style="display: none;" <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
+                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-stop-recording" style="display: none;" <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
                     <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">stop</i>
                     <?php esc_html_e('Stop recording', 'pn-customers-manager'); ?>
                   </button>
@@ -515,14 +515,14 @@ class cm_pn_forms {
 
               <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent">
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-50-percent pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-text-align-center pn-customers-manager-mb-20">
-                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-play-audio" style="display: none;" <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
+                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-play-audio" style="display: none;" <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
                     <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">play_arrow</i>
                     <?php esc_html_e('Play audio', 'pn-customers-manager'); ?>
                   </button>
                 </div>
 
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-50-percent pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-text-align-center pn-customers-manager-mb-20">
-                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-stop-audio" style="display: none;" <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
+                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-stop-audio" style="display: none;" <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
                     <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">stop</i>
                     <?php esc_html_e('Stop audio', 'pn-customers-manager'); ?>
                   </button>
@@ -540,14 +540,14 @@ class cm_pn_forms {
 
             <div class="pn-customers-manager-audio-transcription-controls pn-customers-manager-display-none-soft pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-20">
               <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-50-percent pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-text-align-center">
-                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-primary pn-customers-manager-transcribe-audio" <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
+                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-primary pn-customers-manager-transcribe-audio" <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
                   <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">translate</i>
                   <?php esc_html_e('Transcribe Audio', 'pn-customers-manager'); ?>
                 </button>
               </div>
 
               <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-50-percent pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-text-align-center">
-                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-clear-transcription" <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
+                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-secondary pn-customers-manager-clear-transcription" <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>>
                   <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">clear</i>
                   <?php esc_html_e('Clear', 'pn-customers-manager'); ?>
                 </button>
@@ -560,16 +560,16 @@ class cm_pn_forms {
 
             <div class="pn-customers-manager-audio-transcription-result">
               <textarea 
-                id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" 
-                name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" 
-                class="pn-customers-manager-field pn-customers-manager-transcription-textarea <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" 
-                placeholder="<?php echo (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['placeholder']) : esc_attr__('Transcribed text will appear here...', 'pn-customers-manager')); ?>"
-                <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?>
-                <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>
-                <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>
+                id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" 
+                name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" 
+                class="pn-customers-manager-field pn-customers-manager-transcription-textarea <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" 
+                placeholder="<?php echo (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['placeholder']) : esc_attr__('Transcribed text will appear here...', 'pn-customers-manager')); ?>"
+                <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?>
+                <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>
+                <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>
                 rows="4"
                 style="width: 100%; margin-top: 10px;"
-              ><?php echo esc_textarea($PN_CUSTOMERS_MANAGER_value); ?></textarea>
+              ><?php echo esc_textarea($pn_customers_manager_value); ?></textarea>
             </div>
 
             <div class="pn-customers-manager-audio-transcription-error pn-customers-manager-display-none-soft">
@@ -582,27 +582,27 @@ class cm_pn_forms {
 
             <!-- Hidden input to store audio data -->
             <input type="hidden" 
-                  id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>_audio_data" 
-                  name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>_audio_data" 
+                  id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>_audio_data" 
+                  name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>_audio_data" 
                   value="" />
           </div>
         <?php
         break;
       case 'tags':
         // Get current tags value
-        $current_tags = self::PN_CUSTOMERS_MANAGER_get_PN_CUSTOMERS_MANAGER_value($PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input);
+        $current_tags = self::PN_CUSTOMERS_MANAGER_get_PN_CUSTOMERS_MANAGER_value($pn_customers_manager_type, $pn_customers_manager_id, $pn_customers_manager_input);
         $tags_array = is_array($current_tags) ? $current_tags : [];
         $tags_string = implode(', ', $tags_array);
         ?>
-        <div class="pn-customers-manager-tags-wrapper" <?php echo wp_kses_post($PN_CUSTOMERS_MANAGER_parent_block); ?>>
+        <div class="pn-customers-manager-tags-wrapper" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
           <input type="text" 
-            id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" 
-            name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>" 
-            class="pn-customers-manager-field pn-customers-manager-tags-input <?php echo array_key_exists('class', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['class']) : ''; ?>" 
+            id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" 
+            name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" 
+            class="pn-customers-manager-field pn-customers-manager-tags-input <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>" 
             value="<?php echo esc_attr($tags_string); ?>" 
-            placeholder="<?php echo (array_key_exists('placeholder', $PN_CUSTOMERS_MANAGER_input) ? esc_attr($PN_CUSTOMERS_MANAGER_input['placeholder']) : ''); ?>"
-            <?php echo ((array_key_exists('required', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['required'] == true) ? 'required' : ''); ?>
-            <?php echo (((array_key_exists('disabled', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> />
+            placeholder="<?php echo (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['placeholder']) : ''); ?>"
+            <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?>
+            <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> />
           
           <div class="pn-customers-manager-tags-suggestions" style="display: none;">
             <div class="pn-customers-manager-tags-suggestions-list"></div>
@@ -620,8 +620,8 @@ class cm_pn_forms {
           </div>
           
           <input type="hidden" 
-            id="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>_tags_array" 
-            name="<?php echo esc_attr($PN_CUSTOMERS_MANAGER_input['id']); ?>_tags_array" 
+            id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>_tags_array" 
+            name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>_tags_array" 
             value="<?php echo esc_attr(json_encode($tags_array)); ?>" />
         </div>
         <?php
@@ -629,7 +629,7 @@ class cm_pn_forms {
     }
   }
 
-  public static function PN_CUSTOMERS_MANAGER_input_wrapper_builder($input_array, $type, $PN_CUSTOMERS_MANAGER_id = 0, $disabled = 0, $cm_pn_format = 'half'){
+  public static function pn_customers_manager_input_wrapper_builder($input_array, $type, $pn_customers_manager_id = 0, $disabled = 0, $cm_pn_format = 'half'){
     ?>
       <?php if (array_key_exists('section', $input_array) && !empty($input_array['section'])): ?>      
         <?php if ($input_array['section'] == 'start'): ?>
@@ -672,7 +672,7 @@ class cm_pn_forms {
 
           <div class="pn-customers-manager-display-inline-table <?php echo ((array_key_exists('label', $input_array) && empty($input_array['label'])) ? 'pn-customers-manager-width-100-percent' : (($cm_pn_format == 'half' && !(array_key_exists('type', $input_array) && $input_array['type'] == 'submit')) ? 'pn-customers-manager-width-60-percent' : 'pn-customers-manager-width-100-percent')); ?> pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-vertical-align-top">
             <div class="pn-customers-manager-p-10 <?php echo (array_key_exists('parent', $input_array) && !empty($input_array['parent']) && $input_array['parent'] != 'this') ? 'pn-customers-manager-pl-30' : ''; ?>">
-              <div class="pn-customers-manager-input-field"><?php self::PN_CUSTOMERS_MANAGER_input_builder($input_array, $type, $PN_CUSTOMERS_MANAGER_id, $disabled); ?></div>
+              <div class="pn-customers-manager-input-field"><?php self::PN_CUSTOMERS_MANAGER_input_builder($input_array, $type, $pn_customers_manager_id, $disabled); ?></div>
             </div>
           </div>
         </div>
@@ -685,13 +685,13 @@ class cm_pn_forms {
    * 
    * @param array $input_array The input array containing field configuration
    * @param string $type The type of field (user, post, option)
-   * @param int $PN_CUSTOMERS_MANAGER_id The ID of the user/post/option
-   * @param int $PN_CUSTOMERS_MANAGER_meta_array Whether the field is part of a meta array
-   * @param int $PN_CUSTOMERS_MANAGER_array_index The index in the meta array
+   * @param int $pn_customers_manager_id The ID of the user/post/option
+   * @param int $pn_customers_manager_meta_array Whether the field is part of a meta array
+   * @param int $pn_customers_manager_array_index The index in the meta array
    * @param string $cm_pn_format The display format ('half' or 'full')
    * @return string Formatted HTML output
    */
-  public static function PN_CUSTOMERS_MANAGER_input_display_wrapper($input_array, $type, $PN_CUSTOMERS_MANAGER_id = 0, $PN_CUSTOMERS_MANAGER_meta_array = 0, $PN_CUSTOMERS_MANAGER_array_index = 0, $cm_pn_format = 'half') {
+  public static function PN_CUSTOMERS_MANAGER_input_display_wrapper($input_array, $type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0, $cm_pn_format = 'half') {
     ob_start();
     ?>
     <?php if (array_key_exists('section', $input_array) && !empty($input_array['section'])): ?>      
@@ -740,7 +740,7 @@ class cm_pn_forms {
         <div class="pn-customers-manager-display-inline-table <?php echo ((array_key_exists('label', $input_array) && empty($input_array['label'])) ? 'pn-customers-manager-width-100-percent' : ($cm_pn_format == 'half' ? 'pn-customers-manager-width-60-percent' : 'pn-customers-manager-width-100-percent')); ?> pn-customers-manager-tablet-display-block pn-customers-manager-tablet-width-100-percent pn-customers-manager-vertical-align-top">
           <div class="pn-customers-manager-p-10 <?php echo (array_key_exists('parent', $input_array) && !empty($input_array['parent']) && $input_array['parent'] != 'this') ? 'pn-customers-manager-pl-30' : ''; ?>">
             <div class="pn-customers-manager-input-field">
-              <?php self::PN_CUSTOMERS_MANAGER_input_display($input_array, $type, $PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_meta_array, $PN_CUSTOMERS_MANAGER_array_index); ?>
+              <?php self::PN_CUSTOMERS_MANAGER_input_display($input_array, $type, $pn_customers_manager_id, $pn_customers_manager_meta_array, $pn_customers_manager_array_index); ?>
             </div>
           </div>
         </div>
@@ -753,24 +753,24 @@ class cm_pn_forms {
   /**
    * Display formatted values of PN_CUSTOMERS_MANAGER_input_builder fields in frontend
    * 
-   * @param array $PN_CUSTOMERS_MANAGER_input The input array containing field configuration
-   * @param string $PN_CUSTOMERS_MANAGER_type The type of field (user, post, option)
-   * @param int $PN_CUSTOMERS_MANAGER_id The ID of the user/post/option
-   * @param int $PN_CUSTOMERS_MANAGER_meta_array Whether the field is part of a meta array
-   * @param int $PN_CUSTOMERS_MANAGER_array_index The index in the meta array
+   * @param array $pn_customers_manager_input The input array containing field configuration
+   * @param string $pn_customers_manager_type The type of field (user, post, option)
+   * @param int $pn_customers_manager_id The ID of the user/post/option
+   * @param int $pn_customers_manager_meta_array Whether the field is part of a meta array
+   * @param int $pn_customers_manager_array_index The index in the meta array
    * @return string Formatted HTML output of field values
    */
-  public static function PN_CUSTOMERS_MANAGER_input_display($PN_CUSTOMERS_MANAGER_input, $PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id = 0, $PN_CUSTOMERS_MANAGER_meta_array = 0, $PN_CUSTOMERS_MANAGER_array_index = 0) {
+  public static function PN_CUSTOMERS_MANAGER_input_display($pn_customers_manager_input, $pn_customers_manager_type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0) {
     // Get the current value using the new function
-    $current_value = self::PN_CUSTOMERS_MANAGER_get_field_value($PN_CUSTOMERS_MANAGER_input['id'], $PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_meta_array, $PN_CUSTOMERS_MANAGER_array_index, $PN_CUSTOMERS_MANAGER_input);
+    $current_value = self::PN_CUSTOMERS_MANAGER_get_field_value($pn_customers_manager_input['id'], $pn_customers_manager_type, $pn_customers_manager_id, $pn_customers_manager_meta_array, $pn_customers_manager_array_index, $pn_customers_manager_input);
 
     // Start the field value display
     ?>
       <div class="pn-customers-manager-field-value">
         <?php
-        switch ($PN_CUSTOMERS_MANAGER_input['input']) {
+        switch ($pn_customers_manager_input['input']) {
           case 'input':
-            switch ($PN_CUSTOMERS_MANAGER_input['type']) {
+            switch ($pn_customers_manager_input['type']) {
               case 'hidden':
                 break;
               case 'nonce':
@@ -801,8 +801,8 @@ class cm_pn_forms {
                 break;
 
               case 'radio':
-                if (!empty($PN_CUSTOMERS_MANAGER_input['radio_options'])) {
-                  foreach ($PN_CUSTOMERS_MANAGER_input['radio_options'] as $option) {
+                if (!empty($pn_customers_manager_input['radio_options'])) {
+                  foreach ($pn_customers_manager_input['radio_options'] as $option) {
                     if ($current_value === $option['value']) {
                       ?>
                         <span class="pn-customers-manager-radio-selected"><?php echo esc_html($option['label']); ?></span>
@@ -830,16 +830,16 @@ class cm_pn_forms {
             break;
 
           case 'select':
-            if (!empty($PN_CUSTOMERS_MANAGER_input['options']) && is_array($PN_CUSTOMERS_MANAGER_input['options'])) {
-              if (array_key_exists('multiple', $PN_CUSTOMERS_MANAGER_input) && $PN_CUSTOMERS_MANAGER_input['multiple']) {
+            if (!empty($pn_customers_manager_input['options']) && is_array($pn_customers_manager_input['options'])) {
+              if (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) {
                 // Handle multiple select
                 $selected_values = is_array($current_value) ? $current_value : array();
                 if (!empty($selected_values)) {
                   ?>
                   <div class="pn-customers-manager-select-values pn-customers-manager-select-values-column">
                     <?php foreach ($selected_values as $value): ?>
-                      <?php if (isset($PN_CUSTOMERS_MANAGER_input['options'][$value])): ?>
-                        <div class="pn-customers-manager-select-value-item"><?php echo esc_html($PN_CUSTOMERS_MANAGER_input['options'][$value]); ?></div>
+                      <?php if (isset($pn_customers_manager_input['options'][$value])): ?>
+                        <div class="pn-customers-manager-select-value-item"><?php echo esc_html($pn_customers_manager_input['options'][$value]); ?></div>
                       <?php endif; ?>
                     <?php endforeach; ?>
                   </div>
@@ -848,9 +848,9 @@ class cm_pn_forms {
               } else {
                 // Handle single select
                 $current_value = is_scalar($current_value) ? (string)$current_value : '';
-                if (isset($PN_CUSTOMERS_MANAGER_input['options'][$current_value])) {
+                if (isset($pn_customers_manager_input['options'][$current_value])) {
                   ?>
-                  <span class="pn-customers-manager-select-value"><?php echo esc_html($PN_CUSTOMERS_MANAGER_input['options'][$current_value]); ?></span>
+                  <span class="pn-customers-manager-select-value"><?php echo esc_html($pn_customers_manager_input['options'][$current_value]); ?></span>
                   <?php
                 }
               }
@@ -886,22 +886,22 @@ class cm_pn_forms {
             <?php
             break;
           case 'html':
-            if (!empty($PN_CUSTOMERS_MANAGER_input['html_content'])) {
+            if (!empty($pn_customers_manager_input['html_content'])) {
               ?>
-                <div class="pn-customers-manager-html-content"><?php echo wp_kses_post(do_shortcode($PN_CUSTOMERS_MANAGER_input['html_content'])); ?></div>
+                <div class="pn-customers-manager-html-content"><?php echo wp_kses_post(do_shortcode($pn_customers_manager_input['html_content'])); ?></div>
               <?php
             }
             break;
           case 'html_multi':
-            switch ($PN_CUSTOMERS_MANAGER_type) {
+            switch ($pn_customers_manager_type) {
               case 'user':
-                $html_multi_fields_length = !empty(get_user_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) ? count(get_user_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) : 0;
+                $html_multi_fields_length = !empty(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
                 break;
               case 'post':
-                $html_multi_fields_length = !empty(get_post_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) ? count(get_post_meta($PN_CUSTOMERS_MANAGER_id, $PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'], true)) : 0;
+                $html_multi_fields_length = !empty(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
                 break;
               case 'option':
-                $html_multi_fields_length = !empty(get_option($PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'])) ? count(get_option($PN_CUSTOMERS_MANAGER_input['html_multi_fields'][0]['id'])) : 0;
+                $html_multi_fields_length = !empty(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) ? count(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) : 0;
             }
 
             ?>
@@ -909,13 +909,13 @@ class cm_pn_forms {
                 <?php if ($html_multi_fields_length): ?>
                   <?php foreach (range(0, ($html_multi_fields_length - 1)) as $length_index): ?>
                     <div class="pn-customers-manager-html-multi-group pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-30">
-                      <?php foreach ($PN_CUSTOMERS_MANAGER_input['html_multi_fields'] as $index => $html_multi_field): ?>
+                      <?php foreach ($pn_customers_manager_input['html_multi_fields'] as $index => $html_multi_field): ?>
                           <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-60-percent">
                             <label><?php echo esc_html($html_multi_field['label']); ?></label>
                           </div>
 
                           <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-40-percent">
-                            <?php self::PN_CUSTOMERS_MANAGER_input_display($html_multi_field, $PN_CUSTOMERS_MANAGER_type, $PN_CUSTOMERS_MANAGER_id, 1, $length_index); ?>
+                            <?php self::PN_CUSTOMERS_MANAGER_input_display($html_multi_field, $pn_customers_manager_type, $pn_customers_manager_id, 1, $length_index); ?>
                           </div>
                       <?php endforeach ?>
                     </div>
@@ -930,7 +930,7 @@ class cm_pn_forms {
     <?php
   }
 
-  public static function PN_CUSTOMERS_MANAGER_sanitizer($value, $node = '', $type = '', $field_config = []) {
+  public static function pn_customers_manager_sanitizer($value, $node = '', $type = '', $field_config = []) {
     // Use the new validation system
     $result = PN_CUSTOMERS_MANAGER_Validation::PN_CUSTOMERS_MANAGER_validate_and_sanitize($value, $node, $type, $field_config);
     

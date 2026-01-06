@@ -35,7 +35,7 @@ class PN_CUSTOMERS_MANAGER_Popups {
 
         ob_start();
         ?>
-        <div id="<?php echo esc_attr($options['id']); ?>" class="pn-customers-manager-popup pn-customers-manager-display-none-soft <?php echo esc_attr($options['class']); ?>">
+        <div id="<?php echo esc_attr($options['id']); ?>" class="pn-customers-manager-popup pn-customers-manager-popup-size-medium pn-customers-manager-display-none-soft <?php echo esc_attr($options['class']); ?>" data-pn-customers-manager-popup-disable-esc="true" data-pn-customers-manager-popup-disable-overlay-close="true">
             <div class="pn-customers-manager-popup-overlay"></div>
             <div class="pn-customers-manager-popup-content">
                 <?php if ($options['closeButton']) : ?>

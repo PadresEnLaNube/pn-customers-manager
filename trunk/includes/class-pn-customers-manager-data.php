@@ -43,9 +43,9 @@ class PN_CUSTOMERS_MANAGER_Data {
 	 * @since    1.0.0
 	 */
 	public function PN_CUSTOMERS_MANAGER_flush_rewrite_rules() {
-    if (get_option('PN_CUSTOMERS_MANAGER_options_changed')) {
+    if (get_option('pn_customers_manager_options_changed')) {
       flush_rewrite_rules();
-      update_option('PN_CUSTOMERS_MANAGER_options_changed', false);
+      update_option('pn_customers_manager_options_changed', false);
     }
   }
 

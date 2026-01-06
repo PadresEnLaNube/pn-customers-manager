@@ -19,27 +19,27 @@ class PN_CUSTOMERS_MANAGER {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      PN_CUSTOMERS_MANAGER_Loader    $PN_CUSTOMERS_MANAGER_loader    Maintains and registers all hooks for the plugin.
+	 * @var      PN_CUSTOMERS_MANAGER_Loader    $pn_customers_manager_loader    Maintains and registers all hooks for the plugin.
 	 */
-	protected $PN_CUSTOMERS_MANAGER_loader;
+	protected $pn_customers_manager_loader;
 
 	/**
 	 * The unique identifier of this plugin.
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $PN_CUSTOMERS_MANAGER_plugin_name    The string used to uniquely identify this plugin.
+	 * @var      string    $pn_customers_manager_plugin_name    The string used to uniquely identify this plugin.
 	 */
-	protected $PN_CUSTOMERS_MANAGER_plugin_name;
+	protected $pn_customers_manager_plugin_name;
 
 	/**
 	 * The current version of the plugin.
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $PN_CUSTOMERS_MANAGER_version    The current version of the plugin.
+	 * @var      string    $pn_customers_manager_version    The current version of the plugin.
 	 */
-	protected $PN_CUSTOMERS_MANAGER_version;
+	protected $pn_customers_manager_version;
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -249,10 +249,10 @@ class PN_CUSTOMERS_MANAGER {
 		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('body_class', $plugin_common, 'PN_CUSTOMERS_MANAGER_body_classes');
 
 		$plugin_post_type_funnel = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('cm_pn_funnel_form_save', $plugin_post_type_funnel, 'cm_pn_funnel_form_save', 999, 5);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('pn_cm_funnel_form_save', $plugin_post_type_funnel, 'pn_cm_funnel_form_save', 999, 5);
 
 		$plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('PN_CUSTOMERS_MANAGER_org_form_save', $plugin_post_type_organization, 'cm_pn_org_form_save', 999, 5);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('Pn_cm_organization_form_save', $plugin_post_type_organization, 'pn_cm_organization_form_save', 999, 5);
 	}
 
 	/**
@@ -290,20 +290,20 @@ class PN_CUSTOMERS_MANAGER {
 	 */
 	private function PN_CUSTOMERS_MANAGER_define_custom_post_types() {
 		$plugin_post_type_funnel = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('init', $plugin_post_type_funnel, 'cm_pn_funnel_register_post_type');
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('admin_init', $plugin_post_type_funnel, 'cm_pn_funnel_add_meta_box');
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('save_post_cm_pn_funnel', $plugin_post_type_funnel, 'cm_pn_funnel_save_post', 10, 3);
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('single_template', $plugin_post_type_funnel, 'cm_pn_funnel_single_template', 10, 3);
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('archive_template', $plugin_post_type_funnel, 'cm_pn_funnel_archive_template', 10, 3);
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-funnel-list', $plugin_post_type_funnel, 'cm_pn_funnel_list_wrapper');
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('init', $plugin_post_type_funnel, 'pn_cm_funnel_register_post_type');
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('admin_init', $plugin_post_type_funnel, 'pn_cm_funnel_add_meta_box');
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('save_post_pn_cm_funnel', $plugin_post_type_funnel, 'pn_cm_funnel_save_post', 10, 3);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('single_template', $plugin_post_type_funnel, 'pn_cm_funnel_single_template', 10, 3);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('archive_template', $plugin_post_type_funnel, 'pn_cm_funnel_archive_template', 10, 3);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-funnel-list', $plugin_post_type_funnel, 'pn_cm_funnel_list_wrapper');
 
 		$plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('init', $plugin_post_type_organization, 'cm_pn_org_register_post_type');
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('admin_init', $plugin_post_type_organization, 'cm_pn_org_add_meta_box');
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('save_post_cm_pn_org', $plugin_post_type_organization, 'cm_pn_org_save_post', 10, 3);
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('single_template', $plugin_post_type_organization, 'cm_pn_org_single_template', 10, 3);
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('archive_template', $plugin_post_type_organization, 'cm_pn_org_archive_template', 10, 3);
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-organization-list', $plugin_post_type_organization, 'cm_pn_org_list_wrapper');
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('init', $plugin_post_type_organization, 'pn_cm_organization_register_post_type');
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('admin_init', $plugin_post_type_organization, 'pn_cm_organization_add_meta_box');
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('save_post_pn_cm_organization', $plugin_post_type_organization, 'pn_cm_organization_save_post', 10, 3);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('single_template', $plugin_post_type_organization, 'pn_cm_organization_single_template', 10, 3);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_filter('archive_template', $plugin_post_type_organization, 'pn_cm_organization_archive_template', 10, 3);
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-organization-list', $plugin_post_type_organization, 'pn_cm_organization_list_wrapper');
 		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_action('init', $plugin_post_type_organization, 'register_organization_list_block');
 	}
 
@@ -396,7 +396,7 @@ class PN_CUSTOMERS_MANAGER {
 	 */
 	private function PN_CUSTOMERS_MANAGER_load_shortcodes() {
 		$plugin_shortcodes = new PN_CUSTOMERS_MANAGER_Shortcodes();
-		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-funnel', $plugin_shortcodes, 'cm_pn_funnel');
+		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-funnel', $plugin_shortcodes, 'pn_cm_funnel');
 		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-test', $plugin_shortcodes, 'PN_CUSTOMERS_MANAGER_test');
 		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-call-to-action', $plugin_shortcodes, 'PN_CUSTOMERS_MANAGER_call_to_action');
 		$this->PN_CUSTOMERS_MANAGER_loader->PN_CUSTOMERS_MANAGER_add_shortcode('pn-customers-manager-client-form', $plugin_shortcodes, 'PN_CUSTOMERS_MANAGER_client_form');
