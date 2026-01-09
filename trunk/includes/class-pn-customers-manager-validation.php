@@ -19,7 +19,7 @@ class PN_CUSTOMERS_MANAGER_Validation {
      * @param array  $field_config Additional field configuration
      * @return mixed|WP_Error Sanitized value or WP_Error on validation failure
      */
-    public static function PN_CUSTOMERS_MANAGER_validate_and_sanitize($value, $node = '', $type = '', $field_config = []) {
+    public static function pn_customers_manager_validate_and_sanitize($value, $node = '', $type = '', $field_config = []) {
         // First validate
         $validation_result = self::PN_CUSTOMERS_MANAGER_validate($value, $type, $field_config);
         if (is_wp_error($validation_result)) {
@@ -38,7 +38,7 @@ class PN_CUSTOMERS_MANAGER_Validation {
      * @param array  $field_config Additional field configuration
      * @return true|WP_Error True on success, WP_Error on failure
      */
-    public static function PN_CUSTOMERS_MANAGER_validate($value, $type, $field_config = []) {
+    public static function pn_customers_manager_validate($value, $type, $field_config = []) {
         // Required field validation
         if (!empty($field_config['required']) && empty($value)) {
             return new WP_Error(
@@ -181,7 +181,7 @@ class PN_CUSTOMERS_MANAGER_Validation {
      * @param string $type  The input type
      * @return mixed Sanitized value
      */
-    public static function PN_CUSTOMERS_MANAGER_sanitize($value, $node = '', $type = '') {
+    public static function pn_customers_manager_sanitize($value, $node = '', $type = '') {
         switch (strtolower($node)) {
             case 'input':
                 switch (strtolower($type)) {
@@ -227,7 +227,7 @@ class PN_CUSTOMERS_MANAGER_Validation {
      * @param string $format Expected date format
      * @return bool True if date is valid
      */
-    private static function PN_CUSTOMERS_MANAGER_is_valid_date($date, $format = 'Y-m-d') {
+    private static function pn_customers_manager_is_valid_date($date, $format = 'Y-m-d') {
         $d = DateTime::createFromFormat($format, $date);
         return $d && $d->format($format) === $date;
     }
@@ -238,7 +238,7 @@ class PN_CUSTOMERS_MANAGER_Validation {
      * @param WP_Error $error The error object
      * @return string The error message
      */
-    public static function PN_CUSTOMERS_MANAGER_get_error_message($error) {
+    public static function pn_customers_manager_get_error_message($error) {
         if (!is_wp_error($error)) {
             return '';
         }

@@ -28,7 +28,7 @@ class PN_CUSTOMERS_MANAGER_Forms {
    * @param array $pn_customers_manager_input The input array containing field configuration
    * @return mixed The current value of the field
    */
-  private static function PN_CUSTOMERS_MANAGER_get_field_value($field_id, $pn_customers_manager_type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0, $pn_customers_manager_input = []) {
+  private static function pn_customers_manager_get_field_value($field_id, $pn_customers_manager_type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0, $pn_customers_manager_input = []) {
     $current_value = '';
 
     if ($pn_customers_manager_meta_array) {
@@ -83,7 +83,7 @@ class PN_CUSTOMERS_MANAGER_Forms {
     return $current_value;
   }
 
-  public static function PN_CUSTOMERS_MANAGER_input_builder($pn_customers_manager_input, $pn_customers_manager_type, $pn_customers_manager_id = 0, $disabled = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0) {
+  public static function pn_customers_manager_input_builder($pn_customers_manager_input, $pn_customers_manager_type, $pn_customers_manager_id = 0, $disabled = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0) {
     // Get the current value using the new function
     $pn_customers_manager_value = self::PN_CUSTOMERS_MANAGER_get_field_value($pn_customers_manager_input['id'], $pn_customers_manager_type, $pn_customers_manager_id, $pn_customers_manager_meta_array, $pn_customers_manager_array_index, $pn_customers_manager_input);
 
@@ -691,7 +691,7 @@ class PN_CUSTOMERS_MANAGER_Forms {
    * @param string $cm_pn_format The display format ('half' or 'full')
    * @return string Formatted HTML output
    */
-  public static function PN_CUSTOMERS_MANAGER_input_display_wrapper($input_array, $type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0, $cm_pn_format = 'half') {
+  public static function pn_customers_manager_input_display_wrapper($input_array, $type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0, $cm_pn_format = 'half') {
     ob_start();
     ?>
     <?php if (array_key_exists('section', $input_array) && !empty($input_array['section'])): ?>      
@@ -760,7 +760,7 @@ class PN_CUSTOMERS_MANAGER_Forms {
    * @param int $pn_customers_manager_array_index The index in the meta array
    * @return string Formatted HTML output of field values
    */
-  public static function PN_CUSTOMERS_MANAGER_input_display($pn_customers_manager_input, $pn_customers_manager_type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0) {
+  public static function pn_customers_manager_input_display($pn_customers_manager_input, $pn_customers_manager_type, $pn_customers_manager_id = 0, $pn_customers_manager_meta_array = 0, $pn_customers_manager_array_index = 0) {
     // Get the current value using the new function
     $current_value = self::PN_CUSTOMERS_MANAGER_get_field_value($pn_customers_manager_input['id'], $pn_customers_manager_type, $pn_customers_manager_id, $pn_customers_manager_meta_array, $pn_customers_manager_array_index, $pn_customers_manager_input);
 

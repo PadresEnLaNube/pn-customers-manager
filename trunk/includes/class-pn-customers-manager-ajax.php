@@ -16,7 +16,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
    *
    * @since    1.0.0
    */
-  public function PN_CUSTOMERS_MANAGER_ajax_server() {
+  public function pn_customers_manager_ajax_server() {
     if (array_key_exists('pn_customers_manager_ajax_type', $_POST)) {
       // Always require nonce verification
       if (!array_key_exists('pn_customers_manager_ajax_nonce', $_POST)) {
@@ -154,7 +154,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
         case 'pn_cm_funnel_duplicate':
           if (!empty($pn_cm_funnel_id)) {
             $plugin_post_type_post = new PN_CUSTOMERS_MANAGER_Functions_Post();
-            $plugin_post_type_post->PN_CUSTOMERS_MANAGER_duplicate_post($pn_cm_funnel_id, 'publish');
+            $plugin_post_type_post->pn_customers_manager_duplicate_post($pn_cm_funnel_id, 'publish');
             
             $plugin_post_type_funnel = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
             echo wp_json_encode([
@@ -252,7 +252,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
         case 'pn_cm_organization_duplicate':
           if (!empty($pn_cm_organization_id)) {
             $plugin_post_type_post = new PN_CUSTOMERS_MANAGER_Functions_Post();
-            $plugin_post_type_post->PN_CUSTOMERS_MANAGER_duplicate_post($pn_cm_organization_id, 'publish');
+            $plugin_post_type_post->pn_customers_manager_duplicate_post($pn_cm_organization_id, 'publish');
             
             $plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
             echo wp_json_encode([

@@ -47,7 +47,7 @@ class PN_CUSTOMERS_MANAGER_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_enqueue_styles() {
+	public function pn_customers_manager_enqueue_styles() {
 		wp_enqueue_style($this->plugin_name . '-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/css/admin/pn-customers-manager-admin.css', [], $this->version, 'all');
 	}
 
@@ -56,7 +56,7 @@ class PN_CUSTOMERS_MANAGER_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_enqueue_scripts() {
+	public function pn_customers_manager_enqueue_scripts() {
 		wp_enqueue_media();
 		wp_enqueue_script($this->plugin_name . '-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-admin.js', ['jquery'], $this->version, false);
 	}

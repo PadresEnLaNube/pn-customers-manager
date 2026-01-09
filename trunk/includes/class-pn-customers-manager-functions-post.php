@@ -29,7 +29,7 @@ class PN_CUSTOMERS_MANAGER_Functions_Post {
 	 * 
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_insert_post($title, $content, $excerpt, $name, $type, $status, $author = 1, $parent = 0, $cats = [], $tags = [], $postmeta = [], $overwrite_id = true) {
+	public function pn_customers_manager_insert_post($title, $content, $excerpt, $name, $type, $status, $author = 1, $parent = 0, $cats = [], $tags = [], $postmeta = [], $overwrite_id = true) {
     $post_values = [
       'post_title' => trim($title),
       'post_content' => $content,
@@ -92,7 +92,7 @@ class PN_CUSTOMERS_MANAGER_Functions_Post {
    * @param string $suffix Optional suffix to add to the title (default: ' (copy)')
    * @return int|false The new post ID on success, false on failure
    */
-  public function PN_CUSTOMERS_MANAGER_duplicate_post($post_id, $post_status = 'draft', $suffix = ' (copy)') {
+  public function pn_customers_manager_duplicate_post($post_id, $post_status = 'draft', $suffix = ' (copy)') {
     // Get the original post
     $post = get_post($post_id);
     if (!$post) {

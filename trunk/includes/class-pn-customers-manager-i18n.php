@@ -16,7 +16,7 @@ class PN_CUSTOMERS_MANAGER_i18n {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_load_plugin_textdomain() {
+	public function pn_customers_manager_load_plugin_textdomain() {
 		load_plugin_textdomain(
 			'pn-customers-manager',
 			false,
@@ -24,7 +24,7 @@ class PN_CUSTOMERS_MANAGER_i18n {
 		);
 	}
 
-	public function PN_CUSTOMERS_MANAGER_pll_get_post_types($post_types, $is_settings) {
+	public function pn_customers_manager_pll_get_post_types($post_types, $is_settings) {
     if ($is_settings){
         unset($post_types['PN_CUSTOMERS_MANAGER_recipe']);
     } else {
@@ -34,7 +34,7 @@ class PN_CUSTOMERS_MANAGER_i18n {
     return $post_types;
   }
 
-  public function PN_CUSTOMERS_MANAGER_timestamp_server_gap() {
+  public function pn_customers_manager_timestamp_server_gap() {
     $time = new DateTime(gmdate('Y-m-d H:i:s', time()));
     $current_time = new DateTime(gmdate('Y-m-d H:i:s', current_time('timestamp')));
 
@@ -42,7 +42,7 @@ class PN_CUSTOMERS_MANAGER_i18n {
     return ((($interval->invert) ? '-' : '+') . $interval->d . ' days ') . ((($interval->invert) ? '-' : '+') . $interval->h . ' hours ') . ((($interval->invert) ? '-' : '+') . $interval->i . ' minutes ') . ((($interval->invert) ? '-' : '+') . $interval->s . ' seconds');
   }
 
-  public static function PN_CUSTOMERS_MANAGER_get_post($post_id) {
+  public static function pn_customers_manager_get_post($post_id) {
   	// PN_CUSTOMERS_MANAGER_i18n::PN_CUSTOMERS_MANAGER_get_post($post_id);
   	if (class_exists('Polylang') && function_exists('pll_get_post') && function_exists('pll_current_language')) {
   		return pll_get_post($post_id, pll_current_language('slug'));
@@ -51,7 +51,7 @@ class PN_CUSTOMERS_MANAGER_i18n {
   	}
   }
 
-  public static function PN_CUSTOMERS_MANAGER_get_term($term_id) {
+  public static function pn_customers_manager_get_term($term_id) {
   	// PN_CUSTOMERS_MANAGER_i18n::PN_CUSTOMERS_MANAGER_get_term($term_id);
   	if (class_exists('Polylang') && function_exists('pll_get_term') && function_exists('pll_current_language')) {
   		return pll_get_term($term_id, pll_current_language('slug'));

@@ -25,7 +25,7 @@ class PN_CUSTOMERS_MANAGER_Data {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_load_plugin_data() {
+	public function pn_customers_manager_load_plugin_data() {
 		$this->data['user_id'] = get_current_user_id();
 
 		if (is_admin()) {
@@ -42,7 +42,7 @@ class PN_CUSTOMERS_MANAGER_Data {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_flush_rewrite_rules() {
+	public function pn_customers_manager_flush_rewrite_rules() {
     if (get_option('pn_customers_manager_options_changed')) {
       flush_rewrite_rules();
       update_option('pn_customers_manager_options_changed', false);
@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER_Data {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function PN_CUSTOMERS_MANAGER_loader($display = false) {
+	public static function pn_customers_manager_loader($display = false) {
 		?>
 			<div class="pn-customers-manager-waiting <?php echo ($display) ? 'pn-customers-manager-display-block' : 'pn-customers-manager-display-none'; ?>">
 				<div class="pn-customers-manager-loader-circle-waiting"><div></div><div></div><div></div><div></div></div>
@@ -67,7 +67,7 @@ class PN_CUSTOMERS_MANAGER_Data {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function PN_CUSTOMERS_MANAGER_popup_loader() {
+	public static function pn_customers_manager_popup_loader() {
 		?>
 			<div class="pn-customers-manager-popup-content">
 				<div class="pn-customers-manager-loader-circle-wrapper"><div class="pn-customers-manager-text-align-center"><div class="pn-customers-manager-loader-circle"><div></div><div></div><div></div><div></div></div></div></div>

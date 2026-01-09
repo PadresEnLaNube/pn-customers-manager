@@ -46,7 +46,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param bool $include_placeholder Include the default "select" option.
    * @return array
    */
-  private function PN_CUSTOMERS_MANAGER_get_owner_select_options($include_placeholder = true) {
+  private function pn_customers_manager_get_owner_select_options($include_placeholder = true) {
     $options = $include_placeholder ? ['' => esc_html__('Select a user', 'pn-customers-manager')] : [];
 
     $users = get_users([
@@ -80,7 +80,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param int $organization_id
    * @return array
    */
-  private static function PN_CUSTOMERS_MANAGER_get_funnel_select_options($organization_id = 0) {
+  private static function pn_customers_manager_get_funnel_select_options($organization_id = 0) {
     $options = ['' => esc_html__('Select a funnel', 'pn-customers-manager')];
 
     $funnel_args = [
@@ -123,7 +123,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param int $organization_id
    * @return array
    */
-  private static function PN_CUSTOMERS_MANAGER_get_funnel_stage_options($organization_id = 0) {
+  private static function pn_customers_manager_get_funnel_stage_options($organization_id = 0) {
     $options = ['' => esc_html__('Select a funnel stage', 'pn-customers-manager')];
 
     if (empty($organization_id) || !class_exists('PN_CUSTOMERS_MANAGER_Post_Type_Funnel')) {
@@ -153,7 +153,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param bool $include_placeholder
    * @return array
    */
-  private static function PN_CUSTOMERS_MANAGER_get_funnel_status_options($include_placeholder = true) {
+  private static function pn_customers_manager_get_funnel_status_options($include_placeholder = true) {
     $options = $include_placeholder ? ['' => esc_html__('Select a funnel status', 'pn-customers-manager')] : [];
 
     $statuses = [
@@ -173,7 +173,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param int $organization_id
    * @return array
    */
-  private static function PN_CUSTOMERS_MANAGER_get_organization_contacts($organization_id) {
+  private static function pn_customers_manager_get_organization_contacts($organization_id) {
     $contacts = get_post_meta($organization_id, 'pn_cm_organization_contacts', true);
     if (empty($contacts) || !is_array($contacts)) {
       return [];
@@ -206,7 +206,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param int $organization_id
    * @return string
    */
-  private static function PN_CUSTOMERS_MANAGER_render_contacts_list($organization_id) {
+  private static function pn_customers_manager_render_contacts_list($organization_id) {
     $contacts = self::PN_CUSTOMERS_MANAGER_get_organization_contacts($organization_id);
 
     if (empty($contacts)) {
@@ -258,7 +258,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param int $organization_id
    * @return string
    */
-  private function PN_CUSTOMERS_MANAGER_render_contacts_field($organization_id) {
+  private function pn_customers_manager_render_contacts_field($organization_id) {
     if (empty($organization_id)) {
       return '<p class="pn-customers-manager-m-0">' . esc_html__('Save the organization to start adding contacts.', 'pn-customers-manager') . '</p>';
     }
@@ -307,7 +307,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
         'input' => 'html',
         'skip_save' => true,
         'label' => esc_html__('Linked contacts', 'pn-customers-manager'),
-        'html_content' => $this->PN_CUSTOMERS_MANAGER_render_contacts_field($organization_id),
+        'html_content' => $this->pn_customers_manager_render_contacts_field($organization_id),
         'description' => esc_html__('Each contact is a regular WordPress user so you can edit it from the Users screen.', 'pn-customers-manager'),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_legal_name'] = [
@@ -563,7 +563,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
         'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
         'input' => 'select',
         'label' => esc_html__('Primary owner', 'pn-customers-manager'),
-        'options' => $this->PN_CUSTOMERS_MANAGER_get_owner_select_options(),
+        'options' => $this->pn_customers_manager_get_owner_select_options(),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_collaborators'] = [
         'id' => 'pn_cm_organization_collaborators',
@@ -572,7 +572,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
         'multiple' => true,
         'label' => esc_html__('Assigned collaborators', 'pn-customers-manager'),
         'description' => esc_html__('Select other team members involved with the account.', 'pn-customers-manager'),
-        'options' => $this->PN_CUSTOMERS_MANAGER_get_owner_select_options(true),
+        'options' => $this->pn_customers_manager_get_owner_select_options(true),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_last_contact_date'] = [
         'id' => 'pn_cm_organization_last_contact_date',
@@ -967,7 +967,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
               }
 
               $post_functions = new PN_CUSTOMERS_MANAGER_Functions_Post();
-              $organization_id = $post_functions->PN_CUSTOMERS_MANAGER_insert_post(esc_html($pn_cm_organization_title), $pn_cm_organization_description, '', sanitize_title(esc_html($pn_cm_organization_title)), 'pn_cm_organization', 'publish', get_current_user_id());
+              $organization_id = $post_functions->pn_customers_manager_insert_post(esc_html($pn_cm_organization_title), $pn_cm_organization_description, '', sanitize_title(esc_html($pn_cm_organization_title)), 'pn_cm_organization', 'publish', get_current_user_id());
 
               if (!empty($key_value)) {
                 foreach ($key_value as $key => $value) {

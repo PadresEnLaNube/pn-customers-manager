@@ -16,7 +16,7 @@ class PN_CUSTOMERS_MANAGER_Taxonomies_Funnel {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function PN_CUSTOMERS_MANAGER_register_taxonomies() {
+	public static function pn_customers_manager_register_taxonomies() {
 		$taxonomies = [
 			'pn_cm_funnel_category' => [
 				'name'              		=> _x('Funnel category', 'Taxonomy general name', 'pn-customers-manager'),

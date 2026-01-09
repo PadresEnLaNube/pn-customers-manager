@@ -16,7 +16,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
    *
    * @since    1.0.0
    */
-  public function PN_CUSTOMERS_MANAGER_ajax_nopriv_server() {
+  public function pn_customers_manager_ajax_nopriv_server() {
     if (array_key_exists('pn_customers_manager_ajax_nopriv_type', $_POST)) {
       if (!array_key_exists('pn_customers_manager_ajax_nopriv_nonce', $_POST)) {
         echo wp_json_encode([
@@ -165,7 +165,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                         $title = !empty($_POST[$post_type . '_title']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST[$post_type . '_title'])) : '';
                         $description = !empty($_POST[$post_type . '_description']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST[$post_type . '_description'])) : '';
                         
-                        $post_id = $post_functions->PN_CUSTOMERS_MANAGER_insert_post($title, $description, '', sanitize_title($title), $post_type, 'publish', get_current_user_id());
+                        $post_id = $post_functions->pn_customers_manager_insert_post($title, $description, '', sanitize_title($title), $post_type, 'publish', get_current_user_id());
                       }
                     }
 
@@ -219,7 +219,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                 case 'option':
                   if (PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_is_admin(get_current_user_id())) {
                     $pn_customers_manager_settings = new PN_CUSTOMERS_MANAGER_Settings();
-                    $pn_customers_manager_options = $pn_customers_manager_settings->PN_CUSTOMERS_MANAGER_get_options();
+                    $pn_customers_manager_options = $pn_customers_manager_settings->pn_customers_manager_get_options();
                     $pn_customers_manager_allowed_options = array_keys($pn_customers_manager_options);
 
                     // First, add html_multi field IDs to allowed options temporarily

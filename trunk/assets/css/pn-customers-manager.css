@@ -1,7 +1,7 @@
 :root {
-  --pn-customers-manager-color-main:#d45500;
-  --pn-customers-manager-bg-color-main:#d45500;
-  --pn-customers-manager-border-color-main:#d45500;
+  --pn-customers-manager-color-main:#0000aa;
+  --pn-customers-manager-bg-color-main:#0000aa;
+  --pn-customers-manager-border-color-main:#0000aa;
   --pn-customers-manager-color-main-alt:#232323;
   --pn-customers-manager-bg-color-main-alt:#232323;
   --pn-customers-manager-border-color-main-alt:#232323;
@@ -1820,6 +1820,18 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
 
   .pn-customers-manager-tag-suggestion:last-child {
       border-bottom: none;
+  }
+
+  /* Section vertical line for code-folding style */
+  .pn-customers-manager-section-wrapper {
+    position: relative;
+  }
+
+  /* Vertical line for code folding style. We don't depend on JS: the block itself is hidden with display:none when closed, so the border only shows when open. */
+  .pn-customers-manager-section-wrapper > .pn-customers-manager-toggle-content {
+    position: relative;
+    border-left: 2px solid var(--pn-customers-manager-color-main);
+    padding-left: 18px; /* 20px original - 2px border */
   }
 
   /* Responsive Design */

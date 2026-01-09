@@ -18,7 +18,7 @@ class PN_CUSTOMERS_MANAGER_Activator {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function PN_CUSTOMERS_MANAGER_activate() {
+	public static function pn_customers_manager_activate() {
     require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-functions-post.php';
     require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-functions-attachment.php';
 
@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER_Activator {
     if (empty(get_posts(['fields' => 'ids', 'numberposts' => -1, 'post_type' => 'pn_cm_funnel', 'post_status' => 'any', ]))) {
       $pn_customers_manager_title = __('Funnel Test', 'pn-customers-manager');
       $pn_customers_manager_post_content = '';
-      $pn_customers_manager_id = $post_functions->PN_CUSTOMERS_MANAGER_insert_post(esc_html($pn_customers_manager_title), $pn_customers_manager_post_content, '', sanitize_title(esc_html($pn_customers_manager_title)), 'pn_cm_funnel', 'publish', 1);
+      $pn_customers_manager_id = $post_functions->pn_customers_manager_insert_post(esc_html($pn_customers_manager_title), $pn_customers_manager_post_content, '', sanitize_title(esc_html($pn_customers_manager_title)), 'pn_cm_funnel', 'publish', 1);
 
       if (class_exists('Polylang') && function_exists('pll_default_language')) {
         $language = pll_default_language();
@@ -66,7 +66,7 @@ class PN_CUSTOMERS_MANAGER_Activator {
             if ($locale != $language) {
               $pn_customers_manager_title = __('Funnel Test', 'pn-customers-manager') . ' ' . $locale;
               $pn_customers_manager_post_content = '';
-              $translated_PN_CUSTOMERS_MANAGER_id = $post_functions->PN_CUSTOMERS_MANAGER_insert_post(esc_html($pn_customers_manager_title), $pn_customers_manager_post_content, '', sanitize_title(esc_html($pn_customers_manager_title)), 'pn_cm_funnel', 'publish', 1);
+              $translated_PN_CUSTOMERS_MANAGER_id = $post_functions->pn_customers_manager_insert_post(esc_html($pn_customers_manager_title), $pn_customers_manager_post_content, '', sanitize_title(esc_html($pn_customers_manager_title)), 'pn_cm_funnel', 'publish', 1);
 
               pll_set_post_language($translated_PN_CUSTOMERS_MANAGER_id, $locale);
 

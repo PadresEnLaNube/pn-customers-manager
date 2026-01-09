@@ -16,7 +16,7 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_test($atts) {
+	public function pn_customers_manager_test($atts) {
     $a = extract(shortcode_atts([
       'user_id' => 0,
       'post_id' => 0,
@@ -154,7 +154,7 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
     return $pn_customers_manager_return_string;
 	}
 
-  public function PN_CUSTOMERS_MANAGER_call_to_action($atts) {
+  public function pn_customers_manager_call_to_action($atts) {
     // echo do_shortcode('[pn-customers-manager-call-to-action PN_CUSTOMERS_MANAGER_call_to_action_icon="error_outline" PN_CUSTOMERS_MANAGER_call_to_action_title="' . esc_html(__('Default title', 'pn-customers-manager')) . '" PN_CUSTOMERS_MANAGER_call_to_action_content="' . esc_html(__('Default content', 'pn-customers-manager')) . '" PN_CUSTOMERS_MANAGER_call_to_action_button_link="#" PN_CUSTOMERS_MANAGER_call_to_action_button_text="' . esc_html(__('Button text', 'pn-customers-manager')) . '" PN_CUSTOMERS_MANAGER_call_to_action_button_class="pn-customers-manager-class"]');
     $a = extract(shortcode_atts(array(
       'PN_CUSTOMERS_MANAGER_call_to_action_class' => '',
@@ -200,7 +200,7 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
    * @param array $atts
    * @return string
    */
-  public function PN_CUSTOMERS_MANAGER_client_form($atts = []) {
+  public function pn_customers_manager_client_form($atts = []) {
     return PN_CUSTOMERS_MANAGER_Client_Form::render_form($atts);
   }
 

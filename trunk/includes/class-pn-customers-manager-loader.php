@@ -67,8 +67,8 @@ class PN_CUSTOMERS_MANAGER_Loader {
 	 * @param    int                  $priority         Optional. The priority at which the function should be fired. Default is 10.
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1.
 	 */
-	public function PN_CUSTOMERS_MANAGER_add_action($hook, $component, $callback, $priority = 10, $accepted_args = 1) {
-		$this->actions = $this->PN_CUSTOMERS_MANAGER_add($this->actions, $hook, $component, $callback, $priority, $accepted_args);
+	public function pn_customers_manager_add_action($hook, $component, $callback, $priority = 10, $accepted_args = 1) {
+		$this->actions = $this->pn_customers_manager_add($this->actions, $hook, $component, $callback, $priority, $accepted_args);
 	}
 
 	/**
@@ -81,8 +81,8 @@ class PN_CUSTOMERS_MANAGER_Loader {
 	 * @param    int                  $priority         Optional. The priority at which the function should be fired. Default is 10.
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1
 	 */
-	public function PN_CUSTOMERS_MANAGER_add_filter($hook, $component, $callback, $priority = 10, $accepted_args = 1) {
-		$this->filters = $this->PN_CUSTOMERS_MANAGER_add($this->filters, $hook, $component, $callback, $priority, $accepted_args);
+	public function pn_customers_manager_add_filter($hook, $component, $callback, $priority = 10, $accepted_args = 1) {
+		$this->filters = $this->pn_customers_manager_add($this->filters, $hook, $component, $callback, $priority, $accepted_args);
 	}
 
 	/**
@@ -95,8 +95,8 @@ class PN_CUSTOMERS_MANAGER_Loader {
 	 * @param    int                  $priority         Optional. The priority at which the function should be fired. Default is 10.
 	 * @param    int                  $accepted_args    Optional. The number of arguments that should be passed to the $callback. Default is 1
 	 */
-	public function PN_CUSTOMERS_MANAGER_add_shortcode($hook, $component, $callback, $priority = 0, $accepted_args = 0) {
-		$this->shortcodes = $this->PN_CUSTOMERS_MANAGER_add($this->shortcodes, $hook, $component, $callback, $priority, $accepted_args);
+	public function pn_customers_manager_add_shortcode($hook, $component, $callback, $priority = 0, $accepted_args = 0) {
+		$this->shortcodes = $this->pn_customers_manager_add($this->shortcodes, $hook, $component, $callback, $priority, $accepted_args);
 	}
 
 	/**
@@ -112,7 +112,7 @@ class PN_CUSTOMERS_MANAGER_Loader {
 	 * @param    int                  $accepted_args    The number of arguments that should be passed to the $callback.
 	 * @return   array                                  The collection of actions, filters and shortcodes registered with WordPress.
 	 */
-	private function PN_CUSTOMERS_MANAGER_add($hooks, $hook, $component, $callback, $priority, $accepted_args) {
+	private function pn_customers_manager_add($hooks, $hook, $component, $callback, $priority, $accepted_args) {
 		$hooks[] = [
 			'hook'          => $hook,
 			'component'     => $component,
@@ -129,7 +129,7 @@ class PN_CUSTOMERS_MANAGER_Loader {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_run() {
+	public function pn_customers_manager_run() {
 		foreach ($this->filters as $hook) {
 			add_filter($hook['hook'], [$hook['component'], $hook['callback']], $hook['priority'], $hook['accepted_args']);
 		}

@@ -29,7 +29,7 @@ class PN_CUSTOMERS_MANAGER_Deactivator {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function PN_CUSTOMERS_MANAGER_deactivate() {
+	public static function pn_customers_manager_deactivate() {
 		$plugin_post = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
 		
 		if (get_option('pn_customers_manager_options_remove') == 'on') {
@@ -44,7 +44,7 @@ class PN_CUSTOMERS_MANAGER_Deactivator {
         }
       }
 
-      foreach ($plugin_post->PN_CUSTOMERS_MANAGER_get_fields() as $pn_customers_manager_option) {
+      foreach ($plugin_post->pn_customers_manager_get_fields() as $pn_customers_manager_option) {
         delete_option($pn_customers_manager_option['id']);
       }
     }

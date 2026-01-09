@@ -11,12 +11,12 @@
  * @author     Padres en la Nube
  */
 class PN_CUSTOMERS_MANAGER_Functions_User {
-  public static function PN_CUSTOMERS_MANAGER_user_is_admin($user_id) {
+  public static function pn_customers_manager_user_is_admin($user_id) {
     // PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_is_admin($user_id)
     return is_user_logged_in() && user_can($user_id, 'manage_options');
   }
 
-  public static function PN_CUSTOMERS_MANAGER_user_get_name($user_id) {
+  public static function pn_customers_manager_user_get_name($user_id) {
     // PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_get_name($user_id)
     if (!empty($user_id)) {
       $user_info = get_userdata($user_id);
@@ -37,7 +37,7 @@ class PN_CUSTOMERS_MANAGER_Functions_User {
     }
   }
 
-  public static function PN_CUSTOMERS_MANAGER_user_get_age($user_id) {
+  public static function pn_customers_manager_user_get_age($user_id) {
     // PN_CUSTOMERS_MANAGER_Functions_User::PN_CUSTOMERS_MANAGER_user_get_age($user_id)
     $timestamp = get_user_meta($user_id, 'PN_CUSTOMERS_MANAGER_child_birthdate', true);
 
@@ -57,7 +57,7 @@ class PN_CUSTOMERS_MANAGER_Functions_User {
     return false;
   }
 
-  public static function PN_CUSTOMERS_MANAGER_user_insert($pn_customers_manager_user_login, $pn_customers_manager_user_password, $pn_customers_manager_user_email = '', $pn_customers_manager_first_name = '', $pn_customers_manager_last_name = '', $pn_customers_manager_display_name = '', $pn_customers_manager_user_nicename = '', $pn_customers_manager_user_nickname = '', $pn_customers_manager_user_description = '', $pn_customers_manager_user_role = [], $pn_customers_manager_array_usermeta = [/*['PN_CUSTOMERS_MANAGER_key' => 'PN_CUSTOMERS_MANAGER_value'], */]) {
+  public static function pn_customers_manager_user_insert($pn_customers_manager_user_login, $pn_customers_manager_user_password, $pn_customers_manager_user_email = '', $pn_customers_manager_first_name = '', $pn_customers_manager_last_name = '', $pn_customers_manager_display_name = '', $pn_customers_manager_user_nicename = '', $pn_customers_manager_user_nickname = '', $pn_customers_manager_user_description = '', $pn_customers_manager_user_role = [], $pn_customers_manager_array_usermeta = [/*['PN_CUSTOMERS_MANAGER_key' => 'PN_CUSTOMERS_MANAGER_value'], */]) {
     /* $this->insert_user($pn_customers_manager_user_login, $pn_customers_manager_user_password, $pn_customers_manager_user_email = '', $pn_customers_manager_first_name = '', $pn_customers_manager_last_name = '', $pn_customers_manager_display_name = '', $pn_customers_manager_user_nicename = '', $pn_customers_manager_user_nickname = '', $pn_customers_manager_user_description = '', $pn_customers_manager_user_role = [], $pn_customers_manager_array_usermeta = [['PN_CUSTOMERS_MANAGER_key' => 'PN_CUSTOMERS_MANAGER_value'], ],); */
 
     $pn_customers_manager_user_array = [
@@ -113,7 +113,7 @@ class PN_CUSTOMERS_MANAGER_Functions_User {
     return $user_id;
   }
 
-  public function PN_CUSTOMERS_MANAGER_user_wp_login($login) {
+  public function pn_customers_manager_user_wp_login($login) {
     $user = get_user_by('login', $login);
     $user_id = $user->ID;
     $current_login_time = get_user_meta($user_id, 'PN_CUSTOMERS_MANAGER_user_current_login', true);
@@ -135,7 +135,7 @@ class PN_CUSTOMERS_MANAGER_Functions_User {
    * @param    string    $post_type  Post type (PN_CUSTOMERS_MANAGER_asset or PN_CUSTOMERS_MANAGER_liability)
    * @return   bool                  True if user can view, false otherwise
    */
-  public static function PN_CUSTOMERS_MANAGER_user_can_view_post($post_id, $post_type) {
+  public static function pn_customers_manager_user_can_view_post($post_id, $post_type) {
     // Check if user is logged in
     if (!is_user_logged_in()) {
       return false;
@@ -186,7 +186,7 @@ class PN_CUSTOMERS_MANAGER_Functions_User {
    * @param    string    $post_type  Post type (PN_CUSTOMERS_MANAGER_asset or PN_CUSTOMERS_MANAGER_liability)
    * @return   array                 Filtered array of post IDs
    */
-  public static function PN_CUSTOMERS_MANAGER_filter_user_posts($posts, $post_type) {
+  public static function pn_customers_manager_filter_user_posts($posts, $post_type) {
     if (!is_user_logged_in()) {
       return [];
     }

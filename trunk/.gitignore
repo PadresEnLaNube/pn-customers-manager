@@ -1,0 +1,8 @@
+# SVN
+.svn/
+*.svn
+.svn/
+
+# SVN metadata files
+.svn-base
+.svn-work

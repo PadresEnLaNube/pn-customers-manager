@@ -11,7 +11,7 @@
  * @author     Padres en la Nube
  */
 class PN_CUSTOMERS_MANAGER_Settings {
-  public function PN_CUSTOMERS_MANAGER_get_options() {
+  public function pn_customers_manager_get_options() {
     $pn_customers_manager_options = [];
     
     foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
@@ -52,8 +52,8 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'input' => 'input',
       'type' => 'color',
       'label' => __('Main Color', 'pn-customers-manager'),
-      'description' => __('Primary color used for text, backgrounds, and borders (default: #d45500)', 'pn-customers-manager'),
-      'value' => '#d45500',
+      'description' => __('Primary color used for text, backgrounds, and borders (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
     ];
 
     $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_bg_color_main'] = [
@@ -62,8 +62,8 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'input' => 'input',
       'type' => 'color',
       'label' => __('Main Background Color', 'pn-customers-manager'),
-      'description' => __('Primary background color (default: #d45500)', 'pn-customers-manager'),
-      'value' => '#d45500',
+      'description' => __('Primary background color (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
     ];
 
     $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_border_color_main'] = [
@@ -72,8 +72,8 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'input' => 'input',
       'type' => 'color',
       'label' => __('Main Border Color', 'pn-customers-manager'),
-      'description' => __('Primary border color (default: #d45500)', 'pn-customers-manager'),
-      'value' => '#d45500',
+      'description' => __('Primary border color (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
     ];
 
     $pn_customers_manager_options['PN_CUSTOMERS_MANAGER_color_main_alt'] = [
@@ -159,7 +159,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_admin_menu() {
+	public function pn_customers_manager_admin_menu() {
     // Determine the capability to use for the main menu
     // Use the first available capability, or manage_options as fallback
     $menu_cap = 'manage_options';
@@ -237,7 +237,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
 	  <?php
 	}
 
-  public function PN_CUSTOMERS_MANAGER_activated_plugin($plugin) {
+  public function pn_customers_manager_activated_plugin($plugin) {
     if($plugin == 'pn-customers-manager/pn-customers-manager.php') {
       if (get_option('PN_CUSTOMERS_MANAGER_pages_funnel') && get_option('PN_CUSTOMERS_MANAGER_url_main')) {
         if (!get_transient('PN_CUSTOMERS_MANAGER_just_activated') && !defined('DOING_AJAX')) {
@@ -247,7 +247,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
     }
   }
 
-  public function PN_CUSTOMERS_MANAGER_check_activation() {
+  public function pn_customers_manager_check_activation() {
     // Only run in admin and not during AJAX requests
     if (!is_admin() || defined('DOING_AJAX')) {
       return;
@@ -279,7 +279,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
   /**
    * Adds the Settings link to the plugin list
    */
-  public function PN_CUSTOMERS_MANAGER_plugin_action_links($links) {
+  public function pn_customers_manager_plugin_action_links($links) {
       $settings_link = '<a href="admin.php?page=pn_customers_manager_options">' . esc_html__('Settings', 'pn-customers-manager') . '</a>';
       array_unshift($links, $settings_link);
       

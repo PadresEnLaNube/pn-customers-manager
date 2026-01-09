@@ -385,7 +385,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Funnel {
               }
 
               $post_functions = new PN_CUSTOMERS_MANAGER_Functions_Post();
-              $funnel_id = $post_functions->PN_CUSTOMERS_MANAGER_insert_post(esc_html($pn_cm_funnel_title), $pn_cm_funnel_description, '', sanitize_title(esc_html($pn_cm_funnel_title)), 'pn_cm_funnel', 'publish', get_current_user_id());
+              $funnel_id = $post_functions->pn_customers_manager_insert_post(esc_html($pn_cm_funnel_title), $pn_cm_funnel_description, '', sanitize_title(esc_html($pn_cm_funnel_title)), 'pn_cm_funnel', 'publish', get_current_user_id());
 
               if (!empty($key_value)) {
                 foreach ($key_value as $key => $value) {

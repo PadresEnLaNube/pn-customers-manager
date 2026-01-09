@@ -49,7 +49,7 @@ class PN_CUSTOMERS_MANAGER_Common
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_enqueue_styles()
+	public function pn_customers_manager_enqueue_styles()
 	{
 		if (!wp_style_is($this->plugin_name . '-material-icons-outlined', 'enqueued')) {
 			wp_enqueue_style($this->plugin_name . '-material-icons-outlined', PN_CUSTOMERS_MANAGER_URL . 'assets/css/material-icons-outlined.min.css', [], $this->version, 'all');
@@ -78,7 +78,7 @@ class PN_CUSTOMERS_MANAGER_Common
 		wp_enqueue_style($this->plugin_name, PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager.css', [], $this->version, 'all');
 
 		// Enqueue dynamic CSS for color customization
-		$this->PN_CUSTOMERS_MANAGER_enqueue_dynamic_colors();
+		$this->pn_customers_manager_enqueue_dynamic_colors();
 	}
 
 	/**
@@ -86,13 +86,13 @@ class PN_CUSTOMERS_MANAGER_Common
 	 *
 	 * @since    1.0.0
 	 */
-	private function PN_CUSTOMERS_MANAGER_enqueue_dynamic_colors()
+	private function pn_customers_manager_enqueue_dynamic_colors()
 	{
 		// Get color values from options, with defaults
 		$colors = [
-			'color_main' => get_option('PN_CUSTOMERS_MANAGER_color_main', '#d45500'),
-			'bg_color_main' => get_option('PN_CUSTOMERS_MANAGER_bg_color_main', '#d45500'),
-			'border_color_main' => get_option('PN_CUSTOMERS_MANAGER_border_color_main', '#d45500'),
+			'color_main' => get_option('PN_CUSTOMERS_MANAGER_color_main', '#0000aa'),
+			'bg_color_main' => get_option('PN_CUSTOMERS_MANAGER_bg_color_main', '#0000aa'),
+			'border_color_main' => get_option('PN_CUSTOMERS_MANAGER_border_color_main', '#0000aa'),
 			'color_main_alt' => get_option('PN_CUSTOMERS_MANAGER_color_main_alt', '#232323'),
 			'bg_color_main_alt' => get_option('PN_CUSTOMERS_MANAGER_bg_color_main_alt', '#232323'),
 			'border_color_main_alt' => get_option('PN_CUSTOMERS_MANAGER_border_color_main_alt', '#232323'),
@@ -102,9 +102,9 @@ class PN_CUSTOMERS_MANAGER_Common
 
 		// Default values as fallback
 		$defaults = [
-			'color_main' => '#d45500',
-			'bg_color_main' => '#d45500',
-			'border_color_main' => '#d45500',
+			'color_main' => '#0000aa',
+			'bg_color_main' => '#0000aa',
+			'border_color_main' => '#0000aa',
 			'color_main_alt' => '#232323',
 			'bg_color_main_alt' => '#232323',
 			'border_color_main_alt' => '#232323',
@@ -139,7 +139,7 @@ class PN_CUSTOMERS_MANAGER_Common
 	 *
 	 * @since    1.0.0
 	 */
-	public function PN_CUSTOMERS_MANAGER_enqueue_scripts()
+	public function pn_customers_manager_enqueue_scripts()
 	{
 		if (!wp_script_is('jquery-ui-sortable', 'enqueued')) {
 			wp_enqueue_script('jquery-ui-sortable');
@@ -271,7 +271,7 @@ class PN_CUSTOMERS_MANAGER_Common
 		PN_CUSTOMERS_MANAGER_Selector::instance();
 	}
 
-	public function PN_CUSTOMERS_MANAGER_body_classes($classes)
+	public function pn_customers_manager_body_classes($classes)
 	{
 		$classes[] = 'pn-customers-manager-body';
 
