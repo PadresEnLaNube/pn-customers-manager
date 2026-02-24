@@ -90,6 +90,67 @@
     }
   });
 
+  $(document).on('click', '.pn-cm-referral-share-copy', function() {
+    var link = $(this).closest('.pn-cm-referral-share-link-row')
+                      .find('.pn-cm-referral-share-link-input').val();
+    var $message = $(this).closest('.pn-cm-referral-share-section')
+                          .find('.pn-cm-referral-share-message');
+
+    if (navigator.clipboard && link) {
+      navigator.clipboard.writeText(link).then(function() {
+        showMessage($message, pn_customers_manager_i18n.referral_link_copied, 'success');
+      });
+    }
+  });
+
+  function getShareText($section) {
+    var $textarea = $section.find('.pn-cm-referral-share-textarea');
+    var text = $.trim($textarea.val()) || $.trim($textarea.attr('placeholder'));
+    var url = $section.data('referral-url');
+    return text + ' ' + url;
+  }
+
+  function updateShareButtons($section) {
+    var fullText = getShareText($section);
+    var url = $section.data('referral-url');
+    var encodedText = encodeURIComponent(fullText);
+    var encodedUrl = encodeURIComponent(url);
+
+    $section.find('[data-share="whatsapp"]').attr('href', 'https://wa.me/?text=' + encodedText);
+    $section.find('[data-share="facebook"]').attr('href', 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl);
+    $section.find('[data-share="twitter"]').attr('href', 'https://twitter.com/intent/tweet?text=' + encodedText);
+    $section.find('[data-share="telegram"]').attr('href', 'https://t.me/share/url?url=' + encodedUrl + '&text=' + encodedText);
+  }
+
+  // Initialize share buttons on page load
+  $('.pn-cm-referral-share-section').each(function() {
+    updateShareButtons($(this));
+  });
+
+  // Update share buttons when textarea changes
+  var shareTextTimer;
+  $(document).on('input', '.pn-cm-referral-share-textarea', function() {
+    var $section = $(this).closest('.pn-cm-referral-share-section');
+    updateShareButtons($section);
+
+    // Auto-save with debounce
+    clearTimeout(shareTextTimer);
+    var text = $(this).val();
+    shareTextTimer = setTimeout(function() {
+      $.ajax({
+        url: pn_customers_manager_ajax.ajax_url,
+        type: 'POST',
+        data: {
+          action: 'pn_customers_manager_ajax',
+          pn_customers_manager_ajax_type: 'pn_cm_referral_save_share_text',
+          pn_customers_manager_ajax_nonce: pn_customers_manager_ajax.pn_customers_manager_ajax_nonce,
+          share_text: text
+        },
+        dataType: 'json'
+      });
+    }, 800);
+  });
+
   $(document).on('keydown', '.pn-cm-referral-email', function(e) {
     if (e.key === 'Enter') {
       e.preventDefault();

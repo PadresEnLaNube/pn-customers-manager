@@ -2463,3 +2463,54 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
 .pn-customers-manager-input-wrapper .pn-customers-manager-p-10:has(> label) {
   padding-bottom: 0;
 }
+
+/* USER ROLE SELECTOR */
+.pn-customers-manager-input-wrapper.pn-customers-manager-input-field-user_role_selector {
+  height: auto !important;
+  overflow: visible !important;
+}
+.pn-customers-manager-users-with-role-box {
+  background: #f0f0f1;
+  border-radius: 4px;
+}
+
+.pn-customers-manager-users-with-role-box h4 {
+  margin-top: 0;
+}
+
+.pn-customers-manager-role-badge {
+  background: var(--pn-customers-manager-bg-color-main);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.pn-customers-manager-user-role-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.pn-customers-manager-user-role-item .material-icons-outlined {
+  font-size: 16px;
+  vertical-align: middle;
+  color: var(--pn-customers-manager-color-main);
+}
+
+.pn-customers-manager-user-role-item span {
+  font-size: 13px;
+}
+
+.pn-customers-manager-p-15 {
+  padding: 15px;
+}
+
+.pn-customers-manager-mt-5 {
+  margin-top: 5px;
+}
+
+.pn-customers-manager-color-gray {
+  color: #666;
+}
+/* END USER ROLE SELECTOR */

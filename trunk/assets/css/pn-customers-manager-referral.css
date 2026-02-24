@@ -390,6 +390,138 @@
   opacity: 0.88;
 }
 
+/* --- Share Referral Link Section --- */
+.pn-cm-referral-share-section {
+  margin-bottom: 28px;
+}
+
+.pn-cm-referral-share-section h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.pn-cm-referral-share-link-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.pn-cm-referral-share-link-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #f9fafb;
+  color: #333;
+}
+
+.pn-cm-referral-share-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pn-cm-referral-share-copy:hover {
+  background: #e4e4e4;
+}
+
+.pn-cm-referral-share-copy .material-icons-outlined {
+  font-size: 20px;
+  color: #374151;
+}
+
+.pn-cm-referral-share-text-row {
+  margin-bottom: 14px;
+}
+
+.pn-cm-referral-share-text-row label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.pn-cm-referral-share-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #f9fafb;
+  color: #333;
+  resize: vertical;
+  min-height: 60px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.pn-cm-referral-share-textarea:focus {
+  border-color: var(--pn-customers-manager-border-color-main, #0000aa);
+}
+
+.pn-cm-referral-share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pn-cm-referral-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.pn-cm-referral-share-btn:hover {
+  opacity: 0.88;
+  transform: scale(1.1);
+  text-decoration: none;
+}
+
+.pn-cm-referral-share-btn img {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.pn-cm-referral-share-whatsapp {
+  background-color: #25D366;
+}
+
+.pn-cm-referral-share-facebook {
+  background-color: #1877F2;
+}
+
+.pn-cm-referral-share-twitter {
+  background-color: #000;
+}
+
+.pn-cm-referral-share-telegram {
+  background-color: #0088cc;
+}
+
+.pn-cm-referral-share-message {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
 /* --- QR Landing Popup --- */
 .pn-cm-qr-referral-landing-form {
   text-align: center;
@@ -582,6 +714,26 @@
   border-color: #991b1b;
 }
 
+[data-theme="dark"] .pn-cm-referral-share-link-input,
+[data-theme="dark"] .pn-cm-referral-share-textarea {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .pn-cm-referral-share-text-row label {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .pn-cm-referral-share-copy {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+[data-theme="dark"] .pn-cm-referral-share-copy .material-icons-outlined {
+  color: #d1d5db;
+}
+
 /* --- Responsive --- */
 @media (max-width: 600px) {
   .pn-cm-referral-form {
@@ -606,5 +758,13 @@
 
   .pn-cm-referral-link-row {
     flex-direction: column;
+  }
+
+  .pn-cm-referral-share-link-row {
+    flex-direction: column;
+  }
+
+  .pn-cm-referral-share-buttons {
+    justify-content: center;
   }
 }

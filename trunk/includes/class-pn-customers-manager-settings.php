@@ -198,7 +198,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'type' => 'checkbox',
       'value' => 'on',
       'label' => __('Activar sistema de referidos', 'pn-customers-manager'),
-      'description' => __('Activa el sistema de referidos con codigo QR para que los usuarios puedan invitar a otros.', 'pn-customers-manager'),
+      'description' => __('Activa el sistema de referidos con codigo QR para que los usuarios puedan invitar a otros. Los administradores siempre veran el panel de referidos aunque esta opcion este desactivada.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_referral_show_ranking'] = [
@@ -208,6 +208,14 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'type' => 'checkbox',
       'label' => __('Mostrar ranking de principales referentes', 'pn-customers-manager'),
       'description' => __('Muestra el listado de principales referentes en el panel de referidos.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_referral_share_text'] = [
+      'id' => 'pn_customers_manager_referral_share_text',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Texto para compartir enlace de referido', 'pn-customers-manager'),
+      'description' => __('Texto por defecto que acompana al enlace de referido al compartir en redes sociales. El enlace se anade automaticamente al final. Los usuarios pueden personalizar su propio texto desde su panel.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_referral_qr_branding'] = [
@@ -220,6 +228,43 @@ class PN_CUSTOMERS_MANAGER_Settings {
 
     $pn_customers_manager_options['pn_customers_manager_referral_section_end'] = [
       'id' => 'pn_customers_manager_referral_section_end',
+      'section' => 'end',
+    ];
+
+    // User Roles section
+    $pn_customers_manager_options['pn_customers_manager_roles_section_start'] = [
+      'id' => 'pn_customers_manager_roles_section_start',
+      'section' => 'start',
+      'label' => __('Roles de usuario', 'pn-customers-manager'),
+      'description' => __('Gestiona los roles de usuario del plugin. Puedes asignar o eliminar roles a los usuarios registrados.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_role_selector_manager'] = [
+      'id' => 'pn_customers_manager_role_selector_manager',
+      'input' => 'user_role_selector',
+      'label' => __('PN Customers Manager', 'pn-customers-manager'),
+      'role' => 'pn_customers_manager_role_manager',
+      'role_label' => __('PN Customers Manager', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_role_selector_client'] = [
+      'id' => 'pn_customers_manager_role_selector_client',
+      'input' => 'user_role_selector',
+      'label' => __('Client - PN', 'pn-customers-manager'),
+      'role' => 'pn_customers_manager_role_client',
+      'role_label' => __('Client - PN', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_role_selector_commercial'] = [
+      'id' => 'pn_customers_manager_role_selector_commercial',
+      'input' => 'user_role_selector',
+      'label' => __('Comercial - PN', 'pn-customers-manager'),
+      'role' => 'pn_customers_manager_role_commercial',
+      'role_label' => __('Comercial - PN', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_roles_section_end'] = [
+      'id' => 'pn_customers_manager_roles_section_end',
       'section' => 'end',
     ];
 

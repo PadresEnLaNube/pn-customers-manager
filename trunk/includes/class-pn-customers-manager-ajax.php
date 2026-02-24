@@ -40,7 +40,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
       $pn_customers_manager_ajax_type = PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['pn_customers_manager_ajax_type']));
 
       // Only CRM managers and administrators can use the CRM AJAX endpoints.
-      if (!current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization')) {
+      if (!current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization') && !current_user_can('manage_options')) {
         echo wp_json_encode([
           'error_key' => 'pn_customers_manager_access_denied',
           'error_content' => esc_html(__('You do not have permission to access this section.', 'pn-customers-manager')),
@@ -331,6 +331,16 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             : ['error_key' => '', 'referral_link' => $result['referral_link'], 'referral' => $result['referral']]);
           exit;
           break;
+        case 'pn_cm_referral_save_share_text':
+          if (!is_user_logged_in()) {
+            echo wp_json_encode(['error_key' => 'not_logged_in']);
+            exit;
+          }
+          $share_text = sanitize_textarea_field(wp_unslash($_POST['share_text'] ?? ''));
+          update_user_meta(get_current_user_id(), 'pn_cm_referral_share_text', $share_text);
+          echo wp_json_encode(['error_key' => '']);
+          exit;
+          break;
         case 'pn_cm_organization_remove':
           if (!empty($pn_cm_organization_id)) {
             wp_delete_post($pn_cm_organization_id, true);
@@ -593,10 +603,125 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(['error_key' => 'pn_cm_contact_delete_error']);
           exit;
           break;
+        case 'pn_cm_assign_role':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_assign_role_error',
+              'error_content' => esc_html__('You do not have permission to manage user roles.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          // Verify role assignment nonce
+          $role_nonce = isset($_POST['pn_customers_manager_role_nonce']) ? sanitize_text_field(wp_unslash($_POST['pn_customers_manager_role_nonce'])) : '';
+          if (!wp_verify_nonce($role_nonce, 'pn-customers-manager-role-assignment')) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_assign_role_error',
+              'error_content' => esc_html__('Security check failed for role assignment.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $user_ids = isset($_POST['user_ids']) && is_array($_POST['user_ids']) ? array_map('intval', $_POST['user_ids']) : [];
+          $role = isset($_POST['role']) ? sanitize_text_field(wp_unslash($_POST['role'])) : '';
+          $action_type = isset($_POST['action_type']) ? sanitize_text_field(wp_unslash($_POST['action_type'])) : 'assign';
+
+          if (empty($user_ids)) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_assign_role_error',
+              'error_content' => esc_html__('No users selected.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          if (empty($role)) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_assign_role_error',
+              'error_content' => esc_html__('No role specified.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          // Validate role is one of the plugin roles
+          $plugin_roles = [
+            'pn_customers_manager_role_manager',
+            'pn_customers_manager_role_client',
+            'pn_customers_manager_role_commercial',
+          ];
+
+          if (!in_array($role, $plugin_roles)) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_assign_role_error',
+              'error_content' => esc_html__('Invalid role.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          // Ensure the role exists before trying to assign it
+          $wp_roles = wp_roles();
+          if (!$wp_roles->is_role($role)) {
+            $role_labels = [
+              'pn_customers_manager_role_manager' => __('PN Customers Manager', 'pn-customers-manager'),
+              'pn_customers_manager_role_client' => __('Client - PN', 'pn-customers-manager'),
+              'pn_customers_manager_role_commercial' => __('Comercial - PN', 'pn-customers-manager'),
+            ];
+            add_role($role, esc_html($role_labels[$role]), ['read' => true]);
+          }
+
+          $success_count = 0;
+
+          foreach ($user_ids as $user_id) {
+            $user = get_userdata($user_id);
+            if (!$user) {
+              continue;
+            }
+
+            $user_roles = (array) $user->roles;
+
+            if ($action_type === 'assign') {
+              if (!in_array($role, $user_roles)) {
+                $user->add_role($role);
+                $success_count++;
+              }
+            } elseif ($action_type === 'remove') {
+              if (in_array($role, $user_roles)) {
+                $user->remove_role($role);
+                $success_count++;
+              }
+            }
+          }
+
+          if ($success_count > 0) {
+            $message = $action_type === 'assign'
+              ? sprintf(
+                  /* translators: %d: number of users */
+                  __('%d user(s) assigned the role successfully.', 'pn-customers-manager'),
+                  $success_count
+                )
+              : sprintf(
+                  /* translators: %d: number of users */
+                  __('%d user(s) removed from the role successfully.', 'pn-customers-manager'),
+                  $success_count
+                );
+
+            echo wp_json_encode([
+              'error_key' => '',
+              'success' => true,
+              'message' => $message,
+            ]);
+          } else {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_assign_role_no_changes',
+              'success' => false,
+              'message' => esc_html__('No changes were made.', 'pn-customers-manager'),
+            ]);
+          }
+          exit;
+          break;
       }
 
       echo wp_json_encode([
-        'error_key' => 'pn_customers_manager_save_error', 
+        'error_key' => 'pn_customers_manager_save_error',
       ]);
 
       exit;

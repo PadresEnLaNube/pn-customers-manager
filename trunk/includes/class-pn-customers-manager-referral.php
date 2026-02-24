@@ -136,7 +136,16 @@ class PN_CUSTOMERS_MANAGER_Referral {
 		}
 
 		$referrer = get_userdata(self::$qr_landing_referrer_id);
-		$referrer_name = $referrer ? $referrer->display_name : __('Alguien', 'pn-customers-manager');
+		if ($referrer) {
+			$first = $referrer->first_name;
+			$last = $referrer->last_name;
+			$referrer_name = trim($first . ' ' . $last);
+			if (empty($referrer_name)) {
+				$referrer_name = $referrer->display_name;
+			}
+		} else {
+			$referrer_name = __('Alguien', 'pn-customers-manager');
+		}
 
 		$popup_id = 'pn-cm-qr-referral-landing-popup';
 		?>
@@ -213,11 +222,47 @@ class PN_CUSTOMERS_MANAGER_Referral {
 				<div class="pn-cm-referral-message" style="display:none;"></div>
 			</div>
 
-			<?php if (get_option('pn_customers_manager_referral_enabled', 'on') === 'on') :
+			<?php if (get_option('pn_customers_manager_referral_enabled', 'on') === 'on' || current_user_can('manage_options')) :
 				$qr_code = self::get_or_create_referral_code($user_id);
 				$qr_url = home_url('?pn_cm_qr_ref=' . $qr_code);
+				$qr_url_encoded = rawurlencode($qr_url);
+				$default_share_text = get_option('pn_customers_manager_referral_share_text', '');
+				if (empty($default_share_text)) {
+					$default_share_text = __('Te invito a unirte! Registrate con mi enlace y empieza a disfrutar de todas las ventajas:', 'pn-customers-manager');
+				}
+				$user_share_text = get_user_meta($user_id, 'pn_cm_referral_share_text', true);
+				$socials_url = PN_CUSTOMERS_MANAGER_URL . 'assets/media/socials/white/';
 				$branding_url = self::get_qr_branding_url();
 			?>
+			<div class="pn-cm-referral-share-section" data-referral-url="<?php echo esc_url($qr_url); ?>">
+				<h3><?php esc_html_e('Comparte tu enlace de referido', 'pn-customers-manager'); ?></h3>
+				<div class="pn-cm-referral-share-link-row">
+					<input type="text" class="pn-cm-referral-share-link-input" value="<?php echo esc_url($qr_url); ?>" readonly />
+					<button type="button" class="pn-cm-referral-share-copy">
+						<i class="material-icons-outlined">content_copy</i>
+					</button>
+				</div>
+				<div class="pn-cm-referral-share-text-row">
+					<label><?php esc_html_e('Personaliza tu mensaje:', 'pn-customers-manager'); ?></label>
+					<textarea class="pn-cm-referral-share-textarea" placeholder="<?php echo esc_attr($default_share_text); ?>"><?php echo esc_textarea($user_share_text); ?></textarea>
+				</div>
+				<div class="pn-cm-referral-share-buttons">
+					<a href="#" target="_blank" class="pn-cm-referral-share-btn pn-cm-referral-share-whatsapp" title="WhatsApp" data-share="whatsapp">
+						<img src="<?php echo esc_url($socials_url . 'whatsapp.svg'); ?>" alt="WhatsApp" />
+					</a>
+					<a href="#" target="_blank" class="pn-cm-referral-share-btn pn-cm-referral-share-facebook" title="Facebook" data-share="facebook">
+						<img src="<?php echo esc_url($socials_url . 'facebook.svg'); ?>" alt="Facebook" />
+					</a>
+					<a href="#" target="_blank" class="pn-cm-referral-share-btn pn-cm-referral-share-twitter" title="X" data-share="twitter">
+						<img src="<?php echo esc_url($socials_url . 'twitterx.svg'); ?>" alt="X" />
+					</a>
+					<a href="#" target="_blank" class="pn-cm-referral-share-btn pn-cm-referral-share-telegram" title="Telegram" data-share="telegram">
+						<img src="<?php echo esc_url($socials_url . 'telegram-app.svg'); ?>" alt="Telegram" />
+					</a>
+				</div>
+				<div class="pn-cm-referral-share-message" style="display:none;"></div>
+			</div>
+
 			<details class="pn-cm-referral-qr-section">
 				<summary class="pn-cm-referral-qr-toggle"><?php esc_html_e('Tu codigo QR de referido', 'pn-customers-manager'); ?></summary>
 				<div class="pn-cm-referral-qr-body">

@@ -566,4 +566,116 @@
 
     pn_customers_manager_toggle.siblings('.pn-customers-manager-toggle-content').fadeToggle();
   });
+
+  // User Role Management - Bulk assign/remove roles
+  $(document).on('click', '.pn-customers-manager-assign-role-btn, .pn-customers-manager-remove-role-btn', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var $button = $(this);
+    var isAssign = $button.hasClass('pn-customers-manager-assign-role-btn');
+    var inputId = $button.data('input-id');
+    var $select = $('#pn_customers_manager_user_select_' + inputId);
+    var $nonce = $button.closest('.pn-customers-manager-role-actions').find('.pn-customers-manager-role-nonce');
+
+    var selectedUsers = $select.val();
+
+    if (!selectedUsers || selectedUsers.length === 0) {
+      showRoleMessage('Please select at least one user', 'error');
+      return;
+    }
+
+    var role = $select.data('role');
+    var roleLabel = $select.data('role-label');
+
+    $button.prop('disabled', true);
+
+    $.ajax({
+      url: pn_customers_manager_ajax.ajax_url,
+      type: 'POST',
+      data: {
+        action: 'pn_customers_manager_ajax',
+        pn_customers_manager_ajax_type: 'pn_cm_assign_role',
+        pn_customers_manager_ajax_nonce: $('#pn_customers_manager_nonce').val(),
+        pn_customers_manager_role_nonce: $nonce.val(),
+        user_ids: selectedUsers,
+        role: role,
+        action_type: isAssign ? 'assign' : 'remove'
+      },
+      success: function (response) {
+        try {
+          var data = typeof response === 'string' ? JSON.parse(response) : response;
+
+          if (data.success) {
+            showRoleMessage(data.message, 'success');
+
+            $select.find('option:selected').each(function () {
+              var $option = $(this);
+              if (isAssign) {
+                if (!$option.text().includes('✓')) {
+                  $option.text($option.text() + ' ✓');
+                  $option.attr('data-has-role', 'true');
+                }
+              } else {
+                $option.text($option.text().replace(' ✓', ''));
+                $option.removeAttr('data-has-role');
+              }
+            });
+
+            $select.val(null).trigger('change');
+
+            setTimeout(function () {
+              location.reload();
+            }, 1500);
+          } else {
+            showRoleMessage(data.message || data.error_content || 'An error occurred', 'error');
+          }
+        } catch (e) {
+          console.error('Parse error:', e);
+          showRoleMessage('Error parsing server response', 'error');
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error('AJAX error:', status, error);
+        showRoleMessage('Connection error. Please try again.', 'error');
+      },
+      complete: function () {
+        $button.prop('disabled', false);
+      }
+    });
+  });
+
+  // Close multi-select when clicking outside
+  $(document).on('click', function (e) {
+    var $target = $(e.target);
+
+    if (!$target.closest('.pn-customers-manager-user-role-select').length &&
+      !$target.closest('.pn-customers-manager-assign-role-btn').length &&
+      !$target.closest('.pn-customers-manager-remove-role-btn').length) {
+
+      $('.pn-customers-manager-user-role-select').each(function () {
+        if ($(this).is(':focus')) {
+          $(this).blur();
+        }
+      });
+    }
+  });
+
+  // Prevent closing when clicking on the select itself
+  $(document).on('mousedown', '.pn-customers-manager-user-role-select', function (e) {
+    e.stopPropagation();
+  });
+
+  // Helper function to show role management messages
+  function showRoleMessage(message, type) {
+    var $message = $('.pn-customers-manager-role-message');
+    var className = type === 'error' ? 'pn-customers-manager-color-red' : 'pn-customers-manager-color-green';
+
+    $message.removeClass('pn-customers-manager-display-none-soft');
+    $message.html('<p class="' + className + '">' + message + '</p>');
+
+    setTimeout(function () {
+      $message.addClass('pn-customers-manager-display-none-soft');
+    }, 5000);
+  }
 })(jQuery);

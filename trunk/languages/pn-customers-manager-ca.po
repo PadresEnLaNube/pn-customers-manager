@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PN Customers Manager\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-31 14:21+0000\n"
-"PO-Revision-Date: 2026-02-11 23:12+0000\n"
+"PO-Revision-Date: 2026-02-24 04:15+0000\n"
 "Last-Translator: Félix Martínez\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -15,6 +15,23 @@ msgstr ""
 "X-Loco-Version: 2.8.1; wp-6.9.1; php-8.3.28\n"
 "X-Domain: crmpn"
 
+#. 1: referrer name, 2: site name
+#: includes/class-pn-customers-manager-referral.php:468
+#, php-format
+msgid ""
+"%1$s has invited you to join %2$s. Click the button below to accept the "
+"invitation and set up your account."
+msgstr ""
+"%1$s t'ha convidat a unir-te a %2$s. Fes clic al botó següent per acceptar "
+"la invitació i configurar el teu compte."
+
+#. %s: referrer name
+#: includes/class-pn-customers-manager-referral.php:463
+#: includes/class-pn-customers-manager-referral.php:485
+#, php-format
+msgid "%s has invited you!"
+msgstr "%s t'ha convidat!"
+
 #. %s: Field label or "This field"
 #: includes/class-pn-customers-manager-validation.php:48
 #, php-format
@@ -22,40 +39,83 @@ msgid "%s is required."
 msgstr "Cal %s."
 
 #. %s: Post type name
-#: includes/class-pn-customers-manager-settings.php:25
-#: includes/class-pn-customers-manager-settings.php:30
+#: includes/class-pn-customers-manager-settings.php:33
+#: includes/class-pn-customers-manager-settings.php:38
 #, php-format
 msgid "%s slug"
 msgstr "%s llimac"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:559
+#. %s: referrer name
+#: includes/class-pn-customers-manager-referral.php:149
+#, php-format
+msgid "%s te ha invitado!"
+msgstr "%s t'han convidat!"
+
+#: includes/class-pn-customers-manager-settings.php:165
+msgid "-- Seleccionar pagina --"
+msgstr "-- Seleccionar pàgina --"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:561
 msgid "0 = cold lead, 100 = hot lead."
 msgstr "0 = plom fred, 100 = plom calent."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:369
+#: includes/class-pn-customers-manager-post-type-organization.php:371
 msgid "1 - 10 people"
 msgstr "1 - 10 persones"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:370
+#: includes/class-pn-customers-manager-post-type-organization.php:372
 msgid "11 - 50 people"
 msgstr "11 - 50 persones"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:372
+#: includes/class-pn-customers-manager-post-type-organization.php:374
 msgid "201 - 500 people"
 msgstr "201 - 500 persones"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:371
+#: includes/class-pn-customers-manager-post-type-organization.php:373
 msgid "51 - 200 people"
 msgstr "51 - 200 persones"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:670
-#: includes/class-pn-customers-manager-post-type-organization.php:1305
+#: includes/class-pn-customers-manager-commercial.php:177
+msgid "Acceder al CRM"
+msgstr "Accedir al CRM"
+
+#: includes/class-pn-customers-manager-referral.php:474
+msgid "Accept Invitation"
+msgstr "Accepta la invitació"
+
+#: includes/class-pn-customers-manager-post-type-funnel.php:687
+#: includes/class-pn-customers-manager-post-type-organization.php:1353
 msgid "Access Denied"
 msgstr "Accés denegat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:542
+#: includes/class-pn-customers-manager-post-type-funnel.php:445
+#: includes/class-pn-customers-manager-post-type-funnel.php:458
+#: includes/class-pn-customers-manager-post-type-organization.php:1029
+#: includes/class-pn-customers-manager-post-type-organization.php:1042
+msgid "Access restricted"
+msgstr "Accés restringit"
+
+#: includes/class-pn-customers-manager-contact-messages.php:83
+#: includes/class-pn-customers-manager-commercial.php:404
+msgid "Acciones"
+msgstr "Accions"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:544
+#: includes/class-pn-customers-manager-csv-import.php:44
 msgid "Account health"
 msgstr "Estat del compte"
+
+#: includes/class-pn-customers-manager-settings.php:201
+msgid ""
+"Activa el sistema de referidos con codigo QR para que los usuarios puedan "
+"invitar a otros."
+msgstr ""
+"Activa el sistema de referidos con codigo QR para que los usuarios puedan "
+"invitar a otros."
+
+#: includes/class-pn-customers-manager-settings.php:200
+msgid "Activar sistema de referidos"
+msgstr "Activar el sistema de referències"
 
 #: includes/class-pn-customers-manager-forms.php:382
 msgid "Add audio"
@@ -65,7 +125,8 @@ msgstr "Afegeix àudio"
 msgid "Add audios"
 msgstr "Afegeix àudios"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:280
+#: includes/class-pn-customers-manager-ajax.php:382
+#: includes/class-pn-customers-manager-post-type-organization.php:284
 msgid "Add contact"
 msgstr "Afegeix un contacte"
 
@@ -91,9 +152,9 @@ msgstr "Afegeix imatges"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:126
 #: includes/class-pn-customers-manager-post-type-funnel.php:127
-#: includes/class-pn-customers-manager-post-type-funnel.php:455
-#: includes/class-pn-customers-manager-post-type-funnel.php:627
-#: includes/class-pn-customers-manager-post-type-funnel.php:678
+#: includes/class-pn-customers-manager-post-type-funnel.php:472
+#: includes/class-pn-customers-manager-post-type-funnel.php:644
+#: includes/class-pn-customers-manager-post-type-funnel.php:695
 msgid "Add new Funnel"
 msgstr "Afegeix un embut nou"
 
@@ -101,11 +162,11 @@ msgstr "Afegeix un embut nou"
 msgid "Add New Funnel category"
 msgstr "Afegeix una nova categoria d'embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:708
-#: includes/class-pn-customers-manager-post-type-organization.php:709
-#: includes/class-pn-customers-manager-post-type-organization.php:1037
-#: includes/class-pn-customers-manager-post-type-organization.php:1262
-#: includes/class-pn-customers-manager-post-type-organization.php:1313
+#: includes/class-pn-customers-manager-post-type-organization.php:710
+#: includes/class-pn-customers-manager-post-type-organization.php:711
+#: includes/class-pn-customers-manager-post-type-organization.php:1062
+#: includes/class-pn-customers-manager-post-type-organization.php:1310
+#: includes/class-pn-customers-manager-post-type-organization.php:1361
 msgid "Add new Organization"
 msgstr "Afegeix una nova organització"
 
@@ -117,13 +178,24 @@ msgstr "Afegeix vídeo"
 msgid "Add videos"
 msgstr "Afegeix vídeos"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:451
+#: includes/class-pn-customers-manager-post-type-organization.php:453
+#: includes/class-pn-customers-manager-csv-import.php:37
 msgid "Address"
 msgstr "Adreça"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:469
+#: includes/class-pn-customers-manager-post-type-organization.php:471
 msgid "Advanced CRM fields"
 msgstr "Camps avançats de CRM"
+
+#: includes/class-pn-customers-manager-settings.php:312
+#: includes/class-pn-customers-manager-settings.php:313
+#: includes/class-pn-customers-manager-commercial.php:386
+msgid "Agentes Comerciales"
+msgstr "Agents Comercials"
+
+#: includes/class-pn-customers-manager-referral.php:139
+msgid "Alguien"
+msgstr "Alguien"
 
 #: includes/class-pn-customers-manager-taxonomies-funnel.php:25
 msgid "All Funnel categories"
@@ -133,7 +205,7 @@ msgstr "Totes les categories d'embuts"
 msgid "All Funnels"
 msgstr "Tots els embuts"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:706
+#: includes/class-pn-customers-manager-post-type-organization.php:708
 msgid "All Organizations"
 msgstr "Totes les organitzacions"
 
@@ -141,74 +213,112 @@ msgstr "Totes les organitzacions"
 msgid "Alta de organización"
 msgstr "Alta organització"
 
-#: includes/class-pn-customers-manager-settings.php:94
+#: includes/class-pn-customers-manager-settings.php:116
 msgid "Alternative Background Color"
 msgstr "Color de fons alternatiu"
 
-#: includes/class-pn-customers-manager-settings.php:95
+#: includes/class-pn-customers-manager-settings.php:117
 msgid "Alternative background color (default: #232323)"
 msgstr "Color de fons alternatiu (per defecte: #232323)"
 
-#: includes/class-pn-customers-manager-settings.php:104
+#: includes/class-pn-customers-manager-settings.php:126
 msgid "Alternative Border Color"
 msgstr "Color de vora alternatiu"
 
-#: includes/class-pn-customers-manager-settings.php:105
+#: includes/class-pn-customers-manager-settings.php:127
 msgid "Alternative border color (default: #232323)"
 msgstr "Color de vora alternatiu (per defecte: #232323)"
 
-#: includes/class-pn-customers-manager-settings.php:85
+#: includes/class-pn-customers-manager-settings.php:107
 msgid "Alternative color for text, backgrounds, and borders (default: #232323)"
 msgstr "Color alternatiu per a text, fons i vores (per defecte: #232323)"
 
-#: includes/class-pn-customers-manager-settings.php:84
+#: includes/class-pn-customers-manager-settings.php:106
 msgid "Alternative Main Color"
 msgstr "Color principal alternatiu"
 
-#: includes/class-pn-customers-manager-common.php:221
+#: includes/class-pn-customers-manager-common.php:245
 msgid "An error has occurred. Please try again in a few minutes."
 msgstr ""
 "S'ha produït un error. Si us plau, torna-ho a provar d'aquí a uns minuts."
 
-#: includes/class-pn-customers-manager-ajax.php:169
+#: includes/class-pn-customers-manager-settings.php:377
+#: includes/class-pn-customers-manager-settings.php:383
+msgid "An error occurred while creating the page."
+msgstr "S'ha produït un error en crear la pàgina."
+
+#: includes/class-pn-customers-manager-ajax.php:178
 msgid "An error occurred while duplicating the Funnel."
 msgstr "S'ha produït un error en duplicar l'embut."
 
-#: includes/class-pn-customers-manager-ajax.php:267
+#: includes/class-pn-customers-manager-ajax.php:276
 msgid "An error occurred while duplicating the Organization."
 msgstr "S'ha produït un error en duplicar l'organització."
 
-#: includes/class-pn-customers-manager-ajax.php:189
+#: includes/class-pn-customers-manager-ajax.php:198
 msgid "An error occurred while removing the Funnel."
 msgstr "S'ha produït un error en suprimir l'embut."
 
-#: includes/class-pn-customers-manager-ajax.php:287
+#: includes/class-pn-customers-manager-ajax.php:348
 msgid "An error occurred while removing the Organization."
 msgstr "S'ha produït un error en eliminar l'organització."
 
-#: includes/class-pn-customers-manager-ajax.php:108
-#: includes/class-pn-customers-manager-ajax.php:130
+#: includes/class-pn-customers-manager-ajax.php:117
+#: includes/class-pn-customers-manager-ajax.php:139
 msgid "An error occurred while showing the Funnel."
 msgstr "S'ha produït un error en mostrar l'embut."
 
-#: includes/class-pn-customers-manager-ajax.php:207
-#: includes/class-pn-customers-manager-ajax.php:228
+#: includes/class-pn-customers-manager-ajax.php:216
+#: includes/class-pn-customers-manager-ajax.php:237
 msgid "An error occurred while showing the Organization."
 msgstr "S'ha produït un error en mostrar l'organització."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:380
+#: includes/class-pn-customers-manager-common.php:295
+msgid "An invitation has already been sent to this email."
+msgstr "Ja s'ha enviat una invitació a aquest correu electrònic."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:382
+#: includes/class-pn-customers-manager-csv-import.php:29
 msgid "Annual revenue"
 msgstr "Ingressos anuals"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:573
+#: includes/class-pn-customers-manager-commercial.php:64
+msgid "Apellidos"
+msgstr "Apel·lissos"
+
+#: includes/class-pn-customers-manager-common.php:310
+#: includes/class-pn-customers-manager-commercial.php:432
+msgid "Aprobado"
+msgstr "Aprovat"
+
+#: includes/class-pn-customers-manager-commercial.php:391
+msgid "Aprobados"
+msgstr "Aprovats"
+
+#: includes/class-pn-customers-manager-commercial.php:442
+msgid "Aprobar"
+msgstr "Aprovar"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:575
 msgid "Assigned collaborators"
 msgstr "Col·laboradors assignats"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:657
+#: includes/class-pn-customers-manager-post-type-organization.php:659
 msgid "Assigned funnel"
 msgstr "Embut assignat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:546
+#: includes/class-pn-customers-manager-contact-form.php:124
+#: includes/class-pn-customers-manager-contact-messages.php:80
+#: includes/class-pn-customers-manager-ajax-nopriv.php:242
+#: includes/class-pn-customers-manager-ajax-nopriv.php:256
+msgid "Asunto"
+msgstr "Assumpte"
+
+#: includes/class-pn-customers-manager-contact-form.php:128
+msgid "Asunto del mensaje"
+msgstr "Assumpte del missatge"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:548
 msgid "At risk"
 msgstr "En risc"
 
@@ -216,19 +326,36 @@ msgstr "En risc"
 msgid "Atleast 8 Character"
 msgstr "Almenys 8 caràcters"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:302
+#: includes/class-pn-customers-manager-csv-import.php:449
+#: includes/class-pn-customers-manager-csv-import.php:940
+msgid "Back"
+msgstr "Enrere"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:306
 msgid "Basic organization data"
 msgstr "Dades bàsiques de l'organització"
 
-#: includes/class-pn-customers-manager-settings.php:115
+#: includes/class-pn-customers-manager-csv-import.php:52
+msgid "Billing address"
+msgstr "Adreça de facturació"
+
+#: includes/class-pn-customers-manager-csv-import.php:50
+msgid "Billing email"
+msgstr "Correu electrònic de facturació"
+
+#: includes/class-pn-customers-manager-csv-import.php:51
+msgid "Billing phone"
+msgstr "Telèfon de facturació"
+
+#: includes/class-pn-customers-manager-settings.php:137
 msgid "Blue accent color (default: #6e6eff)"
 msgstr "Color d'accent blau (per defecte: #6e6eff)"
 
-#: includes/class-pn-customers-manager-settings.php:114
+#: includes/class-pn-customers-manager-settings.php:136
 msgid "Blue Color"
 msgstr "Color blau"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:592
+#: includes/class-pn-customers-manager-post-type-organization.php:594
 msgid "Call"
 msgstr "Truca"
 
@@ -236,15 +363,16 @@ msgstr "Truca"
 msgid "Cancel"
 msgstr "Cancel·la"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:594
+#: includes/class-pn-customers-manager-post-type-organization.php:596
 msgid "Chat / messaging"
 msgstr "Xat / missatgeria"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:508
+#: includes/class-pn-customers-manager-post-type-organization.php:510
 msgid "Churned"
 msgstr "Batut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:443
+#: includes/class-pn-customers-manager-post-type-organization.php:445
+#: includes/class-pn-customers-manager-csv-import.php:36
 msgid "City"
 msgstr "Ciutat"
 
@@ -252,88 +380,182 @@ msgstr "Ciutat"
 msgid "Clear"
 msgstr "Clar"
 
+#: includes/class-pn-customers-manager-csv-import.php:328
+msgid "Click to select a CSV file or drag & drop it here"
+msgstr ""
+"Feu clic per seleccionar un fitxer CSV o arrossegueu-lo i deixeu-lo anar aquí"
+
 #: includes/class-pn-customers-manager-activator.php:29
 msgid "Client - PN"
 msgstr "Client - PN"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:523
+#: includes/class-pn-customers-manager-csv-import.php:453
+#: includes/class-pn-customers-manager-csv-import.php:944
+msgid "Close & reload"
+msgstr "Tanca i torna a carregar"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:525
 msgid "Closed lost"
 msgstr "Tancat perdut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:522
+#: includes/class-pn-customers-manager-post-type-organization.php:524
 msgid "Closed won"
 msgstr "Tancat guanyat"
 
-#: includes/class-pn-customers-manager-settings.php:45
-msgid "Color Customization"
-msgstr "Personalització del color"
+#: includes/class-pn-customers-manager-ajax-nopriv.php:116
+#: includes/class-pn-customers-manager-ajax-nopriv.php:141
+msgid "Codigo de referido no valido."
+msgstr "Codi de referència no vàlid."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:650
+#: includes/class-pn-customers-manager-settings.php:67
+msgid "Colors"
+msgstr "Colors"
+
+#: includes/class-pn-customers-manager-settings.php:160
+msgid "Comercial"
+msgstr "Comercial"
+
+#: includes/class-pn-customers-manager.php:478
+#: includes/class-pn-customers-manager-activator.php:30
+msgid "Comercial - PN"
+msgstr "Comercial - PN"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:652
 msgid "Commercial funnel"
 msgstr "Embut comercial"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:530
+#: includes/class-pn-customers-manager-post-type-organization.php:532
 msgid "Commercial priority"
 msgstr "Prioritat comercial"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:327
+#: includes/class-pn-customers-manager-post-type-organization.php:331
 msgid "Common brand name"
 msgstr "Nom de marca comú"
+
+#: includes/class-pn-customers-manager-commercial.php:55
+msgid ""
+"Completa el siguiente formulario para solicitar acceso como agente comercial."
+" Revisaremos tu solicitud y te notificaremos."
+msgstr ""
+"Completa el següent formulari per sol·licitar accés com a agent comercial. "
+"Revisarem la vostra sol·licitud i us notificarem."
 
 #: includes/class-pn-customers-manager-client-form.php:327
 msgid "Completa los datos para registrar una nueva organización en el CRM."
 msgstr "Completa els dades per registrar una nova organització al CRM."
 
-#: includes/class-pn-customers-manager-common.php:259
+#: includes/class-pn-customers-manager-commercial.php:161
+msgid "Completados"
+msgstr "Completats"
+
+#: includes/class-pn-customers-manager-referral.php:247
+msgid "Completed"
+msgstr "Completat"
+
+#: includes/class-pn-customers-manager-settings.php:161
+msgid "Configuracion del sistema de agentes comerciales."
+msgstr "Configuració del sistema d'agents comercials."
+
+#: includes/class-pn-customers-manager-settings.php:191
+msgid "Configuracion del sistema de referidos y codigo QR."
+msgstr "Configuracion del sistema de referidos y codigo QR."
+
+#: includes/class-pn-customers-manager-common.php:283
 msgid "Connection error"
 msgstr "Error de connexió"
 
-#: includes/class-pn-customers-manager-common.php:260
+#: includes/class-pn-customers-manager-common.php:284
 msgid "Connection error: Could not connect to server"
 msgstr "Error de connexió: No s'ha pogut connectar al servidor"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:404
+#: includes/class-pn-customers-manager-ajax.php:475
+msgid "Contact ID is required."
+msgstr "Cal un identificador de contacte."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:406
 msgid "contact@company.com"
 msgstr "contacte@empresa.com"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:641
+#: includes/class-pn-customers-manager-csv-import.php:108
+#: includes/class-pn-customers-manager-csv-import.php:163
+#: includes/class-pn-customers-manager-csv-import.php:213
+#: includes/class-pn-customers-manager-csv-import.php:569
+msgid "Content"
+msgstr "Contingut"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:643
 msgid "Contexto adicional para el equipo comercial."
 msgstr "Context addicional per a l'equip comercial."
 
-#: includes/class-pn-customers-manager-common.php:245
+#: includes/class-pn-customers-manager-common.php:269
 msgid "Copied"
 msgstr "Copiat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:427
+#: includes/class-pn-customers-manager-referral.php:210
+msgid "Copy"
+msgstr "Còpia"
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:150
+msgid "Correo electronico no valido."
+msgstr "Correu electrònic no vàlid."
+
+#: includes/class-pn-customers-manager-contact-form.php:114
+msgid "Correo electrónico"
+msgstr "Correu electrònic"
+
+#: includes/class-pn-customers-manager-common.php:297
+msgid "Could not create the user. Please try again."
+msgstr "No s'ha pogut crear l'usuari. Torna-ho a provar."
+
+#: includes/class-pn-customers-manager-csv-import.php:632
+msgid "Could not open the file."
+msgstr "No s'ha pogut obrir el fitxer."
+
+#: includes/class-pn-customers-manager-csv-import.php:644
+msgid "Could not read CSV headers."
+msgstr "No s'han pogut llegir les capçaleres CSV."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:429
+#: includes/class-pn-customers-manager-csv-import.php:34
 msgid "Country"
 msgstr "País"
 
-#: includes/class-pn-customers-manager-client-form.php:462
+#: includes/class-pn-customers-manager-client-form.php:467
 msgid "Crear organización"
 msgstr "Crear organització"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:496
-#: includes/class-pn-customers-manager-post-type-organization.php:1131
+#: includes/class-pn-customers-manager-post-type-funnel.php:513
+#: includes/class-pn-customers-manager-post-type-organization.php:1161
 msgid "Create an account"
 msgstr "Crea un compte"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:686
+#: includes/class-pn-customers-manager-post-type-funnel.php:703
 msgid "Create Funnel"
 msgstr "Crea un embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:1321
+#: includes/class-pn-customers-manager-post-type-organization.php:1369
 msgid "Create Organization"
 msgstr "Crear organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:665
+#: includes/class-pn-customers-manager-settings.php:351
+#: includes/class-pn-customers-manager-settings.php:376
+#: includes/class-pn-customers-manager-settings.php:382
+msgid "Create Organizations page"
+msgstr "Pàgina Crea organitzacions"
+
+#: includes/class-pn-customers-manager-settings.php:359
+msgid "Creating page..."
+msgstr "Creant la pàgina..."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:667
 msgid "Current stage"
 msgstr "Etapa actual"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:507
+#: includes/class-pn-customers-manager-post-type-organization.php:509
 msgid "Customer"
 msgstr "Client"
 
-#: includes/class-pn-customers-manager-settings.php:46
+#: includes/class-pn-customers-manager-settings.php:68
 msgid ""
 "Customize the colors used throughout the plugin by modifying the CSS root "
 "variables."
@@ -341,63 +563,92 @@ msgstr ""
 "Personalitza els colors utilitzats a tot el connector modificant les "
 "variables arrel del CSS."
 
-#: includes/class-pn-customers-manager-client-form.php:383
+#: includes/class-pn-customers-manager-referral.php:259
+msgid "Date"
+msgstr "Data"
+
+#: includes/class-pn-customers-manager-contact-messages.php:120
+msgid "De:"
+msgstr "De:"
+
+#: includes/class-pn-customers-manager-commercial.php:202
+msgid "Debes iniciar sesion para enviar tu solicitud."
+msgstr "Heu d'iniciar la sessió per enviar la vostra sol·licitud."
+
+#: includes/class-pn-customers-manager-ajax.php:499
+msgid "Debes iniciar sesion."
+msgstr "Has d'iniciar la sessió."
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:129
+msgid "Demasiados intentos. Intentalo de nuevo mas tarde."
+msgstr "Demasiats intents. Intentalo de nou més tard."
+
+#: includes/class-pn-customers-manager-common.php:300
+#: includes/class-pn-customers-manager-referral.php:228
+msgid "Descargar QR"
+msgstr "Descarregar QR"
+
+#: includes/class-pn-customers-manager-client-form.php:388
 msgid "Describe brevemente la organización…"
 msgstr "Descriu breument l'organització..."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:604
+#: includes/class-pn-customers-manager-post-type-organization.php:606
 msgid "Describe el siguiente hito o compromiso."
 msgstr "Descriu el següent hito o compromís."
 
-#: includes/class-pn-customers-manager-client-form.php:380
+#: includes/class-pn-customers-manager-client-form.php:385
 msgid "Descripción de la organización"
 msgstr "Descripció de l'organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:625
+#: includes/class-pn-customers-manager-post-type-organization.php:627
 msgid "Dirección de facturación"
 msgstr "Direcció de facturació"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:519
+#: includes/class-pn-customers-manager-post-type-organization.php:521
 msgid "Discovery"
 msgstr "Descobriment"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:591
+#: includes/class-pn-customers-manager-csv-import.php:321
+msgid "Download CSV template"
+msgstr "Descarrega la plantilla CSV"
+
+#: includes/class-pn-customers-manager-post-type-funnel.php:608
 msgid "Duplicate Funnel"
 msgstr "Embut duplicat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:1226
+#: includes/class-pn-customers-manager-post-type-organization.php:1274
 msgid "Duplicate Organization"
 msgstr "Organització duplicada"
 
-#: includes/class-pn-customers-manager-common.php:225
+#: includes/class-pn-customers-manager-common.php:249
 msgid "Duplicated successfully"
 msgstr "Duplicat correctament"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:396
+#: includes/class-pn-customers-manager-post-type-organization.php:398
 msgid "e.g. +1 555 123 4567"
 msgstr "p. ex. +1 555 123 4567"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:460
+#: includes/class-pn-customers-manager-post-type-organization.php:462
 msgid "e.g. 94105"
 msgstr "p. ex. 94105"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:436
+#: includes/class-pn-customers-manager-post-type-organization.php:438
 msgid "e.g. California"
 msgstr "p. ex. Califòrnia"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:319
+#: includes/class-pn-customers-manager-post-type-organization.php:323
 msgid "e.g. Company Inc."
 msgstr "p. ex. Companyia Inc."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:444
+#: includes/class-pn-customers-manager-post-type-organization.php:446
 msgid "e.g. San Francisco"
 msgstr "p. ex. San Francisco"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:428
+#: includes/class-pn-customers-manager-post-type-organization.php:430
 msgid "e.g. United States"
 msgstr "p. ex. Estats Units"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:311
+#: includes/class-pn-customers-manager-post-type-organization.php:315
 msgid ""
 "Each contact is a regular WordPress user so you can edit it from the Users "
 "screen."
@@ -405,29 +656,29 @@ msgstr ""
 "Cada contacte és un usuari normal de WordPress, de manera que el podeu "
 "editar des de la pantalla Usuaris."
 
-#: includes/class-pn-customers-manager-common.php:234
+#: includes/class-pn-customers-manager-common.php:258
 #: includes/class-pn-customers-manager-forms.php:378
 msgid "Edit audio"
 msgstr "Edita l'àudio"
 
-#: includes/class-pn-customers-manager-common.php:235
+#: includes/class-pn-customers-manager-common.php:259
 #: includes/class-pn-customers-manager-forms.php:378
 msgid "Edit audios"
 msgstr "Edita àudios"
 
-#: includes/class-pn-customers-manager-common.php:238
+#: includes/class-pn-customers-manager-common.php:262
 #: includes/class-pn-customers-manager-forms.php:399
 msgid "Edit file"
 msgstr "Edita el fitxer"
 
-#: includes/class-pn-customers-manager-common.php:239
+#: includes/class-pn-customers-manager-common.php:263
 #: includes/class-pn-customers-manager-forms.php:399
 msgid "Edit files"
 msgstr "Edita fitxers"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:128
-#: includes/class-pn-customers-manager-post-type-funnel.php:579
-#: includes/class-pn-customers-manager-post-type-funnel.php:658
+#: includes/class-pn-customers-manager-post-type-funnel.php:596
+#: includes/class-pn-customers-manager-post-type-funnel.php:675
 msgid "Edit Funnel"
 msgstr "Edita l'embut"
 
@@ -435,94 +686,172 @@ msgstr "Edita l'embut"
 msgid "Edit Funnel category"
 msgstr "Edita la categoria d'embut"
 
-#: includes/class-pn-customers-manager-common.php:226
+#: includes/class-pn-customers-manager-common.php:250
 #: includes/class-pn-customers-manager-forms.php:336
 msgid "Edit image"
 msgstr "Edita la imatge"
 
-#: includes/class-pn-customers-manager-common.php:227
+#: includes/class-pn-customers-manager-common.php:251
 #: includes/class-pn-customers-manager-forms.php:336
 msgid "Edit images"
 msgstr "Edita imatges"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:710
-#: includes/class-pn-customers-manager-post-type-organization.php:1214
-#: includes/class-pn-customers-manager-post-type-organization.php:1293
+#: includes/class-pn-customers-manager-post-type-organization.php:712
+#: includes/class-pn-customers-manager-post-type-organization.php:1262
+#: includes/class-pn-customers-manager-post-type-organization.php:1341
 msgid "Edit Organization"
 msgstr "Edita l'organització"
 
-#: includes/class-pn-customers-manager-common.php:230
+#: includes/class-pn-customers-manager-common.php:254
 #: includes/class-pn-customers-manager-forms.php:357
 msgid "Edit video"
 msgstr "Edita el vídeo"
 
-#: includes/class-pn-customers-manager-common.php:231
+#: includes/class-pn-customers-manager-common.php:255
 #: includes/class-pn-customers-manager-forms.php:357
 msgid "Edit videos"
 msgstr "Edita vídeos"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:702
-#: includes/class-pn-customers-manager-post-type-organization.php:1337
+#: includes/class-pn-customers-manager-post-type-funnel.php:719
+#: includes/class-pn-customers-manager-post-type-organization.php:1385
 msgid "Editing"
 msgstr "Edició"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:355
+#: includes/class-pn-customers-manager-post-type-organization.php:357
 msgid "Education"
 msgstr "Educació"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:633
+#: includes/class-pn-customers-manager-post-type-organization.php:635
 msgid "Ej: Clientes VIP, Renovación, Partner"
 msgstr "Ej: Clients VIP, Renovació, Partner"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:591
+#: includes/class-pn-customers-manager-contact-messages.php:114
+msgid "Eliminar"
+msgstr "Eliminar"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:593
+#: includes/class-pn-customers-manager-csv-import.php:31
+#: includes/class-pn-customers-manager-contact-messages.php:79
+#: includes/class-pn-customers-manager-ajax-nopriv.php:240
+#: includes/class-pn-customers-manager-ajax-nopriv.php:254
+#: includes/class-pn-customers-manager-commercial.php:71
+#: includes/class-pn-customers-manager-commercial.php:399
+#: includes/class-pn-customers-manager-referral.php:257
 msgid "Email"
 msgstr "Correu electrònic"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:611
+#: includes/class-pn-customers-manager-post-type-organization.php:613
 msgid "Email de facturación"
 msgstr "Correu electrònic de facturació"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:339
+#: includes/class-pn-customers-manager-commercial.php:82
+#: includes/class-pn-customers-manager-commercial.php:401
+msgid "Empresa"
+msgstr "Empresa"
+
+#: includes/class-pn-customers-manager-referral.php:203
+msgid "Enter email address"
+msgstr "Introdueix l'adreça electrònica"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:342
 msgid "Enterprise"
 msgstr "Empresa"
 
-#: includes/class-pn-customers-manager-common.php:258
+#: includes/class-pn-customers-manager-contact-form.php:249
+msgid "Enviando..."
+msgstr "Enviant..."
+
+#: includes/class-pn-customers-manager-contact-form.php:211
+msgid "Enviar mensaje"
+msgstr "Enviar missatge"
+
+#: includes/class-pn-customers-manager-commercial.php:96
+msgid "Enviar solicitud"
+msgstr "Enviar sol·licitud"
+
+#: includes/class-pn-customers-manager-contact-form.php:278
+msgid "Error de conexión. Inténtalo de nuevo."
+msgstr "Error de connexió. Inténtalo de nou."
+
+#: includes/class-pn-customers-manager-common.php:282
 msgid "Error in transcription"
 msgstr "Error en la transcripció"
 
-#: includes/class-pn-customers-manager-common.php:264
+#: includes/class-pn-customers-manager-common.php:288
 msgid "Error processing audio"
 msgstr "S'ha produït un error en processar l'àudio"
 
-#: includes/class-pn-customers-manager-common.php:252
+#: includes/class-pn-customers-manager-common.php:276
 msgid "Error: Could not access microphone"
 msgstr "Error: No s'ha pogut accedir al micròfon"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:303
+#: includes/class-pn-customers-manager-csv-import.php:540
+#: includes/class-pn-customers-manager-csv-import.php:1031
+msgid "Errors:"
+msgstr "Errors:"
+
+#: includes/class-pn-customers-manager-contact-form.php:137
+msgid "Escribe tu mensaje aquí…"
+msgstr "Escriu el teu missatge aquí…"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:307
 msgid "Essential information to identify and contact the organization."
 msgstr "Informació essencial per identificar i contactar amb l'organització."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:632
+#: includes/class-pn-customers-manager-commercial.php:281
+#: includes/class-pn-customers-manager-commercial.php:316
+msgid "Esta solicitud no esta pendiente."
+msgstr "Aquesta sol·licitud no està pendent."
+
+#: includes/class-pn-customers-manager-contact-messages.php:77
+#: includes/class-pn-customers-manager-commercial.php:403
+msgid "Estado"
+msgstr "Estat"
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:151
+msgid "Este correo ya esta registrado."
+msgstr "Aquest correu ja està registrat."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:634
 msgid "Etiquetas"
 msgstr "Etiquetes"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:489
-#: includes/class-pn-customers-manager-post-type-organization.php:595
+#: includes/class-pn-customers-manager-post-type-organization.php:491
+#: includes/class-pn-customers-manager-post-type-organization.php:597
 msgid "Event"
 msgstr "Esdeveniment"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:451
-#: includes/class-pn-customers-manager-post-type-organization.php:1033
+#: includes/class-pn-customers-manager-csv-import.php:109
+#: includes/class-pn-customers-manager-csv-import.php:164
+#: includes/class-pn-customers-manager-csv-import.php:214
+#: includes/class-pn-customers-manager-csv-import.php:570
+msgid "Excerpt"
+msgstr "Extracte"
+
+#: includes/class-pn-customers-manager-contact-messages.php:82
+msgid "Fecha"
+msgstr "Data"
+
+#: includes/class-pn-customers-manager-commercial.php:402
+msgid "Fecha solicitud"
+msgstr "Data de sol·licitud"
+
+#: includes/class-pn-customers-manager-post-type-funnel.php:468
+#: includes/class-pn-customers-manager-post-type-organization.php:1058
 msgid "Filter..."
 msgstr "Filtra..."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:357
+#: includes/class-pn-customers-manager-post-type-organization.php:359
 msgid "Financial services"
 msgstr "Serveis financers"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:478
+#: includes/class-pn-customers-manager-post-type-organization.php:480
 msgid "Fiscal identifier"
 msgstr "Identificador fiscal"
+
+#: includes/class-pn-customers-manager-csv-import.php:558
+msgid "Forbidden"
+msgstr "Prohibit"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:87
 #: includes/class-pn-customers-manager-post-type-funnel.php:88
@@ -548,17 +877,26 @@ msgstr "Descripció de l'embut"
 msgid "Funnel details"
 msgstr "Detalls de l'embut"
 
+#: includes/class-pn-customers-manager-csv-import.php:55
+msgid "Funnel ID"
+msgstr "ID de l'embut"
+
 #: includes/class-pn-customers-manager-post-type-funnel.php:67
 #: includes/class-pn-customers-manager-post-type-funnel.php:68
 msgid "Funnel multimedia content"
 msgstr "Contingut multimèdia d'embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:674
+#: includes/class-pn-customers-manager-csv-import.php:56
+msgid "Funnel stage"
+msgstr "Etapa d'embut"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:676
+#: includes/class-pn-customers-manager-csv-import.php:57
 msgid "Funnel status"
 msgstr "Estat de l'embut"
 
-#: includes/class-pn-customers-manager-activator.php:55
-#: includes/class-pn-customers-manager-activator.php:67
+#: includes/class-pn-customers-manager-activator.php:61
+#: includes/class-pn-customers-manager-activator.php:73
 msgid "Funnel Test"
 msgstr "Prova d'embut"
 
@@ -584,32 +922,48 @@ msgstr "URL del vídeo de l'embut"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:122
 #: includes/class-pn-customers-manager-post-type-funnel.php:138
-#: includes/class-pn-customers-manager-settings.php:201
-#: includes/class-pn-customers-manager-settings.php:202
+#: includes/class-pn-customers-manager-settings.php:285
+#: includes/class-pn-customers-manager-settings.php:286
 msgid "Funnels"
 msgstr "Embuts"
 
-#: includes/class-pn-customers-manager-settings.php:124
+#: includes/class-pn-customers-manager-settings.php:22
+msgid "General plugin settings and configuration."
+msgstr "Configuració i paràmetres generals del complement."
+
+#: includes/class-pn-customers-manager-settings.php:146
 msgid "Grey Color"
 msgstr "Color gris"
 
-#: includes/class-pn-customers-manager-settings.php:125
+#: includes/class-pn-customers-manager-settings.php:147
 msgid "Grey color for backgrounds (default: #f5f5f5)"
 msgstr "Color gris per a fons (per defecte: #f5f5f5)"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:356
+#: includes/class-pn-customers-manager-ajax-nopriv.php:156
+msgid "Ha ocurrido un error."
+msgstr "S'ha produït un error."
+
+#: includes/class-pn-customers-manager-common.php:303
+msgid "Ha ocurrido un error. Intentalo de nuevo."
+msgstr "S'ha produït un error. Intenció de nou."
+
+#: includes/class-pn-customers-manager-contact-form.php:272
+msgid "Ha ocurrido un error. Inténtalo de nuevo."
+msgstr "S'ha produït un error. Inténtalo de nou."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:358
 msgid "Healthcare"
 msgstr "Assistència sanitària"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:545
+#: includes/class-pn-customers-manager-post-type-organization.php:547
 msgid "Healthy / growing"
 msgstr "Saludable / en creixement"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:533
+#: includes/class-pn-customers-manager-post-type-organization.php:535
 msgid "High"
 msgstr "Alt"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:412
+#: includes/class-pn-customers-manager-post-type-organization.php:414
 msgid "https://company.com"
 msgstr "https://company.com"
 
@@ -621,11 +975,11 @@ msgstr "https://padresenlanube.com/"
 msgid "https://padresenlanube.com/plugins/pn-customers-manager/"
 msgstr "https://padresenlanube.com/plugins/pn-customers-manager/"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:420
+#: includes/class-pn-customers-manager-post-type-organization.php:422
 msgid "https://www.linkedin.com/company/..."
 msgstr "https://www.linkedin.com/company/..."
 
-#: includes/class-pn-customers-manager-settings.php:140
+#: includes/class-pn-customers-manager-settings.php:55
 msgid ""
 "If you activate this option the plugin will remove all options on "
 "deactivation. Please, be careful. This process cannot be undone."
@@ -633,77 +987,174 @@ msgstr ""
 "Si activeu aquesta opció, el connector eliminarà totes les opcions de "
 "desactivació. Siusplau, tingues compte. Aquest procés no es pot desfer."
 
+#: includes/class-pn-customers-manager-csv-import.php:450
+#: includes/class-pn-customers-manager-csv-import.php:941
+msgid "Import"
+msgstr "Importa"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:1053
+#: includes/class-pn-customers-manager-post-type-organization.php:1054
+#: includes/class-pn-customers-manager-csv-import.php:377
+msgid "Import CSV"
+msgstr "Importa CSV"
+
+#: includes/class-pn-customers-manager-csv-import.php:310
+msgid "Import Organizations from CSV"
+msgstr "Importar organitzacions des de CSV"
+
+#: includes/class-pn-customers-manager-csv-import.php:518
+#: includes/class-pn-customers-manager-csv-import.php:1009
+msgid "Importing organizations…"
+msgstr "Organitzacions importadores…"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:161
 msgid "In progress"
 msgstr "En curs"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:348
+#: includes/class-pn-customers-manager-post-type-organization.php:351
+#: includes/class-pn-customers-manager-csv-import.php:27
 msgid "Industry"
 msgstr "Indústria"
 
+#: includes/class-pn-customers-manager-commercial.php:36
+msgid ""
+"Inicia sesion para acceder al panel de agentes comerciales o enviar tu "
+"solicitud."
+msgstr ""
+"Inicieu la sessió per accedir al panel d'agents comercials o enviar la "
+"vostra sol·licitud."
+
+#: includes/class-pn-customers-manager-commercial.php:38
+msgid "Iniciar sesion"
+msgstr "Iniciar sessió"
+
+#: includes/class-pn-customers-manager-csv-import.php:54
+msgid "Internal notes"
+msgstr "Notes internes"
+
+#: includes/class-pn-customers-manager-common.php:301
+msgid "Introduce tu correo electronico."
+msgstr "Presenta el teu correu electrònic."
+
+#: includes/class-pn-customers-manager-referral.php:152
+msgid "Introduce tu email para completar el registro."
+msgstr "Introdueix el teu correu electrònic per completar el registre."
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:108
+msgid "Introduce un correo electronico valido."
+msgstr "Introdueix un correu electrònic vàlid."
+
+#: includes/class-pn-customers-manager-contact-form.php:243
+#: includes/class-pn-customers-manager-ajax-nopriv.php:198
 #: includes/class-pn-customers-manager-client-form.php:209
 msgid "Introduce un correo electrónico válido."
 msgstr "Introdueix un correu electrònic vàlid."
+
+#: includes/class-pn-customers-manager-csv-import.php:627
+msgid "Invalid file type. Please upload a CSV file."
+msgstr "Tipus de fitxer no vàlid. Si us plau, penja un fitxer CSV."
 
 #: includes/class-pn-customers-manager-validation.php:157
 msgid "Invalid selection format."
 msgstr "Format de selecció no vàlid."
 
-#: includes/class-pn-customers-manager-common.php:255
+#: includes/class-pn-customers-manager-common.php:279
 msgid "Invalid server response"
 msgstr "Resposta del servidor no vàlida"
 
-#: includes/class-pn-customers-manager-common.php:254
+#: includes/class-pn-customers-manager-common.php:278
 msgid "Invalid server response format"
 msgstr "Format de resposta del servidor no vàlid"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:582
+#: includes/class-pn-customers-manager-common.php:291
+msgid "Invitation sent successfully!"
+msgstr "Invitació enviada correctament!"
+
+#: includes/class-pn-customers-manager-referral.php:201
+msgid "Invite someone"
+msgstr "Convida algú"
+
+#: includes/class-pn-customers-manager-contact-messages.php:125
+msgid "IP:"
+msgstr "IP:"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:584
 msgid "Last contact"
 msgstr "Últim contacte"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:588
+#: includes/class-pn-customers-manager-post-type-organization.php:590
+#: includes/class-pn-customers-manager-csv-import.php:48
 msgid "Last contact channel"
 msgstr "Canal de l'últim contacte"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:503
+#: includes/class-pn-customers-manager-csv-import.php:47
+msgid "Last contact date"
+msgstr "Data de l'últim contacte"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:505
 msgid "Lead"
 msgstr "Plom"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:558
+#: includes/class-pn-customers-manager-post-type-organization.php:560
+#: includes/class-pn-customers-manager-csv-import.php:45
 msgid "Lead score"
 msgstr "Puntuació de clients potencials"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:484
+#: includes/class-pn-customers-manager-post-type-organization.php:486
+#: includes/class-pn-customers-manager-csv-import.php:40
 msgid "Lead source"
 msgstr "Font de contactes"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:318
+#: includes/class-pn-customers-manager-post-type-organization.php:322
+#: includes/class-pn-customers-manager-csv-import.php:24
 msgid "Legal name"
 msgstr "Nom legal"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:500
+#: includes/class-pn-customers-manager-contact-messages.php:91
+msgid "Leído"
+msgstr "Leído"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:502
+#: includes/class-pn-customers-manager-csv-import.php:41
 msgid "Lifecycle stage"
 msgstr "Etapa del cicle de vida"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:651
+#: includes/class-pn-customers-manager-ajax.php:410
+msgid "Link contact"
+msgstr "Enllaça el contacte"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:653
 msgid "Link this organization to a funnel and track its stage."
 msgstr ""
 "Enllaça aquesta organització a un embut de conversió i fes-ne un seguiment "
 "de la fase."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:309
+#: includes/class-pn-customers-manager-post-type-organization.php:313
 msgid "Linked contacts"
 msgstr "Contactes vinculats"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:419
+#: includes/class-pn-customers-manager-csv-import.php:33
+msgid "LinkedIn"
+msgstr "LinkedIn"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:421
 msgid "LinkedIn profile"
 msgstr "Perfil de LinkedIn"
+
+#: includes/class-pn-customers-manager-post-type-funnel.php:448
+#: includes/class-pn-customers-manager-post-type-organization.php:1032
+msgid "Log in"
+msgstr "Inicia la sessió"
+
+#: includes/class-pn-customers-manager-settings.php:217
+msgid "Logo para codigo QR"
+msgstr "Logotip per a codi QR"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:164
 msgid "Lost"
 msgstr "Perdut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:535
+#: includes/class-pn-customers-manager-post-type-organization.php:537
 msgid "Low"
 msgstr "Baix"
 
@@ -711,15 +1162,15 @@ msgstr "Baix"
 msgid "Lowercase & Uppercase"
 msgstr "Minúscules i majúscules"
 
-#: includes/class-pn-customers-manager-settings.php:64
+#: includes/class-pn-customers-manager-settings.php:86
 msgid "Main Background Color"
 msgstr "Color de fons principal"
 
-#: includes/class-pn-customers-manager-settings.php:74
+#: includes/class-pn-customers-manager-settings.php:96
 msgid "Main Border Color"
 msgstr "Color de la vora principal"
 
-#: includes/class-pn-customers-manager-settings.php:54
+#: includes/class-pn-customers-manager-settings.php:76
 msgid "Main Color"
 msgstr "Color principal"
 
@@ -732,31 +1183,74 @@ msgstr ""
 "Crea tasques, assigna-les als usuaris i fes un seguiment del temps dedicat a "
 "cada tasca."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:354
+#: includes/class-pn-customers-manager-post-type-organization.php:356
 msgid "Manufacturing"
 msgstr "Fabricació"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:504
+#: includes/class-pn-customers-manager-contact-messages.php:112
+msgid "Marcar como leído"
+msgstr "Marcar com llegit"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:506
 msgid "Marketing qualified (MQL)"
 msgstr "Qualificació en màrqueting (MQL)"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:534
+#: includes/class-pn-customers-manager-post-type-organization.php:536
 msgid "Medium"
 msgstr "Mitjà"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:593
+#: includes/class-pn-customers-manager-post-type-organization.php:595
 msgid "Meeting"
 msgstr "Reunió"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:373
+#: includes/class-pn-customers-manager-contact-form.php:133
+#: includes/class-pn-customers-manager-ajax-nopriv.php:244
+#: includes/class-pn-customers-manager-ajax-nopriv.php:258
+msgid "Mensaje"
+msgstr "Missatge"
+
+#: includes/class-pn-customers-manager-commercial.php:89
+msgid "Mensaje / Motivacion"
+msgstr "Missatge / Motivació"
+
+#: includes/class-pn-customers-manager-contact-form.php:268
+msgid "Mensaje enviado correctamente. Gracias por contactarnos."
+msgstr "Mensatge enviat correctament. Gràcies per contactarnos."
+
+#: includes/class-pn-customers-manager-settings.php:329
+#: includes/class-pn-customers-manager-settings.php:330
+msgid "Mensajes"
+msgstr "Missatges"
+
+#: includes/class-pn-customers-manager-contact-messages.php:65
+msgid "Mensajes de contacto"
+msgstr "Missatges de contacte"
+
+#: includes/class-pn-customers-manager-commercial.php:183
+msgid "Mis Referidos"
+msgstr "Els meus Referits"
+
+#: includes/class-pn-customers-manager-csv-import.php:660
+msgid "Missing required column: post_title (or Title)"
+msgstr "Falta la columna obligatòria: post_title (o Title)"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:375
 msgid "More than 500 people"
 msgstr "Més de 500 persones"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:387
+#: includes/class-pn-customers-manager-post-type-organization.php:389
 msgid "More than €20M"
 msgstr "Més de 20 milions d'euros"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:521
+#: includes/class-pn-customers-manager-settings.php:209
+msgid "Mostrar ranking de principales referentes"
+msgstr "Mostra el rànquing de principals referents"
+
+#: includes/class-pn-customers-manager-settings.php:210
+msgid "Muestra el listado de principales referentes en el panel de referidos."
+msgstr "Mostra el llistat de principals referents en el panel de referidos."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:523
 msgid "Negotiation"
 msgstr "Negociació"
 
@@ -764,29 +1258,70 @@ msgstr "Negociació"
 msgid "New Funnel category"
 msgstr "Nova categoria d'embut"
 
-#: includes/class-pn-customers-manager-forms.php:797
+#: includes/class-pn-customers-manager-csv-import.php:49
+msgid "Next action"
+msgstr "Acció següent"
+
+#: includes/class-pn-customers-manager-forms.php:801
 msgid "No"
 msgstr "No"
 
-#: includes/class-pn-customers-manager-common.php:253
+#: includes/class-pn-customers-manager-common.php:277
 msgid "No audio to transcribe"
 msgstr "No hi ha àudio per transcriure"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:213
+#: includes/class-pn-customers-manager-post-type-organization.php:217
 msgid "No contacts linked yet."
 msgstr "Encara no s'ha enllaçat cap contacte."
+
+#: includes/class-pn-customers-manager-csv-import.php:704
+msgid "No data to import."
+msgstr "No hi ha dades per importar."
 
 #: includes/class-pn-customers-manager-forms.php:98
 msgid "No file found"
 msgstr "No s'ha trobat cap fitxer"
 
-#: includes/class-pn-customers-manager-forms.php:789
+#: includes/class-pn-customers-manager-forms.php:793
 msgid "No file uploaded"
 msgstr "No s'ha carregat cap fitxer"
 
-#: includes/class-pn-customers-manager-forms.php:879
+#: includes/class-pn-customers-manager-csv-import.php:615
+msgid "No file uploaded."
+msgstr "No s'ha carregat cap fitxer."
+
+#: includes/class-pn-customers-manager-contact-messages.php:72
+msgid "No hay mensajes de contacto todavía."
+msgstr "No hi ha missatges de contacte encara."
+
+#: includes/class-pn-customers-manager-forms.php:883
 msgid "No images uploaded"
 msgstr "No s'han penjat imatges"
+
+#: includes/class-pn-customers-manager-contact-messages.php:93
+msgid "No leído"
+msgstr "No llegit"
+
+#: includes/class-pn-customers-manager-settings.php:348
+msgid ""
+"No page with the Organizations block has been detected on your site. Click "
+"the button below to automatically create a new page with the Organizations "
+"block already inserted. Once the page is created, you will be redirected to "
+"its editor so you can review it and publish it or make any changes you need."
+msgstr ""
+"No s'ha detectat cap pàgina amb el bloc Organitzacions al vostre lloc. Feu "
+"clic al botó següent per crear automàticament una nova pàgina amb el bloc "
+"Organitzacions ja inserit. Un cop creada la pàgina, se us redirigirà al seu "
+"editor perquè pugueu revisar-la i publicar-la o fer els canvis que "
+"necessiteu."
+
+#: includes/class-pn-customers-manager-referral.php:275
+msgid "No referrals yet. Invite someone to get started!"
+msgstr "Encara no hi ha referències. Convida algú a començar!"
+
+#: includes/class-pn-customers-manager-commercial.php:410
+msgid "No se encontraron agentes comerciales."
+msgstr "No es troben agents comercials."
 
 #: includes/class-pn-customers-manager-client-form.php:230
 msgid "No se pudo actualizar el usuario existente."
@@ -796,11 +1331,46 @@ msgstr "No es pot actualitzar l'usuari existent."
 msgid "No se pudo crear el usuario del cliente."
 msgstr "No se pudo crear l'usuari del client."
 
-#: includes/class-pn-customers-manager-common.php:257
+#: includes/class-pn-customers-manager-ajax-nopriv.php:153
+msgid "No se pudo crear el usuario. Intentalo de nuevo."
+msgstr "No se pudo crear l'usuari. Intenció de nou."
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:271
+msgid "No se pudo enviar el mensaje. Inténtalo de nuevo más tarde."
+msgstr "No he pogut enviar el missatge. Inténtalo de nuevo más tarde."
+
+#: includes/class-pn-customers-manager-contact-messages.php:40
+msgid "No tienes permiso para acceder a esta página."
+msgstr "No tens permís per accedir a aquesta pàgina."
+
+#: includes/class-pn-customers-manager-ajax.php:512
+#: includes/class-pn-customers-manager-ajax.php:526
+msgid "No tienes permiso para realizar esta accion."
+msgstr "No té permís per realitzar aquesta acció."
+
+#: includes/class-pn-customers-manager-ajax.php:540
+#: includes/class-pn-customers-manager-ajax.php:571
+msgid "No tienes permiso para realizar esta acción."
+msgstr "No té permís per realitzar aquesta acció."
+
+#: includes/class-pn-customers-manager-common.php:281
 msgid "No transcription received from server"
 msgstr "No s'ha rebut cap transcripció del servidor"
 
-#: includes/class-pn-customers-manager-client-form.php:375
+#: includes/class-pn-customers-manager-ajax.php:385
+msgid "No users available to link."
+msgstr "No hi ha usuaris disponibles per enllaçar."
+
+#: includes/class-pn-customers-manager-contact-form.php:104
+#: includes/class-pn-customers-manager-contact-messages.php:78
+#: includes/class-pn-customers-manager-ajax-nopriv.php:239
+#: includes/class-pn-customers-manager-ajax-nopriv.php:253
+#: includes/class-pn-customers-manager-commercial.php:60
+#: includes/class-pn-customers-manager-commercial.php:398
+msgid "Nombre"
+msgstr "Nom"
+
+#: includes/class-pn-customers-manager-client-form.php:380
 msgid "Nombre de la organización"
 msgstr "Nom de l'organització"
 
@@ -808,7 +1378,7 @@ msgstr "Nom de l'organització"
 msgid "Nombre, apellidos y correo electrónico son obligatorios."
 msgstr "Nom, correu electrònic i correu electrònic són obligatoris."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:340
+#: includes/class-pn-customers-manager-post-type-organization.php:343
 msgid "Nonprofit / third sector"
 msgstr "Sense ànim de lucre / tercer sector"
 
@@ -820,11 +1390,11 @@ msgstr "No s'ha trobat l'embut"
 msgid "Not Funnel found in Trash"
 msgstr "No s'ha trobat cap embut a la paperera."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:713
+#: includes/class-pn-customers-manager-post-type-organization.php:715
 msgid "Not Organization found"
 msgstr "No s'ha trobat cap organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:714
+#: includes/class-pn-customers-manager-post-type-organization.php:716
 msgid "Not Organization found in Trash"
 msgstr "No s'ha trobat cap organització a la paperera"
 
@@ -832,9 +1402,13 @@ msgstr "No s'ha trobat cap organització a la paperera"
 msgid "Not started"
 msgstr "No iniciat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:640
+#: includes/class-pn-customers-manager-post-type-organization.php:642
 msgid "Notas internas"
 msgstr "Notes internes"
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:235
+msgid "Nuevo mensaje de contacto"
+msgstr "Nou missatge de contacte"
 
 #: includes/class-pn-customers-manager-forms.php:232
 msgid "Number (0-9)"
@@ -852,7 +1426,7 @@ msgstr "El número ha de ser com a mínim %s."
 msgid "Number must be at most %s."
 msgstr "El número ha de ser com a màxim %s."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:506
+#: includes/class-pn-customers-manager-post-type-organization.php:508
 msgid "Opportunity"
 msgstr "Oportunitat"
 
@@ -861,52 +1435,80 @@ msgstr "Oportunitat"
 msgid "Order element"
 msgstr "Element d'ordre"
 
-#: includes/class-pn-customers-manager-common.php:242
+#: includes/class-pn-customers-manager-common.php:266
 msgid "Ordered element"
 msgstr "Element ordenat"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:32
 #: includes/class-pn-customers-manager-post-type-organization.php:33
-#: includes/class-pn-customers-manager-post-type-organization.php:721
+#: includes/class-pn-customers-manager-post-type-organization.php:723
 msgid "Organization description"
 msgstr "Descripció de l'organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:751
+#: includes/class-pn-customers-manager-post-type-organization.php:753
 msgid "Organization details"
 msgstr "Detalls de l'organització"
+
+#: includes/class-pn-customers-manager-ajax.php:358
+#: includes/class-pn-customers-manager-ajax.php:429
+#: includes/class-pn-customers-manager-ajax.php:466
+msgid "Organization ID is required."
+msgstr "Cal l'ID de l'organització."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:23
 #: includes/class-pn-customers-manager-post-type-organization.php:24
 msgid "Organization title"
 msgstr "Títol de l'organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:704
-#: includes/class-pn-customers-manager-post-type-organization.php:720
-#: includes/class-pn-customers-manager-settings.php:212
-#: includes/class-pn-customers-manager-settings.php:213
+#: includes/class-pn-customers-manager-ajax.php:302
+#: includes/class-pn-customers-manager-post-type-organization.php:706
+#: includes/class-pn-customers-manager-post-type-organization.php:722
+#: includes/class-pn-customers-manager-settings.php:296
+#: includes/class-pn-customers-manager-settings.php:297
 msgid "Organizations"
 msgstr "Organitzacions"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:359
-#: includes/class-pn-customers-manager-post-type-organization.php:596
+#: includes/class-pn-customers-manager-csv-import.php:538
+#: includes/class-pn-customers-manager-csv-import.php:1029
+msgid "organizations created successfully."
+msgstr "organitzacions creades amb èxit."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:361
+#: includes/class-pn-customers-manager-post-type-organization.php:598
 msgid "Other"
 msgstr "Altres"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:493
+#: includes/class-pn-customers-manager-post-type-organization.php:495
 msgid "Other source"
 msgstr "Altra font"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:491
+#: includes/class-pn-customers-manager-post-type-organization.php:493
 msgid "Outbound prospecting"
 msgstr "Prospecció externa"
+
+#: includes/class-pn-customers-manager-csv-import.php:46
+msgid "Owner (user ID)"
+msgstr "Propietari (ID d'usuari)"
 
 #. Author of the plugin
 msgid "Padres en la Nube"
 msgstr "Pares al Núvol"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:488
+#: includes/class-pn-customers-manager-settings.php:177
+msgid "Pagina del CRM"
+msgstr "Pàgina del CRM"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:490
 msgid "Paid campaigns"
 msgstr "Campanyes de pagament"
+
+#: includes/class-pn-customers-manager-commercial.php:152
+msgid "Panel Comercial"
+msgstr "Panell Comercial"
+
+#: includes/class-pn-customers-manager-contact-messages.php:121
+msgid "Para:"
+msgstr "Paràgraf:"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:123
 msgid "Parent Funnel"
@@ -920,11 +1522,16 @@ msgstr "Categoria de l'embut principal"
 msgid "Parent Funnel category:"
 msgstr "Categoria de l'embut principal:"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:705
+#: includes/class-pn-customers-manager-post-type-organization.php:707
 msgid "Parent Organization"
 msgstr "Organització matriu"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:492
+#: includes/class-pn-customers-manager-csv-import.php:470
+#: includes/class-pn-customers-manager-csv-import.php:961
+msgid "Parsing CSV…"
+msgstr "S'està analitzant el CSV…"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:494
 msgid "Partner"
 msgstr "Soci/a"
 
@@ -932,11 +1539,34 @@ msgstr "Soci/a"
 msgid "Password strength checker"
 msgstr "Verificador de força de contrasenya"
 
-#: includes/class-pn-customers-manager-common.php:261
+#: includes/class-pn-customers-manager-commercial.php:431
+msgid "Pendiente"
+msgstr "Pendent"
+
+#: includes/class-pn-customers-manager-commercial.php:165
+#: includes/class-pn-customers-manager-commercial.php:390
+msgid "Pendientes"
+msgstr "Pendents"
+
+#: includes/class-pn-customers-manager-referral.php:251
+msgid "Pending"
+msgstr "Pendent"
+
+#: includes/class-pn-customers-manager-csv-import.php:609
+#: includes/class-pn-customers-manager-csv-import.php:695
+msgid "Permission denied."
+msgstr "Permís denegat."
+
+#: includes/class-pn-customers-manager-common.php:285
 msgid "Permission error: Security verification failed"
 msgstr "Error de permisos: ha fallat la verificació de seguretat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:515
+#: includes/class-pn-customers-manager-csv-import.php:30
+msgid "Phone"
+msgstr "Telèfon"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:517
+#: includes/class-pn-customers-manager-csv-import.php:42
 msgid "Pipeline stage"
 msgstr "Fase de la canonada"
 
@@ -944,7 +1574,7 @@ msgstr "Fase de la canonada"
 msgid "Play audio"
 msgstr "Reprodueix àudio"
 
-#: includes/class-pn-customers-manager-common.php:222
+#: includes/class-pn-customers-manager-common.php:246
 msgid "Please create a new user or login to save the information."
 msgstr ""
 "Si us plau, crea un usuari nou o inicia la sessió per desar la informació."
@@ -954,6 +1584,7 @@ msgid "Please enter a valid date."
 msgstr "Si us plau, introduïu una data vàlida."
 
 #: includes/class-pn-customers-manager-validation.php:65
+#: includes/class-pn-customers-manager-common.php:293
 msgid "Please enter a valid email address."
 msgstr "Si us plau, introduïu una adreça electrònica vàlida."
 
@@ -965,30 +1596,54 @@ msgstr "Si us plau, introduïu un número vàlid."
 msgid "Please enter a valid URL."
 msgstr "Si us plau, introduïu una URL vàlida."
 
+#: includes/class-pn-customers-manager-referral.php:186
+msgid "Please log in to access the referrals panel."
+msgstr "Si us plau, inicia la sessió per accedir al panell de referències."
+
+#: includes/class-pn-customers-manager-csv-import.php:467
+#: includes/class-pn-customers-manager-csv-import.php:958
+msgid "Please select a CSV file first."
+msgstr "Seleccioneu primer un fitxer CSV."
+
 #: includes/class-pn-customers-manager-validation.php:148
 msgid "Please select a valid option."
 msgstr "Si us plau, seleccioneu una opció vàlida."
+
+#: includes/class-pn-customers-manager-ajax.php:438
+msgid "Please select a valid user."
+msgstr "Si us plau, seleccioneu un usuari vàlid."
 
 #: includes/class-pn-customers-manager-validation.php:165
 msgid "Please select valid options."
 msgstr "Si us plau, seleccioneu opcions vàlides."
 
-#: includes/class-pn-customers-manager-settings.php:223
+#: includes/class-pn-customers-manager-settings.php:342
 msgid "Plugin main Banner"
 msgstr "Bàner principal del complement"
 
 #. Name of the plugin
-#: includes/class-pn-customers-manager-settings.php:180
-#: includes/class-pn-customers-manager-settings.php:181
+#: includes/class-pn-customers-manager-settings.php:264
+#: includes/class-pn-customers-manager-settings.php:265
 #: includes/class-pn-customers-manager-activator.php:28
 msgid "PN Customers Manager"
 msgstr "Gestor de clients de PN"
 
-#: includes/class-pn-customers-manager-settings.php:224
+#: includes/class-pn-customers-manager-settings.php:343
 msgid "PN Customers Manager Settings"
 msgstr "Configuració del gestor de clients de PN"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:547
+#: includes/class-pn-customers-manager-common.php:307
+#: includes/class-pn-customers-manager-contact-form.php:236
+#: includes/class-pn-customers-manager-ajax-nopriv.php:189
+#: includes/class-pn-customers-manager-commercial.php:228
+msgid "Por favor, completa todos los campos obligatorios."
+msgstr "Per favor, completeu tots els camps obligatoris."
+
+#: includes/class-pn-customers-manager-commercial.php:235
+msgid "Por favor, introduce un email valido."
+msgstr "Per favor, introduïu un correu electrònic vàlid."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:549
 msgid "Possible churn"
 msgstr "Possible rotació"
 
@@ -997,7 +1652,7 @@ msgctxt "Post Type general name"
 msgid "Funnel"
 msgstr "Embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:702
+#: includes/class-pn-customers-manager-post-type-organization.php:704
 msgctxt "Post Type general name"
 msgid "Organization"
 msgstr "Organització"
@@ -1008,93 +1663,165 @@ msgctxt "Post Type singular name"
 msgid "Funnel"
 msgstr "Embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:703
+#: includes/class-pn-customers-manager-post-type-organization.php:705
 msgctxt "Post Type singular name"
 msgid "Organization"
 msgstr "Organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:459
+#: includes/class-pn-customers-manager-post-type-organization.php:461
+#: includes/class-pn-customers-manager-csv-import.php:38
 msgid "Postal code"
 msgstr "Codi postal"
 
-#: includes/class-pn-customers-manager-settings.php:65
+#: includes/class-pn-customers-manager-csv-import.php:446
+#: includes/class-pn-customers-manager-csv-import.php:937
+msgid "Preview"
+msgstr "Vista prèvia"
+
+#: includes/class-pn-customers-manager-settings.php:87
 msgid "Primary background color (default: #0000aa)"
 msgstr "Color de fons principal (per defecte: #0000aa)"
 
-#: includes/class-pn-customers-manager-settings.php:75
+#: includes/class-pn-customers-manager-settings.php:97
 msgid "Primary border color (default: #0000aa)"
 msgstr "Color de la vora principal (per defecte: #0000aa)"
 
-#: includes/class-pn-customers-manager-settings.php:55
+#: includes/class-pn-customers-manager-settings.php:77
 msgid ""
 "Primary color used for text, backgrounds, and borders (default: #0000aa)"
 msgstr ""
 "Color primari utilitzat per al text, els fons i les vores (per defecte: "
 "#0000aa)"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:403
+#: includes/class-pn-customers-manager-post-type-organization.php:405
 msgid "Primary email"
 msgstr "Correu electrònic principal"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:565
+#: includes/class-pn-customers-manager-post-type-organization.php:567
 msgid "Primary owner"
 msgstr "Propietari principal"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:395
+#: includes/class-pn-customers-manager-post-type-organization.php:397
 msgid "Primary phone"
 msgstr "Telèfon principal"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:353
+#: includes/class-pn-customers-manager-csv-import.php:43
+msgid "Priority"
+msgstr "Prioritat"
+
+#: includes/class-pn-customers-manager-csv-import.php:348
+#: includes/class-pn-customers-manager-csv-import.php:438
+#: includes/class-pn-customers-manager-csv-import.php:929
+msgid "Processing…"
+msgstr "Processant…"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:355
 msgid "Professional services"
 msgstr "Serveis professionals"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:520
+#: includes/class-pn-customers-manager-commercial.php:35
+msgid "Programa de Agentes Comerciales"
+msgstr "Programa d'Agents Comercials"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:522
 msgid "Proposal"
 msgstr "Proposta"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:603
+#: includes/class-pn-customers-manager-post-type-organization.php:605
 msgid "Próximo paso acordado"
 msgstr "Pròxim pas acordat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:341
+#: includes/class-pn-customers-manager-post-type-organization.php:344
 msgid "Public sector"
 msgstr "sector públic"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:518
+#: includes/class-pn-customers-manager-contact-messages.php:81
+msgid "Página"
+msgstr "Pàgina"
+
+#: includes/class-pn-customers-manager-contact-messages.php:123
+msgid "Página de origen:"
+msgstr "Pàgina d'origen:"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:520
 msgid "Qualification"
 msgstr "Qualificació"
 
-#: includes/class-pn-customers-manager-common.php:248
+#: includes/class-pn-customers-manager-common.php:272
 #: includes/class-pn-customers-manager-forms.php:495
 msgid "Ready to record"
 msgstr "Llest per gravar"
 
-#: includes/class-pn-customers-manager-common.php:251
+#: includes/class-pn-customers-manager-common.php:311
+#: includes/class-pn-customers-manager-commercial.php:433
+msgid "Rechazado"
+msgstr "Rechazado"
+
+#: includes/class-pn-customers-manager-commercial.php:392
+msgid "Rechazados"
+msgstr "Rechazados"
+
+#: includes/class-pn-customers-manager-commercial.php:445
+msgid "Rechazar"
+msgstr "Rechazar"
+
+#: includes/class-pn-customers-manager-common.php:275
 msgid "Recording completed. Ready to transcribe."
 msgstr "Gravació completada. Llest per transcriure."
 
-#: includes/class-pn-customers-manager-common.php:250
+#: includes/class-pn-customers-manager-common.php:274
 msgid "Recording stopped. Ready to play or transcribe."
 msgstr "Gravació aturada. Llest per reproduir o transcriure."
 
-#: includes/class-pn-customers-manager-common.php:249
+#: includes/class-pn-customers-manager-common.php:273
 msgid "Recording..."
 msgstr "Enregistrament..."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:490
+#: includes/class-pn-customers-manager-settings.php:190
+msgid "Referidos"
+msgstr "Referits"
+
+#: includes/class-pn-customers-manager-commercial.php:157
+msgid "Referidos enviados"
+msgstr "Referits enviats"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:492
 msgid "Referral"
 msgstr "Referència"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:435
+#: includes/class-pn-customers-manager-common.php:292
+msgid "Referral link copied to clipboard!"
+msgstr "Enllaç de referència copiat al porta-retalls!"
+
+#: includes/class-pn-customers-manager-referral.php:207
+msgid "Referral link:"
+msgstr "Enllaç de referència:"
+
+#: includes/class-pn-customers-manager-csv-import.php:35
+msgid "Region"
+msgstr "Regió"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:437
 msgid "Region / State"
 msgstr "Regió / Estat"
+
+#: includes/class-pn-customers-manager-referral.php:155
+msgid "Registrarme"
+msgstr "Registra'm"
+
+#: includes/class-pn-customers-manager-common.php:302
+#: includes/class-pn-customers-manager-ajax-nopriv.php:167
+msgid "Registro completado! Revisa tu email para activar tu cuenta."
+msgstr ""
+"Registre complet! Reviseu el vostre correu electrònic per activar el vostre "
+"compte."
 
 #: templates/pn-customers-manager-popups.php:39
 msgid "removal"
 msgstr "eliminació"
 
 #: templates/pn-customers-manager-popups.php:47
-#: includes/class-pn-customers-manager-post-type-organization.php:244
+#: includes/class-pn-customers-manager-post-type-organization.php:248
 msgid "Remove"
 msgstr "Elimina"
 
@@ -1103,52 +1830,66 @@ msgstr "Elimina"
 msgid "Remove element"
 msgstr "Elimina l'element"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:603
+#: includes/class-pn-customers-manager-post-type-funnel.php:620
 msgid "Remove Funnel"
 msgstr "Elimina l'embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:1238
+#: includes/class-pn-customers-manager-post-type-organization.php:1286
 msgid "Remove Organization"
 msgstr "Elimina l'organització"
 
-#: includes/class-pn-customers-manager-settings.php:139
+#: includes/class-pn-customers-manager-settings.php:54
 msgid "Remove plugin options on deactivation"
 msgstr "Elimina les opcions del connector en desactivar-se"
 
-#: includes/class-pn-customers-manager-common.php:224
+#: includes/class-pn-customers-manager-common.php:248
 msgid "Removed successfully"
 msgstr "S'ha eliminat correctament"
 
-#: includes/class-pn-customers-manager-forms.php:662
-#: includes/class-pn-customers-manager-forms.php:727
+#: includes/class-pn-customers-manager-forms.php:664
+#: includes/class-pn-customers-manager-forms.php:731
 msgid "Required field"
 msgstr "Camp obligatori"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:358
+#: includes/class-pn-customers-manager-post-type-organization.php:360
 msgid "Retail / eCommerce"
 msgstr "Comerç minorista / comerç electrònic"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:505
+#: includes/class-pn-customers-manager-csv-import.php:749
+#, php-format
+msgid "Row %d: Error creating post — %s"
+msgstr "Fila %d: Error en crear la publicació — %s"
+
+#: includes/class-pn-customers-manager-csv-import.php:726
+msgid "Row %d: post_title is empty, skipped."
+msgstr "Fila %d: post_title està buida, s'ha omès."
+
+#: includes/class-pn-customers-manager-csv-import.php:508
+#: includes/class-pn-customers-manager-csv-import.php:999
+msgid "rows found"
+msgstr "files trobades"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:507
 msgid "Sales qualified (SQL)"
 msgstr "Qualificat en vendes (SQL)"
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:711
+#: includes/class-pn-customers-manager-post-type-funnel.php:728
 msgid "Save Funnel"
 msgstr "Desa l'embut"
 
-#: includes/class-pn-customers-manager-settings.php:151
+#: includes/class-pn-customers-manager-settings.php:235
 msgid "Save options"
 msgstr "Desa opcions"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:1346
+#: includes/class-pn-customers-manager-post-type-organization.php:1394
 msgid "Save Organization"
 msgstr "Desa l'organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:263
+#: includes/class-pn-customers-manager-post-type-organization.php:267
 msgid "Save the organization to start adding contacts."
 msgstr "Desa l'organització per començar a afegir contactes."
 
-#: includes/class-pn-customers-manager-common.php:223
+#: includes/class-pn-customers-manager-common.php:247
 msgid "Saved successfully"
 msgstr "S'ha desat correctament"
 
@@ -1157,156 +1898,197 @@ msgid "Search Funnel categories"
 msgstr "Categories de l'embut de cerca"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:130
-#: includes/class-pn-customers-manager-post-type-funnel.php:452
+#: includes/class-pn-customers-manager-post-type-funnel.php:469
 msgid "Search Funnels"
 msgstr "Embuts de cerca"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:712
-#: includes/class-pn-customers-manager-post-type-organization.php:1034
+#: includes/class-pn-customers-manager-post-type-organization.php:714
+#: includes/class-pn-customers-manager-post-type-organization.php:1059
 msgid "Search Organizations"
 msgstr "Cerca organitzacions"
 
 #: includes/class-pn-customers-manager-ajax.php:34
 #: includes/class-pn-customers-manager-post-type-funnel.php:230
-#: includes/class-pn-customers-manager-post-type-organization.php:812
+#: includes/class-pn-customers-manager-post-type-organization.php:814
 #: includes/class-pn-customers-manager-ajax-nopriv.php:33
 msgid "Security check failed: Invalid nonce."
 msgstr "La comprovació de seguretat ha fallat: valor no vàlid."
 
 #: includes/class-pn-customers-manager-ajax.php:25
 #: includes/class-pn-customers-manager-post-type-funnel.php:221
-#: includes/class-pn-customers-manager-post-type-organization.php:803
+#: includes/class-pn-customers-manager-post-type-organization.php:805
 #: includes/class-pn-customers-manager-ajax-nopriv.php:24
 msgid "Security check failed: Nonce is required."
 msgstr "Fallada la comprovació de seguretat: Cal un valor no necessari."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:333
+#: includes/class-pn-customers-manager-post-type-organization.php:337
+#: includes/class-pn-customers-manager-csv-import.php:26
 msgid "Segment"
 msgstr "Segment"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:590
+#: includes/class-pn-customers-manager-settings.php:178
+msgid ""
+"Selecciona la pagina del CRM a la que accederan los agentes comerciales "
+"aprobados."
+msgstr ""
+"Seleccioneu la pàgina del CRM per accedir als agents comercials aprovats."
+
+#: includes/class-pn-customers-manager-settings.php:218
+msgid ""
+"Selecciona una imagen que se mostrara en el centro del codigo QR. "
+"Recomendado: cuadrada, minimo 80x80px."
+msgstr ""
+"Seleccioneu una imatge que es mostrarà al centre del codi QR. Recomanat: "
+"quadrada, mínim 80x80px."
+
+#: includes/class-pn-customers-manager-post-type-organization.php:592
 msgid "Select a channel"
 msgstr "Selecciona un canal"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:84
-#: includes/class-pn-customers-manager-post-type-organization.php:659
+#: includes/class-pn-customers-manager-post-type-organization.php:661
 msgid "Select a funnel"
 msgstr "Seleccioneu un embut"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:127
-#: includes/class-pn-customers-manager-post-type-organization.php:667
+#: includes/class-pn-customers-manager-post-type-organization.php:669
 msgid "Select a funnel stage"
 msgstr "Seleccioneu una etapa de l'embut"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:157
-#: includes/class-pn-customers-manager-post-type-organization.php:676
+#: includes/class-pn-customers-manager-post-type-organization.php:678
 msgid "Select a funnel status"
 msgstr "Selecciona un estat de l'embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:544
+#: includes/class-pn-customers-manager-post-type-organization.php:546
 msgid "Select a health status"
 msgstr "Seleccioneu un estat de salut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:502
+#: includes/class-pn-customers-manager-post-type-organization.php:504
 msgid "Select a lifecycle stage"
 msgstr "Seleccioneu una etapa del cicle de vida"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:517
+#: includes/class-pn-customers-manager-post-type-organization.php:519
 msgid "Select a pipeline stage"
 msgstr "Seleccioneu una etapa de la canonada"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:532
+#: includes/class-pn-customers-manager-post-type-organization.php:534
 msgid "Select a priority"
 msgstr "Selecciona una prioritat"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:368
-#: includes/class-pn-customers-manager-post-type-organization.php:382
+#: includes/class-pn-customers-manager-post-type-organization.php:370
+#: includes/class-pn-customers-manager-post-type-organization.php:384
 msgid "Select a range"
 msgstr "Seleccioneu un interval"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:334
-#: includes/class-pn-customers-manager-post-type-organization.php:336
+#: includes/class-pn-customers-manager-post-type-organization.php:339
 msgid "Select a segment"
 msgstr "Selecciona un segment"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:486
+#: includes/class-pn-customers-manager-post-type-organization.php:488
 msgid "Select a source"
 msgstr "Selecciona una font"
 
+#: includes/class-pn-customers-manager-ajax.php:388
+#: includes/class-pn-customers-manager-ajax.php:390
 #: includes/class-pn-customers-manager-post-type-organization.php:50
 msgid "Select a user"
 msgstr "Selecciona un usuari"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:349
-#: includes/class-pn-customers-manager-post-type-organization.php:351
+#: includes/class-pn-customers-manager-post-type-organization.php:353
 msgid "Select an industry"
 msgstr "Selecciona una indústria"
 
-#: includes/class-pn-customers-manager-common.php:236
+#: includes/class-pn-customers-manager-common.php:260
 msgid "Select audio"
 msgstr "Seleccioneu l'àudio"
 
-#: includes/class-pn-customers-manager-common.php:237
+#: includes/class-pn-customers-manager-common.php:261
 msgid "Select audios"
 msgstr "Seleccioneu els àudios"
 
-#: includes/class-pn-customers-manager-common.php:240
+#: includes/class-pn-customers-manager-common.php:264
 msgid "Select file"
 msgstr "Seleccioneu el fitxer"
 
-#: includes/class-pn-customers-manager-common.php:241
+#: includes/class-pn-customers-manager-common.php:265
 msgid "Select files"
 msgstr "Seleccioneu fitxers"
 
-#: includes/class-pn-customers-manager-common.php:228
+#: includes/class-pn-customers-manager-common.php:252
 msgid "Select image"
 msgstr "Seleccioneu la imatge"
 
-#: includes/class-pn-customers-manager-common.php:229
+#: includes/class-pn-customers-manager-common.php:253
 msgid "Select images"
 msgstr "Seleccioneu imatges"
 
-#: includes/class-pn-customers-manager-common.php:243
+#: includes/class-pn-customers-manager-common.php:267
 msgid "Select option"
 msgstr "Selecciona l'opció"
 
-#: includes/class-pn-customers-manager-common.php:244
+#: includes/class-pn-customers-manager-common.php:268
 msgid "Select options"
 msgstr "Selecciona opcions"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:574
+#: includes/class-pn-customers-manager-post-type-organization.php:576
 msgid "Select other team members involved with the account."
 msgstr "Seleccioneu altres membres de l'equip implicats amb el compte."
 
-#: includes/class-pn-customers-manager-common.php:232
+#: includes/class-pn-customers-manager-common.php:256
 msgid "Select video"
 msgstr "Seleccioneu el vídeo"
 
-#: includes/class-pn-customers-manager-common.php:233
+#: includes/class-pn-customers-manager-common.php:257
 msgid "Select videos"
 msgstr "Seleccioneu vídeos"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:634
+#: includes/class-pn-customers-manager-referral.php:204
+msgid "Send invitation"
+msgstr "Enviar invitació"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:636
 msgid "Separa las etiquetas con comas."
 msgstr "Separa les etiquetes amb comes."
 
-#: includes/class-pn-customers-manager-common.php:262
+#: includes/class-pn-customers-manager-common.php:286
 msgid "Server error: Internal server problem"
 msgstr "Error del servidor: Problema intern del servidor"
 
-#: includes/class-pn-customers-manager-settings.php:190
-#: includes/class-pn-customers-manager-settings.php:191
-#: includes/class-pn-customers-manager-settings.php:283
+#: includes/class-pn-customers-manager-settings.php:274
+#: includes/class-pn-customers-manager-settings.php:275
+#: includes/class-pn-customers-manager-settings.php:468
 msgid "Settings"
 msgstr "Configuració"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:338
+#: includes/class-pn-customers-manager-csv-import.php:509
+#: includes/class-pn-customers-manager-csv-import.php:1000
+msgid "showing first 50"
+msgstr "mostrant els primers 50"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:341
 msgid "Small / mid-sized business"
 msgstr "Petita / mitjana empresa"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:352
+#: includes/class-pn-customers-manager-post-type-organization.php:354
 msgid "Software / SaaS"
 msgstr "Programari / SaaS"
+
+#: includes/class-pn-customers-manager-commercial.php:54
+msgid "Solicitud de Agente Comercial"
+msgstr "Sol·licitud d'agent comercial"
+
+#: includes/class-pn-customers-manager-commercial.php:109
+msgid "Solicitud en revision"
+msgstr "Sol·licitud de revisió"
+
+#: includes/class-pn-customers-manager-commercial.php:119
+msgid "Solicitud rechazada"
+msgstr "Sol·licitud rebutjada"
+
+#: includes/class-pn-customers-manager-referral.php:457
+msgid "Someone"
+msgstr "Algú"
 
 #: includes/class-pn-customers-manager-forms.php:236
 msgid "Special Character (!@#$%^&*)"
@@ -1320,9 +2102,17 @@ msgstr "Aturat / necessita atenció"
 msgid "Start recording"
 msgstr "Comença a gravar"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:337
+#: includes/class-pn-customers-manager-post-type-organization.php:340
 msgid "Startup"
 msgstr "Startup"
+
+#: includes/class-pn-customers-manager-csv-import.php:110
+#: includes/class-pn-customers-manager-csv-import.php:165
+#: includes/class-pn-customers-manager-csv-import.php:215
+#: includes/class-pn-customers-manager-csv-import.php:571
+#: includes/class-pn-customers-manager-referral.php:258
+msgid "Status"
+msgstr "Estat"
 
 #: includes/class-pn-customers-manager-forms.php:527
 msgid "Stop audio"
@@ -1332,17 +2122,33 @@ msgstr "Atura l'àudio"
 msgid "Stop recording"
 msgstr "Atura l'enregistrament"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:470
+#: includes/class-pn-customers-manager-post-type-organization.php:472
 msgid "Strategic data to segment, prioritize, and plan commercial follow-up."
 msgstr ""
 "Dades estratègiques per segmentar, prioritzar i planificar el seguiment "
 "comercial."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:452
+#: includes/class-pn-customers-manager-post-type-organization.php:454
 msgid "Street, number, suite…"
 msgstr "Carrer, número, suite…"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:477
+#: includes/class-pn-customers-manager-settings.php:21
+msgid "System"
+msgstr "Sistema"
+
+#: includes/class-pn-customers-manager-csv-import.php:53
+msgid "Tags (comma-separated)"
+msgstr "Etiquetes (separades per comes)"
+
+#: includes/class-pn-customers-manager-commercial.php:169
+msgid "Tasa de conversion"
+msgstr "Tasa de conversió"
+
+#: includes/class-pn-customers-manager-csv-import.php:39
+msgid "Tax ID"
+msgstr "NIF"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:479
 msgid "Tax ID (VAT / EIN)"
 msgstr "NIF (IVA / NIF)"
 
@@ -1357,11 +2163,17 @@ msgctxt "Taxonomy singular name"
 msgid "Funnel category"
 msgstr "Categoria d'embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:366
+#: includes/class-pn-customers-manager-post-type-organization.php:368
+#: includes/class-pn-customers-manager-csv-import.php:28
 msgid "Team size"
 msgstr "Mida de l'equip"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:618
+#: includes/class-pn-customers-manager-commercial.php:75
+#: includes/class-pn-customers-manager-commercial.php:400
+msgid "Telefono"
+msgstr "Telèfon"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:620
 msgid "Teléfono de facturación"
 msgstr "Telèfon de facturació"
 
@@ -1375,17 +2187,26 @@ msgstr "El text ha de tenir com a mínim %d caràcters de llargada."
 msgid "Text must be at most %d characters long."
 msgstr "El text ha de tenir com a màxim %d caràcters de llargada."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:668
+#: includes/class-pn-customers-manager-post-type-organization.php:670
 msgid "The available stages come from the funnel definition (one per line)."
 msgstr ""
 "Les etapes disponibles provenen de la definició del funnel (una per línia)."
+
+#: includes/class-pn-customers-manager-csv-import.php:493
+#: includes/class-pn-customers-manager-csv-import.php:984
+msgid "The CSV file has no data rows."
+msgstr "El fitxer CSV no té files de dades."
+
+#: includes/class-pn-customers-manager-common.php:294
+msgid "This email is already registered."
+msgstr "Aquest correu electrònic ja està registrat."
 
 #: includes/class-pn-customers-manager-validation.php:49
 msgid "This field"
 msgstr "Aquest camp"
 
 #. %1$s: Post type name, %2$s: Archive URL, %3$s: Archive URL, %4$s: Single post URL
-#: includes/class-pn-customers-manager-settings.php:35
+#: includes/class-pn-customers-manager-settings.php:43
 #, php-format
 #| msgid ""
 #| "This option sets the slug of the main recipes archive page, and the "
@@ -1397,7 +2218,27 @@ msgstr ""
 "Aquesta opció defineix el slug de la pàgina d'arxiu %1$s i de les pàgines "
 "%1$s. Per defecte, seran:"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:326
+#: includes/class-pn-customers-manager-csv-import.php:107
+#: includes/class-pn-customers-manager-csv-import.php:162
+#: includes/class-pn-customers-manager-csv-import.php:212
+#: includes/class-pn-customers-manager-csv-import.php:568
+msgid "Title"
+msgstr "Títol"
+
+#: includes/class-pn-customers-manager-commercial.php:389
+msgid "Todos"
+msgstr "Tots"
+
+#: includes/class-pn-customers-manager-referral.php:282
+msgid "Top Referrers"
+msgstr "Referents principals"
+
+#: includes/class-pn-customers-manager-referral.php:243
+msgid "Total"
+msgstr "Total"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:330
+#: includes/class-pn-customers-manager-csv-import.php:25
 msgid "Trade name"
 msgstr "Nom comercial"
 
@@ -1409,19 +2250,60 @@ msgstr "Transcripció d'àudio"
 msgid "Transcribed text will appear here..."
 msgstr "El text transcrit apareixerà aquí..."
 
-#: includes/class-pn-customers-manager-common.php:256
+#: includes/class-pn-customers-manager-common.php:280
 msgid "Transcription completed"
 msgstr "Transcripció completada"
 
-#: includes/class-pn-customers-manager-client-form.php:371
+#: includes/class-pn-customers-manager-referral.php:222
+msgid "Tu codigo QR de referido"
+msgstr "El teu codi QR de referència"
+
+#: includes/class-pn-customers-manager-referral.php:153
+msgid "Tu email"
+msgstr "El teu correu electrònic"
+
+#: includes/class-pn-customers-manager-contact-form.php:109
+msgid "Tu nombre"
+msgstr "El teu nom"
+
+#: includes/class-pn-customers-manager-commercial.php:110
+msgid ""
+"Tu solicitud como agente comercial esta siendo revisada. Te notificaremos "
+"cuando haya una actualizacion."
+msgstr ""
+"La teva sol·licitud com a agent comercial està sent revisada. T'avisarem "
+"quan hagis una actualització."
+
+#: includes/class-pn-customers-manager-commercial.php:120
+msgid ""
+"Tu solicitud como agente comercial ha sido rechazada. Si crees que es un "
+"error, contacta con soporte."
+msgstr ""
+"La vostra sol·licitud com a agent comercial ha estat rebutjada. Si creus que "
+"és un error, contacta amb suport."
+
+#: includes/class-pn-customers-manager-common.php:306
+msgid "Tu solicitud ha sido enviada correctamente. Te notificaremos pronto."
+msgstr ""
+"La vostra sol·licitud ha estat enviada correctament. Us avisarem aviat."
+
+#: includes/class-pn-customers-manager-contact-form.php:119
+msgid "tu@email.com"
+msgstr "tu@correu electrònic.com"
+
+#: includes/class-pn-customers-manager-client-form.php:376
 msgid "Título de la organización"
 msgstr "Títol de l'organització"
 
-#: includes/class-pn-customers-manager-common.php:263
+#: includes/class-pn-customers-manager-referral.php:286
+msgid "Unknown"
+msgstr "Desconegut"
+
+#: includes/class-pn-customers-manager-common.php:287
 msgid "Unknown error"
 msgstr "Error desconegut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:383
+#: includes/class-pn-customers-manager-post-type-organization.php:385
 msgid "Up to €250k"
 msgstr "Fins a 250.000 €"
 
@@ -1433,25 +2315,43 @@ msgstr "Actualitza l'embut"
 msgid "Update Funnel category"
 msgstr "Actualitza la categoria de l'embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:711
+#: includes/class-pn-customers-manager-post-type-organization.php:713
 msgid "Update Organization"
 msgstr "Actualització de l'organització"
 
+#: includes/class-pn-customers-manager-csv-import.php:317
+msgid ""
+"Upload a CSV file to import organizations. The file must include at least a "
+"\"post_title\" column."
+msgstr ""
+"Puja un fitxer CSV per importar organitzacions. El fitxer ha d'incloure com "
+"a mínim una columna \"post_title\"."
+
+#: includes/class-pn-customers-manager-commercial.php:273
+#: includes/class-pn-customers-manager-commercial.php:308
+msgid "Usuario no valido."
+msgstr "Usuari no vàlid."
+
+#: includes/class-pn-customers-manager-contact-messages.php:110
+msgid "Ver mensaje"
+msgstr "Veure missatge"
+
 #: includes/class-pn-customers-manager-post-type-funnel.php:125
-#: includes/class-pn-customers-manager-post-type-funnel.php:567
+#: includes/class-pn-customers-manager-post-type-funnel.php:584
 msgid "View Funnel"
 msgstr "Veure embut"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:707
-#: includes/class-pn-customers-manager-post-type-organization.php:1202
+#: includes/class-pn-customers-manager-post-type-organization.php:709
+#: includes/class-pn-customers-manager-post-type-organization.php:1250
 msgid "View Organization"
 msgstr "Veure l'organització"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:411
+#: includes/class-pn-customers-manager-post-type-organization.php:413
+#: includes/class-pn-customers-manager-csv-import.php:32
 msgid "Website"
 msgstr "Lloc web"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:487
+#: includes/class-pn-customers-manager-post-type-organization.php:489
 msgid "Website / SEO"
 msgstr "Lloc web / SEO"
 
@@ -1467,35 +2367,71 @@ msgstr ""
 msgid "Won"
 msgstr "Va guanyar"
 
-#: includes/class-pn-customers-manager-forms.php:797
+#: includes/class-pn-customers-manager-commercial.php:213
+msgid "Ya has enviado una solicitud anteriormente."
+msgstr "Ja has enviat una sol·licitud prèviament."
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:152
+msgid "Ya se ha enviado una invitacion a este correo."
+msgstr "Ja s'ha enviat una invitació a aquest correu."
+
+#: includes/class-pn-customers-manager-forms.php:801
 msgid "Yes"
 msgstr "Sí"
 
-#: includes/class-pn-customers-manager-ajax.php:140
-#: includes/class-pn-customers-manager-ajax.php:238
-#: includes/class-pn-customers-manager-post-type-funnel.php:670
-#: includes/class-pn-customers-manager-post-type-organization.php:1305
+#: includes/class-pn-customers-manager-ajax.php:46
+#: includes/class-pn-customers-manager-post-type-funnel.php:446
+#: includes/class-pn-customers-manager-post-type-funnel.php:459
+#: includes/class-pn-customers-manager-post-type-organization.php:1030
+#: includes/class-pn-customers-manager-post-type-organization.php:1043
+msgid "You do not have permission to access this section."
+msgstr "No teniu permís per accedir a aquesta secció."
+
+#: includes/class-pn-customers-manager-ajax.php:286
+msgid "You do not have permission to perform this action."
+msgstr "No teniu permís per dur a terme aquesta acció."
+
+#: includes/class-pn-customers-manager-ajax.php:149
+#: includes/class-pn-customers-manager-ajax.php:247
+#: includes/class-pn-customers-manager-post-type-funnel.php:687
+#: includes/class-pn-customers-manager-post-type-organization.php:1353
 msgid "You must be logged in to create a new asset."
 msgstr "Heu d'iniciar la sessió per crear un nou actiu."
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:495
-#: includes/class-pn-customers-manager-post-type-organization.php:1130
+#: includes/class-pn-customers-manager-common.php:296
+msgid "You must be logged in to send referrals."
+msgstr "Heu d'iniciar la sessió per enviar referències."
+
+#: includes/class-pn-customers-manager-post-type-funnel.php:512
+#: includes/class-pn-customers-manager-post-type-organization.php:1160
 msgid "You must be registered on the platform to access this tool."
 msgstr "Cal estar registrat a la plataforma per accedir a aquesta eina."
 
-#: includes/class-pn-customers-manager-post-type-funnel.php:494
-#: includes/class-pn-customers-manager-post-type-organization.php:1129
+#: includes/class-pn-customers-manager-post-type-funnel.php:511
+#: includes/class-pn-customers-manager-post-type-organization.php:1159
 msgid "You need an account"
 msgstr "Necessiteu un compte"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:385
+#: includes/class-pn-customers-manager-contact-messages.php:222
+msgid "¿Estás seguro de que quieres eliminar este mensaje?"
+msgstr "¿Estàs segur de que vols eliminar aquest missatge?"
+
+#: includes/class-pn-customers-manager-common.php:308
+msgid "¿Seguro que quieres aprobar a este agente comercial?"
+msgstr "¿Segur que vol aprobar un agent comercial?"
+
+#: includes/class-pn-customers-manager-common.php:309
+msgid "¿Seguro que quieres rechazar a este agente comercial?"
+msgstr "Segur que vols buscar a aquest agent comercial?"
+
+#: includes/class-pn-customers-manager-post-type-organization.php:387
 msgid "€1M - €5M"
 msgstr "1 M€ - 5 M€"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:384
+#: includes/class-pn-customers-manager-post-type-organization.php:386
 msgid "€250k - €1M"
 msgstr "250.000 € - 1 milió €"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:386
+#: includes/class-pn-customers-manager-post-type-organization.php:388
 msgid "€5M - €20M"
 msgstr "5 milions d'euros - 20 milions d'euros"
