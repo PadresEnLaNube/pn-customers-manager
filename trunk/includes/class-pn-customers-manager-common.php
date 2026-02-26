@@ -83,6 +83,10 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_style($this->plugin_name . '-commercial', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-commercial.css', [], $this->version, 'all');
 		}
 
+		if (!wp_style_is($this->plugin_name . '-email-campaigns', 'enqueued')) {
+			wp_enqueue_style($this->plugin_name . '-email-campaigns', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-email-campaigns.css', [], $this->version, 'all');
+		}
+
 		wp_enqueue_style($this->plugin_name, PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager.css', [], $this->version, 'all');
 
 		// Enqueue dynamic CSS for color customization
@@ -198,6 +202,10 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_script($this->plugin_name . '-commercial', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-commercial.js', ['jquery'], $this->version, false);
 		}
 
+		if (!wp_script_is($this->plugin_name . '-email-campaigns', 'enqueued')) {
+			wp_enqueue_script($this->plugin_name . '-email-campaigns', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-email-campaigns.js', ['jquery'], $this->version, false);
+		}
+
 		wp_localize_script($this->plugin_name . '-ajax', 'pn_customers_manager_ajax', [
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'pn_customers_manager_ajax_nonce' => wp_create_nonce('pn-customers-manager-nonce'),
@@ -298,9 +306,9 @@ class PN_CUSTOMERS_MANAGER_Common
 
 			// QR Referral translations
 			'qr_referral_download' => esc_html(__('Descargar QR', 'pn-customers-manager')),
-			'qr_referral_email_required' => esc_html(__('Introduce tu correo electronico.', 'pn-customers-manager')),
-			'qr_referral_success' => esc_html(__('Registro completado! Revisa tu email para activar tu cuenta.', 'pn-customers-manager')),
-			'qr_referral_error' => esc_html(__('Ha ocurrido un error. Intentalo de nuevo.', 'pn-customers-manager')),
+			'qr_referral_email_required' => esc_html(__('Introduce tu correo electrónico.', 'pn-customers-manager')),
+			'qr_referral_success' => esc_html(__('¡Registro completado! Revisa tu email para activar tu cuenta.', 'pn-customers-manager')),
+			'qr_referral_error' => esc_html(__('Ha ocurrido un error. Inténtalo de nuevo.', 'pn-customers-manager')),
 
 			// Commercial translations
 			'commercial_application_sent' => esc_html(__('Tu solicitud ha sido enviada correctamente. Te notificaremos pronto.', 'pn-customers-manager')),
@@ -309,6 +317,12 @@ class PN_CUSTOMERS_MANAGER_Common
 			'commercial_confirm_reject' => esc_html(__('¿Seguro que quieres rechazar a este agente comercial?', 'pn-customers-manager')),
 			'commercial_status_approved' => esc_html(__('Aprobado', 'pn-customers-manager')),
 			'commercial_status_rejected' => esc_html(__('Rechazado', 'pn-customers-manager')),
+
+			// Email campaigns translations
+			'email_campaigns_no_users' => esc_html(__('Select at least one user.', 'pn-customers-manager')),
+			'email_campaigns_confirm_send' => esc_html(__('Are you sure you want to send this campaign to the selected recipients?', 'pn-customers-manager')),
+			'email_campaigns_sent' => esc_html(__('Campaign sent successfully. Emails are being processed.', 'pn-customers-manager')),
+			'email_campaigns_no_recipients' => esc_html(__('Select at least one user or enter an email.', 'pn-customers-manager')),
 		]);
 
 		// Initialize popups

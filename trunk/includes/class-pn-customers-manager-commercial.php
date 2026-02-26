@@ -30,17 +30,8 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		ob_start();
 
 		if (!is_user_logged_in()) {
-			echo do_shortcode('[pn-customers-manager-call-to-action'
-				. ' pn_customers_manager_call_to_action_icon="storefront"'
-				. ' pn_customers_manager_call_to_action_title="' . esc_attr__('Programa de Agentes Comerciales', 'pn-customers-manager') . '"'
-				. ' pn_customers_manager_call_to_action_content="' . esc_attr__('Inicia sesion para acceder al panel de agentes comerciales o enviar tu solicitud.', 'pn-customers-manager') . '"'
-				. ' pn_customers_manager_call_to_action_button_link="#"'
-				. ' pn_customers_manager_call_to_action_button_text="' . esc_attr__('Iniciar sesion', 'pn-customers-manager') . '"'
-				. ' pn_customers_manager_call_to_action_button_class="userspn-profile-popup-btn"'
-				. ' pn_customers_manager_call_to_action_button_data_key="data-userspn-action"'
-				. ' pn_customers_manager_call_to_action_button_data_value="login"'
-				. ']');
-			return ob_get_clean();
+			ob_end_clean();
+			return '';
 		}
 
 		$user_id = get_current_user_id();
@@ -72,7 +63,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 							<input type="email" id="pn_cm_commercial_email" name="pn_cm_commercial_email" value="<?php echo esc_attr($user->user_email); ?>" required />
 						</div>
 						<div class="pn-cm-commercial-form-field">
-							<label for="pn_cm_commercial_phone"><?php esc_html_e('Telefono', 'pn-customers-manager'); ?> <span class="pn-cm-commercial-required">*</span></label>
+							<label for="pn_cm_commercial_phone"><?php esc_html_e('Teléfono', 'pn-customers-manager'); ?> <span class="pn-cm-commercial-required">*</span></label>
 							<input type="tel" id="pn_cm_commercial_phone" name="pn_cm_commercial_phone" required />
 						</div>
 					</div>
@@ -86,7 +77,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 
 					<div class="pn-cm-commercial-form-row">
 						<div class="pn-cm-commercial-form-field pn-cm-commercial-form-field-full">
-							<label for="pn_cm_commercial_message"><?php esc_html_e('Mensaje / Motivacion', 'pn-customers-manager'); ?></label>
+							<label for="pn_cm_commercial_message"><?php esc_html_e('Mensaje / Motivación', 'pn-customers-manager'); ?></label>
 							<textarea id="pn_cm_commercial_message" name="pn_cm_commercial_message" rows="4"></textarea>
 						</div>
 					</div>
@@ -106,8 +97,8 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 			<div class="pn-cm-commercial-panel pn-cm-commercial-status">
 				<div class="pn-cm-commercial-status-box pn-cm-commercial-status-pending">
 					<span class="material-icons-outlined pn-cm-commercial-status-icon">hourglass_top</span>
-					<h2><?php esc_html_e('Solicitud en revision', 'pn-customers-manager'); ?></h2>
-					<p><?php esc_html_e('Tu solicitud como agente comercial esta siendo revisada. Te notificaremos cuando haya una actualizacion.', 'pn-customers-manager'); ?></p>
+					<h2><?php esc_html_e('Solicitud en revisión', 'pn-customers-manager'); ?></h2>
+					<p><?php esc_html_e('Tu solicitud como agente comercial está siendo revisada. Te notificaremos cuando haya una actualización.', 'pn-customers-manager'); ?></p>
 				</div>
 			</div>
 			<?php
@@ -166,7 +157,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 				</div>
 				<div class="pn-cm-commercial-stat-card">
 					<span class="pn-cm-commercial-stat-number"><?php echo esc_html($conversion_rate); ?>%</span>
-					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Tasa de conversion', 'pn-customers-manager'); ?></span>
+					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Tasa de conversión', 'pn-customers-manager'); ?></span>
 				</div>
 			</div>
 
@@ -199,7 +190,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (!is_user_logged_in()) {
 			return [
 				'error_key' => 'not_logged_in',
-				'error_content' => esc_html__('Debes iniciar sesion para enviar tu solicitud.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Debes iniciar sesión para enviar tu solicitud.', 'pn-customers-manager'),
 			];
 		}
 
@@ -232,7 +223,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (!is_email($email)) {
 			return [
 				'error_key' => 'invalid_email',
-				'error_content' => esc_html__('Por favor, introduce un email valido.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Por favor, introduce un email válido.', 'pn-customers-manager'),
 			];
 		}
 
@@ -270,7 +261,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (empty($user_id)) {
 			return [
 				'error_key' => 'invalid_user',
-				'error_content' => esc_html__('Usuario no valido.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Usuario no válido.', 'pn-customers-manager'),
 			];
 		}
 
@@ -278,7 +269,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if ($status !== 'pending') {
 			return [
 				'error_key' => 'invalid_status',
-				'error_content' => esc_html__('Esta solicitud no esta pendiente.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Esta solicitud no está pendiente.', 'pn-customers-manager'),
 			];
 		}
 
@@ -305,7 +296,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (empty($user_id)) {
 			return [
 				'error_key' => 'invalid_user',
-				'error_content' => esc_html__('Usuario no valido.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Usuario no válido.', 'pn-customers-manager'),
 			];
 		}
 
@@ -313,7 +304,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if ($status !== 'pending') {
 			return [
 				'error_key' => 'invalid_status',
-				'error_content' => esc_html__('Esta solicitud no esta pendiente.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Esta solicitud no está pendiente.', 'pn-customers-manager'),
 			];
 		}
 
@@ -397,7 +388,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 					<tr>
 						<th><?php esc_html_e('Nombre', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Email', 'pn-customers-manager'); ?></th>
-						<th><?php esc_html_e('Telefono', 'pn-customers-manager'); ?></th>
+						<th><?php esc_html_e('Teléfono', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Empresa', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Fecha solicitud', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Estado', 'pn-customers-manager'); ?></th>

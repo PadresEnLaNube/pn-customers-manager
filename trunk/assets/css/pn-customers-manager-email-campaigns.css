@@ -1,0 +1,270 @@
+/* =============================================
+   Email Campaigns Panel
+   ============================================= */
+
+.pn-cm-email-campaigns-panel {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.pn-cm-email-campaigns-panel h2 {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.pn-cm-email-campaigns-panel h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* --- Buttons --- */
+.pn-cm-email-campaigns-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  line-height: 1.4;
+}
+
+.pn-cm-email-campaigns-btn:hover {
+  opacity: 0.88;
+  text-decoration: none;
+}
+
+.pn-cm-email-campaigns-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pn-cm-email-campaigns-btn-primary {
+  background-color: var(--pn-customers-manager-bg-color-main, #0000aa);
+  color: #fff;
+}
+
+.pn-cm-email-campaigns-btn-primary:hover {
+  color: #fff;
+}
+
+.pn-cm-email-campaigns-btn .material-icons-outlined {
+  font-size: 18px;
+}
+
+/* --- Stats Cards --- */
+.pn-cm-email-campaigns-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.pn-cm-email-campaigns-stat-card {
+  text-align: center;
+  padding: 18px 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.pn-cm-email-campaigns-stat-number {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--pn-customers-manager-color-main, #0000aa);
+  line-height: 1.2;
+}
+
+.pn-cm-email-campaigns-stat-label {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* --- Send Section --- */
+.pn-cm-email-campaigns-send-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 28px;
+}
+
+.pn-cm-email-campaigns-send-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pn-cm-email-campaigns-send-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pn-cm-email-campaigns-users-select {
+  width: 100%;
+  min-height: 120px;
+  padding: 8px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.pn-cm-email-campaigns-users-select:focus {
+  border-color: var(--pn-customers-manager-border-color-main, #0000aa);
+}
+
+.pn-cm-email-campaigns-send-btn {
+  align-self: flex-start;
+}
+
+
+/* --- Progress Bar --- */
+.pn-cm-email-campaigns-progress {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pn-cm-email-campaigns-progress-bar {
+  flex: 1;
+  height: 12px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pn-cm-email-campaigns-progress-fill {
+  height: 100%;
+  background: var(--pn-customers-manager-bg-color-main, #0000aa);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.pn-cm-email-campaigns-progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* --- Message feedback --- */
+.pn-cm-email-campaigns-message {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.pn-cm-email-campaigns-message-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.pn-cm-email-campaigns-message-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* --- Records Section --- */
+.pn-cm-email-campaigns-records-section {
+  margin-top: 0;
+}
+
+.pn-cm-email-campaigns-no-records {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* --- Records Table --- */
+.pn-cm-email-campaigns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.pn-cm-email-campaigns-table thead th {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  font-size: 13px;
+}
+
+.pn-cm-email-campaigns-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+
+.pn-cm-email-campaigns-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* --- Badges --- */
+.pn-cm-email-campaigns-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pn-cm-email-campaigns-badge-yes {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.pn-cm-email-campaigns-badge-no {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .pn-cm-email-campaigns-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pn-cm-email-campaigns-table {
+    font-size: 13px;
+  }
+
+  .pn-cm-email-campaigns-table thead th,
+  .pn-cm-email-campaigns-table tbody td {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pn-cm-email-campaigns-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .pn-cm-email-campaigns-send-section {
+    padding: 16px;
+  }
+}

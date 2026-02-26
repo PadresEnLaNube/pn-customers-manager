@@ -87,8 +87,34 @@
         window['pn_customers_manager_window_vars'] = [];
       }
 
+      var seenFields = {};
+
       $(cm_pn_form.find('input:not([type="submit"]), select, textarea')).each(function (index, element) {
         var is_multiple = $(this).attr('multiple');
+        var fieldName = element.name;
+        var isRadio = $(this).is(':radio');
+        var isInHtmlMulti = $(this).closest('.pn-customers-manager-html-multi-wrapper').length > 0;
+
+        // html_multi fields: always collect as array
+        if (isInHtmlMulti && !is_multiple) {
+          if (!seenFields[fieldName]) {
+            seenFields[fieldName] = true;
+            data[fieldName] = [];
+            data.pn_customers_manager_ajax_keys.push({
+              id: fieldName,
+              node: element.nodeName,
+              type: element.type,
+              multiple: true,
+            });
+          }
+
+          if ($(this).is(':checkbox')) {
+            data[fieldName].push($(this).is(':checked') ? $(element).val() : '');
+          } else {
+            data[fieldName].push($(element).val());
+          }
+          return;
+        }
 
         if (is_multiple) {
           if (!(typeof window['pn_customers_manager_window_vars']['form_field_' + element.name] !== 'undefined')) {

@@ -424,13 +424,16 @@ class PN_CUSTOMERS_MANAGER_Forms {
       case 'html_multi':
         switch ($pn_customers_manager_type) {
           case 'user':
-            $html_multi_fields_length = !empty(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
+            $pn_cm_html_multi_value = get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true);
+            $html_multi_fields_length = !empty($pn_cm_html_multi_value) ? count((array) $pn_cm_html_multi_value) : 0;
             break;
           case 'post':
-            $html_multi_fields_length = !empty(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
+            $pn_cm_html_multi_value = get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true);
+            $html_multi_fields_length = !empty($pn_cm_html_multi_value) ? count((array) $pn_cm_html_multi_value) : 0;
             break;
           case 'option':
-            $html_multi_fields_length = !empty(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) ? count(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) : 0;
+            $pn_cm_html_multi_value = get_option($pn_customers_manager_input['html_multi_fields'][0]['id']);
+            $html_multi_fields_length = !empty($pn_cm_html_multi_value) ? count((array) $pn_cm_html_multi_value) : 0;
         }
 
         ?>
@@ -1007,13 +1010,16 @@ class PN_CUSTOMERS_MANAGER_Forms {
           case 'html_multi':
             switch ($pn_customers_manager_type) {
               case 'user':
-                $html_multi_fields_length = !empty(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
+                $pn_cm_html_multi_value = get_user_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true);
+                $html_multi_fields_length = !empty($pn_cm_html_multi_value) ? count((array) $pn_cm_html_multi_value) : 0;
                 break;
               case 'post':
-                $html_multi_fields_length = !empty(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) ? count(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true)) : 0;
+                $pn_cm_html_multi_value = get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['html_multi_fields'][0]['id'], true);
+                $html_multi_fields_length = !empty($pn_cm_html_multi_value) ? count((array) $pn_cm_html_multi_value) : 0;
                 break;
               case 'option':
-                $html_multi_fields_length = !empty(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) ? count(get_option($pn_customers_manager_input['html_multi_fields'][0]['id'])) : 0;
+                $pn_cm_html_multi_value = get_option($pn_customers_manager_input['html_multi_fields'][0]['id']);
+                $html_multi_fields_length = !empty($pn_cm_html_multi_value) ? count((array) $pn_cm_html_multi_value) : 0;
             }
 
             ?>

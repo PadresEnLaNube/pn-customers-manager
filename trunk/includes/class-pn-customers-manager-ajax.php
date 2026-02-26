@@ -506,7 +506,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!is_user_logged_in()) {
             echo wp_json_encode([
               'error_key' => 'not_logged_in',
-              'error_content' => esc_html__('Debes iniciar sesion.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Debes iniciar sesión.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -519,7 +519,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_commercial_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta accion.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -533,7 +533,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_commercial_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta accion.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -716,6 +716,45 @@ class PN_CUSTOMERS_MANAGER_Ajax {
               'message' => esc_html__('No changes were made.', 'pn-customers-manager'),
             ]);
           }
+          exit;
+          break;
+        case 'pn_cm_email_campaign_send':
+          if (!current_user_can('manage_options') && !current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization')) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_email_campaign_permission_error',
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $result = PN_CUSTOMERS_MANAGER_Email_Campaigns::handle_send_campaign();
+          echo wp_json_encode($result);
+          exit;
+          break;
+        case 'pn_cm_email_campaign_progress':
+          if (!current_user_can('manage_options') && !current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization')) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_email_campaign_permission_error',
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $result = PN_CUSTOMERS_MANAGER_Email_Campaigns::handle_get_progress();
+          echo wp_json_encode($result);
+          exit;
+          break;
+        case 'pn_cm_email_campaign_refresh':
+          if (!current_user_can('manage_options') && !current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization')) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_email_campaign_permission_error',
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $result = PN_CUSTOMERS_MANAGER_Email_Campaigns::handle_refresh();
+          echo wp_json_encode($result);
           exit;
           break;
       }

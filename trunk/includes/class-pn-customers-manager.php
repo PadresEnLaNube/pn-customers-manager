@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.0.18';
+			$this->pn_customers_manager_version = '1.0.21';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -74,6 +74,7 @@ class PN_CUSTOMERS_MANAGER {
 		self::pn_customers_manager_define_contact_form_hooks();
 		self::pn_customers_manager_define_referral_hooks();
 		self::pn_customers_manager_define_commercial_hooks();
+		self::pn_customers_manager_define_email_campaigns_hooks();
 		self::pn_customers_manager_define_csv_import_hooks();
 	}
 			
@@ -242,6 +243,11 @@ class PN_CUSTOMERS_MANAGER {
 		 * The class providing CSV import for Organizations.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-csv-import.php';
+
+		/**
+		 * The class managing email campaigns with mailpn integration.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-email-campaigns.php';
 
 		$this->pn_customers_manager_loader = new PN_CUSTOMERS_MANAGER_Loader();
 	}
@@ -481,6 +487,14 @@ class PN_CUSTOMERS_MANAGER {
 				$role->add_cap('read');
 			}
 		}
+	}
+
+	/**
+	 * Register hooks related to the email campaigns system.
+	 */
+	private function pn_customers_manager_define_email_campaigns_hooks() {
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-email-campaigns', 'PN_CUSTOMERS_MANAGER_Email_Campaigns', 'render_shortcode');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Email_Campaigns', 'register_block');
 	}
 
 	/**

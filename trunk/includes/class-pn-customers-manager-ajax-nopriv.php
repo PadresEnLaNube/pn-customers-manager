@@ -105,7 +105,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (empty($referral_email) || !is_email($referral_email)) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_invalid_email',
-              'error_content' => esc_html__('Introduce un correo electronico valido.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Introduce un correo electrónico válido.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -113,7 +113,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (empty($referral_code) || strlen($referral_code) !== 8 || !preg_match('/^[A-Z0-9]{8}$/', $referral_code)) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_invalid_code',
-              'error_content' => esc_html__('Codigo de referido no valido.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Código de referido no válido.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -126,7 +126,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if ($attempts >= 5) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_rate_limit',
-              'error_content' => esc_html__('Demasiados intentos. Intentalo de nuevo mas tarde.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Demasiados intentos. Inténtalo de nuevo más tarde.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -138,7 +138,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (!$referrer_id) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_invalid_code',
-              'error_content' => esc_html__('Codigo de referido no valido.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Código de referido no válido.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -147,10 +147,10 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
 
           if (isset($result['error'])) {
             $error_messages = [
-              'invalid_email'        => esc_html__('Correo electronico no valido.', 'pn-customers-manager'),
-              'email_exists'         => esc_html__('Este correo ya esta registrado.', 'pn-customers-manager'),
-              'already_sent'         => esc_html__('Ya se ha enviado una invitacion a este correo.', 'pn-customers-manager'),
-              'user_creation_failed' => esc_html__('No se pudo crear el usuario. Intentalo de nuevo.', 'pn-customers-manager'),
+              'invalid_email'        => esc_html__('Correo electrónico no válido.', 'pn-customers-manager'),
+              'email_exists'         => esc_html__('Este correo ya está registrado.', 'pn-customers-manager'),
+              'already_sent'         => esc_html__('Ya se ha enviado una invitación a este correo.', 'pn-customers-manager'),
+              'user_creation_failed' => esc_html__('No se pudo crear el usuario. Inténtalo de nuevo.', 'pn-customers-manager'),
             ];
 
             $error_msg = isset($error_messages[$result['error']]) ? $error_messages[$result['error']] : esc_html__('Ha ocurrido un error.', 'pn-customers-manager');

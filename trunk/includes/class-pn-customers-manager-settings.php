@@ -183,6 +183,10 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
+    // Email Campaigns section
+    $email_campaigns_options = PN_CUSTOMERS_MANAGER_Email_Campaigns::get_settings_section();
+    $pn_customers_manager_options = array_merge($pn_customers_manager_options, $email_campaigns_options);
+
     // Referral section
     $pn_customers_manager_options['pn_customers_manager_referral_section_start'] = [
       'id' => 'pn_customers_manager_referral_section_start',
