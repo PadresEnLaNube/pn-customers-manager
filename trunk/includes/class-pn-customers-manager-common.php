@@ -198,6 +198,10 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_script($this->plugin_name . '-referral-qr', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-referral-qr.js', ['jquery', $this->plugin_name . '-qrcode'], $this->version, false);
 		}
 
+		if (!wp_script_is($this->plugin_name . '-referral-bizcard', 'enqueued')) {
+			wp_enqueue_script($this->plugin_name . '-referral-bizcard', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-referral-bizcard.js', ['jquery', $this->plugin_name . '-qrcode', $this->plugin_name . '-popups'], $this->version, false);
+		}
+
 		if (!wp_script_is($this->plugin_name . '-commercial', 'enqueued')) {
 			wp_enqueue_script($this->plugin_name . '-commercial', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-commercial.js', ['jquery'], $this->version, false);
 		}

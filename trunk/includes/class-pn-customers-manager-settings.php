@@ -230,6 +230,34 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'description' => __('Selecciona una imagen que se mostrara en el centro del codigo QR. Recomendado: cuadrada, minimo 80x80px.', 'pn-customers-manager'),
     ];
 
+    $pn_customers_manager_options['pn_customers_manager_referral_reminder_max_sends'] = [
+      'id' => 'pn_customers_manager_referral_reminder_max_sends',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '3',
+      'label' => __('Numero maximo de recordatorios por referido', 'pn-customers-manager'),
+      'description' => __('Cantidad maxima de emails de recordatorio que se enviaran a cada referido pendiente. Establecer en 0 para desactivar los recordatorios.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_referral_reminder_frequency'] = [
+      'id' => 'pn_customers_manager_referral_reminder_frequency',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'options' => [
+        '1'  => __('Cada 1 dia', 'pn-customers-manager'),
+        '2'  => __('Cada 2 dias', 'pn-customers-manager'),
+        '3'  => __('Cada 3 dias', 'pn-customers-manager'),
+        '5'  => __('Cada 5 dias', 'pn-customers-manager'),
+        '7'  => __('Cada 7 dias', 'pn-customers-manager'),
+        '14' => __('Cada 14 dias', 'pn-customers-manager'),
+        '30' => __('Cada 30 dias', 'pn-customers-manager'),
+      ],
+      'value' => '7',
+      'label' => __('Frecuencia de recordatorios', 'pn-customers-manager'),
+      'description' => __('Intervalo de dias entre cada recordatorio enviado a referidos pendientes.', 'pn-customers-manager'),
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_referral_section_end'] = [
       'id' => 'pn_customers_manager_referral_section_end',
       'section' => 'end',

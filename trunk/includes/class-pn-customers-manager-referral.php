@@ -280,6 +280,112 @@ class PN_CUSTOMERS_MANAGER_Referral {
 					brandingUrl: <?php echo wp_json_encode($branding_url ? $branding_url : ''); ?>
 				};
 			</script>
+
+			<div class="pn-cm-referral-bizcard-trigger">
+				<button type="button" class="pn-cm-referral-bizcard-btn"><?php esc_html_e('Generar tarjeta de visita', 'pn-customers-manager'); ?></button>
+			</div>
+
+			<div id="pn-cm-referral-bizcard-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft">
+				<div class="pn-customers-manager-popup-overlay"></div>
+				<div class="pn-customers-manager-popup-content">
+					<div class="pn-cm-referral-bizcard-layout">
+						<div class="pn-cm-referral-bizcard-preview">
+							<div class="pn-cm-bizcard-canvas-wrapper">
+								<canvas id="pn-cm-bizcard-canvas" width="1012" height="654"></canvas>
+							</div>
+							<div class="pn-cm-bizcard-zoom-controls">
+								<button type="button" class="pn-cm-bizcard-zoom-btn" data-zoom="out" title="<?php esc_attr_e('Alejar', 'pn-customers-manager'); ?>">&#8722;</button>
+								<span class="pn-cm-bizcard-zoom-level">100%</span>
+								<button type="button" class="pn-cm-bizcard-zoom-btn" data-zoom="in" title="<?php esc_attr_e('Acercar', 'pn-customers-manager'); ?>">&#43;</button>
+								<button type="button" class="pn-cm-bizcard-zoom-btn pn-cm-bizcard-zoom-reset" data-zoom="reset" title="<?php esc_attr_e('Restablecer', 'pn-customers-manager'); ?>">&#8634;</button>
+							</div>
+						</div>
+						<div class="pn-cm-referral-bizcard-options">
+							<?php if (current_user_can('manage_options')) :
+								$bizcard_users = get_users(['orderby' => 'display_name', 'order' => 'ASC', 'fields' => ['ID', 'display_name', 'user_email']]);
+							?>
+							<div class="pn-cm-bizcard-option-group">
+								<label for="pn-cm-bizcard-user"><?php esc_html_e('Generar como usuario', 'pn-customers-manager'); ?></label>
+								<select id="pn-cm-bizcard-user">
+									<option value=""><?php echo esc_html(wp_get_current_user()->display_name . ' (' . __('yo', 'pn-customers-manager') . ')'); ?></option>
+									<?php foreach ($bizcard_users as $bu) :
+										if ((int) $bu->ID === $user_id) continue;
+									?>
+										<option value="<?php echo esc_attr($bu->ID); ?>"><?php echo esc_html($bu->display_name . ' — ' . $bu->user_email); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+							<?php endif; ?>
+							<div class="pn-cm-bizcard-option-group">
+								<label><?php esc_html_e('Imagen de fondo', 'pn-customers-manager'); ?></label>
+								<input type="file" id="pn-cm-bizcard-bg-input" class="pn-cm-bizcard-bg-input" accept="image/*" />
+								<span class="pn-cm-bizcard-bg-label"><?php esc_html_e('Seleccionar imagen', 'pn-customers-manager'); ?></span>
+								<div class="pn-cm-bizcard-bg-preview">
+									<img class="pn-cm-bizcard-bg-thumb" src="" alt="" />
+									<button type="button" class="pn-cm-bizcard-bg-remove"><?php esc_html_e('Eliminar', 'pn-customers-manager'); ?></button>
+								</div>
+								<?php if (current_user_can('manage_options')) :
+									$media_images = get_posts([
+										'post_type'      => 'attachment',
+										'post_mime_type' => 'image',
+										'post_status'    => 'inherit',
+										'posts_per_page' => 50,
+										'orderby'        => 'date',
+										'order'          => 'DESC',
+									]);
+									if (!empty($media_images)) : ?>
+									<div class="pn-cm-bizcard-media-gallery">
+										<?php foreach ($media_images as $mi) :
+											$thumb = wp_get_attachment_image_url($mi->ID, 'thumbnail');
+											$full  = wp_get_attachment_image_url($mi->ID, 'full');
+											if (!$thumb || !$full) continue;
+										?>
+											<img class="pn-cm-bizcard-media-thumb" src="<?php echo esc_url($thumb); ?>" data-full="<?php echo esc_url($full); ?>" alt="" />
+										<?php endforeach; ?>
+									</div>
+									<?php endif; ?>
+								<?php endif; ?>
+							</div>
+							<div class="pn-cm-bizcard-option-group">
+								<label for="pn-cm-bizcard-format"><?php esc_html_e('Formato', 'pn-customers-manager'); ?></label>
+								<select id="pn-cm-bizcard-format">
+									<option value="standard"><?php esc_html_e('Estandar (1012x654)', 'pn-customers-manager'); ?></option>
+									<option value="square"><?php esc_html_e('Cuadrada (774x774)', 'pn-customers-manager'); ?></option>
+									<option value="mini"><?php esc_html_e('Mini (833x333)', 'pn-customers-manager'); ?></option>
+								</select>
+							</div>
+							<div class="pn-cm-bizcard-option-group">
+								<div class="pn-cm-bizcard-qr-check">
+									<input type="checkbox" id="pn-cm-bizcard-qr" checked />
+									<label for="pn-cm-bizcard-qr"><?php esc_html_e('Incluir codigo QR', 'pn-customers-manager'); ?></label>
+								</div>
+							</div>
+							<div class="pn-cm-bizcard-option-group">
+								<label for="pn-cm-bizcard-name"><?php esc_html_e('Nombre', 'pn-customers-manager'); ?></label>
+								<input type="text" id="pn-cm-bizcard-name" class="pn-cm-bizcard-field" value="<?php echo esc_attr(wp_get_current_user()->display_name); ?>" />
+							</div>
+							<div class="pn-cm-bizcard-option-group">
+								<label for="pn-cm-bizcard-title"><?php esc_html_e('Cargo', 'pn-customers-manager'); ?></label>
+								<input type="text" id="pn-cm-bizcard-title" class="pn-cm-bizcard-field" value="" />
+							</div>
+							<div class="pn-cm-bizcard-option-group">
+								<label for="pn-cm-bizcard-phone"><?php esc_html_e('Telefono', 'pn-customers-manager'); ?></label>
+								<input type="tel" id="pn-cm-bizcard-phone" class="pn-cm-bizcard-field" value="" />
+							</div>
+							<div class="pn-cm-bizcard-option-group">
+								<label for="pn-cm-bizcard-email"><?php esc_html_e('Email', 'pn-customers-manager'); ?></label>
+								<input type="email" id="pn-cm-bizcard-email" class="pn-cm-bizcard-field" value="<?php echo esc_attr(wp_get_current_user()->user_email); ?>" />
+							</div>
+							<div class="pn-cm-bizcard-option-group">
+								<label for="pn-cm-bizcard-web"><?php esc_html_e('Web', 'pn-customers-manager'); ?></label>
+								<input type="text" id="pn-cm-bizcard-web" class="pn-cm-bizcard-field" value="<?php echo esc_attr(home_url()); ?>" />
+							</div>
+							<button type="button" class="pn-cm-bizcard-download"><?php esc_html_e('Descargar tarjeta', 'pn-customers-manager'); ?></button>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<?php endif; ?>
 
 			<div class="pn-cm-referral-stats">
@@ -467,13 +573,15 @@ class PN_CUSTOMERS_MANAGER_Referral {
 		update_user_meta($new_user_id, 'pn_cm_referral_token', $token);
 
 		$referral = [
-			'id'           => uniqid('ref_', true),
-			'email'        => $email,
-			'user_id'      => $new_user_id,
-			'token'        => $token,
-			'status'       => 'pending',
-			'created_at'   => current_time('mysql'),
-			'completed_at' => null,
+			'id'              => uniqid('ref_', true),
+			'email'           => $email,
+			'user_id'         => $new_user_id,
+			'token'           => $token,
+			'status'          => 'pending',
+			'created_at'      => current_time('mysql'),
+			'completed_at'    => null,
+			'reminder_count'  => 0,
+			'last_reminder_at' => null,
 		];
 
 		$referrals[] = $referral;
@@ -585,6 +693,80 @@ class PN_CUSTOMERS_MANAGER_Referral {
 	 */
 	public static function get_completed_count($user_id) {
 		return (int) get_user_meta($user_id, 'pn_cm_referral_completed_count', true);
+	}
+
+	/**
+	 * Process referral reminders via cron.
+	 *
+	 * Iterates all users with pending referrals and re-sends invitation
+	 * emails based on the configured max sends and frequency settings.
+	 */
+	public static function process_referral_reminders() {
+		$max_sends = (int) get_option('pn_customers_manager_referral_reminder_max_sends', 3);
+		$frequency = (int) get_option('pn_customers_manager_referral_reminder_frequency', 7);
+
+		if ($max_sends <= 0) {
+			return;
+		}
+
+		$users = get_users([
+			'meta_key' => 'pn_cm_referrals',
+			'fields'   => 'ID',
+		]);
+
+		if (empty($users)) {
+			return;
+		}
+
+		$now = current_time('timestamp');
+
+		foreach ($users as $user_id) {
+			$referrals = self::get_user_referrals($user_id);
+
+			if (empty($referrals)) {
+				continue;
+			}
+
+			$updated = false;
+
+			foreach ($referrals as &$referral) {
+				if ($referral['status'] !== 'pending') {
+					continue;
+				}
+
+				$reminder_count = isset($referral['reminder_count']) ? (int) $referral['reminder_count'] : 0;
+
+				if ($reminder_count >= $max_sends) {
+					continue;
+				}
+
+				$last_sent = !empty($referral['last_reminder_at'])
+					? $referral['last_reminder_at']
+					: $referral['created_at'];
+
+				$last_sent_time = strtotime($last_sent);
+
+				if (($now - $last_sent_time) < ($frequency * DAY_IN_SECONDS)) {
+					continue;
+				}
+
+				self::send_referral_email(
+					$user_id,
+					$referral['user_id'],
+					$referral['email'],
+					$referral['token']
+				);
+
+				$referral['reminder_count']   = $reminder_count + 1;
+				$referral['last_reminder_at'] = current_time('mysql');
+				$updated = true;
+			}
+			unset($referral);
+
+			if ($updated) {
+				update_user_meta($user_id, 'pn_cm_referrals', $referrals);
+			}
+		}
 	}
 
 	/**

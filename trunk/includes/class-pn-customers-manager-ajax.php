@@ -331,6 +331,30 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             : ['error_key' => '', 'referral_link' => $result['referral_link'], 'referral' => $result['referral']]);
           exit;
           break;
+        case 'pn_cm_bizcard_user_data':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'access_denied']);
+            exit;
+          }
+          $target_user_id = intval($_POST['target_user_id'] ?? 0);
+          $target_user = get_userdata($target_user_id);
+          if (!$target_user) {
+            echo wp_json_encode(['error_key' => 'user_not_found']);
+            exit;
+          }
+          $ref_code = PN_CUSTOMERS_MANAGER_Referral::get_or_create_referral_code($target_user_id);
+          $ref_url = home_url('?pn_cm_qr_ref=' . $ref_code);
+          $branding_url = PN_CUSTOMERS_MANAGER_Referral::get_qr_branding_url();
+          echo wp_json_encode([
+            'error_key' => '',
+            'name' => $target_user->display_name,
+            'email' => $target_user->user_email,
+            'qr_url' => $ref_url,
+            'qr_code' => $ref_code,
+            'branding_url' => $branding_url ? $branding_url : '',
+          ]);
+          exit;
+          break;
         case 'pn_cm_referral_save_share_text':
           if (!is_user_logged_in()) {
             echo wp_json_encode(['error_key' => 'not_logged_in']);

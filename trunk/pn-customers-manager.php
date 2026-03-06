@@ -13,7 +13,7 @@
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
  * Description:       Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
- * Version:           1.0.21
+ * Version:           1.0.25
  * Requires at least: 3.0
  * Requires PHP:      7.2
  * Author:            Padres en la Nube
@@ -34,7 +34,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.0.21');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.0.25');
 define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.0');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
@@ -243,6 +243,11 @@ function pn_customers_manager_activation_hook()
 	if (!get_transient('pn_customers_manager_just_activated')) {
 		set_transient('pn_customers_manager_just_activated', true, 30);
 	}
+
+	// Schedule referral reminders cron
+	if (!wp_next_scheduled('pn_cm_referral_reminders_cron')) {
+		wp_schedule_event(time(), 'twicedaily', 'pn_cm_referral_reminders_cron');
+	}
 }
 
 // Register activation hook
@@ -255,6 +260,7 @@ register_activation_hook(__FILE__, 'pn_customers_manager_activation_hook');
 function pn_customers_manager_deactivation_cleanup()
 {
 	delete_option('pn_customers_manager_redirecting');
+	wp_clear_scheduled_hook('pn_cm_referral_reminders_cron');
 }
 register_deactivation_hook(__FILE__, 'pn_customers_manager_deactivation_cleanup');
 

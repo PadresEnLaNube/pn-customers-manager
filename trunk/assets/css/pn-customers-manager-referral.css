@@ -734,6 +734,311 @@
   color: #d1d5db;
 }
 
+/* --- Business Card Generator --- */
+.pn-cm-referral-bizcard-trigger {
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 28px;
+}
+
+.pn-cm-referral-bizcard-btn {
+  padding: 10px 24px;
+  background-color: var(--pn-customers-manager-bg-color-main-alt, #232323);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.pn-cm-referral-bizcard-btn:hover {
+  opacity: 0.88;
+}
+
+.pn-cm-referral-bizcard-layout {
+  display: flex;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.pn-cm-referral-bizcard-preview {
+  flex: 1;
+  min-width: 0;
+}
+
+.pn-cm-referral-bizcard-options {
+  flex: 1;
+  min-width: 0;
+}
+
+.pn-cm-bizcard-canvas-wrapper {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.pn-cm-bizcard-canvas-wrapper canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 4px;
+}
+
+.pn-cm-bizcard-canvas-draggable { cursor: grab; }
+.pn-cm-bizcard-canvas-dragging { cursor: grabbing; }
+
+.pn-cm-bizcard-zoom-controls {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pn-cm-bizcard-zoom-controls.pn-cm-bizcard-zoom-visible {
+  display: flex;
+}
+
+.pn-cm-bizcard-zoom-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #f9fafb;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  color: #333;
+}
+
+.pn-cm-bizcard-zoom-btn:hover {
+  background: #e4e4e4;
+}
+
+.pn-cm-bizcard-zoom-level {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  min-width: 40px;
+  text-align: center;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-zoom-btn {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-zoom-btn:hover {
+  background: #4b5563;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-zoom-level {
+  color: #9ca3af;
+}
+
+.pn-cm-bizcard-option-group {
+  margin-bottom: 14px;
+}
+
+.pn-cm-bizcard-option-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.pn-cm-bizcard-option-group select,
+.pn-cm-bizcard-option-group input[type="text"],
+.pn-cm-bizcard-option-group input[type="email"],
+.pn-cm-bizcard-option-group input[type="tel"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #f9fafb;
+  color: #333;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.pn-cm-bizcard-option-group select:focus,
+.pn-cm-bizcard-option-group input[type="text"]:focus,
+.pn-cm-bizcard-option-group input[type="email"]:focus,
+.pn-cm-bizcard-option-group input[type="tel"]:focus {
+  border-color: var(--pn-customers-manager-border-color-main, #0000aa);
+}
+
+.pn-cm-bizcard-bg-input {
+  display: none;
+}
+
+.pn-cm-bizcard-bg-label {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pn-cm-bizcard-bg-label:hover {
+  background: #e4e4e4;
+}
+
+.pn-cm-bizcard-bg-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pn-cm-bizcard-bg-thumb {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #d0d5dd;
+  display: none;
+}
+
+.pn-cm-bizcard-bg-remove {
+  display: none;
+  padding: 4px 10px;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pn-cm-bizcard-bg-remove:hover {
+  background: #fee2e2;
+}
+
+.pn-cm-bizcard-media-gallery {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 180px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.pn-cm-bizcard-media-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s, opacity 0.2s;
+}
+
+.pn-cm-bizcard-media-thumb:hover {
+  opacity: 0.8;
+}
+
+.pn-cm-bizcard-media-thumb-active {
+  border-color: var(--pn-customers-manager-border-color-main, #0000aa);
+}
+
+[data-theme="dark"] .pn-cm-bizcard-media-thumb {
+  border-color: transparent;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-media-thumb-active {
+  border-color: var(--pn-customers-manager-border-color-main, #5555ff);
+}
+
+.pn-cm-bizcard-qr-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pn-cm-bizcard-qr-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.pn-cm-bizcard-qr-check label {
+  margin-bottom: 0 !important;
+  cursor: pointer;
+}
+
+.pn-cm-bizcard-download {
+  width: 100%;
+  padding: 12px 24px;
+  background-color: var(--pn-customers-manager-bg-color-main, #0000aa);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 4px;
+}
+
+.pn-cm-bizcard-download:hover {
+  opacity: 0.88;
+}
+
+/* --- Dark Theme — Business Card --- */
+[data-theme="dark"] .pn-cm-bizcard-canvas-wrapper {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-option-group label {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-option-group select,
+[data-theme="dark"] .pn-cm-bizcard-option-group input[type="text"],
+[data-theme="dark"] .pn-cm-bizcard-option-group input[type="email"],
+[data-theme="dark"] .pn-cm-bizcard-option-group input[type="tel"] {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-bg-label {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-bg-thumb {
+  border-color: #374151;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-bg-remove {
+  background: #7f1d1d;
+  color: #fecaca;
+  border-color: #991b1b;
+}
+
 /* --- Responsive --- */
 @media (max-width: 600px) {
   .pn-cm-referral-form {
@@ -762,6 +1067,15 @@
 
   .pn-cm-referral-share-link-row {
     flex-direction: column;
+  }
+
+  .pn-cm-referral-bizcard-layout {
+    flex-direction: column;
+    padding: 0 16px;
+  }
+
+  .pn-cm-referral-bizcard-options {
+    padding-bottom: 16px;
   }
 
   .pn-cm-referral-share-buttons {

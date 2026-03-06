@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.0.21';
+			$this->pn_customers_manager_version = '1.0.25';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -465,6 +465,7 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', 'PN_CUSTOMERS_MANAGER_Referral', 'handle_referral_acceptance');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', 'PN_CUSTOMERS_MANAGER_Referral', 'handle_qr_referral_landing', 5);
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_footer', 'PN_CUSTOMERS_MANAGER_Referral', 'inject_qr_landing_popup');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_referral_reminders_cron', 'PN_CUSTOMERS_MANAGER_Referral', 'process_referral_reminders');
 	}
 
 	/**

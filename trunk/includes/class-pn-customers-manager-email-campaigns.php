@@ -270,8 +270,14 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 		];
 
 		?>
-		<div class="pn-cm-email-campaigns-panel" data-mail-id="<?php echo esc_attr($mail_id); ?>">
-			<h2><?php echo esc_html($campaign_title); ?></h2>
+		<div class="pn-cm-email-campaigns-panel pn-customers-manager-toggle-wrapper" data-mail-id="<?php echo esc_attr($mail_id); ?>">
+			<a href="#" class="pn-customers-manager-toggle pn-customers-manager-text-decoration-none">
+				<div class="pn-cm-email-campaigns-header">
+					<h2><?php echo esc_html($campaign_title); ?> <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-float-right">expand_more</i></h2>
+				</div>
+			</a>
+
+			<div class="pn-customers-manager-toggle-content pn-customers-manager-display-none-soft">
 
 			<div class="pn-cm-email-campaigns-stats">
 				<div class="pn-cm-email-campaigns-stat-card">
@@ -320,6 +326,8 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 					<?php echo self::render_records_table($records, $mail_id); ?>
 				</div>
 			</div>
+
+			</div><!-- /.pn-customers-manager-toggle-content -->
 		</div>
 		<?php
 
@@ -462,12 +470,20 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 			</thead>
 			<tbody>
 				<?php foreach ($records as $record) :
-					$to_email = get_post_meta($record->ID, 'mailpn_rec_to', true);
+					$to_value = get_post_meta($record->ID, 'mailpn_rec_to', true);
+					$to_email_meta = get_post_meta($record->ID, 'mailpn_rec_to_email', true);
 					$opened = get_post_meta($record->ID, 'mailpn_rec_opened', true);
 					$record_clicks = isset($click_stats_by_record[$record->ID]) ? (int) $click_stats_by_record[$record->ID] : 0;
 
-					$user = get_user_by('email', $to_email);
-					$user_name = $user ? $user->display_name : '—';
+					if (is_numeric($to_value)) {
+						$user = get_userdata(intval($to_value));
+						$user_name = $user ? $user->display_name : '—';
+						$to_email = $user ? $user->user_email : $to_email_meta;
+					} else {
+						$to_email = !empty($to_email_meta) ? $to_email_meta : $to_value;
+						$user = $to_email ? get_user_by('email', $to_email) : false;
+						$user_name = $user ? $user->display_name : '—';
+					}
 				?>
 				<tr>
 					<td><?php echo esc_html($user_name); ?></td>
