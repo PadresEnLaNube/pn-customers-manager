@@ -285,7 +285,7 @@ class PN_CUSTOMERS_MANAGER_Referral {
 				<button type="button" class="pn-cm-referral-bizcard-btn"><?php esc_html_e('Generar tarjeta de visita', 'pn-customers-manager'); ?></button>
 			</div>
 
-			<div id="pn-cm-referral-bizcard-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft">
+			<div id="pn-cm-referral-bizcard-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft" data-pn-customers-manager-popup-disable-esc="true" data-pn-customers-manager-popup-disable-overlay-close="true">
 				<div class="pn-customers-manager-popup-overlay"></div>
 				<div class="pn-customers-manager-popup-content">
 					<div class="pn-cm-referral-bizcard-layout">
@@ -301,19 +301,30 @@ class PN_CUSTOMERS_MANAGER_Referral {
 							</div>
 						</div>
 						<div class="pn-cm-referral-bizcard-options">
+							<div class="pn-cm-bizcard-tabs">
+								<button type="button" class="pn-cm-bizcard-tab pn-cm-bizcard-tab-active" data-face="front"><?php esc_html_e('Anverso', 'pn-customers-manager'); ?></button>
+								<button type="button" class="pn-cm-bizcard-tab" data-face="back"><?php esc_html_e('Reverso', 'pn-customers-manager'); ?></button>
+							</div>
+							<div class="pn-cm-bizcard-face-front">
 							<?php if (current_user_can('manage_options')) :
 								$bizcard_users = get_users(['orderby' => 'display_name', 'order' => 'ASC', 'fields' => ['ID', 'display_name', 'user_email']]);
 							?>
 							<div class="pn-cm-bizcard-option-group">
-								<label for="pn-cm-bizcard-user"><?php esc_html_e('Generar como usuario', 'pn-customers-manager'); ?></label>
-								<select id="pn-cm-bizcard-user">
-									<option value=""><?php echo esc_html(wp_get_current_user()->display_name . ' (' . __('yo', 'pn-customers-manager') . ')'); ?></option>
-									<?php foreach ($bizcard_users as $bu) :
-										if ((int) $bu->ID === $user_id) continue;
-									?>
-										<option value="<?php echo esc_attr($bu->ID); ?>"><?php echo esc_html($bu->display_name . ' — ' . $bu->user_email); ?></option>
-									<?php endforeach; ?>
-								</select>
+								<label><?php esc_html_e('Generar como usuario', 'pn-customers-manager'); ?></label>
+								<div class="pn-cm-bizcard-user-select">
+									<div class="pn-cm-bizcard-user-selected" id="pn-cm-bizcard-user-selected" data-value=""><?php echo esc_html(wp_get_current_user()->display_name . ' (' . __('yo', 'pn-customers-manager') . ')'); ?></div>
+									<div class="pn-cm-bizcard-user-dropdown">
+										<input type="text" class="pn-cm-bizcard-user-search" placeholder="<?php esc_attr_e('Buscar usuario...', 'pn-customers-manager'); ?>" />
+										<div class="pn-cm-bizcard-user-list">
+											<div class="pn-cm-bizcard-user-option pn-cm-bizcard-user-option-active" data-value=""><?php echo esc_html(wp_get_current_user()->display_name . ' (' . __('yo', 'pn-customers-manager') . ')'); ?></div>
+											<?php foreach ($bizcard_users as $bu) :
+												if ((int) $bu->ID === $user_id) continue;
+											?>
+												<div class="pn-cm-bizcard-user-option" data-value="<?php echo esc_attr($bu->ID); ?>"><?php echo esc_html($bu->display_name . ' — ' . $bu->user_email); ?></div>
+											<?php endforeach; ?>
+										</div>
+									</div>
+								</div>
 							</div>
 							<?php endif; ?>
 							<div class="pn-cm-bizcard-option-group">
@@ -380,7 +391,39 @@ class PN_CUSTOMERS_MANAGER_Referral {
 								<label for="pn-cm-bizcard-web"><?php esc_html_e('Web', 'pn-customers-manager'); ?></label>
 								<input type="text" id="pn-cm-bizcard-web" class="pn-cm-bizcard-field" value="<?php echo esc_attr(home_url()); ?>" />
 							</div>
-							<button type="button" class="pn-cm-bizcard-download"><?php esc_html_e('Descargar tarjeta', 'pn-customers-manager'); ?></button>
+							</div><!-- /.pn-cm-bizcard-face-front -->
+							<div class="pn-cm-bizcard-face-back pn-cm-bizcard-face-hidden">
+								<?php
+									$bizcard_phrases = get_option('pn_customers_manager_referral_bizcard_phrase_text', []);
+									if (!is_array($bizcard_phrases)) $bizcard_phrases = [];
+									$bizcard_phrases = array_filter($bizcard_phrases, function($p) { return !empty(trim($p)); });
+								?>
+								<?php if (!empty($bizcard_phrases)) : ?>
+								<div class="pn-cm-bizcard-option-group">
+									<label for="pn-cm-bizcard-phrase-select"><?php esc_html_e('Frases predefinidas', 'pn-customers-manager'); ?></label>
+									<select id="pn-cm-bizcard-phrase-select">
+										<option value=""><?php esc_html_e('-- Seleccionar frase --', 'pn-customers-manager'); ?></option>
+										<?php foreach ($bizcard_phrases as $phrase) : ?>
+											<option value="<?php echo esc_attr($phrase); ?>"><?php echo esc_html($phrase); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</div>
+								<?php endif; ?>
+								<div class="pn-cm-bizcard-option-group">
+									<label for="pn-cm-bizcard-message"><?php esc_html_e('Mensaje', 'pn-customers-manager'); ?></label>
+									<textarea id="pn-cm-bizcard-message" class="pn-cm-bizcard-field pn-cm-bizcard-message-textarea" placeholder="<?php esc_attr_e('Escribe tu mensaje para el reverso...', 'pn-customers-manager'); ?>"></textarea>
+								</div>
+								<div class="pn-cm-bizcard-option-group">
+									<div class="pn-cm-bizcard-qr-check">
+										<input type="checkbox" id="pn-cm-bizcard-qr-back" checked />
+										<label for="pn-cm-bizcard-qr-back"><?php esc_html_e('Incluir codigo QR en reverso', 'pn-customers-manager'); ?></label>
+									</div>
+								</div>
+							</div><!-- /.pn-cm-bizcard-face-back -->
+							<div class="pn-cm-bizcard-download-buttons">
+								<button type="button" class="pn-cm-bizcard-download pn-cm-bizcard-download-front"><?php esc_html_e('Descargar anverso', 'pn-customers-manager'); ?></button>
+								<button type="button" class="pn-cm-bizcard-download pn-cm-bizcard-download-back"><?php esc_html_e('Descargar reverso', 'pn-customers-manager'); ?></button>
+							</div>
 						</div>
 					</div>
 				</div>

@@ -881,6 +881,119 @@
   border-color: var(--pn-customers-manager-border-color-main, #0000aa);
 }
 
+.pn-cm-bizcard-user-select {
+  position: relative;
+}
+
+.pn-cm-bizcard-user-selected {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #f9fafb;
+  color: #333;
+  box-sizing: border-box;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pn-cm-bizcard-user-selected::after {
+  content: '\25BC';
+  float: right;
+  font-size: 10px;
+  color: #6b7280;
+  margin-left: 8px;
+}
+
+.pn-cm-bizcard-user-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pn-cm-bizcard-user-dropdown-open {
+  display: block;
+}
+
+.pn-cm-bizcard-user-search {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 6px 6px 0 0;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  background: #fff;
+  color: #333;
+}
+
+.pn-cm-bizcard-user-list {
+  max-height: 180px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.pn-cm-bizcard-user-option {
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.pn-cm-bizcard-user-option:hover {
+  background: #f3f4f6;
+}
+
+.pn-cm-bizcard-user-option-active {
+  background: #eff6ff;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-user-selected {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-user-selected::after {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-user-dropdown {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .pn-cm-bizcard-user-search {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-user-option:hover {
+  background: #374151;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-user-option-active {
+  background: #1e3a5f;
+}
+
 .pn-cm-bizcard-bg-input {
   display: none;
 }
@@ -1004,6 +1117,73 @@
   opacity: 0.88;
 }
 
+/* --- Business Card Tabs --- */
+.pn-cm-bizcard-tabs {
+  display: flex;
+  margin-bottom: 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pn-cm-bizcard-tab {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: #f9fafb;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  color: #555;
+}
+
+.pn-cm-bizcard-tab:not(:last-child) {
+  border-right: 1px solid #d0d5dd;
+}
+
+.pn-cm-bizcard-tab-active {
+  background: var(--pn-customers-manager-bg-color-main, #0000aa);
+  color: #fff;
+}
+
+.pn-cm-bizcard-face-hidden {
+  display: none;
+}
+
+/* --- Business Card Back Textarea --- */
+.pn-cm-bizcard-message-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+  background: #f9fafb;
+  color: #333;
+  transition: border-color 0.2s;
+}
+
+.pn-cm-bizcard-message-textarea:focus {
+  border-color: var(--pn-customers-manager-border-color-main, #0000aa);
+}
+
+/* --- Business Card Download Buttons --- */
+.pn-cm-bizcard-download-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pn-cm-bizcard-download-buttons .pn-cm-bizcard-download {
+  flex: 1;
+  margin-top: 0;
+}
+
 /* --- Dark Theme — Business Card --- */
 [data-theme="dark"] .pn-cm-bizcard-canvas-wrapper {
   background: #1f2937;
@@ -1037,6 +1217,25 @@
   background: #7f1d1d;
   color: #fecaca;
   border-color: #991b1b;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-tabs {
+  border-color: #374151;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-tab {
+  background: #1f2937;
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-tab:not(:last-child) {
+  border-color: #374151;
+}
+
+[data-theme="dark"] .pn-cm-bizcard-message-textarea {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
 }
 
 /* --- Responsive --- */

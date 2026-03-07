@@ -258,6 +258,23 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'description' => __('Intervalo de dias entre cada recordatorio enviado a referidos pendientes.', 'pn-customers-manager'),
     ];
 
+    $pn_customers_manager_options['pn_customers_manager_referral_bizcard_phrases'] = [
+      'id' => 'pn_customers_manager_referral_bizcard_phrases',
+      'input' => 'html_multi',
+      'label' => __('Frases para tarjeta de visita', 'pn-customers-manager'),
+      'description' => __('Frases predefinidas que los usuarios pueden seleccionar para el reverso de su tarjeta de visita.', 'pn-customers-manager'),
+      'html_multi_fields' => [
+        [
+          'id'          => 'pn_customers_manager_referral_bizcard_phrase_text',
+          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'       => 'input',
+          'type'        => 'text',
+          'label'       => __('Frase', 'pn-customers-manager'),
+          'placeholder' => __('Escribe una frase inspiradora...', 'pn-customers-manager'),
+        ],
+      ],
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_referral_section_end'] = [
       'id' => 'pn_customers_manager_referral_section_end',
       'section' => 'end',

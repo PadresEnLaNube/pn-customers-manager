@@ -4,6 +4,8 @@
   var bgImage = null;
   var currentFormat = 'standard';
   var includeQr = true;
+  var includeQrBack = true;
+  var currentFace = 'front';
   var debounceTimer = null;
   var bgOffsetX = 0, bgOffsetY = 0;
   var bgZoom = 1;
@@ -37,9 +39,46 @@
 
   /* ---- admin: generate as another user ---- */
 
-  $(document).on('change', '#pn-cm-bizcard-user', function() {
-    var userId = $(this).val();
-    if (!userId) {
+  $(document).on('click', '#pn-cm-bizcard-user-selected', function(e) {
+    e.stopPropagation();
+    var $dropdown = $(this).siblings('.pn-cm-bizcard-user-dropdown');
+    var wasOpen = $dropdown.hasClass('pn-cm-bizcard-user-dropdown-open');
+    $('.pn-cm-bizcard-user-dropdown').removeClass('pn-cm-bizcard-user-dropdown-open');
+    if (!wasOpen) {
+      $dropdown.addClass('pn-cm-bizcard-user-dropdown-open');
+      $dropdown.find('.pn-cm-bizcard-user-search').val('').trigger('input').focus();
+    }
+  });
+
+  $(document).on('input', '.pn-cm-bizcard-user-search', function() {
+    var query = $(this).val().toLowerCase();
+    $(this).siblings('.pn-cm-bizcard-user-list').find('.pn-cm-bizcard-user-option').each(function() {
+      var text = $(this).text().toLowerCase();
+      $(this).toggle(text.indexOf(query) !== -1);
+    });
+  });
+
+  $(document).on('click', '.pn-cm-bizcard-user-option', function() {
+    var userId = $(this).data('value');
+    var label = $(this).text();
+    var $select = $(this).closest('.pn-cm-bizcard-user-select');
+    $select.find('.pn-cm-bizcard-user-option').removeClass('pn-cm-bizcard-user-option-active');
+    $(this).addClass('pn-cm-bizcard-user-option-active');
+    $select.find('#pn-cm-bizcard-user-selected').text(label).data('value', userId);
+    $select.find('.pn-cm-bizcard-user-dropdown').removeClass('pn-cm-bizcard-user-dropdown-open');
+    selectBizcardUser(userId);
+  });
+
+  $(document).on('click', function() {
+    $('.pn-cm-bizcard-user-dropdown').removeClass('pn-cm-bizcard-user-dropdown-open');
+  });
+
+  $(document).on('click', '.pn-cm-bizcard-user-dropdown', function(e) {
+    e.stopPropagation();
+  });
+
+  function selectBizcardUser(userId) {
+    if (!userId && userId !== 0) {
       // Back to current user — restore original data
       if (window.pnCmReferralQrDataOriginal) {
         window.pnCmReferralQrData = $.extend({}, window.pnCmReferralQrDataOriginal);
@@ -77,7 +116,7 @@
       $('#pn-cm-bizcard-email').val(data.email);
       renderCard();
     });
-  });
+  }
 
   /* ---- background image ---- */
 
@@ -234,11 +273,92 @@
     renderCard();
   });
 
+  $(document).on('change', '#pn-cm-bizcard-qr-back', function() {
+    includeQrBack = $(this).is(':checked');
+    renderCard();
+  });
+
+  /* ---- tabs ---- */
+
+  $(document).on('click', '.pn-cm-bizcard-tab', function() {
+    var face = $(this).data('face');
+    if (face === currentFace) return;
+    currentFace = face;
+    $('.pn-cm-bizcard-tab').removeClass('pn-cm-bizcard-tab-active');
+    $(this).addClass('pn-cm-bizcard-tab-active');
+    if (face === 'front') {
+      $('.pn-cm-bizcard-face-front').removeClass('pn-cm-bizcard-face-hidden');
+      $('.pn-cm-bizcard-face-back').addClass('pn-cm-bizcard-face-hidden');
+    } else {
+      $('.pn-cm-bizcard-face-front').addClass('pn-cm-bizcard-face-hidden');
+      $('.pn-cm-bizcard-face-back').removeClass('pn-cm-bizcard-face-hidden');
+    }
+    renderCard();
+  });
+
+  /* ---- phrase selector ---- */
+
+  $(document).on('change', '#pn-cm-bizcard-phrase-select', function() {
+    var phrase = $(this).val();
+    if (phrase) {
+      $('#pn-cm-bizcard-message').val(phrase);
+      debounceRender();
+    }
+  });
+
   /* ---- text inputs ---- */
 
   $(document).on('input', '.pn-cm-bizcard-field', debounceRender);
 
   /* ---- render card ---- */
+
+  function drawBackground(ctx, w, h) {
+    if (bgImage) {
+      var imgW = bgImage.width;
+      var imgH = bgImage.height;
+      var scale = Math.max(w / imgW, h / imgH) * bgZoom;
+      var sw = imgW * scale;
+      var sh = imgH * scale;
+      var sx = (w - sw) / 2 + bgOffsetX;
+      var sy = (h - sh) / 2 + bgOffsetY;
+      ctx.drawImage(bgImage, sx, sy, sw, sh);
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillRect(0, 0, w, h);
+    } else {
+      var grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#1a1a2e');
+      grad.addColorStop(0.5, '#16213e');
+      grad.addColorStop(1, '#0f3460');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    }
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    var paragraphs = text.split('\n');
+    var lines = [];
+    for (var p = 0; p < paragraphs.length; p++) {
+      var words = paragraphs[p].split(' ');
+      var line = '';
+      for (var i = 0; i < words.length; i++) {
+        var testLine = line ? line + ' ' + words[i] : words[i];
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          lines.push(line);
+          line = words[i];
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+    }
+    var totalHeight = lines.length * lineHeight;
+    var startY = y - totalHeight / 2;
+    for (var j = 0; j < lines.length; j++) {
+      ctx.fillText(lines[j], x, startY + j * lineHeight + lineHeight / 2);
+    }
+    return startY + totalHeight;
+  }
 
   function renderCard() {
     var canvas = document.getElementById('pn-cm-bizcard-canvas');
@@ -251,43 +371,25 @@
     var ctx = canvas.getContext('2d');
     var w = fmt.w;
     var h = fmt.h;
-
-    // Background
-    if (bgImage) {
-      // Cover the canvas with the image
-      var imgW = bgImage.width;
-      var imgH = bgImage.height;
-      var scale = Math.max(w / imgW, h / imgH) * bgZoom;
-      var sw = imgW * scale;
-      var sh = imgH * scale;
-      var sx = (w - sw) / 2 + bgOffsetX;
-      var sy = (h - sh) / 2 + bgOffsetY;
-      ctx.drawImage(bgImage, sx, sy, sw, sh);
-
-      // Semi-transparent overlay
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      ctx.fillRect(0, 0, w, h);
-    } else {
-      // Default dark gradient
-      var grad = ctx.createLinearGradient(0, 0, w, h);
-      grad.addColorStop(0, '#1a1a2e');
-      grad.addColorStop(0.5, '#16213e');
-      grad.addColorStop(1, '#0f3460');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-    }
-
-    // Scale factor based on standard width
     var s = w / 1012;
 
-    // Texts
+    drawBackground(ctx, w, h);
+
+    if (currentFace === 'back') {
+      renderBack(ctx, w, h, s);
+    } else {
+      renderFront(ctx, w, h, s);
+    }
+  }
+
+  function renderFront(ctx, w, h, s) {
     var name  = getField('name');
     var title = getField('title');
     var phone = getField('phone');
     var email = getField('email');
     var web   = getField('web');
 
-    var textX = 60 * s;
+    var textX = 120 * s;
     var textY = h * 0.38;
 
     // Name
@@ -337,11 +439,136 @@
     }
   }
 
+  function renderBack(ctx, w, h, s) {
+    var message = $.trim($('#pn-cm-bizcard-message').val());
+    var data = window.pnCmReferralQrData;
+    var showQr = includeQrBack && data && data.url && typeof qrcode !== 'undefined';
+
+    var margin = Math.round(60 * s);
+    var gap = Math.round(14 * s);
+    var radius = Math.round(10 * s);
+
+    // Right column: logo (top) + QR (bottom)
+    if (showQr) {
+      // Smaller QR for the back
+      var qrSize = Math.round(130 * s);
+      var padding = Math.round(14 * s);
+      var boxSize = qrSize + padding * 2;
+      // Logo same size as QR box
+      var logoSize = boxSize;
+      var colX = w - boxSize - margin;
+
+      // Logo top, QR bottom — same margin as front face
+      var logoY = margin;
+      var qrBoxY = h - boxSize - margin;
+
+      // --- Logo ---
+      if (data.brandingUrl) {
+        var brandImg = new Image();
+        brandImg.crossOrigin = 'anonymous';
+        brandImg.onload = function() {
+          ctx.drawImage(brandImg, colX, logoY, logoSize, logoSize);
+        };
+        brandImg.src = data.brandingUrl;
+      }
+
+      // White rounded background
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(colX + radius, qrBoxY);
+      ctx.lineTo(colX + boxSize - radius, qrBoxY);
+      ctx.quadraticCurveTo(colX + boxSize, qrBoxY, colX + boxSize, qrBoxY + radius);
+      ctx.lineTo(colX + boxSize, qrBoxY + boxSize - radius);
+      ctx.quadraticCurveTo(colX + boxSize, qrBoxY + boxSize, colX + boxSize - radius, qrBoxY + boxSize);
+      ctx.lineTo(colX + radius, qrBoxY + boxSize);
+      ctx.quadraticCurveTo(colX, qrBoxY + boxSize, colX, qrBoxY + boxSize - radius);
+      ctx.lineTo(colX, qrBoxY + radius);
+      ctx.quadraticCurveTo(colX, qrBoxY, colX + radius, qrBoxY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Generate and draw QR
+      var qr = qrcode(0, 'H');
+      qr.addData(data.url);
+      qr.make();
+
+      var moduleCount = qr.getModuleCount();
+      var moduleSize = qrSize / moduleCount;
+      var qrDrawX = colX + padding;
+      var qrDrawY = qrBoxY + padding;
+
+      for (var row = 0; row < moduleCount; row++) {
+        for (var col = 0; col < moduleCount; col++) {
+          ctx.fillStyle = qr.isDark(row, col) ? '#000000' : '#ffffff';
+          ctx.fillRect(
+            qrDrawX + col * moduleSize,
+            qrDrawY + row * moduleSize,
+            moduleSize + 0.5,
+            moduleSize + 0.5
+          );
+        }
+      }
+
+      // Branding in QR center
+      if (data.brandingUrl) {
+        var clearPct = 0.25;
+        var clearSize = qrSize * clearPct;
+        var clearX = qrDrawX + (qrSize - clearSize) / 2;
+        var clearY = qrDrawY + (qrSize - clearSize) / 2;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(clearX, clearY, clearSize, clearSize);
+
+        var brandImgQr = new Image();
+        brandImgQr.crossOrigin = 'anonymous';
+        brandImgQr.onload = function() {
+          var imgS = clearSize * 0.85;
+          var imgX = clearX + (clearSize - imgS) / 2;
+          var imgY = clearY + (clearSize - imgS) / 2;
+          ctx.drawImage(brandImgQr, imgX, imgY, imgS, imgS);
+        };
+        brandImgQr.src = data.brandingUrl;
+      }
+
+      // Referral code below QR
+      if (data.code) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = Math.round(14 * s) + 'px Arial, Helvetica, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(data.code, colX + boxSize / 2, qrBoxY + boxSize + Math.round(6 * s));
+      }
+
+      // --- Message on the left side ---
+      if (message) {
+        var textMargin = Math.round(80 * s);
+        var msgMaxW = colX - textMargin - margin;
+        var fontSize = Math.round(56 * s);
+        var lineHeight = Math.round(76 * s);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = fontSize + 'px Arial, Helvetica, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        wrapText(ctx, message, textMargin, h / 2, msgMaxW, lineHeight);
+      }
+    } else if (message) {
+      // Only message, centered, double size
+      var fontSize2 = Math.round(56 * s);
+      var lineHeight2 = Math.round(76 * s);
+      var msgMaxW2 = w - Math.round(120 * s);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = fontSize2 + 'px Arial, Helvetica, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      wrapText(ctx, message, w / 2, h / 2, msgMaxW2, lineHeight2);
+    }
+  }
+
   function drawQrOnCard(ctx, w, h, s) {
     var data = window.pnCmReferralQrData;
     var qrSize = Math.round(195 * s);
     var padding = Math.round(18 * s);
-    var margin = Math.round(30 * s);
+    var margin = Math.round(60 * s);
     var boxSize = qrSize + padding * 2;
     var boxX = w - boxSize - margin;
     var boxY = h - boxSize - margin;
@@ -403,13 +630,21 @@
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(clearX, clearY, clearSize, clearSize);
 
+      // Large logo top-right, aligned with QR column
+      var logoSize = Math.round(80 * s);
+      var logoX = boxX + boxSize - logoSize;
+      var logoY = margin;
+
       var brandImg = new Image();
       brandImg.crossOrigin = 'anonymous';
       brandImg.onload = function() {
+        // Small branding in QR center
         var imgS = clearSize * 0.85;
         var imgX = clearX + (clearSize - imgS) / 2;
         var imgY = clearY + (clearSize - imgS) / 2;
         ctx.drawImage(brandImg, imgX, imgY, imgS, imgS);
+        // Large logo top-right
+        ctx.drawImage(brandImg, logoX, logoY, logoSize, logoSize);
       };
       brandImg.src = data.brandingUrl;
     }
@@ -417,13 +652,18 @@
 
   /* ---- download ---- */
 
-  $(document).on('click', '.pn-cm-bizcard-download', function() {
+  function downloadFace(face) {
     var canvas = document.getElementById('pn-cm-bizcard-canvas');
     if (!canvas) return;
 
+    var savedFace = currentFace;
+    currentFace = face;
+    renderCard();
+
     var name = getField('name') || 'tarjeta';
     var safeName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    var filename = 'tarjeta-' + safeName + '.png';
+    var suffix = face === 'back' ? '-reverso' : '-anverso';
+    var filename = 'tarjeta-' + safeName + suffix + '.png';
 
     var link = document.createElement('a');
     link.download = filename;
@@ -431,6 +671,17 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    currentFace = savedFace;
+    renderCard();
+  }
+
+  $(document).on('click', '.pn-cm-bizcard-download-front', function() {
+    downloadFace('front');
+  });
+
+  $(document).on('click', '.pn-cm-bizcard-download-back', function() {
+    downloadFace('back');
   });
 
 })(jQuery);
