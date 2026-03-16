@@ -51,8 +51,8 @@ class PN_CUSTOMERS_MANAGER_Common
 	 */
 	public function pn_customers_manager_enqueue_styles()
 	{
-		if (!wp_style_is($this->plugin_name . '-material-icons-outlined', 'enqueued')) {
-			wp_enqueue_style($this->plugin_name . '-material-icons-outlined', PN_CUSTOMERS_MANAGER_URL . 'assets/css/material-icons-outlined.min.css', [], $this->version, 'all');
+		if (!wp_style_is('wph-material-icons-outlined', 'enqueued')) {
+			wp_enqueue_style('wph-material-icons-outlined', PN_CUSTOMERS_MANAGER_URL . 'assets/css/material-icons-outlined.min.css', [], $this->version, 'all');
 		}
 
 		if (!wp_style_is($this->plugin_name . '-popups', 'enqueued')) {
@@ -63,16 +63,16 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_style($this->plugin_name . '-selector', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-selector.css', [], $this->version, 'all');
 		}
 
-		if (!wp_style_is($this->plugin_name . '-trumbowyg', 'enqueued')) {
-			wp_enqueue_style($this->plugin_name . '-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/css/trumbowyg.min.css', [], $this->version, 'all');
+		if (!wp_style_is('wph-trumbowyg', 'enqueued')) {
+			wp_enqueue_style('wph-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/css/trumbowyg.min.css', [], $this->version, 'all');
 		}
 
-		if (!wp_style_is($this->plugin_name . '-tooltipster', 'enqueued')) {
-			wp_enqueue_style($this->plugin_name . '-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/css/tooltipster.min.css', [], $this->version, 'all');
+		if (!wp_style_is('wph-tooltipster', 'enqueued')) {
+			wp_enqueue_style('wph-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/css/tooltipster.min.css', [], $this->version, 'all');
 		}
 
-		if (!wp_style_is($this->plugin_name . '-owl', 'enqueued')) {
-			wp_enqueue_style($this->plugin_name . '-owl', PN_CUSTOMERS_MANAGER_URL . 'assets/css/owl.min.css', [], $this->version, 'all');
+		if (!wp_style_is('wph-owl', 'enqueued')) {
+			wp_enqueue_style('wph-owl', PN_CUSTOMERS_MANAGER_URL . 'assets/css/owl.min.css', [], $this->version, 'all');
 		}
 
 		if (!wp_style_is($this->plugin_name . '-referral', 'enqueued')) {
@@ -157,11 +157,11 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_script('jquery-ui-sortable');
 		}
 
-		if (!wp_script_is($this->plugin_name . '-trumbowyg', 'enqueued')) {
-			wp_enqueue_script($this->plugin_name . '-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/js/trumbowyg.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		if (!wp_script_is('wph-trumbowyg', 'enqueued')) {
+			wp_enqueue_script('wph-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/js/trumbowyg.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		}
 
-		wp_localize_script($this->plugin_name . '-trumbowyg', 'pn_customers_manager_trumbowyg', [
+		wp_localize_script('wph-trumbowyg', 'pn_customers_manager_trumbowyg', [
 			'path' => PN_CUSTOMERS_MANAGER_URL . 'assets/media/trumbowyg-icons.svg',
 		]);
 
@@ -173,17 +173,17 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_script($this->plugin_name . '-selector', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-selector.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		}
 
-		if (!wp_script_is($this->plugin_name . '-tooltipster', 'enqueued')) {
-			wp_enqueue_script($this->plugin_name . '-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/js/tooltipster.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		if (!wp_script_is('wph-tooltipster', 'enqueued')) {
+			wp_enqueue_script('wph-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/js/tooltipster.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		}
 
-		if (!wp_script_is($this->plugin_name . '-owl', 'enqueued')) {
-			wp_enqueue_script($this->plugin_name . '-owl', PN_CUSTOMERS_MANAGER_URL . 'assets/js/owl.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		if (!wp_script_is('wph-owl', 'enqueued')) {
+			wp_enqueue_script('wph-owl', PN_CUSTOMERS_MANAGER_URL . 'assets/js/owl.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		}
 
 		wp_enqueue_script($this->plugin_name, PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		wp_enqueue_script($this->plugin_name . '-aux', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-aux.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
-		wp_enqueue_script($this->plugin_name . '-forms', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-forms.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		wp_enqueue_script($this->plugin_name . '-forms', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-forms.js', ['jquery', 'jquery-ui-sortable'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		wp_enqueue_script($this->plugin_name . '-ajax', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-ajax.js', [$this->plugin_name . '-popups', 'jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 
 		if (!wp_script_is($this->plugin_name . '-referral', 'enqueued')) {

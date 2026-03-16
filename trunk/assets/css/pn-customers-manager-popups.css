@@ -109,7 +109,42 @@
 }
 
 @media (max-width: 768px) {
-    .pn-customers-manager-popup-content{
+    .pn-customers-manager-popup {
+        top: 0;
+        left: 0;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
         max-height: 100%;
+        border-radius: 0;
+    }
+    .pn-customers-manager-popup-content {
+        max-height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100%;
+    }
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-small .pn-customers-manager-popup-content,
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-medium .pn-customers-manager-popup-content,
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-large .pn-customers-manager-popup-content,
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-full-size .pn-customers-manager-popup-content {
+        max-width: 100%;
+    }
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-small,
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-medium,
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-large,
+    .pn-customers-manager-popup.pn-customers-manager-popup-size-full-size {
+        max-width: 100%;
+    }
+    #pn-customers-manager-profile-popup {
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
     }
 }

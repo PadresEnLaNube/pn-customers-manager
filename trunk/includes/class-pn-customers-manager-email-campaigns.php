@@ -202,25 +202,44 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 
 		$campaign_title = sanitize_text_field($atts['campaign']);
 
-		// If no campaign specified, use the first available campaign
 		if (empty($campaign_title)) {
 			$all_campaigns = self::get_campaigns();
-			if (!empty($all_campaigns)) {
-				$campaign = $all_campaigns[0];
-				$campaign_title = $campaign['title'];
-			} else {
-				echo '<p>' . esc_html__('No campaigns configured. Set them up in the plugin settings.', 'pn-customers-manager') . '</p>';
+			if (empty($all_campaigns)) {
 				return ob_get_clean();
 			}
 		} else {
 			$campaign = self::get_campaign_by_title($campaign_title);
+			if (!$campaign) {
+				return ob_get_clean();
+			}
 		}
 
-		if (!$campaign) {
-			echo '<p>' . esc_html__('The specified campaign was not found.', 'pn-customers-manager') . '</p>';
-			return ob_get_clean();
+		echo '<div class="pn-cm-email-campaigns-wrapper">';
+		echo '<h2 class="pn-cm-email-campaigns-title">' . esc_html__('Email Campaigns', 'pn-customers-manager') . '</h2>';
+		echo '<p class="pn-cm-email-campaigns-description">'
+			. esc_html__('Send email campaigns to registered users or external addresses. Track opens and clicks from sent emails.', 'pn-customers-manager')
+			. '</p>';
+
+		if (empty($campaign_title)) {
+			foreach ($all_campaigns as $campaign) {
+				self::render_single_campaign($campaign);
+			}
+		} else {
+			self::render_single_campaign($campaign);
 		}
 
+		echo '</div>';
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render a single campaign panel.
+	 *
+	 * @param array $campaign Campaign data with title and template_id.
+	 */
+	private static function render_single_campaign($campaign) {
+		$campaign_title = $campaign['title'];
 		$mail_id = $campaign['template_id'];
 		$records = self::get_campaign_records($mail_id);
 		$total_sent = count($records);
@@ -245,8 +264,10 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 			$user_options[$user->ID] = $user->display_name . ' (' . $user->user_email . ')';
 		}
 
+		$unique_suffix = '_' . $campaign['index'];
+
 		$users_field = [
-			'id'       => 'pn_cm_email_campaigns_users',
+			'id'       => 'pn_cm_email_campaigns_users' . $unique_suffix,
 			'input'    => 'select',
 			'class'    => 'pn-cm-email-campaigns-users-select pn-customers-manager-select pn-customers-manager-width-100-percent',
 			'multiple' => true,
@@ -255,12 +276,12 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 		];
 
 		$emails_field = [
-			'id'    => 'pn_cm_email_campaigns_external_emails_wrapper',
+			'id'    => 'pn_cm_email_campaigns_external_emails_wrapper' . $unique_suffix,
 			'input' => 'html_multi',
 			'label' => __('External emails', 'pn-customers-manager'),
 			'html_multi_fields' => [
 				[
-					'id'          => 'pn_cm_email_campaigns_external_emails',
+					'id'          => 'pn_cm_email_campaigns_external_emails' . $unique_suffix,
 					'input'       => 'input',
 					'type'        => 'email',
 					'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
@@ -273,7 +294,7 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 		<div class="pn-cm-email-campaigns-panel pn-customers-manager-toggle-wrapper" data-mail-id="<?php echo esc_attr($mail_id); ?>">
 			<a href="#" class="pn-customers-manager-toggle pn-customers-manager-text-decoration-none">
 				<div class="pn-cm-email-campaigns-header">
-					<h2><?php echo esc_html($campaign_title); ?> <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-float-right">expand_more</i></h2>
+					<h2 class="pn-customers-manager-width-100-percent"><?php echo esc_html($campaign_title); ?> <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-float-right">add</i></h2>
 				</div>
 			</a>
 
@@ -330,8 +351,6 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 			</div><!-- /.pn-customers-manager-toggle-content -->
 		</div>
 		<?php
-
-		return ob_get_clean();
 	}
 
 	/**
@@ -583,33 +602,32 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 
 		// Send to external emails via mailpn queue
 		if (!empty($external_emails)) {
-			$queue = get_option('mailpn_queue', []);
-			if (!is_array($queue)) {
-				$queue = [];
-			}
-			if (!isset($queue[$mail_id]) || !is_array($queue[$mail_id])) {
-				$queue[$mail_id] = [];
-			}
-
-			foreach ($external_emails as $email) {
-				// Check if this email belongs to an existing user
-				$existing_user = get_user_by('email', $email);
-				if ($existing_user) {
-					if (class_exists('MAILPN_Mailing')) {
-						(new MAILPN_Mailing())->mailpn_queue_add($mail_id, $existing_user->ID);
+			if (class_exists('MAILPN_Mailing')) {
+				$mailing = new MAILPN_Mailing();
+				foreach ($external_emails as $email) {
+					// If email belongs to an existing user, queue by user ID; otherwise queue the email directly
+					$existing_user = get_user_by('email', $email);
+					$mailing->mailpn_queue_add($mail_id, $existing_user ? $existing_user->ID : $email);
+					$queued_count++;
+				}
+			} else {
+				$queue = get_option('mailpn_queue', []);
+				if (!is_array($queue)) {
+					$queue = [];
+				}
+				if (!isset($queue[$mail_id]) || !is_array($queue[$mail_id])) {
+					$queue[$mail_id] = [];
+				}
+				foreach ($external_emails as $email) {
+					$existing_user = get_user_by('email', $email);
+					$recipient = $existing_user ? $existing_user->ID : $email;
+					if (!in_array($recipient, $queue[$mail_id])) {
+						$queue[$mail_id][] = $recipient;
+						$queued_count++;
 					}
-					$queued_count++;
-					continue;
 				}
-
-				// Add email address directly to mailpn queue
-				if (!in_array($email, $queue[$mail_id])) {
-					$queue[$mail_id][] = $email;
-					$queued_count++;
-				}
+				update_option('mailpn_queue', $queue);
 			}
-
-			update_option('mailpn_queue', $queue);
 		}
 
 		return [

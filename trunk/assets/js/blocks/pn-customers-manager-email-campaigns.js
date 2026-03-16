@@ -6,7 +6,7 @@
   var PanelBody = components.PanelBody;
   var SelectControl = components.SelectControl;
 
-  var campaignOptions = [{ label: __('-- Select campaign --', 'pn-customers-manager'), value: '' }];
+  var campaignOptions = [{ label: __('-- All campaigns --', 'pn-customers-manager'), value: '' }];
 
   if (typeof pnCMEmailCampaigns !== 'undefined' && pnCMEmailCampaigns.campaigns) {
     pnCMEmailCampaigns.campaigns.forEach(function(campaign) {
@@ -46,7 +46,7 @@
               value: attributes.campaign,
               options: campaignOptions,
               onChange: function(value) { setAttributes({ campaign: value }); },
-              help: __('Select the email campaign to display in this block.', 'pn-customers-manager')
+              help: __('Select a specific campaign or leave empty to display all campaigns.', 'pn-customers-manager')
             })
           )
         ),
@@ -59,7 +59,7 @@
             null,
             attributes.campaign
               ? __('Campaign: ', 'pn-customers-manager') + attributes.campaign
-              : __('Select a campaign in the sidebar.', 'pn-customers-manager')
+              : __('All campaigns will be displayed.', 'pn-customers-manager')
           )
         )
       );

@@ -142,10 +142,17 @@
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        $(this).closest('.pn-customers-manager-html-multi-wrapper').find('.pn-customers-manager-html-multi-group:first').clone().insertAfter($(this).closest('.pn-customers-manager-html-multi-wrapper').find('.pn-customers-manager-html-multi-group:last'));
-        $(this).closest('.pn-customers-manager-html-multi-wrapper').find('.pn-customers-manager-html-multi-group:last').find('input, select, textarea').val('');
+        var wrapper = $(this).closest('.pn-customers-manager-html-multi-wrapper');
+        wrapper.find('.pn-customers-manager-html-multi-group:first').clone().insertAfter(wrapper.find('.pn-customers-manager-html-multi-group:last'));
+        var newGroup = wrapper.find('.pn-customers-manager-html-multi-group:last');
+        newGroup.find('input, textarea').val('');
+        newGroup.find('select').each(function() {
+          $(this).find('option').removeAttr('selected');
+          this.selectedIndex = 0;
+        });
+        newGroup.find('[id]').removeAttr('id');
 
-        $(this).closest('.pn-customers-manager-html-multi-wrapper').find('.pn-customers-manager-input-range').each(function(index, element) {
+        wrapper.find('.pn-customers-manager-input-range').each(function(index, element) {
           $(this).siblings('.pn-customers-manager-input-range-output').html($(this).val());
         });
       });

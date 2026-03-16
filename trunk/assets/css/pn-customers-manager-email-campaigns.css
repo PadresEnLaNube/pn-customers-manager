@@ -2,10 +2,33 @@
    Email Campaigns Panel
    ============================================= */
 
+.pn-cm-email-campaigns-wrapper {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0;
+}
+
+.pn-cm-email-campaigns-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.pn-cm-email-campaigns-description {
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
 .pn-cm-email-campaigns-panel {
   max-width: 900px;
-  margin: 0 auto;
+  margin: 0 auto 20px;
   padding: 0;
+}
+
+.pn-cm-email-campaigns-panel:last-child {
+  margin-bottom: 0;
 }
 
 .pn-cm-email-campaigns-header {
@@ -13,6 +36,16 @@
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  background: #f3f4f6;
+  padding: 16px 20px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.pn-cm-email-campaigns-header:hover {
+  background: #e9eaed;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .pn-cm-email-campaigns-header h2 {
@@ -20,15 +53,19 @@
 }
 
 .pn-cm-email-campaigns-panel h2 {
-  margin: 0 0 20px;
-  font-size: 22px;
-  font-weight: 700;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .pn-cm-email-campaigns-panel h3 {
   margin: 0 0 16px;
   font-size: 18px;
   font-weight: 600;
+}
+
+.pn-cm-email-campaigns-panel .pn-customers-manager-toggle-content {
+  padding-top: 24px;
 }
 
 /* --- Buttons --- */
@@ -75,7 +112,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .pn-cm-email-campaigns-stat-card {
@@ -107,7 +144,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 24px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .pn-cm-email-campaigns-send-form {

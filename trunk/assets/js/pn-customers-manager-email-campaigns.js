@@ -8,11 +8,11 @@
     var $panel = $(this).closest('.pn-cm-email-campaigns-panel');
     var $btn = $(this);
     var $message = $panel.find('.pn-cm-email-campaigns-message');
-    var $select = $panel.find('#pn_cm_email_campaigns_users');
+    var $select = $panel.find('.pn-cm-email-campaigns-users-select');
     var mailId = $panel.data('mail-id');
     var userIds = $select.val();
     var externalEmails = [];
-    $panel.find('input[name="pn_cm_email_campaigns_external_emails"]').each(function() {
+    $panel.find('input[type="email"]').each(function() {
       var val = $.trim($(this).val());
       if (val) {
         externalEmails.push(val);

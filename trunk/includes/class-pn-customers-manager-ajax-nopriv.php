@@ -314,6 +314,12 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     }
 
                     if (!empty($user_id)) {
+                      // Authorization: only the account owner or an admin may update user meta
+                      if (!is_user_logged_in() || (intval($user_id) !== get_current_user_id() && !PN_CUSTOMERS_MANAGER_Functions_User::pn_customers_manager_user_is_admin(get_current_user_id()))) {
+                        echo wp_json_encode(['error_key' => 'pn_customers_manager_form_save_error_unauthorized', 'error_content' => esc_html(__('You are not authorized to perform this action.', 'pn-customers-manager'))]);
+                        exit;
+                      }
+
                       foreach ($pn_customers_manager_key_value as $pn_customers_manager_key => $pn_customers_manager_value) {
                         // Skip action and ajax type keys
                         if (in_array($pn_customers_manager_key, ['action', 'pn_customers_manager_ajax_nopriv_type'])) {
@@ -348,6 +354,17 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     }
 
                     if (!empty($post_id)) {
+                      // Authorization: only post owner or admin may update post meta
+                      if (!is_user_logged_in()) {
+                        echo wp_json_encode(['error_key' => 'pn_customers_manager_form_save_error_unauthorized', 'error_content' => esc_html(__('You are not authorized to perform this action.', 'pn-customers-manager'))]);
+                        exit;
+                      }
+                      $post_author_id = intval(get_post_field('post_author', $post_id));
+                      if (get_current_user_id() !== $post_author_id && !PN_CUSTOMERS_MANAGER_Functions_User::pn_customers_manager_user_is_admin(get_current_user_id())) {
+                        echo wp_json_encode(['error_key' => 'pn_customers_manager_form_save_error_unauthorized', 'error_content' => esc_html(__('You are not authorized to perform this action.', 'pn-customers-manager'))]);
+                        exit;
+                      }
+
                       foreach ($pn_customers_manager_key_value as $pn_customers_manager_key => $pn_customers_manager_value) {
                         if ($pn_customers_manager_key == $post_type . '_title') {
                           wp_update_post([
