@@ -166,19 +166,15 @@ class PN_CUSTOMERS_MANAGER_Referral {
 				</div>
 			</div>
 		</div>
-		<script>
-			(function() {
-				if (typeof pn_customers_manager_Popups !== 'undefined') {
-					pn_customers_manager_Popups.open('<?php echo esc_js($popup_id); ?>');
-				} else {
-					document.addEventListener('DOMContentLoaded', function() {
-						if (typeof pn_customers_manager_Popups !== 'undefined') {
-							pn_customers_manager_Popups.open('<?php echo esc_js($popup_id); ?>');
-						}
-					});
-				}
-			})();
-		</script>
+		<?php
+		wp_enqueue_script(
+			'pn-customers-manager-referral-landing',
+			PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-referral-landing.js',
+			['pn-customers-manager-popups'],
+			PN_CUSTOMERS_MANAGER_VERSION,
+			true
+		);
+		?>
 		<?php
 	}
 
@@ -273,13 +269,13 @@ class PN_CUSTOMERS_MANAGER_Referral {
 					<button type="button" class="pn-cm-referral-qr-download"><?php esc_html_e('Descargar QR', 'pn-customers-manager'); ?></button>
 				</div>
 			</details>
-			<script>
-				window.pnCmReferralQrData = {
-					url: <?php echo wp_json_encode($qr_url); ?>,
-					code: <?php echo wp_json_encode($qr_code); ?>,
-					brandingUrl: <?php echo wp_json_encode($branding_url ? $branding_url : ''); ?>
-				};
-			</script>
+			<?php
+			wp_localize_script('pn-customers-manager-referral-qr', 'pnCmReferralQrData', [
+				'url'         => $qr_url,
+				'code'        => $qr_code,
+				'brandingUrl' => $branding_url ? $branding_url : '',
+			]);
+			?>
 
 			<div class="pn-cm-referral-bizcard-trigger">
 				<button type="button" class="pn-cm-referral-bizcard-btn"><?php esc_html_e('Generar tarjeta de visita', 'pn-customers-manager'); ?></button>

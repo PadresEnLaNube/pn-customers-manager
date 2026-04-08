@@ -77,14 +77,14 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 
 					<div class="pn-cm-commercial-form-row">
 						<div class="pn-cm-commercial-form-field pn-cm-commercial-form-field-full">
-							<label for="pn_cm_commercial_message"><?php esc_html_e('Mensaje / Motivación', 'pn-customers-manager'); ?></label>
+							<label for="pn_cm_commercial_message"><?php esc_html_e('Message / Motivation', 'pn-customers-manager'); ?></label>
 							<textarea id="pn_cm_commercial_message" name="pn_cm_commercial_message" rows="4"></textarea>
 						</div>
 					</div>
 
 					<div class="pn-cm-commercial-form-actions">
 						<button type="submit" class="pn-cm-commercial-btn pn-cm-commercial-btn-primary">
-							<?php esc_html_e('Enviar solicitud', 'pn-customers-manager'); ?>
+							<?php esc_html_e('Send application', 'pn-customers-manager'); ?>
 						</button>
 					</div>
 
@@ -97,8 +97,8 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 			<div class="pn-cm-commercial-panel pn-cm-commercial-status">
 				<div class="pn-cm-commercial-status-box pn-cm-commercial-status-pending">
 					<span class="material-icons-outlined pn-cm-commercial-status-icon">hourglass_top</span>
-					<h2><?php esc_html_e('Solicitud en revisión', 'pn-customers-manager'); ?></h2>
-					<p><?php esc_html_e('Tu solicitud como agente comercial está siendo revisada. Te notificaremos cuando haya una actualización.', 'pn-customers-manager'); ?></p>
+					<h2><?php esc_html_e('Application under review', 'pn-customers-manager'); ?></h2>
+					<p><?php esc_html_e('Your application as a commercial agent is being reviewed. We will notify you when there is an update.', 'pn-customers-manager'); ?></p>
 				</div>
 			</div>
 			<?php
@@ -107,8 +107,8 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 			<div class="pn-cm-commercial-panel pn-cm-commercial-status">
 				<div class="pn-cm-commercial-status-box pn-cm-commercial-status-rejected">
 					<span class="material-icons-outlined pn-cm-commercial-status-icon">cancel</span>
-					<h2><?php esc_html_e('Solicitud rechazada', 'pn-customers-manager'); ?></h2>
-					<p><?php esc_html_e('Tu solicitud como agente comercial ha sido rechazada. Si crees que es un error, contacta con soporte.', 'pn-customers-manager'); ?></p>
+					<h2><?php esc_html_e('Application rejected', 'pn-customers-manager'); ?></h2>
+					<p><?php esc_html_e('Your application as a commercial agent has been rejected. If you believe this is an error, contact support.', 'pn-customers-manager'); ?></p>
 				</div>
 			</div>
 			<?php
@@ -140,24 +140,24 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		ob_start();
 		?>
 		<div class="pn-cm-commercial-panel pn-cm-commercial-dashboard">
-			<h2><?php esc_html_e('Panel Comercial', 'pn-customers-manager'); ?></h2>
+			<h2><?php esc_html_e('Commercial Panel', 'pn-customers-manager'); ?></h2>
 
 			<div class="pn-cm-commercial-stats">
 				<div class="pn-cm-commercial-stat-card">
 					<span class="pn-cm-commercial-stat-number"><?php echo esc_html($total_count); ?></span>
-					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Referidos enviados', 'pn-customers-manager'); ?></span>
+					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Referred sent', 'pn-customers-manager'); ?></span>
 				</div>
 				<div class="pn-cm-commercial-stat-card">
 					<span class="pn-cm-commercial-stat-number"><?php echo esc_html($completed_count); ?></span>
-					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Completados', 'pn-customers-manager'); ?></span>
+					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Completed', 'pn-customers-manager'); ?></span>
 				</div>
 				<div class="pn-cm-commercial-stat-card">
 					<span class="pn-cm-commercial-stat-number"><?php echo esc_html($pending_count); ?></span>
-					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Pendientes', 'pn-customers-manager'); ?></span>
+					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Pending', 'pn-customers-manager'); ?></span>
 				</div>
 				<div class="pn-cm-commercial-stat-card">
 					<span class="pn-cm-commercial-stat-number"><?php echo esc_html($conversion_rate); ?>%</span>
-					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Tasa de conversión', 'pn-customers-manager'); ?></span>
+					<span class="pn-cm-commercial-stat-label"><?php esc_html_e('Conversion rate', 'pn-customers-manager'); ?></span>
 				</div>
 			</div>
 
@@ -165,13 +165,13 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 			<div class="pn-cm-commercial-crm-link">
 				<a href="<?php echo esc_url($crm_url); ?>" class="pn-cm-commercial-btn pn-cm-commercial-btn-primary">
 					<span class="material-icons-outlined">dashboard</span>
-					<?php esc_html_e('Acceder al CRM', 'pn-customers-manager'); ?>
+					<?php esc_html_e('Access the CRM', 'pn-customers-manager'); ?>
 				</a>
 			</div>
 			<?php endif; ?>
 
 			<div class="pn-cm-commercial-referrals-section">
-				<h3><?php esc_html_e('Mis Referidos', 'pn-customers-manager'); ?></h3>
+				<h3><?php esc_html_e('My Referrals', 'pn-customers-manager'); ?></h3>
 				<?php echo PN_CUSTOMERS_MANAGER_Referral::render_referrals_shortcode(); ?>
 			</div>
 		</div>
@@ -190,7 +190,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (!is_user_logged_in()) {
 			return [
 				'error_key' => 'not_logged_in',
-				'error_content' => esc_html__('Debes iniciar sesión para enviar tu solicitud.', 'pn-customers-manager'),
+				'error_content' => esc_html__('You must be logged in to send your application.', 'pn-customers-manager')
 			];
 		}
 
@@ -201,7 +201,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (!empty($existing_status)) {
 			return [
 				'error_key' => 'already_applied',
-				'error_content' => esc_html__('Ya has enviado una solicitud anteriormente.', 'pn-customers-manager'),
+				'error_content' => esc_html__('You have already sent an application previously.', 'pn-customers-manager')
 			];
 		}
 
@@ -216,14 +216,14 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (empty($first_name) || empty($last_name) || empty($email) || empty($phone)) {
 			return [
 				'error_key' => 'missing_fields',
-				'error_content' => esc_html__('Por favor, completa todos los campos obligatorios.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Please fill in all required fields.', 'pn-customers-manager')
 			];
 		}
 
 		if (!is_email($email)) {
 			return [
 				'error_key' => 'invalid_email',
-				'error_content' => esc_html__('Por favor, introduce un email válido.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Please enter a valid email.', 'pn-customers-manager'),
 			];
 		}
 
@@ -261,7 +261,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (empty($user_id)) {
 			return [
 				'error_key' => 'invalid_user',
-				'error_content' => esc_html__('Usuario no válido.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Invalid user.', 'pn-customers-manager'),
 			];
 		}
 
@@ -269,7 +269,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if ($status !== 'pending') {
 			return [
 				'error_key' => 'invalid_status',
-				'error_content' => esc_html__('Esta solicitud no está pendiente.', 'pn-customers-manager'),
+				'error_content' => esc_html__('This application is not pending.', 'pn-customers-manager'),
 			];
 		}
 
@@ -296,7 +296,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if (empty($user_id)) {
 			return [
 				'error_key' => 'invalid_user',
-				'error_content' => esc_html__('Usuario no válido.', 'pn-customers-manager'),
+				'error_content' => esc_html__('Invalid user.', 'pn-customers-manager'),
 			];
 		}
 
@@ -304,7 +304,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		if ($status !== 'pending') {
 			return [
 				'error_key' => 'invalid_status',
-				'error_content' => esc_html__('Esta solicitud no está pendiente.', 'pn-customers-manager'),
+				'error_content' => esc_html__('This application is not pending.', 'pn-customers-manager'),
 			];
 		}
 
@@ -374,7 +374,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 		$base_url = admin_url('admin.php?page=pn_customers_manager_commercial_agents');
 		?>
 		<div class="wrap pn-cm-commercial-admin">
-			<h1><?php esc_html_e('Agentes Comerciales', 'pn-customers-manager'); ?></h1>
+			<h1><?php esc_html_e('Commercial Agents', 'pn-customers-manager'); ?></h1>
 
 			<ul class="subsubsub">
 				<li><a href="<?php echo esc_url($base_url); ?>" class="<?php echo $filter === 'all' ? 'current' : ''; ?>"><?php esc_html_e('Todos', 'pn-customers-manager'); ?> <span class="count">(<?php echo esc_html($count_all); ?>)</span></a> |</li>

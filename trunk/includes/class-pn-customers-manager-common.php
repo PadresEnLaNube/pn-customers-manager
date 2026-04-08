@@ -67,8 +67,8 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_style('wph-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/css/trumbowyg.min.css', [], $this->version, 'all');
 		}
 
-		if (!wp_style_is('wph-tooltipster', 'enqueued')) {
-			wp_enqueue_style('wph-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/css/tooltipster.min.css', [], $this->version, 'all');
+		if (!wp_style_is('pn-customers-manager-tooltips', 'enqueued')) {
+			wp_enqueue_style('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-tooltips.css', [], $this->version, 'all');
 		}
 
 		if (!wp_style_is('wph-owl', 'enqueued')) {
@@ -173,8 +173,8 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_script($this->plugin_name . '-selector', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-selector.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		}
 
-		if (!wp_script_is('wph-tooltipster', 'enqueued')) {
-			wp_enqueue_script('wph-tooltipster', PN_CUSTOMERS_MANAGER_URL . 'assets/js/tooltipster.min.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
+		if (!wp_script_is('pn-customers-manager-tooltips', 'enqueued')) {
+			wp_enqueue_script('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-tooltips.js', ['jquery'], $this->version, false, ['in_footer' => true, 'strategy' => 'defer']);
 		}
 
 		if (!wp_script_is('wph-owl', 'enqueued')) {

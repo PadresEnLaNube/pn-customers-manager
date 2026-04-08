@@ -1,3 +1,96 @@
 #adminmenu #menu-posts-pn_cm_funnel .wp-menu-image img, #adminmenu #toplevel_page_pn_customers_manager_options .wp-menu-image img{
     padding:5px 0 0;
 }
+
+/* Settings sticky footer bar */
+.pn-customers-manager-settings-pb-80{
+  padding-bottom:80px;
+}
+.pn-customers-manager-settings-footer{
+  position:fixed;
+  bottom:0;
+  left:160px;
+  right:0;
+  height:50px;
+  background:#fff;
+  z-index:99999;
+  box-shadow:0 -2px 8px rgba(0,0,0,.08);
+  border-top:1px solid #dcdcde;
+  display:flex;
+  align-items:center;
+}
+body.folded .pn-customers-manager-settings-footer{
+  left:36px;
+}
+@media screen and (max-width:960px){
+  body.auto-fold .pn-customers-manager-settings-footer{
+    left:36px;
+  }
+}
+@media screen and (max-width:782px){
+  .pn-customers-manager-settings-footer{
+    left:0;
+    z-index:9989;
+  }
+  .pn-customers-manager-settings-footer-plugin-name{
+    display:none;
+  }
+}
+.pn-customers-manager-settings-footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  max-width:1000px;
+  margin:0 auto;
+  padding:0 20px;
+}
+.pn-customers-manager-settings-footer-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.pn-customers-manager-settings-footer-plugin-name{
+  color:#1d2327;
+  font-size:12px;
+  font-weight:600;
+}
+.pn-customers-manager-settings-footer-version{
+  color:#787c82;
+  font-size:12px;
+  font-family:monospace;
+}
+.pn-customers-manager-settings-footer-right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.pn-customers-manager-settings-footer-icon-btn{
+  background:none;
+  border:1px solid #dcdcde;
+  border-radius:6px;
+  color:#787c82;
+  cursor:pointer;
+  width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  transition:all .2s ease;
+}
+.pn-customers-manager-settings-footer-icon-btn:hover{
+  background:#f0f0f1;
+  border-color:#8c8f94;
+  color:#1d2327;
+}
+.pn-customers-manager-settings-footer-icon-btn .material-icons-outlined{
+  font-size:20px;
+}
+.pn-customers-manager-settings-footer .pn-customers-manager-btn{
+  margin:0;
+}
+#pn_customers_manager_submit.pn-customers-manager-settings-hidden-submit,
+#pn-customers-manager-settings-import-file.pn-customers-manager-settings-hidden-input{
+  display:none !important;
+}

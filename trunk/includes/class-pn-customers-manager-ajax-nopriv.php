@@ -113,7 +113,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (empty($referral_code) || strlen($referral_code) !== 8 || !preg_match('/^[A-Z0-9]{8}$/', $referral_code)) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_invalid_code',
-              'error_content' => esc_html__('Código de referido no válido.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Referral code is invalid.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -138,7 +138,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (!$referrer_id) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_invalid_code',
-              'error_content' => esc_html__('Código de referido no válido.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Referral code is invalid.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -147,10 +147,10 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
 
           if (isset($result['error'])) {
             $error_messages = [
-              'invalid_email'        => esc_html__('Correo electrónico no válido.', 'pn-customers-manager'),
-              'email_exists'         => esc_html__('Este correo ya está registrado.', 'pn-customers-manager'),
-              'already_sent'         => esc_html__('Ya se ha enviado una invitación a este correo.', 'pn-customers-manager'),
-              'user_creation_failed' => esc_html__('No se pudo crear el usuario. Inténtalo de nuevo.', 'pn-customers-manager'),
+              'invalid_email'        => esc_html__('Invalid email.', 'pn-customers-manager'),
+              'email_exists'         => esc_html__('This email is already registered.', 'pn-customers-manager'),
+              'already_sent'         => esc_html__('An invitation has already been sent to this email.', 'pn-customers-manager'),
+              'user_creation_failed' => esc_html__('User creation failed. Try again.', 'pn-customers-manager'),
             ];
 
             $error_msg = isset($error_messages[$result['error']]) ? $error_messages[$result['error']] : esc_html__('Ha ocurrido un error.', 'pn-customers-manager');
@@ -339,7 +339,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     }
                   }
 
-                  do_action('pn_customers_manager_form_save', $user_id, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
+                  do_action('pn_customers_manager_form_save', $user_id, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype, '');
                   break;
                 case 'post':
                   if (empty($cm_pn_form_subtype) || in_array($cm_pn_form_subtype, ['post_new', 'post_edit'])) {
@@ -451,7 +451,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     }
                   }
 
-                  do_action('pn_customers_manager_form_save', 0, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
+                  do_action('pn_customers_manager_form_save', 0, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype, '');
                   break;
               }
 

@@ -197,7 +197,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Form {
         <p class="pn-customers-manager-client-form-description"><?php echo esc_html($atts['description']); ?></p>
       <?php endif; ?>
 
-      <form id="<?php echo esc_attr($form_id); ?>" class="pn-customers-manager-form pn-customers-manager-contact-form" autocomplete="off" novalidate>
+      <form id="<?php echo esc_attr($form_id); ?>" class="pn-customers-manager-form pn-customers-manager-contact-form" autocomplete="off" novalidate data-ajax-url="<?php echo esc_attr($ajax_url); ?>" data-nonce="<?php echo esc_attr($nonce); ?>">
         <?php foreach ($fields as $field): ?>
           <?php
             ob_start();
@@ -215,71 +215,29 @@ class PN_CUSTOMERS_MANAGER_Contact_Form {
       </form>
     </div>
 
-    <script>
-    (function() {
-      var form = document.getElementById('<?php echo esc_js($form_id); ?>');
-      if (!form) return;
+    <?php
+    static $contact_form_script_enqueued = false;
+    if (!$contact_form_script_enqueued) {
+      wp_enqueue_script(
+        'pn-customers-manager-contact-form-handler',
+        PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-contact-form-handler.js',
+        [],
+        PN_CUSTOMERS_MANAGER_VERSION,
+        true
+      );
 
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
+      wp_localize_script('pn-customers-manager-contact-form-handler', 'pnCmContactForm', [
+        'requiredFields'  => __('Por favor, completa todos los campos obligatorios.', 'pn-customers-manager'),
+        'invalidEmail'    => __('Introduce un correo electrónico válido.', 'pn-customers-manager'),
+        'sending'         => __('Enviando...', 'pn-customers-manager'),
+        'success'         => __('Mensaje enviado correctamente. Gracias por contactarnos.', 'pn-customers-manager'),
+        'genericError'    => __('Ha ocurrido un error. Inténtalo de nuevo.', 'pn-customers-manager'),
+        'connectionError' => __('Error de conexión. Inténtalo de nuevo.', 'pn-customers-manager'),
+      ]);
 
-        var feedback = form.querySelector('.pn-customers-manager-cf-feedback');
-        var btn = form.querySelector('button[type="submit"]');
-
-        // Client-side validation
-        var name = form.querySelector('[name="contact_name"]').value.trim();
-        var email = form.querySelector('[name="contact_email"]').value.trim();
-        var message = form.querySelector('[name="contact_message"]').value.trim();
-
-        if (!name || !email || !message) {
-          feedback.className = 'pn-customers-manager-cf-feedback pn-customers-manager-cf-error';
-          feedback.textContent = '<?php echo esc_js(__('Por favor, completa todos los campos obligatorios.', 'pn-customers-manager')); ?>';
-          return;
-        }
-
-        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          feedback.className = 'pn-customers-manager-cf-feedback pn-customers-manager-cf-error';
-          feedback.textContent = '<?php echo esc_js(__('Introduce un correo electrónico válido.', 'pn-customers-manager')); ?>';
-          return;
-        }
-
-        btn.disabled = true;
-        feedback.className = 'pn-customers-manager-cf-feedback';
-        feedback.textContent = '<?php echo esc_js(__('Enviando...', 'pn-customers-manager')); ?>';
-
-        var fd = new FormData(form);
-        fd.append('action', 'pn_customers_manager_ajax_nopriv');
-        fd.append('pn_customers_manager_ajax_nopriv_type', 'pn_cm_contact_send');
-        fd.append('pn_customers_manager_ajax_nopriv_nonce', '<?php echo esc_js($nonce); ?>');
-        fd.append('contact_source_url', window.location.href);
-        fd.append('contact_source_title', document.title);
-
-        fetch('<?php echo esc_js($ajax_url); ?>', {
-          method: 'POST',
-          credentials: 'same-origin',
-          body: fd
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          btn.disabled = false;
-          if (!data.error_key || data.error_key === '') {
-            feedback.className = 'pn-customers-manager-cf-feedback pn-customers-manager-cf-success';
-            feedback.textContent = '<?php echo esc_js(__('Mensaje enviado correctamente. Gracias por contactarnos.', 'pn-customers-manager')); ?>';
-            form.reset();
-          } else {
-            feedback.className = 'pn-customers-manager-cf-feedback pn-customers-manager-cf-error';
-            feedback.textContent = data.error_content || '<?php echo esc_js(__('Ha ocurrido un error. Inténtalo de nuevo.', 'pn-customers-manager')); ?>';
-          }
-        })
-        .catch(function() {
-          btn.disabled = false;
-          feedback.className = 'pn-customers-manager-cf-feedback pn-customers-manager-cf-error';
-          feedback.textContent = '<?php echo esc_js(__('Error de conexión. Inténtalo de nuevo.', 'pn-customers-manager')); ?>';
-        });
-      });
-    })();
-    </script>
+      $contact_form_script_enqueued = true;
+    }
+    ?>
     <?php
     return ob_get_clean();
   }

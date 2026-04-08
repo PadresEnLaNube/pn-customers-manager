@@ -146,111 +146,23 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
       <?php endif; ?>
     </div>
 
-    <script>
-    (function() {
-      var ajaxUrl = '<?php echo esc_js($ajax_url); ?>';
-      var nonce   = '<?php echo esc_js($nonce); ?>';
+    <?php
+    wp_enqueue_script(
+      'pn-customers-manager-contact-messages',
+      PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-contact-messages.js',
+      [],
+      PN_CUSTOMERS_MANAGER_VERSION,
+      true
+    );
 
-      // Toggle message detail
-      document.querySelectorAll('.pn-customers-manager-msg-toggle').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          var row = this.closest('tr');
-          var id = row.getAttribute('data-id');
-          var detail = document.querySelector('tr.pn-customers-manager-message-detail[data-id="' + id + '"]');
-          if (detail) {
-            detail.style.display = detail.style.display === 'none' ? '' : 'none';
-            this.textContent = detail.style.display === 'none' ? '\u25BC' : '\u25B2';
-          }
-
-          // Auto mark as read when opening
-          if (row.classList.contains('pn-customers-manager-message-unread')) {
-            markRead(id, row);
-          }
-        });
-      });
-
-      // Mark as read
-      document.querySelectorAll('.pn-customers-manager-msg-mark-read').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          var id = this.getAttribute('data-id');
-          var row = document.querySelector('tr.pn-customers-manager-message-row[data-id="' + id + '"]');
-          markRead(id, row);
-        });
-      });
-
-      function markRead(id, row) {
-        var fd = new FormData();
-        fd.append('action', 'pn_customers_manager_ajax');
-        fd.append('pn_customers_manager_ajax_type', 'pn_cm_contact_mark_read');
-        fd.append('pn_customers_manager_ajax_nonce', nonce);
-        fd.append('message_id', id);
-
-        fetch(ajaxUrl, { method: 'POST', credentials: 'same-origin', body: fd })
-          .then(function(r) { return r.json(); })
-          .then(function(data) {
-            if (!data.error_key || data.error_key === '') {
-              if (row) {
-                row.classList.remove('pn-customers-manager-message-unread');
-                row.classList.add('pn-customers-manager-message-read');
-                var dot = row.querySelector('.pn-customers-manager-status-dot');
-                if (dot) {
-                  dot.classList.remove('pn-customers-manager-status-unread');
-                  dot.classList.add('pn-customers-manager-status-read');
-                }
-                var markBtn = row.querySelector('.pn-customers-manager-msg-mark-read');
-                if (markBtn) markBtn.remove();
-              }
-              // Update badge
-              var badge = document.querySelector('.pn-customers-manager-badge');
-              if (badge && data.unread_count !== undefined) {
-                if (data.unread_count > 0) {
-                  badge.textContent = data.unread_count;
-                } else {
-                  badge.remove();
-                }
-              }
-            }
-          });
-      }
-
-      // Delete
-      document.querySelectorAll('.pn-customers-manager-msg-delete').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          if (!confirm('<?php echo esc_js(__('¿Estás seguro de que quieres eliminar este mensaje?', 'pn-customers-manager')); ?>')) return;
-          var id = this.getAttribute('data-id');
-
-          var fd = new FormData();
-          fd.append('action', 'pn_customers_manager_ajax');
-          fd.append('pn_customers_manager_ajax_type', 'pn_cm_contact_delete');
-          fd.append('pn_customers_manager_ajax_nonce', nonce);
-          fd.append('message_id', id);
-
-          fetch(ajaxUrl, { method: 'POST', credentials: 'same-origin', body: fd })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-              if (!data.error_key || data.error_key === '') {
-                var row = document.querySelector('tr.pn-customers-manager-message-row[data-id="' + id + '"]');
-                var detail = document.querySelector('tr.pn-customers-manager-message-detail[data-id="' + id + '"]');
-                if (row) row.remove();
-                if (detail) detail.remove();
-                // Update badge
-                var badge = document.querySelector('.pn-customers-manager-badge');
-                if (badge && data.unread_count !== undefined) {
-                  if (data.unread_count > 0) {
-                    badge.textContent = data.unread_count;
-                  } else {
-                    badge.remove();
-                  }
-                }
-              }
-            });
-        });
-      });
-    })();
-    </script>
+    wp_localize_script('pn-customers-manager-contact-messages', 'pnCmContactMessages', [
+      'ajaxUrl' => $ajax_url,
+      'nonce'   => $nonce,
+      'i18n'    => [
+        'confirmDelete' => __('¿Estás seguro de que quieres eliminar este mensaje?', 'pn-customers-manager'),
+      ],
+    ]);
+    ?>
     <?php
   }
 }

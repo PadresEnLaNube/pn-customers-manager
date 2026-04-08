@@ -105,10 +105,11 @@ class PN_CUSTOMERS_MANAGER_Activator {
       return;
     }
 
-    $table_name      = $wpdb->prefix . 'pn_cm_contact_messages';
     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE {$table_name} (
+    $table_messages = $wpdb->prefix . 'pn_cm_contact_messages';
+
+    $sql = "CREATE TABLE {$table_messages} (
       id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
       contact_name VARCHAR(255) NOT NULL,
       contact_email VARCHAR(255) NOT NULL,
@@ -121,6 +122,48 @@ class PN_CUSTOMERS_MANAGER_Activator {
       is_read TINYINT(1) DEFAULT 0,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY  (id)
+    ) {$charset_collate};";
+
+    $table_wa = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
+
+    $sql .= "CREATE TABLE {$table_wa} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      wa_conversation_id VARCHAR(255) DEFAULT '',
+      phone_number VARCHAR(20) NOT NULL,
+      contact_name VARCHAR(255) DEFAULT '',
+      funnel_id BIGINT(20) UNSIGNED DEFAULT 0,
+      node_id VARCHAR(255) DEFAULT '',
+      messages LONGTEXT NOT NULL,
+      system_prompt TEXT,
+      ai_model VARCHAR(50) DEFAULT 'gpt-4o-mini',
+      status VARCHAR(10) DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY phone_number (phone_number),
+      KEY funnel_node (funnel_id, node_id),
+      KEY status (status)
+    ) {$charset_collate};";
+
+    $table_ig = $wpdb->prefix . 'pn_cm_instagram_conversations';
+
+    $sql .= "CREATE TABLE {$table_ig} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      ig_conversation_id VARCHAR(255) DEFAULT '',
+      ig_user_id VARCHAR(255) NOT NULL,
+      contact_name VARCHAR(255) DEFAULT '',
+      funnel_id BIGINT(20) UNSIGNED DEFAULT 0,
+      node_id VARCHAR(255) DEFAULT '',
+      messages LONGTEXT NOT NULL,
+      system_prompt TEXT,
+      ai_model VARCHAR(50) DEFAULT 'gpt-4o-mini',
+      status VARCHAR(10) DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY ig_user_id (ig_user_id),
+      KEY funnel_node (funnel_id, node_id),
+      KEY status (status)
     ) {$charset_collate};";
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';

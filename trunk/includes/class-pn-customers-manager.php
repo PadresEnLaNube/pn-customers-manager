@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.0.40';
+			$this->pn_customers_manager_version = '1.0.61';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -76,6 +76,8 @@ class PN_CUSTOMERS_MANAGER {
 		self::pn_customers_manager_define_commercial_hooks();
 		self::pn_customers_manager_define_email_campaigns_hooks();
 		self::pn_customers_manager_define_csv_import_hooks();
+		self::pn_customers_manager_define_whatsapp_ai_hooks();
+		self::pn_customers_manager_define_instagram_ai_hooks();
 	}
 			
 	/**
@@ -248,6 +250,21 @@ class PN_CUSTOMERS_MANAGER {
 		 * The class managing email campaigns with mailpn integration.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-email-campaigns.php';
+
+		/**
+		 * The class providing the visual funnel builder canvas.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-funnel-builder.php';
+
+		/**
+		 * The class providing WhatsApp AI integration.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-whatsapp-ai.php';
+
+		/**
+		 * The class providing Instagram AI integration.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-instagram-ai.php';
 
 		$this->pn_customers_manager_loader = new PN_CUSTOMERS_MANAGER_Loader();
 	}
@@ -436,6 +453,10 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-call-to-action', $plugin_shortcodes, 'pn_customers_manager_call_to_action');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-client-form', $plugin_shortcodes, 'pn_customers_manager_client_form');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-contact-form', $plugin_shortcodes, 'pn_customers_manager_contact_form');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-button', $plugin_shortcodes, 'pn_customers_manager_button');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-whatsapp-ai', $plugin_shortcodes, 'pn_customers_manager_whatsapp_ai');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-instagram-ai', $plugin_shortcodes, 'pn_customers_manager_instagram_ai');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Shortcodes', 'register_button_block');
 	}
 
 	/**
@@ -507,6 +528,20 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_csv_template', $csv_import, 'pn_customers_manager_csv_download_template');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_csv_preview', $csv_import, 'pn_customers_manager_csv_preview');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_csv_import', $csv_import, 'pn_customers_manager_csv_import');
+	}
+
+	/**
+	 * Register hooks for WhatsApp AI integration.
+	 */
+	private function pn_customers_manager_define_whatsapp_ai_hooks() {
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'register_routes');
+	}
+
+	/**
+	 * Register hooks for Instagram AI integration.
+	 */
+	private function pn_customers_manager_define_instagram_ai_hooks() {
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_Instagram_AI', 'register_routes');
 	}
 
 	/**

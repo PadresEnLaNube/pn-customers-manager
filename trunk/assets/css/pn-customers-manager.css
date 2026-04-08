@@ -1455,6 +1455,20 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
 /* END OWL CAROUSEL */
 
 /* Customers Manager PN FORMS */
+  .pn-customers-manager-section-info-block{
+    margin-bottom:20px;
+  }
+  .pn-customers-manager-section-info-icon{
+    font-size:16px;
+    margin-right:3px;
+    vertical-align:middle!important;
+    color:var(--pn-customers-manager-color-main);
+    display:inline-block;
+    width:50px!important;
+  }
+  .pn-customers-manager-section-info-block small{
+    vertical-align:middle!important;
+  }
   .pn-customers-manager-section-helper{
     position:absolute;
     left:-15px;
@@ -2514,3 +2528,73 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   color: #666;
 }
 /* END USER ROLE SELECTOR */
+
+/* ============================================================
+   BUTTON SHORTCODE
+   ============================================================ */
+.pn-cm-btn-wrap {
+  display: inline-block;
+  margin: 10px 0;
+}
+.pn-cm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--wp--preset--font-family--manrope, sans-serif);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity .2s ease, transform .2s ease;
+  line-height: 1.4;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+}
+.pn-cm-btn:hover {
+  opacity: .85;
+  transform: translateY(-1px);
+}
+
+/* Style variants */
+.pn-cm-btn-solid {
+  background-color: var(--pn-customers-manager-bg-color-main);
+  color: #fff;
+}
+.pn-cm-btn-outline {
+  background-color: transparent;
+  border-color: var(--pn-customers-manager-border-color-main);
+  color: var(--pn-customers-manager-color-main);
+}
+.pn-cm-btn-transparent {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--pn-customers-manager-color-main);
+}
+
+/* Size variants */
+.pn-cm-btn-sm {
+  padding: 8px 18px;
+  font-size: 13px;
+}
+.pn-cm-btn-md {
+  padding: 12px 28px;
+  font-size: 15px;
+}
+.pn-cm-btn-lg {
+  padding: 16px 40px;
+  font-size: 18px;
+}
+
+/* Icon inside button */
+.pn-cm-btn .material-icons-outlined {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+/* Image inside button */
+.pn-cm-btn .pn-cm-btn-img {
+  max-height: 40px;
+  width: auto;
+  vertical-align: middle;
+}
+/* END BUTTON SHORTCODE */

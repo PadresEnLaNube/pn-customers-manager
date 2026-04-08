@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PN Customers Manager\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-31 14:12+0000\n"
-"PO-Revision-Date: 2026-02-24 04:23+0000\n"
-"Last-Translator: Relatia.es\n"
+"PO-Revision-Date: 2026-04-08 12:21+0000\n"
+"Last-Translator: \n"
 "Language-Team: Español\n"
 "Language: es_ES\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
@@ -12,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.8.1; wp-6.9.1; php-8.3.28\n"
+"X-Loco-Version: 2.8.3; wp-6.9.4; php-8.1.33\n"
 "X-Domain: crmpn"
 
 #. 1: referrer name, 2: site name
-#: includes/class-pn-customers-manager-referral.php:468
+#: includes/class-pn-customers-manager-referral.php:660
 #, php-format
 msgid ""
 "%1$s has invited you to join %2$s. Click the button below to accept the "
@@ -25,9 +25,19 @@ msgstr ""
 "%1$s te ha invitado a unirte a %2$s. Haz clic en el botón de abajo para "
 "aceptar la invitación y configurar tu cuenta."
 
+#. %d: number of users
+#: includes/class-pn-customers-manager-ajax.php:851
+msgid "%d user(s) assigned the role successfully."
+msgstr "%d usuarios han asignado el rol correctamente."
+
+#. %d: number of users
+#: includes/class-pn-customers-manager-ajax.php:856
+msgid "%d user(s) removed from the role successfully."
+msgstr "%d usuarios eliminados del rol correctamente."
+
 #. %s: referrer name
-#: includes/class-pn-customers-manager-referral.php:463
-#: includes/class-pn-customers-manager-referral.php:485
+#: includes/class-pn-customers-manager-referral.php:655
+#: includes/class-pn-customers-manager-referral.php:677
 #, php-format
 msgid "%s has invited you!"
 msgstr "¡%s te ha invitado!"
@@ -39,21 +49,39 @@ msgid "%s is required."
 msgstr "Se requiere %s."
 
 #. %s: Post type name
-#: includes/class-pn-customers-manager-settings.php:33
-#: includes/class-pn-customers-manager-settings.php:38
+#: includes/class-pn-customers-manager-settings.php:552
+#: includes/class-pn-customers-manager-settings.php:557
 #, php-format
 msgid "%s slug"
-msgstr "%s babosa"
+msgstr "Slug de %s"
 
 #. %s: referrer name
-#: includes/class-pn-customers-manager-referral.php:149
+#: includes/class-pn-customers-manager-referral.php:158
 #, php-format
 msgid "%s te ha invitado!"
 msgstr "%s te ha invitado!"
 
-#: includes/class-pn-customers-manager-settings.php:165
-msgid "-- Seleccionar pagina --"
+#: includes/class-pn-customers-manager-referral.php:401
+msgid "-- Seleccionar frase --"
+msgstr "-- Seleccionar frase --"
+
+# ── Funnel Builder (class-pn-customers-manager-funnel-builder.php) ──
+#: includes/class-pn-customers-manager-funnel-builder.php:58
+msgid "-- Select funnel --"
+msgstr "-- Seleccionar embudo --"
+
+#: includes/class-pn-customers-manager-settings.php:26
+msgid "-- Select page --"
 msgstr "-- Seleccionar página --"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:140
+msgid "-- Select template --"
+msgstr "-- Seleccionar plantilla --"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:872
+#: includes/class-pn-customers-manager-funnel-builder.php:1034
+msgid "-- Use global --"
+msgstr "-- Usar global --"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:561
 msgid "0 = cold lead, 100 = hot lead."
@@ -75,13 +103,176 @@ msgstr "201 - 500 personas"
 msgid "51 - 200 people"
 msgstr "51 - 200 personas"
 
-#: includes/class-pn-customers-manager-commercial.php:177
-msgid "Acceder al CRM"
-msgstr "Acceder al CRM"
+#: includes/class-pn-customers-manager-settings.php:392
+msgid ""
+"<strong>How to configure it:</strong><br>1. Create any secret string (e.g.: "
+"<code>my_ig_token_2024</code>) and type it here.<br>2. Save the settings.<br>"
+"3. When configuring the webhook on Meta, use exactly the same string as the "
+"&laquo;Verify Token&raquo;."
+msgstr ""
+"<strong>Cómo configurarlo:</strong><br> 1. Crea cualquier cadena secreta "
+"(por ejemplo: <code>my_ig_token_2024</code> ) e introdúcela aquí.<br> 2. "
+"Guarda la configuración.<br> 3. Al configurar el webhook en Meta, utilice "
+"exactamente la misma cadena que en el «Token de verificación»."
 
-#: includes/class-pn-customers-manager-referral.php:474
+#: includes/class-pn-customers-manager-settings.php:314
+msgid ""
+"<strong>How to configure it:</strong><br>1. Create any secret string (e.g.: "
+"<code>my_secure_token_2024</code>) and type it here.<br>2. Save the settings."
+"<br>3. When configuring the webhook on Meta (below), you will be asked for a "
+"&laquo;Verify Token&raquo;: use exactly the same string.<br>Meta will send a "
+"GET request with this token to verify that the webhook is yours."
+msgstr ""
+"<strong>Cómo configurarlo:</strong><br> 1. Crea cualquier cadena secreta "
+"(por ejemplo: <code>my_secure_token_2024</code> ) e introdúcela aquí.<br> 2. "
+"Guarda la configuración.<br> 3. Al configurar el webhook en Meta (a "
+"continuación), se le pedirá un «Token de verificación»: utilice exactamente "
+"la misma cadena.<br> Meta enviará una solicitud GET con este token para "
+"verificar que el webhook le pertenece."
+
+#: includes/class-pn-customers-manager-settings.php:403
+msgid ""
+"<strong>How to configure the webhook on Meta:</strong><br>1. Copy the URL "
+"shown above.<br>2. Go to <a href=\"https://developers.facebook.com/apps/\" "
+"target=\"_blank\">Meta for Developers</a> &gt; your app &gt; Instagram &gt; "
+"Webhooks.<br>3. Paste the URL in the &laquo;Callback URL&raquo; field.<br>4. "
+"In &laquo;Verify Token&raquo; type the same token you configured above.<br>5."
+" Click &laquo;Verify and Save&raquo;.<br>6. Subscribe to the <code>"
+"messages</code> webhook field."
+msgstr ""
+"<strong>Cómo configurar el webhook en Meta:</strong><br> 1. Copie la URL que "
+"se muestra arriba.<br> 2. Ve a <a href=\"https://developers.facebook."
+"com/apps/\" target=\"_blank\">Meta para desarrolladores</a> &gt; tu "
+"aplicación &gt; Instagram &gt; Webhooks.<br> 3. Pegue la URL en el campo "
+"«URL de devolución de llamada».<br> 4. En «Verificar token», escriba el "
+"mismo token que configuró anteriormente.<br> 5. Haga clic en «Verificar y "
+"guardar».<br> 6. Suscríbase al campo webhook <code>messages</code> ."
+
+#: includes/class-pn-customers-manager-settings.php:325
+msgid ""
+"<strong>How to configure the webhook on Meta:</strong><br>1. Copy the URL "
+"shown above.<br>2. Go to <a href=\"https://developers.facebook.com/apps/\" "
+"target=\"_blank\">Meta for Developers</a> &gt; your app &gt; WhatsApp &gt; "
+"Configuration.<br>3. In the &laquo;Webhook&raquo; section, click &laquo;"
+"Edit&raquo;.<br>4. Paste the URL in the &laquo;Callback URL&raquo; field.<br>"
+"5. In &laquo;Verify Token&raquo; type the same token you configured above."
+"<br>6. Click &laquo;Verify and Save&raquo;.<br>7. In &laquo;Webhook "
+"fields&raquo;, subscribe to the <code>messages</code> field."
+msgstr ""
+"<strong>Cómo configurar el webhook en Meta:</strong><br> 1. Copie la URL que "
+"se muestra arriba.<br> 2. Ve a <a href=\"https://developers.facebook."
+"com/apps/\" target=\"_blank\">Meta para desarrolladores</a> &gt; tu "
+"aplicación &gt; WhatsApp &gt; Configuración.<br> 3. En la sección «Webhook», "
+"haga clic en «Editar».<br> 4. Pegue la URL en el campo «URL de devolución de "
+"llamada».<br> 5. En «Verificar token», escriba el mismo token que configuró "
+"anteriormente.<br> 6. Haga clic en «Verificar y guardar».<br> 7. En «Campos "
+"de webhook», suscríbase al campo <code>messages</code> ."
+
+#: includes/class-pn-customers-manager-settings.php:296
+msgid ""
+"<strong>How to get it (temporary token):</strong><br>1. Go to <a "
+"href=\"https://developers.facebook.com/apps/\" target=\"_blank\">Meta for "
+"Developers</a> &gt; your app &gt; WhatsApp &gt; API Setup.<br>2. In the "
+"&laquo;Temporary access token&raquo; section, click <strong>Generate</strong>"
+" and copy the token. <em>Expires in ~24 hours.</em><br><br><strong>Permanent "
+"token (recommended for production):</strong><br>1. Go to <a href=\"https:"
+"//business.facebook.com/settings/\" target=\"_blank\">Meta Business Suite</a>"
+" &gt; Settings &gt; Business settings.<br>2. Under <strong>Users &gt; System "
+"Users</strong>, create a System User of type <em>Admin</em>.<br>3. Assign "
+"the WhatsApp App asset to it.<br>4. Generate a token with the <code>"
+"whatsapp_business_messaging</code> permission.<br>5. This token does not "
+"expire and does not need renewal."
+msgstr ""
+"<strong>Cómo obtenerlo (token temporal):</strong><br> 1. Ve a <a "
+"href=\"https://developers.facebook.com/apps/\" target=\"_blank\">Meta para "
+"desarrolladores</a> &gt; tu aplicación &gt; WhatsApp &gt; Configuración de "
+"API.<br> 2. En la sección «Token de acceso temporal», haga clic en <strong>"
+"Generar</strong> y copie el token. <em>Caduca en aproximadamente 24 horas."
+"</em><br><br> <strong>Token permanente (recomendado para producción):"
+"</strong><br> 1. Vaya a <a href=\"https://business.facebook.com/settings/\" "
+"target=\"_blank\">Meta Business Suite</a> &gt; Configuración &gt; "
+"Configuración empresarial.<br> 2. En <strong>Usuarios &gt; Usuarios del "
+"sistema</strong> , cree un Usuario del sistema de tipo <em>Administrador</em>"
+" .<br> 3. Asígnale el recurso de la aplicación WhatsApp.<br> 4. Genera un "
+"token con el permiso <code>whatsapp_business_messaging</code> .<br> 5. Este "
+"token no caduca y no necesita renovación."
+
+#: includes/class-pn-customers-manager-settings.php:383
+msgid ""
+"<strong>How to get it:</strong><br>1. Go to <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> &gt; your app "
+"&gt; Instagram &gt; API Setup.<br>2. Copy the Instagram-scoped Page ID "
+"(numeric ID) and paste it here."
+msgstr ""
+"<strong>Cómo conseguirlo:</strong><br> 1. Ve a <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta para desarrolladores</a> &gt; tu "
+"aplicación &gt; Instagram &gt; Configuración de API.<br> 2. Copie el ID de "
+"página de Instagram (ID numérico) y péguelo aquí."
+
+#: includes/class-pn-customers-manager-settings.php:374
+msgid ""
+"<strong>How to get it:</strong><br>1. Go to <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> &gt; your app "
+"&gt; Instagram &gt; API Setup.<br>2. Generate an access token with <code>"
+"instagram_manage_messages</code> permission.<br><br><strong>Permanent token "
+"(recommended):</strong><br>Use a System User token from <a href=\"https:"
+"//business.facebook.com/settings/\" target=\"_blank\">Meta Business Suite</a>"
+" with <code>instagram_manage_messages</code> permission."
+msgstr ""
+"<strong>Cómo conseguirlo:</strong><br> 1. Ve a <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta para desarrolladores</a> &gt; tu "
+"aplicación &gt; Instagram &gt; Configuración de API.<br> 2. Genera un token "
+"de acceso con el permiso <code>instagram_manage_messages</code> .<br><br> "
+"<strong>Ficha permanente (recomendada):</strong><br> Utilice un token de "
+"usuario del sistema de <a href=\"https://business.facebook.com/settings/\" "
+"target=\"_blank\">Meta Business Suite</a> con el permiso <code>"
+"instagram_manage_messages</code> ."
+
+#: includes/class-pn-customers-manager-settings.php:305
+msgid ""
+"<strong>How to get it:</strong><br>1. Go to <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> &gt; your app "
+"&gt; WhatsApp &gt; API Setup.<br>2. In the &laquo;From&raquo; section your "
+"phone number appears with its <strong>Phone number ID</strong> below.<br>3. "
+"Copy the numeric ID (e.g.: <code>123456789012345</code>) and paste it here."
+msgstr ""
+"<strong>Cómo conseguirlo:</strong><br> 1. Ve a <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta para desarrolladores</a> &gt; tu "
+"aplicación &gt; WhatsApp &gt; Configuración de API.<br> 2. En la sección "
+"«De» aparece tu número de teléfono con su <strong>ID de número de "
+"teléfono</strong> debajo.<br> 3. Copie el ID numérico (por ejemplo: <code>"
+"123456789012345</code> ) y péguelo aquí."
+
+#: includes/class-pn-customers-manager-settings.php:166
+msgid ""
+"<strong>How to get it:</strong><br>1. Go to <a href=\"https://platform."
+"openai.com/api-keys\" target=\"_blank\">platform.openai.com/api-keys</a>.<br>"
+"2. Click &laquo;Create new secret key&raquo;.<br>3. Copy the generated key "
+"(starts with <code>sk-</code>) and paste it here.<br><strong>Important:"
+"</strong> The key is only shown once when created. If you lose it, you will "
+"need to generate a new one."
+msgstr ""
+"<strong>Cómo conseguirlo:</strong><br> 1. Vaya a <a href=\"https://platform."
+"openai.com/api-keys\" target=\"_blank\">platform.openai.com/api-keys</a> ."
+"<br> 2. Haga clic en «Crear nueva clave secreta».<br> 3. Copie la clave "
+"generada (que comienza con <code>sk-</code> ) y péguela aquí.<br> <strong>"
+"Importante:</strong> La clave solo se muestra una vez al crearla. Si la "
+"pierde, deberá generar una nueva."
+
+#. %s: site name
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2787
+#, php-format
+msgid "[%s] New order via WhatsApp"
+msgstr "[%s] Nuevo pedido vía WhatsApp"
+
+#: includes/class-pn-customers-manager-referral.php:666
 msgid "Accept Invitation"
 msgstr "Aceptar invitación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:826
+#: includes/class-pn-customers-manager-settings.php:254
+msgid "Accept orders via chat"
+msgstr "Acepta pedidos a través del chat."
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:687
 #: includes/class-pn-customers-manager-post-type-organization.php:1353
@@ -95,27 +286,48 @@ msgstr "Acceso denegado"
 msgid "Access restricted"
 msgstr "Acceso restringido"
 
+#: includes/class-pn-customers-manager-commercial.php:168
+msgid "Access the CRM"
+msgstr "Acceda al CRM"
+
+#: includes/class-pn-customers-manager-commercial.php:395
 #: includes/class-pn-customers-manager-contact-messages.php:83
-#: includes/class-pn-customers-manager-commercial.php:404
 msgid "Acciones"
 msgstr "Acciones"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:544
 #: includes/class-pn-customers-manager-csv-import.php:44
+#: includes/class-pn-customers-manager-post-type-organization.php:544
 msgid "Account health"
 msgstr "Estado de la cuenta"
 
-#: includes/class-pn-customers-manager-settings.php:201
-msgid ""
-"Activa el sistema de referidos con codigo QR para que los usuarios puedan "
-"invitar a otros."
-msgstr ""
-"Activa el sistema de referidos con código QR para que los usuarios puedan "
-"invitar a otros."
+#: includes/class-pn-customers-manager-referral.php:295
+msgid "Acercar"
+msgstr "Acercar"
 
-#: includes/class-pn-customers-manager-settings.php:200
-msgid "Activar sistema de referidos"
-msgstr "Activar sistema de referidos"
+#: includes/class-pn-customers-manager-instagram-ai.php:1540
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2226
+msgid "Action not allowed."
+msgstr "Acción no permitida."
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1603
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2291
+msgid "Actions"
+msgstr "Acciones"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:418
+#: includes/class-pn-customers-manager-shortcodes.php:334
+#: includes/class-pn-customers-manager-shortcodes.php:365
+#: includes/class-pn-customers-manager-shortcodes.php:392
+#: includes/class-pn-customers-manager-instagram-ai.php:1470
+#: includes/class-pn-customers-manager-instagram-ai.php:1580
+#: includes/class-pn-customers-manager-instagram-ai.php:1624
+#: includes/class-pn-customers-manager-instagram-ai.php:1697
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2159
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2268
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2312
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2385
+msgid "Active"
+msgstr "Activa"
 
 #: includes/class-pn-customers-manager-forms.php:382
 msgid "Add audio"
@@ -125,12 +337,12 @@ msgstr "Agregar audio"
 msgid "Add audios"
 msgstr "Agregar audios"
 
-#: includes/class-pn-customers-manager-ajax.php:382
+#: includes/class-pn-customers-manager-ajax.php:545
 #: includes/class-pn-customers-manager-post-type-organization.php:284
 msgid "Add contact"
 msgstr "Añadir contacto"
 
-#: includes/class-pn-customers-manager-forms.php:477
+#: includes/class-pn-customers-manager-forms.php:480
 msgid "Add element"
 msgstr "Añadir elemento"
 
@@ -170,6 +382,10 @@ msgstr "Agregar nueva categoría de embudo"
 msgid "Add new Organization"
 msgstr "Agregar nueva organización"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:582
+msgid "Add rel=nofollow"
+msgstr "Agregar rel=nofollow"
+
 #: includes/class-pn-customers-manager-forms.php:361
 msgid "Add video"
 msgstr "Agregar vídeo"
@@ -178,24 +394,60 @@ msgstr "Agregar vídeo"
 msgid "Add videos"
 msgstr "Agregar vídeos"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:453
+#: includes/class-pn-customers-manager-funnel-builder.php:769
+#: includes/class-pn-customers-manager-funnel-builder.php:961
+#, fuzzy
+#| msgid "Information the AI will use as reference to respond."
+msgid "Additional information the AI will use as reference to respond."
+msgstr "Información que la IA usará como referencia para responder."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:753
+#: includes/class-pn-customers-manager-funnel-builder.php:945
+msgid "Additional shipping information"
+msgstr "Información adicional sobre el envío"
+
 #: includes/class-pn-customers-manager-csv-import.php:37
+#: includes/class-pn-customers-manager-post-type-organization.php:453
 msgid "Address"
 msgstr "DIRECCIÓN"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:795
+#: includes/class-pn-customers-manager-funnel-builder.php:987
+#: includes/class-pn-customers-manager-settings.php:220
+msgid ""
+"Adds all variations with their attributes, prices and direct purchase links. "
+"Warning: this can significantly increase AI API call costs."
+msgstr ""
+"Agrega todas las variantes con sus atributos, precios y enlaces de compra "
+"directa. Advertencia: esto puede aumentar significativamente los costos de "
+"las llamadas a la API de IA."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:471
 msgid "Advanced CRM fields"
 msgstr "Campos de CRM avanzados"
 
-#: includes/class-pn-customers-manager-settings.php:312
-#: includes/class-pn-customers-manager-settings.php:313
-#: includes/class-pn-customers-manager-commercial.php:386
-msgid "Agentes Comerciales"
-msgstr "Agentes Comerciales"
+#: includes/class-pn-customers-manager-funnel-builder.php:870
+#: includes/class-pn-customers-manager-funnel-builder.php:1032
+msgid "AI Model"
+msgstr "Modelo IA"
 
-#: includes/class-pn-customers-manager-referral.php:139
+#: includes/class-pn-customers-manager-referral.php:293
+msgid "Alejar"
+msgstr "Alejar"
+
+#: includes/class-pn-customers-manager-referral.php:147
 msgid "Alguien"
 msgstr "Alguien"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:634
+msgid "Alignment"
+msgstr "Alineación"
+
+#: includes/class-pn-customers-manager-shortcodes.php:362
+#: includes/class-pn-customers-manager-instagram-ai.php:1576
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2264
+msgid "All"
+msgstr "Todos"
 
 #: includes/class-pn-customers-manager-taxonomies-funnel.php:25
 msgid "All Funnel categories"
@@ -209,41 +461,61 @@ msgstr "Todos los embudos"
 msgid "All Organizations"
 msgstr "Todas las organizaciones"
 
+#: includes/class-pn-customers-manager-settings.php:255
+msgid ""
+"Allow the AI to confirm orders during WhatsApp conversations and send an "
+"email notification to the store."
+msgstr ""
+"Permitir que la IA confirme los pedidos durante las conversaciones de "
+"WhatsApp y envíe una notificación por correo electrónico a la tienda."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:827
+msgid ""
+"Allow the AI to confirm orders during WhatsApp conversations and send an "
+"email notification."
+msgstr ""
+"Permitir que la IA confirme los pedidos durante las conversaciones de "
+"WhatsApp y envíe una notificación por correo electrónico."
+
 #: includes/class-pn-customers-manager-client-form.php:326
 msgid "Alta de organización"
 msgstr "Alta de organización"
 
-#: includes/class-pn-customers-manager-settings.php:116
+#: includes/class-pn-customers-manager-settings.php:496
 msgid "Alternative Background Color"
 msgstr "Color de fondo alternativo"
 
-#: includes/class-pn-customers-manager-settings.php:117
+#: includes/class-pn-customers-manager-settings.php:497
 msgid "Alternative background color (default: #232323)"
 msgstr "Color de fondo alternativo (predeterminado: #232323)"
 
-#: includes/class-pn-customers-manager-settings.php:126
+#: includes/class-pn-customers-manager-settings.php:506
 msgid "Alternative Border Color"
 msgstr "Color de borde alternativo"
 
-#: includes/class-pn-customers-manager-settings.php:127
+#: includes/class-pn-customers-manager-settings.php:507
 msgid "Alternative border color (default: #232323)"
 msgstr "Color de borde alternativo (predeterminado: #232323)"
 
-#: includes/class-pn-customers-manager-settings.php:107
+#: includes/class-pn-customers-manager-settings.php:487
 msgid "Alternative color for text, backgrounds, and borders (default: #232323)"
 msgstr ""
 "Color alternativo para texto, fondos y bordes (predeterminado: #232323)"
 
-#: includes/class-pn-customers-manager-settings.php:106
+#: includes/class-pn-customers-manager-settings.php:486
 msgid "Alternative Main Color"
 msgstr "Color principal alternativo"
 
-#: includes/class-pn-customers-manager-common.php:245
+#: includes/class-pn-customers-manager-funnel-builder.php:744
+#: includes/class-pn-customers-manager-funnel-builder.php:936
+msgid "Always request postal code"
+msgstr "Siempre solicite el código postal."
+
+#: includes/class-pn-customers-manager-common.php:257
 msgid "An error has occurred. Please try again in a few minutes."
 msgstr "Se ha producido un error. Inténtalo de nuevo en unos minutos."
 
-#: includes/class-pn-customers-manager-settings.php:377
-#: includes/class-pn-customers-manager-settings.php:383
+#: includes/class-pn-customers-manager-settings.php:790
 msgid "An error occurred while creating the page."
 msgstr "Se produjo un error al crear la página."
 
@@ -251,7 +523,7 @@ msgstr "Se produjo un error al crear la página."
 msgid "An error occurred while duplicating the Funnel."
 msgstr "Se produjo un error al duplicar el embudo."
 
-#: includes/class-pn-customers-manager-ajax.php:276
+#: includes/class-pn-customers-manager-ajax.php:405
 msgid "An error occurred while duplicating the Organization."
 msgstr "Se produjo un error al duplicar la Organización."
 
@@ -259,7 +531,7 @@ msgstr "Se produjo un error al duplicar la Organización."
 msgid "An error occurred while removing the Funnel."
 msgstr "Se produjo un error al eliminar el embudo."
 
-#: includes/class-pn-customers-manager-ajax.php:348
+#: includes/class-pn-customers-manager-ajax.php:511
 msgid "An error occurred while removing the Organization."
 msgstr "Se produjo un error al eliminar la organización."
 
@@ -268,36 +540,77 @@ msgstr "Se produjo un error al eliminar la organización."
 msgid "An error occurred while showing the Funnel."
 msgstr "Se produjo un error al mostrar el embudo."
 
-#: includes/class-pn-customers-manager-ajax.php:216
-#: includes/class-pn-customers-manager-ajax.php:237
+#: includes/class-pn-customers-manager-ajax.php:345
+#: includes/class-pn-customers-manager-ajax.php:366
 msgid "An error occurred while showing the Organization."
 msgstr "Se produjo un error al mostrar la Organización."
 
-#: includes/class-pn-customers-manager-common.php:295
+#: includes/class-pn-customers-manager-common.php:307
+#: includes/class-pn-customers-manager-ajax-nopriv.php:152
 msgid "An invitation has already been sent to this email."
 msgstr "Ya se ha enviado una invitación a este correo electrónico."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:382
 #: includes/class-pn-customers-manager-csv-import.php:29
+#: includes/class-pn-customers-manager-post-type-organization.php:382
 msgid "Annual revenue"
 msgstr "Ingresos anuales"
 
-#: includes/class-pn-customers-manager-commercial.php:64
+#: includes/class-pn-customers-manager-referral.php:301
+msgid "Anverso"
+msgstr "Anverso"
+
+#: includes/class-pn-customers-manager-commercial.php:55
 msgid "Apellidos"
 msgstr "Apellidos"
 
-#: includes/class-pn-customers-manager-common.php:310
-#: includes/class-pn-customers-manager-commercial.php:432
+# ── Settings: API Configuration (class-pn-customers-manager-settings.php) ──
+#: includes/class-pn-customers-manager-settings.php:148
+msgid "API Configuration"
+msgstr "Configuración de APIs"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:544
+msgid "API Endpoint"
+msgstr "Punto final de la API"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:413
+msgid "API not configured"
+msgstr "API no configurada"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:589
+msgid "Appearance"
+msgstr "Apariencia"
+
+#: includes/class-pn-customers-manager-commercial.php:110
+msgid "Application rejected"
+msgstr "Solicitud rechazada"
+
+#: includes/class-pn-customers-manager-commercial.php:100
+msgid "Application under review"
+msgstr "Solicitud en revisión"
+
+#: includes/class-pn-customers-manager-commercial.php:423
+#: includes/class-pn-customers-manager-common.php:322
 msgid "Aprobado"
 msgstr "Aprobado"
 
-#: includes/class-pn-customers-manager-commercial.php:391
+#: includes/class-pn-customers-manager-commercial.php:382
 msgid "Aprobados"
 msgstr "Aprobados"
 
-#: includes/class-pn-customers-manager-commercial.php:442
+#: includes/class-pn-customers-manager-commercial.php:433
 msgid "Aprobar"
 msgstr "Aprobar"
+
+#: includes/class-pn-customers-manager-common.php:327
+msgid "Are you sure you want to send this campaign to the selected recipients?"
+msgstr ""
+"¿Está seguro de que desea enviar esta campaña a los destinatarios "
+"seleccionados?"
+
+#: includes/class-pn-customers-manager-forms.php:722
+#, php-format
+msgid "Assign %s Role"
+msgstr "Asignar rol a %s"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:575
 msgid "Assigned collaborators"
@@ -307,8 +620,8 @@ msgstr "Colaboradores asignados"
 msgid "Assigned funnel"
 msgstr "Embudo asignado"
 
-#: includes/class-pn-customers-manager-contact-form.php:124
 #: includes/class-pn-customers-manager-contact-messages.php:80
+#: includes/class-pn-customers-manager-contact-form.php:124
 #: includes/class-pn-customers-manager-ajax-nopriv.php:242
 #: includes/class-pn-customers-manager-ajax-nopriv.php:256
 msgid "Asunto"
@@ -326,10 +639,32 @@ msgstr "En riesgo"
 msgid "Atleast 8 Character"
 msgstr "Al menos 8 caracteres"
 
-#: includes/class-pn-customers-manager-csv-import.php:449
-#: includes/class-pn-customers-manager-csv-import.php:940
-msgid "Back"
-msgstr "Atrás"
+#: includes/class-pn-customers-manager-funnel-builder.php:736
+#: includes/class-pn-customers-manager-funnel-builder.php:928
+msgid ""
+"Automatically sends configured shipping zones, methods and prices to the AI "
+"model."
+msgstr ""
+"Envía automáticamente las zonas de envío, los métodos y los precios "
+"configurados al modelo de IA."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:153
+msgid "Automation"
+msgstr "Automatización"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:608
+msgid "Background color"
+msgstr "color de fondo"
+
+#: includes/class-pn-customers-manager-settings.php:188
+msgid ""
+"Base instructions the AI will receive before each conversation. Define the "
+"personality, tone and rules of the assistant here. This prompt can be "
+"overridden per node in the Funnel Builder."
+msgstr ""
+"Instrucciones base que la IA recibirá antes de cada conversación. Define "
+"aquí la personalidad, tono y reglas del asistente. Este prompt se puede "
+"sobrescribir por cada nodo en el Funnel Builder."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:306
 msgid "Basic organization data"
@@ -347,36 +682,105 @@ msgstr "Correo electrónico de facturación"
 msgid "Billing phone"
 msgstr "Teléfono de facturación"
 
-#: includes/class-pn-customers-manager-settings.php:137
+#: includes/class-pn-customers-manager-funnel-builder.php:193
+msgid "Blog / Article"
+msgstr "Blog / Artículo"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:846
+#: includes/class-pn-customers-manager-funnel-builder.php:1008
+msgid "Blog posts"
+msgstr "Publicaciones del blog"
+
+#: includes/class-pn-customers-manager-settings.php:517
 msgid "Blue accent color (default: #6e6eff)"
 msgstr "Color de acento azul (predeterminado: #6e6eff)"
 
-#: includes/class-pn-customers-manager-settings.php:136
+#: includes/class-pn-customers-manager-settings.php:516
 msgid "Blue Color"
 msgstr "Color azul"
 
+#: includes/class-pn-customers-manager-referral.php:313
+msgid "Buscar usuario..."
+msgstr "Buscar usuario..."
+
+#: includes/class-pn-customers-manager-settings.php:125
+msgid "Business card phrases"
+msgstr "Frases para tarjetas de presentación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:761
+#: includes/class-pn-customers-manager-funnel-builder.php:953
+msgid "Business hours, weekdays, weekends, holidays, etc."
+msgstr "Horario comercial, días laborables, fines de semana, festivos, etc."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:209
+msgid "Button"
+msgstr "Botón"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:689
+msgid "Button image"
+msgstr "Imagen del botón"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:553
+msgid "Button settings"
+msgstr "Configuración de botones"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:560
+msgid "Button text"
+msgstr "Texto del botón"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:185
 #: includes/class-pn-customers-manager-post-type-organization.php:594
 msgid "Call"
 msgstr "Llamar"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:213
+msgid "Call to action"
+msgstr "Llamada a la acción"
+
+#: includes/class-pn-customers-manager-common.php:328
+msgid "Campaign sent successfully. Emails are being processed."
+msgstr ""
+"Campaña enviada con éxito. Los correos electrónicos se están procesando."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:155
+#: includes/class-pn-customers-manager-email-campaigns.php:156
+msgid "Campaign title"
+msgstr "Título de la campaña"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:148
+msgid "Campaigns"
+msgstr "Campañas"
 
 #: templates/pn-customers-manager-popups.php:44
 msgid "Cancel"
 msgstr "Cancelar"
 
+#: includes/class-pn-customers-manager-referral.php:375
+msgid "Cargo"
+msgstr "Carga"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:637
+msgid "Center"
+msgstr "Centro"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:596
 msgid "Chat / messaging"
 msgstr "Chat/mensajería"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:122
+msgid "Checkout"
+msgstr "Verificar"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:510
 msgid "Churned"
 msgstr "Batido"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:445
 #: includes/class-pn-customers-manager-csv-import.php:36
+#: includes/class-pn-customers-manager-post-type-organization.php:445
 msgid "City"
 msgstr "Ciudad"
 
-#: includes/class-pn-customers-manager-forms.php:552
+#: includes/class-pn-customers-manager-forms.php:555
 msgid "Clear"
 msgstr "Claro"
 
@@ -384,14 +788,43 @@ msgstr "Claro"
 msgid "Click to select a CSV file or drag & drop it here"
 msgstr "Haga clic para seleccionar un archivo CSV o arrástrelo y suéltelo aquí"
 
+#: includes/class-pn-customers-manager-email-campaigns.php:293
+#: includes/class-pn-customers-manager-email-campaigns.php:468
+msgid "Clicks"
+msgstr "Clics"
+
+#: includes/class-pn-customers-manager-ajax.php:818
 #: includes/class-pn-customers-manager-activator.php:29
+#: includes/class-pn-customers-manager-settings.php:601
+#: includes/class-pn-customers-manager-settings.php:603
 msgid "Client - PN"
 msgstr "Cliente - PN"
 
-#: includes/class-pn-customers-manager-csv-import.php:453
-#: includes/class-pn-customers-manager-csv-import.php:944
-msgid "Close & reload"
-msgstr "Cerrar y recargar"
+#: includes/class-pn-customers-manager-shortcodes.php:413
+msgid "Close"
+msgstr "Cerca"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1513
+#: includes/class-pn-customers-manager-instagram-ai.php:1741
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2202
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2429
+msgid "Close conversation"
+msgstr "Cerrar conversación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:419
+#: includes/class-pn-customers-manager-shortcodes.php:333
+#: includes/class-pn-customers-manager-shortcodes.php:368
+#: includes/class-pn-customers-manager-shortcodes.php:392
+#: includes/class-pn-customers-manager-instagram-ai.php:1470
+#: includes/class-pn-customers-manager-instagram-ai.php:1584
+#: includes/class-pn-customers-manager-instagram-ai.php:1624
+#: includes/class-pn-customers-manager-instagram-ai.php:1697
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2159
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2272
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2312
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2385
+msgid "Closed"
+msgstr "Cerrada"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:525
 msgid "Closed lost"
@@ -401,27 +834,44 @@ msgstr "Cerrado perdido"
 msgid "Closed won"
 msgstr "Cerrado ganado"
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:116
-#: includes/class-pn-customers-manager-ajax-nopriv.php:141
-msgid "Codigo de referido no valido."
-msgstr "Codigo de referido no valido."
-
-#: includes/class-pn-customers-manager-settings.php:67
+#: includes/class-pn-customers-manager-settings.php:447
 msgid "Colors"
-msgstr "Bandera"
+msgstr "Colores"
 
-#: includes/class-pn-customers-manager-settings.php:160
-msgid "Comercial"
-msgstr "Comercial"
-
-#: includes/class-pn-customers-manager.php:478
+#: includes/class-pn-customers-manager-ajax.php:819
 #: includes/class-pn-customers-manager-activator.php:30
+#: includes/class-pn-customers-manager.php:506
 msgid "Comercial - PN"
 msgstr "Comercial - PN"
+
+#: includes/class-pn-customers-manager-settings.php:21
+#, fuzzy
+#| msgid "Comercial"
+msgid "Commercial"
+msgstr "Comercial"
+
+#: includes/class-pn-customers-manager-settings.php:609
+#: includes/class-pn-customers-manager-settings.php:611
+msgid "Commercial Agent - PN"
+msgstr "Comercial - PN"
+
+#: includes/class-pn-customers-manager-commercial.php:377
+#: includes/class-pn-customers-manager-settings.php:708
+#: includes/class-pn-customers-manager-settings.php:709
+msgid "Commercial Agents"
+msgstr "Agentes comerciales"
+
+#: includes/class-pn-customers-manager-settings.php:22
+msgid "Commercial agents system configuration."
+msgstr "Configuración del sistema de agentes comerciales."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:652
 msgid "Commercial funnel"
 msgstr "Embudo comercial"
+
+#: includes/class-pn-customers-manager-commercial.php:143
+msgid "Commercial Panel"
+msgstr "Panel comercial"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:532
 msgid "Commercial priority"
@@ -431,7 +881,20 @@ msgstr "Prioridad comercial"
 msgid "Common brand name"
 msgstr "Nombre de marca común"
 
-#: includes/class-pn-customers-manager-commercial.php:55
+#: includes/class-pn-customers-manager-funnel-builder.php:158
+msgid "Communication"
+msgstr "Comunicación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:726
+#: includes/class-pn-customers-manager-funnel-builder.php:918
+msgid "Company information"
+msgstr "Información de la empresa"
+
+#: includes/class-pn-customers-manager-referral.php:234
+msgid "Comparte tu enlace de referido"
+msgstr "Comparte tu enlace de referido"
+
+#: includes/class-pn-customers-manager-commercial.php:46
 msgid ""
 "Completa el siguiente formulario para solicitar acceso como agente comercial."
 " Revisaremos tu solicitud y te notificaremos."
@@ -443,31 +906,37 @@ msgstr ""
 msgid "Completa los datos para registrar una nueva organización en el CRM."
 msgstr "Complete los datos para registrar una nueva organización en el CRM."
 
-#: includes/class-pn-customers-manager-commercial.php:161
-msgid "Completados"
-msgstr "Completados"
-
-#: includes/class-pn-customers-manager-referral.php:247
+#: includes/class-pn-customers-manager-commercial.php:152
+#: includes/class-pn-customers-manager-referral.php:437
 msgid "Completed"
 msgstr "Terminado"
 
-#: includes/class-pn-customers-manager-settings.php:161
-msgid "Configuracion del sistema de agentes comerciales."
-msgstr "Configuración del sistema de agentes comerciales."
+#: includes/class-pn-customers-manager-funnel-builder.php:414
+msgid "Configure API"
+msgstr "Configurar API"
 
-#: includes/class-pn-customers-manager-settings.php:191
-msgid "Configuracion del sistema de referidos y codigo QR."
-msgstr "Configuracion del sistema de referidos y codigo QR."
+#: includes/class-pn-customers-manager-settings.php:149
+msgid ""
+"Configure the keys and credentials of external APIs used by the plugin. Each "
+"service has its own subsection with detailed instructions."
+msgstr ""
+"Configura las claves y credenciales de las APIs externas utilizadas por el "
+"plugin. Cada servicio tiene su propia subsección con instrucciones "
+"detalladas."
 
-#: includes/class-pn-customers-manager-common.php:283
+#: includes/class-pn-customers-manager-common.php:295
 msgid "Connection error"
 msgstr "Error de conexión"
 
-#: includes/class-pn-customers-manager-common.php:284
+#: includes/class-pn-customers-manager-common.php:296
 msgid "Connection error: Could not connect to server"
 msgstr "Error de conexión: No se pudo conectar al servidor"
 
-#: includes/class-pn-customers-manager-ajax.php:475
+#: includes/class-pn-customers-manager-settings.php:845
+msgid "Connection successful."
+msgstr "Conexión exitosa."
+
+#: includes/class-pn-customers-manager-ajax.php:638
 msgid "Contact ID is required."
 msgstr "Se requiere ID de contacto."
 
@@ -475,47 +944,115 @@ msgstr "Se requiere ID de contacto."
 msgid "contact@company.com"
 msgstr "contacto@empresa.com"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:190
 #: includes/class-pn-customers-manager-csv-import.php:108
 #: includes/class-pn-customers-manager-csv-import.php:163
 #: includes/class-pn-customers-manager-csv-import.php:213
-#: includes/class-pn-customers-manager-csv-import.php:569
+#: includes/class-pn-customers-manager-csv-import.php:396
 msgid "Content"
 msgstr "Contenido"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:768
+#: includes/class-pn-customers-manager-funnel-builder.php:960
+msgid ""
+"Content the AI will use to respond: business info, hours, policies, prices, "
+"etc."
+msgstr ""
+"Contenido que la IA usará para responder: información del negocio, horarios, "
+"políticas, precios, etc."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:643
 msgid "Contexto adicional para el equipo comercial."
 msgstr "Contexto adicional para el equipo comercial."
 
-#: includes/class-pn-customers-manager-common.php:269
+#: includes/class-pn-customers-manager-settings.php:198
+msgid ""
+"Controls the creativity of AI responses. <strong>0</strong> = deterministic "
+"and precise. <strong>1</strong> = balanced (recommended). <strong>2</strong> "
+"= very creative and varied. Default: <code>0.7</code>."
+msgstr ""
+"Controla la creatividad de las respuestas de la IA. <strong>0</strong> = "
+"determinista y precisa. <strong>1</strong> = equilibrada (recomendada). "
+"<strong>2</strong> = muy creativa y variada. Valor predeterminado: <code>0."
+"7</code>."
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2815
+msgid "Conversation excerpt"
+msgstr "Fragmento de conversación"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1682
+#: includes/class-pn-customers-manager-instagram-ai.php:1929
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2370
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2673
+msgid "Conversation not found."
+msgstr "Conversación no encontrada."
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1841
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2579
+msgid ""
+"Conversations table does not exist. Deactivate and reactivate the plugin."
+msgstr ""
+"La tabla de conversaciones no existe. Desactiva y vuelve a activar el plugin."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:410
+msgid "Conversion"
+msgstr "Conversión"
+
+#: includes/class-pn-customers-manager-commercial.php:160
+msgid "Conversion rate"
+msgstr "Tasa de conversión"
+
+#: includes/class-pn-customers-manager-common.php:281
 msgid "Copied"
 msgstr "Copiado"
 
-#: includes/class-pn-customers-manager-referral.php:210
+#: includes/class-pn-customers-manager-funnel-builder.php:701
+#: includes/class-pn-customers-manager-referral.php:215
 msgid "Copy"
 msgstr "Copiar"
-
-#: includes/class-pn-customers-manager-ajax-nopriv.php:150
-msgid "Correo electronico no valido."
-msgstr "Correo electronico no valido."
 
 #: includes/class-pn-customers-manager-contact-form.php:114
 msgid "Correo electrónico"
 msgstr "Correo electrónico"
 
-#: includes/class-pn-customers-manager-common.php:297
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2482
+msgid ""
+"Could not connect to OpenAI. Verify the API Key and that you have available "
+"credit."
+msgstr ""
+"No se pudo conectar con OpenAI. Verifica la API Key y que tengas crédito "
+"disponible."
+
+#: includes/class-pn-customers-manager-common.php:309
 msgid "Could not create the user. Please try again."
 msgstr "No se pudo crear el usuario. Inténtalo de nuevo."
 
-#: includes/class-pn-customers-manager-csv-import.php:632
+#: includes/class-pn-customers-manager-csv-import.php:459
 msgid "Could not open the file."
 msgstr "No se pudo abrir el archivo."
 
-#: includes/class-pn-customers-manager-csv-import.php:644
+#: includes/class-pn-customers-manager-csv-import.php:471
 msgid "Could not read CSV headers."
 msgstr "No se pudieron leer los encabezados CSV."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:429
+#: includes/class-pn-customers-manager-instagram-ai.php:1799
+msgid ""
+"Could not send the message. Verify the Access Token, Page ID and that the "
+"IGSID is valid."
+msgstr ""
+"No se pudo enviar el mensaje. Verifique el token de acceso, el ID de página "
+"y que el IGSID sea válido."
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2531
+msgid ""
+"Could not send the message. Verify the Access Token, Phone Number ID and "
+"that the destination number is valid."
+msgstr ""
+"No se pudo enviar el mensaje. Verifica el Access Token, el Phone Number ID y "
+"que el número de destino sea válido."
+
 #: includes/class-pn-customers-manager-csv-import.php:34
+#: includes/class-pn-customers-manager-post-type-organization.php:429
 msgid "Country"
 msgstr "País"
 
@@ -536,25 +1073,40 @@ msgstr "Crear embudo"
 msgid "Create Organization"
 msgstr "Crear organización"
 
-#: includes/class-pn-customers-manager-settings.php:351
-#: includes/class-pn-customers-manager-settings.php:376
-#: includes/class-pn-customers-manager-settings.php:382
+#: includes/class-pn-customers-manager-settings.php:771
+#: includes/class-pn-customers-manager-settings.php:789
 msgid "Create Organizations page"
 msgstr "Página Crear organizaciones"
 
-#: includes/class-pn-customers-manager-settings.php:359
+#: includes/class-pn-customers-manager-instagram-ai.php:1479
+#: includes/class-pn-customers-manager-instagram-ai.php:1705
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2168
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2393
+msgid "Created:"
+msgstr "Creado:"
+
+#: includes/class-pn-customers-manager-settings.php:788
 msgid "Creating page..."
 msgstr "Creando página..."
+
+#: includes/class-pn-customers-manager-settings.php:38
+msgid "CRM Page"
+msgstr "Página de CRM"
+
+#: includes/class-pn-customers-manager-referral.php:360
+msgid "Cuadrada (774x774)"
+msgstr "Cuadrada (774x774)"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:667
 msgid "Current stage"
 msgstr "Etapa actual"
 
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2794
 #: includes/class-pn-customers-manager-post-type-organization.php:509
 msgid "Customer"
 msgstr "Cliente"
 
-#: includes/class-pn-customers-manager-settings.php:68
+#: includes/class-pn-customers-manager-settings.php:448
 msgid ""
 "Customize the colors used throughout the plugin by modifying the CSS root "
 "variables."
@@ -562,7 +1114,11 @@ msgstr ""
 "Personalice los colores utilizados en todo el complemento modificando las "
 "variables raíz CSS."
 
-#: includes/class-pn-customers-manager-referral.php:259
+#: includes/class-pn-customers-manager-instagram-ai.php:1602
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2290
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2798
+#: includes/class-pn-customers-manager-referral.php:449
+#: includes/class-pn-customers-manager-email-campaigns.php:466
 msgid "Date"
 msgstr "Fecha"
 
@@ -570,22 +1126,76 @@ msgstr "Fecha"
 msgid "De:"
 msgstr "Delaware:"
 
-#: includes/class-pn-customers-manager-commercial.php:202
-msgid "Debes iniciar sesion para enviar tu solicitud."
-msgstr "Debes iniciar sesión para enviar tu solicitud."
+#: includes/class-pn-customers-manager-settings.php:179
+msgid "Default AI model"
+msgstr "Modelo IA por defecto"
 
-#: includes/class-pn-customers-manager-ajax.php:499
-msgid "Debes iniciar sesion."
-msgstr "Debes iniciar sesión."
+#: includes/class-pn-customers-manager-settings.php:180
+msgid ""
+"Default OpenAI model to use. Price is shown as input/output per million "
+"tokens. <code>gpt-4o-mini</code> is the most economical and recommended for "
+"most use cases."
+msgstr ""
+"Modelo OpenAI predeterminado. El precio se muestra como entrada/salida por "
+"millón de tokens. <code>gpt-4o-mini</code> es el más económico y recomendado "
+"para la mayoría de los casos de uso."
+
+#: includes/class-pn-customers-manager-settings.php:187
+msgid "Default system prompt"
+msgstr "Prompt del sistema por defecto"
+
+#: includes/class-pn-customers-manager-settings.php:197
+msgid "Default temperature"
+msgstr "Temperatura por defecto"
+
+#: includes/class-pn-customers-manager-settings.php:83
+msgid ""
+"Default text that accompanies the referral link when sharing on social media."
+" The link is automatically added at the end. Users can customize their own "
+"text from their panel."
+msgstr ""
+"Texto predeterminado que acompaña al enlace de referencia al compartirlo en "
+"redes sociales. El enlace se añade automáticamente al final. Los usuarios "
+"pueden personalizar el texto desde su panel."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:289
+#: includes/class-pn-customers-manager-shortcodes.php:417
+#: includes/class-pn-customers-manager-instagram-ai.php:1518
+#: includes/class-pn-customers-manager-instagram-ai.php:1748
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2207
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2436
+msgid "Delete"
+msgstr "Eliminar"
+
+#: includes/class-pn-customers-manager-shortcodes.php:332
+#: includes/class-pn-customers-manager-instagram-ai.php:1639
+#: includes/class-pn-customers-manager-instagram-ai.php:1746
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2327
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2434
+msgid "Delete this conversation?"
+msgstr "¿Eliminar esta conversación?"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:408
+msgid "Delete this element?"
+msgstr "¿Eliminar este elemento?"
 
 #: includes/class-pn-customers-manager-ajax-nopriv.php:129
-msgid "Demasiados intentos. Intentalo de nuevo mas tarde."
-msgstr "Demasiados intentos. Intentalo de nuevo más tarde."
+#| msgid "Demasiados intentos. Intentalo de nuevo mas tarde."
+msgid "Demasiados intentos. Inténtalo de nuevo más tarde."
+msgstr "Demasiados intentos. Inténtalo de nuevo más tarde."
 
-#: includes/class-pn-customers-manager-common.php:300
-#: includes/class-pn-customers-manager-referral.php:228
+#: includes/class-pn-customers-manager-referral.php:420
+msgid "Descargar anverso"
+msgstr "Descargar anverso"
+
+#: includes/class-pn-customers-manager-common.php:312
+#: includes/class-pn-customers-manager-referral.php:269
 msgid "Descargar QR"
 msgstr "Descargar QR"
+
+#: includes/class-pn-customers-manager-referral.php:421
+msgid "Descargar reverso"
+msgstr "Descargar reverso"
 
 #: includes/class-pn-customers-manager-client-form.php:388
 msgid "Describe brevemente la organización…"
@@ -599,9 +1209,19 @@ msgstr "Describe el siguiente hito o compromiso."
 msgid "Descripción de la organización"
 msgstr "Descripción de la organización"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:567
+msgid "Destination URL"
+msgstr "URL de destino"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:627
 msgid "Dirección de facturación"
 msgstr "Dirección de facturación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:804
+#: includes/class-pn-customers-manager-funnel-builder.php:996
+#: includes/class-pn-customers-manager-settings.php:230
+msgid "Direct add to cart links"
+msgstr "Enlaces directos para añadir al carrito"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:521
 msgid "Discovery"
@@ -619,7 +1239,7 @@ msgstr "Embudo duplicado"
 msgid "Duplicate Organization"
 msgstr "Organización duplicada"
 
-#: includes/class-pn-customers-manager-common.php:249
+#: includes/class-pn-customers-manager-common.php:261
 msgid "Duplicated successfully"
 msgstr "Duplicado exitosamente"
 
@@ -643,6 +1263,12 @@ msgstr "p. ej. Compañía Inc."
 msgid "e.g. San Francisco"
 msgstr "p. ej. San Francisco"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:654
+msgid "e.g. shopping_cart, arrow_forward. See fonts.google.com/icons"
+msgstr ""
+"Por ejemplo: carrito de compras, flecha hacia adelante. Consulta fonts."
+"google.com/icons"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:430
 msgid "e.g. United States"
 msgstr "p. ej. Estados Unidos"
@@ -655,22 +1281,22 @@ msgstr ""
 "Cada contacto es un usuario normal de WordPress, por lo que puedes editarlo "
 "desde la pantalla Usuarios."
 
-#: includes/class-pn-customers-manager-common.php:258
+#: includes/class-pn-customers-manager-common.php:270
 #: includes/class-pn-customers-manager-forms.php:378
 msgid "Edit audio"
 msgstr "Editar audio"
 
-#: includes/class-pn-customers-manager-common.php:259
+#: includes/class-pn-customers-manager-common.php:271
 #: includes/class-pn-customers-manager-forms.php:378
 msgid "Edit audios"
 msgstr "Editar audios"
 
-#: includes/class-pn-customers-manager-common.php:262
+#: includes/class-pn-customers-manager-common.php:274
 #: includes/class-pn-customers-manager-forms.php:399
 msgid "Edit file"
 msgstr "Editar archivo"
 
-#: includes/class-pn-customers-manager-common.php:263
+#: includes/class-pn-customers-manager-common.php:275
 #: includes/class-pn-customers-manager-forms.php:399
 msgid "Edit files"
 msgstr "Editar archivos"
@@ -685,12 +1311,12 @@ msgstr "Editar embudo"
 msgid "Edit Funnel category"
 msgstr "Editar categoría de embudo"
 
-#: includes/class-pn-customers-manager-common.php:250
+#: includes/class-pn-customers-manager-common.php:262
 #: includes/class-pn-customers-manager-forms.php:336
 msgid "Edit image"
 msgstr "Editar imagen"
 
-#: includes/class-pn-customers-manager-common.php:251
+#: includes/class-pn-customers-manager-common.php:263
 #: includes/class-pn-customers-manager-forms.php:336
 msgid "Edit images"
 msgstr "Editar imágenes"
@@ -701,12 +1327,12 @@ msgstr "Editar imágenes"
 msgid "Edit Organization"
 msgstr "Editar organización"
 
-#: includes/class-pn-customers-manager-common.php:254
+#: includes/class-pn-customers-manager-common.php:266
 #: includes/class-pn-customers-manager-forms.php:357
 msgid "Edit video"
 msgstr "Editar video"
 
-#: includes/class-pn-customers-manager-common.php:255
+#: includes/class-pn-customers-manager-common.php:267
 #: includes/class-pn-customers-manager-forms.php:357
 msgid "Edit videos"
 msgstr "Editar vídeos"
@@ -725,30 +1351,86 @@ msgid "Ej: Clientes VIP, Renovación, Partner"
 msgstr "Ej: Clientes VIP, Renovación, Socio"
 
 #: includes/class-pn-customers-manager-contact-messages.php:114
+#: includes/class-pn-customers-manager-referral.php:332
 msgid "Eliminar"
 msgstr "Eliminar"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:593
+#: includes/class-pn-customers-manager-commercial.php:62
+#: includes/class-pn-customers-manager-commercial.php:390
 #: includes/class-pn-customers-manager-csv-import.php:31
 #: includes/class-pn-customers-manager-contact-messages.php:79
 #: includes/class-pn-customers-manager-ajax-nopriv.php:240
 #: includes/class-pn-customers-manager-ajax-nopriv.php:254
-#: includes/class-pn-customers-manager-commercial.php:71
-#: includes/class-pn-customers-manager-commercial.php:399
-#: includes/class-pn-customers-manager-referral.php:257
+#: includes/class-pn-customers-manager-post-type-organization.php:593
+#: includes/class-pn-customers-manager-referral.php:383
+#: includes/class-pn-customers-manager-referral.php:447
+#: includes/class-pn-customers-manager-email-campaigns.php:465
 msgid "Email"
 msgstr "Correo electrónico"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:836
+#: includes/class-pn-customers-manager-settings.php:264
+msgid ""
+"Email address to receive order notifications. Leave empty to use the site "
+"admin email."
+msgstr ""
+"Dirección de correo electrónico para recibir notificaciones de pedidos. "
+"Déjelo en blanco para usar el correo electrónico del administrador del sitio."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:121
+msgid "Email campaign settings with mailpn integration."
+msgstr ""
+"Configuración de campañas de correo electrónico con integración de MailPN."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:120
+msgid "Email Campaigns"
+msgstr "Campañas de correo electrónico"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:613
 msgid "Email de facturación"
 msgstr "Correo electrónico de facturación"
 
-#: includes/class-pn-customers-manager-commercial.php:82
-#: includes/class-pn-customers-manager-commercial.php:401
+#: includes/class-pn-customers-manager-funnel-builder.php:145
+msgid "Email sequence"
+msgstr "Secuencia de email"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:163
+msgid "Email template"
+msgstr "Plantilla de correo electrónico"
+
+#: includes/class-pn-customers-manager-commercial.php:73
+#: includes/class-pn-customers-manager-commercial.php:392
 msgid "Empresa"
 msgstr "Empresa"
 
-#: includes/class-pn-customers-manager-referral.php:203
+#: includes/class-pn-customers-manager-settings.php:65
+msgid "Enable referral system"
+msgstr "Habilitar el sistema de referencias"
+
+#: includes/class-pn-customers-manager-settings.php:66
+msgid ""
+"Enables the referral system with QR code so users can invite others. "
+"Administrators will always see the referral panel even if this option is "
+"disabled."
+msgstr ""
+"Habilita el sistema de referidos con código QR para que los usuarios puedan "
+"invitar a otros. Los administradores siempre verán el panel de referidos, "
+"incluso si esta opción está desactivada."
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1771
+msgid "Enter a test Instagram User ID (IGSID)."
+msgstr "Introduce un ID de usuario de Instagram (IGSID) de prueba."
+
+#: includes/class-pn-customers-manager-settings.php:854
+msgid "Enter a test Instagram User ID."
+msgstr "Introduce un ID de usuario de Instagram de prueba."
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2503
+#: includes/class-pn-customers-manager-settings.php:847
+msgid "Enter a test phone number."
+msgstr "Introduce un número de teléfono de prueba."
+
+#: includes/class-pn-customers-manager-referral.php:208
 msgid "Enter email address"
 msgstr "Introduzca su dirección de correo electrónico"
 
@@ -756,7 +1438,7 @@ msgstr "Introduzca su dirección de correo electrónico"
 msgid "Enterprise"
 msgstr "Empresa"
 
-#: includes/class-pn-customers-manager-contact-form.php:249
+#: includes/class-pn-customers-manager-contact-form.php:232
 msgid "Enviando..."
 msgstr "Enviando..."
 
@@ -764,52 +1446,74 @@ msgstr "Enviando..."
 msgid "Enviar mensaje"
 msgstr "Enviar mensaje"
 
-#: includes/class-pn-customers-manager-commercial.php:96
-msgid "Enviar solicitud"
-msgstr "Enviar solicitud"
-
-#: includes/class-pn-customers-manager-contact-form.php:278
+#: includes/class-pn-customers-manager-contact-form.php:235
 msgid "Error de conexión. Inténtalo de nuevo."
 msgstr "Error de conexión. Inténtalo de nuevo."
 
-#: includes/class-pn-customers-manager-common.php:282
+#: includes/class-pn-customers-manager-settings.php:878
+msgid "Error exporting settings."
+msgstr "Error al exportar la configuración."
+
+#: includes/class-pn-customers-manager-settings.php:876
+msgid "Error importing settings."
+msgstr "Error al importar la configuración."
+
+#: includes/class-pn-customers-manager-common.php:294
 msgid "Error in transcription"
 msgstr "Error en la transcripción"
 
-#: includes/class-pn-customers-manager-common.php:288
+#: includes/class-pn-customers-manager-funnel-builder.php:420
+msgid "Error loading conversations."
+msgstr "Error al cargar conversaciones."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:423
+msgid "Error loading settings."
+msgstr "Error al cargar la configuración."
+
+#: includes/class-pn-customers-manager-common.php:300
 msgid "Error processing audio"
 msgstr "Error al procesar el audio"
 
-#: includes/class-pn-customers-manager-common.php:276
+#: includes/class-pn-customers-manager-funnel-builder.php:407
+msgid "Error saving funnel."
+msgstr "Error al guardar el embudo."
+
+#: includes/class-pn-customers-manager-settings.php:856
+msgid "Error sending Instagram message."
+msgstr "Error al enviar el mensaje de Instagram."
+
+#: includes/class-pn-customers-manager-settings.php:849
+msgid "Error sending message."
+msgstr "Error al enviar el mensaje."
+
+#: includes/class-pn-customers-manager-settings.php:846
+msgid "Error:"
+msgstr "Error:"
+
+#: includes/class-pn-customers-manager-common.php:288
 msgid "Error: Could not access microphone"
 msgstr "Error: No se pudo acceder al micrófono"
-
-#: includes/class-pn-customers-manager-csv-import.php:540
-#: includes/class-pn-customers-manager-csv-import.php:1031
-msgid "Errors:"
-msgstr "Errores:"
 
 #: includes/class-pn-customers-manager-contact-form.php:137
 msgid "Escribe tu mensaje aquí…"
 msgstr "Escribe tu mensaje aquí…"
 
+#: includes/class-pn-customers-manager-referral.php:410
+msgid "Escribe tu mensaje para el reverso..."
+msgstr "Escribe tu mensaje para el reverso..."
+
 #: includes/class-pn-customers-manager-post-type-organization.php:307
 msgid "Essential information to identify and contact the organization."
 msgstr "Información esencial para identificar y contactar a la organización."
 
-#: includes/class-pn-customers-manager-commercial.php:281
-#: includes/class-pn-customers-manager-commercial.php:316
-msgid "Esta solicitud no esta pendiente."
-msgstr "Esta solicitud no está pendiente."
-
+#: includes/class-pn-customers-manager-commercial.php:394
 #: includes/class-pn-customers-manager-contact-messages.php:77
-#: includes/class-pn-customers-manager-commercial.php:403
 msgid "Estado"
 msgstr "Estado"
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:151
-msgid "Este correo ya esta registrado."
-msgstr "Este correo ya está registrado."
+#: includes/class-pn-customers-manager-referral.php:359
+msgid "Estandar (1012x654)"
+msgstr "Estándar (1012x654)"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:634
 msgid "Etiquetas"
@@ -820,18 +1524,61 @@ msgstr "Etiquetas"
 msgid "Event"
 msgstr "Evento"
 
+#: includes/class-pn-customers-manager-settings.php:109
+msgid "Every 1 day"
+msgstr "Cada 1 día"
+
+#: includes/class-pn-customers-manager-settings.php:114
+msgid "Every 14 days"
+msgstr "Cada 14 días"
+
+#: includes/class-pn-customers-manager-settings.php:110
+msgid "Every 2 days"
+msgstr "Cada 2 días"
+
+#: includes/class-pn-customers-manager-settings.php:111
+msgid "Every 3 days"
+msgstr "Cada 3 días"
+
+#: includes/class-pn-customers-manager-settings.php:115
+msgid "Every 30 days"
+msgstr "Cada 30 días"
+
+#: includes/class-pn-customers-manager-settings.php:112
+msgid "Every 5 days"
+msgstr "Cada 5 días"
+
+#: includes/class-pn-customers-manager-settings.php:113
+msgid "Every 7 days"
+msgstr "Cada 7 días"
+
 #: includes/class-pn-customers-manager-csv-import.php:109
 #: includes/class-pn-customers-manager-csv-import.php:164
 #: includes/class-pn-customers-manager-csv-import.php:214
-#: includes/class-pn-customers-manager-csv-import.php:570
+#: includes/class-pn-customers-manager-csv-import.php:397
 msgid "Excerpt"
 msgstr "Extracto"
+
+#: includes/class-pn-customers-manager-settings.php:821
+msgid "Export settings"
+msgstr "Exportar configuración"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:260
+msgid "External emails"
+msgstr "Correos electrónicos externos"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:754
+#: includes/class-pn-customers-manager-funnel-builder.php:946
+msgid "Extra shipping details: delivery times, special conditions, etc."
+msgstr ""
+"Información adicional sobre el envío: plazos de entrega, condiciones "
+"especiales, etc."
 
 #: includes/class-pn-customers-manager-contact-messages.php:82
 msgid "Fecha"
 msgstr "Fecha"
 
-#: includes/class-pn-customers-manager-commercial.php:402
+#: includes/class-pn-customers-manager-commercial.php:393
 msgid "Fecha solicitud"
 msgstr "Fecha solicitud"
 
@@ -848,14 +1595,41 @@ msgstr "Servicios financieros"
 msgid "Fiscal identifier"
 msgstr "Identificador fiscal"
 
-#: includes/class-pn-customers-manager-csv-import.php:558
+#: includes/class-pn-customers-manager-funnel-builder.php:142
+msgid "Follow-up"
+msgstr "Seguimiento"
+
+#: includes/class-pn-customers-manager-csv-import.php:385
 msgid "Forbidden"
 msgstr "Prohibido"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:205
+msgid "Form"
+msgstr "Formulario"
+
+#: includes/class-pn-customers-manager-referral.php:357
+msgid "Formato"
+msgstr "Formato"
+
+#: includes/class-pn-customers-manager-referral.php:399
+msgid "Frases predefinidas"
+msgstr "Frases predefinidas"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1599
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2287
+msgid "Funnel"
+msgstr "Embudo"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:87
 #: includes/class-pn-customers-manager-post-type-funnel.php:88
 msgid "Funnel audio url"
 msgstr "URL de audio del embudo"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:56
+#: includes/class-pn-customers-manager-settings.php:680
+#: includes/class-pn-customers-manager-settings.php:681
+msgid "Funnel Builder"
+msgstr "Creador de embudos"
 
 #: includes/class-pn-customers-manager-taxonomies-funnel.php:32
 msgid "Funnel categories"
@@ -885,12 +1659,21 @@ msgstr "ID de embudo"
 msgid "Funnel multimedia content"
 msgstr "Embudo de contenido multimedia"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:448
+#: includes/class-pn-customers-manager-funnel-builder.php:500
+msgid "Funnel not found."
+msgstr "Embudo no encontrado."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:406
+msgid "Funnel saved successfully."
+msgstr "Embudo guardado correctamente."
+
 #: includes/class-pn-customers-manager-csv-import.php:56
 msgid "Funnel stage"
 msgstr "Etapa de embudo"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:676
 #: includes/class-pn-customers-manager-csv-import.php:57
+#: includes/class-pn-customers-manager-post-type-organization.php:676
 msgid "Funnel status"
 msgstr "Estado del embudo"
 
@@ -919,22 +1702,37 @@ msgstr "URL del embudo"
 msgid "Funnel video url"
 msgstr "URL del vídeo del embudo"
 
+#: includes/class-pn-customers-manager-instagram-ai.php:1477
+#: includes/class-pn-customers-manager-instagram-ai.php:1703
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2166
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2391
+msgid "Funnel:"
+msgstr "Embudo:"
+
+#: includes/class-pn-customers-manager-settings.php:672
+#: includes/class-pn-customers-manager-settings.php:673
 #: includes/class-pn-customers-manager-post-type-funnel.php:122
 #: includes/class-pn-customers-manager-post-type-funnel.php:138
-#: includes/class-pn-customers-manager-settings.php:285
-#: includes/class-pn-customers-manager-settings.php:286
 msgid "Funnels"
 msgstr "Embudos"
 
-#: includes/class-pn-customers-manager-settings.php:22
+#: includes/class-pn-customers-manager-settings.php:541
 msgid "General plugin settings and configuration."
 msgstr "Configuración y ajustes generales del complemento."
 
-#: includes/class-pn-customers-manager-settings.php:146
+#: includes/class-pn-customers-manager-referral.php:309
+msgid "Generar como usuario"
+msgstr "Generar como usuario"
+
+#: includes/class-pn-customers-manager-referral.php:281
+msgid "Generar tarjeta de visita"
+msgstr "Generar tarjeta de visita"
+
+#: includes/class-pn-customers-manager-settings.php:526
 msgid "Grey Color"
 msgstr "Color gris"
 
-#: includes/class-pn-customers-manager-settings.php:147
+#: includes/class-pn-customers-manager-settings.php:527
 msgid "Grey color for backgrounds (default: #f5f5f5)"
 msgstr "Color gris para fondos (predeterminado: #f5f5f5)"
 
@@ -942,11 +1740,8 @@ msgstr "Color gris para fondos (predeterminado: #f5f5f5)"
 msgid "Ha ocurrido un error."
 msgstr "Ha ocurrido un error."
 
-#: includes/class-pn-customers-manager-common.php:303
-msgid "Ha ocurrido un error. Intentalo de nuevo."
-msgstr "Ha ocurrido un error. Intentalo de nuevo."
-
-#: includes/class-pn-customers-manager-contact-form.php:272
+#: includes/class-pn-customers-manager-common.php:315
+#: includes/class-pn-customers-manager-contact-form.php:234
 msgid "Ha ocurrido un error. Inténtalo de nuevo."
 msgstr "Ha ocurrido un error. Inténtalo de nuevo."
 
@@ -961,6 +1756,18 @@ msgstr "Saludable/en crecimiento"
 #: includes/class-pn-customers-manager-post-type-organization.php:535
 msgid "High"
 msgstr "Alto"
+
+#: includes/class-pn-customers-manager-forms.php:709
+#, fuzzy
+#| msgid ""
+#| "Hold Ctrl (Windows) or Cmd (Mac) to select multiple users. Users with ✓ "
+#| "already have this role."
+msgid ""
+"Hold Ctrl (Windows) or Cmd (Mac) to select multiple users. Users with âœ“ "
+"already have this role."
+msgstr ""
+"Mantén pulsada la tecla Ctrl (Windows) o Cmd (Mac) para seleccionar varios "
+"usuarios. Los usuarios marcados con ✓ ya tienen este rol."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:414
 msgid "https://company.com"
@@ -978,7 +1785,15 @@ msgstr "https://padresenlanube.com/plugins/pn-customers-manager/"
 msgid "https://www.linkedin.com/company/..."
 msgstr "https://www.linkedin.com/company/..."
 
-#: includes/class-pn-customers-manager-settings.php:55
+#: includes/class-pn-customers-manager-funnel-builder.php:646
+msgid "Icon"
+msgstr "Icono"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:662
+msgid "Icon position"
+msgstr "Posición del icono"
+
+#: includes/class-pn-customers-manager-settings.php:574
 msgid ""
 "If you activate this option the plugin will remove all options on "
 "deactivation. Please, be careful. This process cannot be undone."
@@ -986,14 +1801,16 @@ msgstr ""
 "Si activa esta opción, el complemento eliminará todas las opciones al "
 "desactivarla. Por favor tenga cuidado. Este proceso no se puede deshacer."
 
-#: includes/class-pn-customers-manager-csv-import.php:450
-#: includes/class-pn-customers-manager-csv-import.php:941
-msgid "Import"
-msgstr "Importar"
+#: includes/class-pn-customers-manager-funnel-builder.php:675
+msgid "Image"
+msgstr "Imagen"
+
+#: includes/class-pn-customers-manager-referral.php:327
+msgid "Imagen de fondo"
+msgstr "Imagen de fondo"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:1053
 #: includes/class-pn-customers-manager-post-type-organization.php:1054
-#: includes/class-pn-customers-manager-csv-import.php:377
 msgid "Import CSV"
 msgstr "Importar CSV"
 
@@ -1001,75 +1818,212 @@ msgstr "Importar CSV"
 msgid "Import Organizations from CSV"
 msgstr "Importar organizaciones desde CSV"
 
-#: includes/class-pn-customers-manager-csv-import.php:518
-#: includes/class-pn-customers-manager-csv-import.php:1009
-msgid "Importing organizations…"
-msgstr "Organizaciones importadoras…"
+#: includes/class-pn-customers-manager-settings.php:818
+msgid "Import settings"
+msgstr "Importar configuración"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:161
 msgid "In progress"
 msgstr "En curso"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:351
+#: includes/class-pn-customers-manager-funnel-builder.php:776
+#: includes/class-pn-customers-manager-funnel-builder.php:968
+msgid "Include automatic content"
+msgstr "Incluir contenido automático"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:794
+#: includes/class-pn-customers-manager-funnel-builder.php:986
+#: includes/class-pn-customers-manager-settings.php:219
+msgid "Include product variations"
+msgstr "Incluir variaciones del producto"
+
+#: includes/class-pn-customers-manager-settings.php:210
+msgid ""
+"Includes product name, price and purchase link in the AI context so it can "
+"answer questions about your products. These settings are used as defaults "
+"when no Funnel Builder node is configured."
+msgstr ""
+"Incluye el nombre del producto, el precio y el enlace de compra en el "
+"contexto de la IA para que pueda responder preguntas sobre tus productos. "
+"Estos ajustes se utilizan por defecto cuando no hay ningún nodo de Funnel "
+"Builder configurado."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:786
+#: includes/class-pn-customers-manager-funnel-builder.php:978
+msgid "Includes product name, price and purchase link."
+msgstr "Incluye el nombre del producto, el precio y el enlace de compra."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:855
+#: includes/class-pn-customers-manager-funnel-builder.php:1017
+msgid "Includes titles and excerpts of published pages."
+msgstr "Incluye títulos y extractos de las páginas publicadas."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:847
+#: includes/class-pn-customers-manager-funnel-builder.php:1009
+msgid "Includes titles and excerpts of published posts."
+msgstr "Incluye títulos y extractos de las publicaciones."
+
+#: includes/class-pn-customers-manager-referral.php:367
+msgid "Incluir codigo QR"
+msgstr "Incluir código QR"
+
+#: includes/class-pn-customers-manager-referral.php:415
+msgid "Incluir codigo QR en reverso"
+msgstr "Incluir codigo QR en reverso"
+
 #: includes/class-pn-customers-manager-csv-import.php:27
+#: includes/class-pn-customers-manager-post-type-organization.php:351
 msgid "Industry"
 msgstr "Industria"
 
-#: includes/class-pn-customers-manager-commercial.php:36
-msgid ""
-"Inicia sesion para acceder al panel de agentes comerciales o enviar tu "
-"solicitud."
-msgstr ""
-"Inicia sesión para acceder al panel de agentes comerciales o enviar tu "
-"solicitud."
+#: includes/class-pn-customers-manager-settings.php:373
+msgid "Instagram Access Token"
+msgstr "Token de acceso a Instagram"
 
-#: includes/class-pn-customers-manager-commercial.php:38
-msgid "Iniciar sesion"
-msgstr "Iniciar sesión"
+#: includes/class-pn-customers-manager-instagram-ai.php:1781
+msgid "Instagram Access Token has not been configured."
+msgstr "El token de acceso de Instagram no ha sido configurado."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:904
+#: includes/class-pn-customers-manager-shortcodes.php:279
+#: includes/class-pn-customers-manager-instagram-ai.php:1570
+#: includes/class-pn-customers-manager-settings.php:364
+#: includes/class-pn-customers-manager-settings.php:732
+msgid "Instagram AI"
+msgstr "IA de Instagram"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:330
+#: includes/class-pn-customers-manager-funnel-builder.php:424
+msgid "Instagram Conversations"
+msgstr "Conversaciones en Instagram"
+
+#: includes/class-pn-customers-manager-settings.php:858
+msgid "Instagram DM received from"
+msgstr "Mensaje directo de Instagram recibido de"
+
+#: includes/class-pn-customers-manager-settings.php:855
+msgid "Instagram message sent successfully."
+msgstr "Mensaje de Instagram enviado correctamente."
+
+#: includes/class-pn-customers-manager-settings.php:365
+msgid ""
+"Instagram Messenger API (Meta) integration to automatically receive and "
+"respond to DMs with AI.<br><br><strong>Prerequisites:</strong><br>1. Create "
+"a <a href=\"https://business.facebook.com/\" target=\"_blank\">Meta "
+"Business</a> account.<br>2. Create an app at <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> with "
+"Instagram product.<br>3. Configure the Instagram account in your Meta app."
+"<br>4. The OpenAI API Key is shared with the WhatsApp AI section above — "
+"configure it there."
+msgstr ""
+"Integración con la API (Meta) de Instagram Messenger para recibir y "
+"responder automáticamente a los mensajes directos mediante inteligencia "
+"artificial.<br><br> <strong>Requisitos previos:</strong><br> 1. Crea una "
+"cuenta <a href=\"https://business.facebook.com/\" target=\"_blank\">de Meta "
+"Business</a> .<br> 2. Crea una aplicación en <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> con el "
+"producto Instagram.<br> 3. Configura la cuenta de Instagram en tu aplicación "
+"Meta.<br> 4. La clave API de OpenAI se comparte con la sección de IA de "
+"WhatsApp mencionada anteriormente; configúrela allí."
+
+#: includes/class-pn-customers-manager-settings.php:382
+msgid "Instagram Page ID"
+msgstr "ID de la página de Instagram"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1788
+msgid "Instagram Page ID has not been configured."
+msgstr "El ID de la página de Instagram no ha sido configurado."
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1597
+msgid "Instagram User"
+msgstr "Usuario de Instagram"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1476
+#: includes/class-pn-customers-manager-instagram-ai.php:1702
+msgid "Instagram User:"
+msgstr "Usuario de Instagram:"
+
+#: includes/class-pn-customers-manager-settings.php:413
+msgid ""
+"Instagram-scoped User ID (IGSID) to send the test message to. You can find "
+"it in the webhook payload when someone sends you a DM."
+msgstr ""
+"ID de usuario de Instagram (IGSID) al que se enviará el mensaje de prueba. "
+"Puedes encontrarlo en la carga útil del webhook cuando alguien te envía un "
+"mensaje directo."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:135
+msgid "Install mailpn"
+msgstr "Instalar mailpn"
 
 #: includes/class-pn-customers-manager-csv-import.php:54
 msgid "Internal notes"
 msgstr "Notas internas"
 
-#: includes/class-pn-customers-manager-common.php:301
-msgid "Introduce tu correo electronico."
+#: includes/class-pn-customers-manager-settings.php:119
+msgid "Interval of days between each reminder sent to pending referrals."
+msgstr ""
+"Intervalo de días entre cada recordatorio enviado a las derivaciones "
+"pendientes."
+
+#: includes/class-pn-customers-manager-common.php:313
+#| msgid "Introduce tu correo electronico."
+msgid "Introduce tu correo electrónico."
 msgstr "Introduce tu correo electrónico."
 
-#: includes/class-pn-customers-manager-referral.php:152
+#: includes/class-pn-customers-manager-referral.php:161
 msgid "Introduce tu email para completar el registro."
 msgstr "Introduce tu correo electrónico para completar el registro."
 
+#: includes/class-pn-customers-manager-contact-form.php:231
 #: includes/class-pn-customers-manager-ajax-nopriv.php:108
-msgid "Introduce un correo electronico valido."
-msgstr "Introduzca un correo electrónico válido."
-
-#: includes/class-pn-customers-manager-contact-form.php:243
 #: includes/class-pn-customers-manager-ajax-nopriv.php:198
 #: includes/class-pn-customers-manager-client-form.php:209
 msgid "Introduce un correo electrónico válido."
 msgstr "Introduzca un correo electrónico válido."
 
-#: includes/class-pn-customers-manager-csv-import.php:627
+#: includes/class-pn-customers-manager-funnel-builder.php:468
+msgid "Invalid canvas data."
+msgstr "Datos del lienzo inválidos."
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:150
+msgid "Invalid email."
+msgstr "Correo electrónico no válido."
+
+#: includes/class-pn-customers-manager-csv-import.php:454
 msgid "Invalid file type. Please upload a CSV file."
 msgstr "Tipo de archivo no válido. Sube un archivo CSV."
+
+#: includes/class-pn-customers-manager-settings.php:877
+msgid "Invalid JSON file."
+msgstr "Archivo JSON no válido."
+
+#: includes/class-pn-customers-manager-ajax.php:808
+msgid "Invalid role."
+msgstr "Rol no válido."
 
 #: includes/class-pn-customers-manager-validation.php:157
 msgid "Invalid selection format."
 msgstr "Formato de selección no válido."
 
-#: includes/class-pn-customers-manager-common.php:279
+#: includes/class-pn-customers-manager-common.php:291
 msgid "Invalid server response"
 msgstr "Respuesta del servidor no válida"
 
-#: includes/class-pn-customers-manager-common.php:278
+#: includes/class-pn-customers-manager-common.php:290
 msgid "Invalid server response format"
 msgstr "Formato de respuesta del servidor no válido"
 
-#: includes/class-pn-customers-manager-common.php:291
+#: includes/class-pn-customers-manager-commercial.php:264
+#: includes/class-pn-customers-manager-commercial.php:299
+msgid "Invalid user."
+msgstr "Usuario no válido."
+
+#: includes/class-pn-customers-manager-common.php:303
 msgid "Invitation sent successfully!"
 msgstr "¡Invitación enviada exitosamente!"
 
-#: includes/class-pn-customers-manager-referral.php:201
+#: includes/class-pn-customers-manager-referral.php:206
 msgid "Invite someone"
 msgstr "Invitar a alguien"
 
@@ -1077,12 +2031,25 @@ msgstr "Invitar a alguien"
 msgid "IP:"
 msgstr "IP:"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:767
+#: includes/class-pn-customers-manager-funnel-builder.php:959
+msgid "Knowledge base"
+msgstr "Base de conocimiento"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:102
+msgid "Landing Pages"
+msgstr "Páginas de destino"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:626
+msgid "Large"
+msgstr "Grande"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:584
 msgid "Last contact"
 msgstr "Último contacto"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:590
 #: includes/class-pn-customers-manager-csv-import.php:48
+#: includes/class-pn-customers-manager-post-type-organization.php:590
 msgid "Last contact channel"
 msgstr "Último canal de contacto"
 
@@ -1090,22 +2057,32 @@ msgstr "Último canal de contacto"
 msgid "Last contact date"
 msgstr "Fecha del último contacto"
 
+#: includes/class-pn-customers-manager-instagram-ai.php:1600
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2288
+msgid "Last message"
+msgstr "Último mensaje"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:505
 msgid "Lead"
 msgstr "Dirigir"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:560
 #: includes/class-pn-customers-manager-csv-import.php:45
+#: includes/class-pn-customers-manager-post-type-organization.php:560
 msgid "Lead score"
 msgstr "Puntuación de clientes potenciales"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:486
 #: includes/class-pn-customers-manager-csv-import.php:40
+#: includes/class-pn-customers-manager-post-type-organization.php:486
 msgid "Lead source"
 msgstr "Fuente de plomo"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:322
+#: includes/class-pn-customers-manager-funnel-builder.php:636
+#: includes/class-pn-customers-manager-funnel-builder.php:664
+msgid "Left"
+msgstr "Izquierda"
+
 #: includes/class-pn-customers-manager-csv-import.php:24
+#: includes/class-pn-customers-manager-post-type-organization.php:322
 msgid "Legal name"
 msgstr "Nombre legal"
 
@@ -1113,12 +2090,12 @@ msgstr "Nombre legal"
 msgid "Leído"
 msgstr "Leído"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:502
 #: includes/class-pn-customers-manager-csv-import.php:41
+#: includes/class-pn-customers-manager-post-type-organization.php:502
 msgid "Lifecycle stage"
 msgstr "Etapa del ciclo de vida"
 
-#: includes/class-pn-customers-manager-ajax.php:410
+#: includes/class-pn-customers-manager-ajax.php:573
 msgid "Link contact"
 msgstr "Enlace de contacto"
 
@@ -1139,14 +2116,35 @@ msgstr "LinkedIn"
 msgid "LinkedIn profile"
 msgstr "Perfil de LinkedIn"
 
+#: includes/class-pn-customers-manager-settings.php:352
+#: includes/class-pn-customers-manager-settings.php:429
+msgid "Listen for messages"
+msgstr "Escuchar mensajes"
+
+#: includes/class-pn-customers-manager-settings.php:850
+msgid "Listening"
+msgstr "Escuchando"
+
+#: includes/class-pn-customers-manager-settings.php:857
+msgid "Listening for Instagram DMs"
+msgstr "Escuchando los mensajes directos de Instagram"
+
+#: includes/class-pn-customers-manager-settings.php:851
+msgid "Listening stopped."
+msgstr "Escucha detenida."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:177
+msgid "Live chat"
+msgstr "Chat en vivo"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:422
+msgid "Loading settings..."
+msgstr "Cargando configuración..."
+
 #: includes/class-pn-customers-manager-post-type-funnel.php:448
 #: includes/class-pn-customers-manager-post-type-organization.php:1032
 msgid "Log in"
 msgstr "Acceso"
-
-#: includes/class-pn-customers-manager-settings.php:217
-msgid "Logo para codigo QR"
-msgstr "Logotipo para código QR"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:164
 msgid "Lost"
@@ -1160,17 +2158,25 @@ msgstr "Bajo"
 msgid "Lowercase & Uppercase"
 msgstr "Minúsculas y mayúsculas"
 
-#: includes/class-pn-customers-manager-settings.php:86
+#: includes/class-pn-customers-manager-settings.php:466
 msgid "Main Background Color"
 msgstr "Color de fondo principal"
 
-#: includes/class-pn-customers-manager-settings.php:96
+#: includes/class-pn-customers-manager-settings.php:476
 msgid "Main Border Color"
 msgstr "Color del borde principal"
 
-#: includes/class-pn-customers-manager-settings.php:76
+#: includes/class-pn-customers-manager-settings.php:456
 msgid "Main Color"
 msgstr "Color principal"
+
+#: includes/class-pn-customers-manager-settings.php:587
+msgid ""
+"Manage plugin user roles. You can assign or remove roles from registered "
+"users."
+msgstr ""
+"Gestiona los roles de usuario del plugin. Puedes asignar o eliminar roles a "
+"los usuarios registrados."
 
 #. Description of the plugin
 msgid ""
@@ -1188,10 +2194,32 @@ msgstr "Fabricación"
 msgid "Marcar como leído"
 msgstr "Marcar como leído"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:409
+msgid "Market"
+msgstr "Mercado"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:506
 msgid "Marketing qualified (MQL)"
 msgstr "Marketing calificado (MQL)"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:653
+msgid "Material Icon name"
+msgstr "Nombre del icono de Material Design"
+
+#: includes/class-pn-customers-manager-settings.php:101
+msgid ""
+"Maximum number of reminder emails to be sent to each pending referral. Set "
+"to 0 to disable reminders."
+msgstr ""
+"Número máximo de correos electrónicos de recordatorio que se enviarán a cada "
+"referencia pendiente. Establezca el valor en 0 para desactivar los "
+"recordatorios."
+
+#: includes/class-pn-customers-manager-settings.php:100
+msgid "Maximum number of reminders per referral"
+msgstr "Número máximo de recordatorios por derivación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:625
 #: includes/class-pn-customers-manager-post-type-organization.php:536
 msgid "Medium"
 msgstr "Medio"
@@ -1203,33 +2231,74 @@ msgstr "Reunión"
 #: includes/class-pn-customers-manager-contact-form.php:133
 #: includes/class-pn-customers-manager-ajax-nopriv.php:244
 #: includes/class-pn-customers-manager-ajax-nopriv.php:258
+#: includes/class-pn-customers-manager-referral.php:409
 msgid "Mensaje"
 msgstr "Mensaje"
 
-#: includes/class-pn-customers-manager-commercial.php:89
-msgid "Mensaje / Motivacion"
-msgstr "Mensaje / Motivación"
-
-#: includes/class-pn-customers-manager-contact-form.php:268
+#: includes/class-pn-customers-manager-contact-form.php:233
 msgid "Mensaje enviado correctamente. Gracias por contactarnos."
 msgstr "Mensaje enviado correctamente. Gracias por contactarnos."
-
-#: includes/class-pn-customers-manager-settings.php:329
-#: includes/class-pn-customers-manager-settings.php:330
-msgid "Mensajes"
-msgstr "Mensajes"
 
 #: includes/class-pn-customers-manager-contact-messages.php:65
 msgid "Mensajes de contacto"
 msgstr "Mensajes de contacto"
 
-#: includes/class-pn-customers-manager-commercial.php:183
-msgid "Mis Referidos"
-msgstr "Mis Referidos"
+#: includes/class-pn-customers-manager-commercial.php:80
+#| msgid "Mensaje / Motivación"
+msgid "Message / Motivation"
+msgstr "Mensaje / Motivación"
 
-#: includes/class-pn-customers-manager-csv-import.php:660
+#: includes/class-pn-customers-manager-settings.php:853
+msgid "Message received from"
+msgstr "Mensaje recibido de"
+
+#: includes/class-pn-customers-manager-settings.php:848
+msgid "Message sent successfully."
+msgstr "Mensaje enviado correctamente."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:894
+#: includes/class-pn-customers-manager-funnel-builder.php:1056
+msgid "Message sent when starting the conversation..."
+msgstr "Mensaje que se envía al iniciar la conversación..."
+
+#: includes/class-pn-customers-manager-settings.php:749
+#: includes/class-pn-customers-manager-settings.php:750
+msgid "Messages"
+msgstr "Mensajes"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:417
+msgid "messages"
+msgstr "mensajes"
+
+#: includes/class-pn-customers-manager-referral.php:361
+msgid "Mini (833x333)"
+msgstr "Mini (833x333)"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:638
+#: includes/class-pn-customers-manager-whatsapp-ai.php:830
+msgid "minimum order"
+msgstr "pedido mínimo"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:644
+#: includes/class-pn-customers-manager-whatsapp-ai.php:836
+msgid "minimum order + coupon"
+msgstr "pedido mínimo + cupón"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:647
+#: includes/class-pn-customers-manager-whatsapp-ai.php:839
+msgid "minimum order or coupon"
+msgstr "pedido mínimo o cupón"
+
+#: includes/class-pn-customers-manager-csv-import.php:487
 msgid "Missing required column: post_title (or Title)"
 msgstr "Falta la columna obligatoria: post_title (o Título)"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1478
+#: includes/class-pn-customers-manager-instagram-ai.php:1704
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2167
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2392
+msgid "Model:"
+msgstr "Modelo:"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:375
 msgid "More than 500 people"
@@ -1239,13 +2308,20 @@ msgstr "Más de 500 personas"
 msgid "More than €20M"
 msgstr "Más de 20 millones de euros"
 
-#: includes/class-pn-customers-manager-settings.php:209
-msgid "Mostrar ranking de principales referentes"
-msgstr "Mostrar ranking de principales referentes"
+#: includes/class-pn-customers-manager-commercial.php:174
+msgid "My Referrals"
+msgstr "Mis referencias"
 
-#: includes/class-pn-customers-manager-settings.php:210
-msgid "Muestra el listado de principales referentes en el panel de referidos."
-msgstr "Muestra el listado de principales referentes en el panel de referidos."
+#: includes/class-pn-customers-manager-funnel-builder.php:259
+#: includes/class-pn-customers-manager-instagram-ai.php:1598
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2286
+msgid "Name"
+msgstr "Nombre"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:727
+#: includes/class-pn-customers-manager-funnel-builder.php:919
+msgid "Name, description, address, contact details, etc."
+msgstr "Nombre, descripción, dirección, datos de contacto, etc."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:523
 msgid "Negotiation"
@@ -1255,51 +2331,96 @@ msgstr "Negociación"
 msgid "New Funnel category"
 msgstr "Nueva categoría de embudo"
 
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2792
+msgid "New order via WhatsApp"
+msgstr "Nuevo pedido vía WhatsApp"
+
 #: includes/class-pn-customers-manager-csv-import.php:49
 msgid "Next action"
 msgstr "Siguiente acción"
 
-#: includes/class-pn-customers-manager-forms.php:801
+#: includes/class-pn-customers-manager-forms.php:927
+#: includes/class-pn-customers-manager-email-campaigns.php:496
 msgid "No"
 msgstr "No"
 
-#: includes/class-pn-customers-manager-common.php:277
+#: includes/class-pn-customers-manager-common.php:289
 msgid "No audio to transcribe"
 msgstr "No hay audio para transcribir"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:212
+msgid "No campaigns configured. Set them up in the plugin settings."
+msgstr "No hay campañas configuradas. Configúrelas en los ajustes del plugin."
+
+#: includes/class-pn-customers-manager-ajax.php:869
+msgid "No changes were made."
+msgstr "No se realizaron cambios."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:217
 msgid "No contacts linked yet."
 msgstr "Aún no hay contactos vinculados."
 
-#: includes/class-pn-customers-manager-csv-import.php:704
+#: includes/class-pn-customers-manager-funnel-builder.php:416
+#: includes/class-pn-customers-manager-shortcodes.php:375
+#: includes/class-pn-customers-manager-instagram-ai.php:1591
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2279
+msgid "No conversations yet."
+msgstr "Sin conversaciones aún."
+
+#: includes/class-pn-customers-manager-csv-import.php:531
 msgid "No data to import."
 msgstr "No hay datos para importar."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:535
+#: includes/class-pn-customers-manager-email-campaigns.php:632
+msgid "No email template specified."
+msgstr "No se ha especificado ninguna plantilla de correo electrónico."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:448
+msgid "No emails sent yet."
+msgstr "Aún no se han enviado correos electrónicos."
 
 #: includes/class-pn-customers-manager-forms.php:98
 msgid "No file found"
 msgstr "No se encontró ningún archivo"
 
-#: includes/class-pn-customers-manager-forms.php:793
+#: includes/class-pn-customers-manager-forms.php:919
 msgid "No file uploaded"
 msgstr "No se ha subido ningún archivo"
 
-#: includes/class-pn-customers-manager-csv-import.php:615
+#: includes/class-pn-customers-manager-csv-import.php:442
 msgid "No file uploaded."
 msgstr "No hay ningún archivo cargado"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:439
+#: includes/class-pn-customers-manager-funnel-builder.php:491
+msgid "No funnel ID provided."
+msgstr "No se proporcionó ID de embudo."
 
 #: includes/class-pn-customers-manager-contact-messages.php:72
 msgid "No hay mensajes de contacto todavía."
 msgstr "No hay mensajes de contacto todavía."
 
-#: includes/class-pn-customers-manager-forms.php:883
+#: includes/class-pn-customers-manager-forms.php:1009
 msgid "No images uploaded"
 msgstr "No hay imágenes cargadas"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:425
+msgid "No Instagram conversations yet."
+msgstr "Todavía no hay conversaciones en Instagram."
 
 #: includes/class-pn-customers-manager-contact-messages.php:93
 msgid "No leído"
 msgstr "No leído"
 
-#: includes/class-pn-customers-manager-settings.php:348
+#: includes/class-pn-customers-manager-instagram-ai.php:1485
+#: includes/class-pn-customers-manager-instagram-ai.php:1712
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2174
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2400
+msgid "No messages in this conversation."
+msgstr "No hay mensajes en esta conversación."
+
+#: includes/class-pn-customers-manager-settings.php:768
 msgid ""
 "No page with the Organizations block has been detected on your site. Click "
 "the button below to automatically create a new page with the Organizations "
@@ -1312,11 +2433,15 @@ msgstr ""
 "redirigido a su editor para que pueda revisarla, publicarla o realizar los "
 "cambios necesarios."
 
-#: includes/class-pn-customers-manager-referral.php:275
+#: includes/class-pn-customers-manager-referral.php:465
 msgid "No referrals yet. Invite someone to get started!"
 msgstr "Aún no hay referidos. ¡Invita a alguien a empezar!"
 
-#: includes/class-pn-customers-manager-commercial.php:410
+#: includes/class-pn-customers-manager-ajax.php:793
+msgid "No role specified."
+msgstr "No se ha especificado ningún rol."
+
+#: includes/class-pn-customers-manager-commercial.php:401
 msgid "No se encontraron agentes comerciales."
 msgstr "No se encontraron agentes comerciales."
 
@@ -1328,10 +2453,6 @@ msgstr "No se pudo actualizar el usuario existente."
 msgid "No se pudo crear el usuario del cliente."
 msgstr "No se pudo crear el usuario del cliente."
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:153
-msgid "No se pudo crear el usuario. Intentalo de nuevo."
-msgstr "No se pudo crear el usuario. Intentalo de nuevo."
-
 #: includes/class-pn-customers-manager-ajax-nopriv.php:271
 msgid "No se pudo enviar el mensaje. Inténtalo de nuevo más tarde."
 msgstr "No se pudo enviar el mensaje. Inténtalo de nuevo más tarde."
@@ -1340,30 +2461,51 @@ msgstr "No se pudo enviar el mensaje. Inténtalo de nuevo más tarde."
 msgid "No tienes permiso para acceder a esta página."
 msgstr "No tienes permiso para acceder a esta página."
 
-#: includes/class-pn-customers-manager-ajax.php:512
-#: includes/class-pn-customers-manager-ajax.php:526
-msgid "No tienes permiso para realizar esta accion."
-msgstr "No tienes permiso para realizar esta acción."
-
-#: includes/class-pn-customers-manager-ajax.php:540
-#: includes/class-pn-customers-manager-ajax.php:571
+#: includes/class-pn-customers-manager-ajax.php:689
+#: includes/class-pn-customers-manager-ajax.php:703
+#: includes/class-pn-customers-manager-ajax.php:734
+#: includes/class-pn-customers-manager-ajax.php:878
+#: includes/class-pn-customers-manager-ajax.php:891
+#: includes/class-pn-customers-manager-ajax.php:904
 msgid "No tienes permiso para realizar esta acción."
 msgstr "No tienes permiso para realizar esta acción."
 
-#: includes/class-pn-customers-manager-common.php:281
+#: includes/class-pn-customers-manager-ajax.php:216
+#: includes/class-pn-customers-manager-ajax.php:223
+#: includes/class-pn-customers-manager-ajax.php:231
+#: includes/class-pn-customers-manager-ajax.php:239
+#: includes/class-pn-customers-manager-ajax.php:246
+#: includes/class-pn-customers-manager-ajax.php:254
+#: includes/class-pn-customers-manager-ajax.php:262
+#: includes/class-pn-customers-manager-ajax.php:270
+#: includes/class-pn-customers-manager-ajax.php:277
+msgid "No tienes permiso."
+msgstr "No tienes permiso."
+
+#: includes/class-pn-customers-manager-common.php:293
 msgid "No transcription received from server"
 msgstr "No se recibió ninguna transcripción del servidor"
 
-#: includes/class-pn-customers-manager-ajax.php:385
+#: includes/class-pn-customers-manager-ajax.php:548
 msgid "No users available to link."
 msgstr "No hay usuarios disponibles para vincular."
 
-#: includes/class-pn-customers-manager-contact-form.php:104
+#: includes/class-pn-customers-manager-forms.php:684
+#, php-format
+msgid "No users currently have the %s role."
+msgstr "Actualmente ningún usuario tiene el rol %s."
+
+#: includes/class-pn-customers-manager-ajax.php:785
+msgid "No users selected."
+msgstr "No se ha seleccionado ningún usuario."
+
+#: includes/class-pn-customers-manager-commercial.php:51
+#: includes/class-pn-customers-manager-commercial.php:389
 #: includes/class-pn-customers-manager-contact-messages.php:78
+#: includes/class-pn-customers-manager-contact-form.php:104
 #: includes/class-pn-customers-manager-ajax-nopriv.php:239
 #: includes/class-pn-customers-manager-ajax-nopriv.php:253
-#: includes/class-pn-customers-manager-commercial.php:60
-#: includes/class-pn-customers-manager-commercial.php:398
+#: includes/class-pn-customers-manager-referral.php:371
 msgid "Nombre"
 msgstr "Nombre"
 
@@ -1403,6 +2545,10 @@ msgstr "No iniciado"
 msgid "Notas internas"
 msgstr "Notas internas"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:537
+msgid "Notes"
+msgstr "Notas"
+
 #: includes/class-pn-customers-manager-ajax-nopriv.php:235
 msgid "Nuevo mensaje de contacto"
 msgstr "Nuevo mensaje de contacto"
@@ -1423,18 +2569,77 @@ msgstr "El número debe ser al menos %s."
 msgid "Number must be at most %s."
 msgstr "El número debe ser como máximo %s."
 
+#: includes/class-pn-customers-manager-funnel-builder.php:575
+msgid "Open in new tab"
+msgstr "Abrir en una pestaña nueva"
+
+#: includes/class-pn-customers-manager-settings.php:156
+msgid "OpenAI"
+msgstr "OpenAI"
+
+#: includes/class-pn-customers-manager-settings.php:157
+msgid ""
+"OpenAI API configuration for AI-powered message processing.<br><br><strong>"
+"Prerequisites:</strong><br>1. Create an account at <a href=\"https:"
+"//platform.openai.com/\" target=\"_blank\">OpenAI Platform</a>.<br>2. Add a "
+"payment method at <a href=\"https://platform.openai."
+"com/settings/organization/billing/overview\" target=\"_blank\">Billing</a> "
+"for available credit.<br>3. Generate an API Key from <a href=\"https:"
+"//platform.openai.com/api-keys\" target=\"_blank\">API Keys</a>."
+msgstr ""
+"Configuración de la API de OpenAI para el procesamiento de mensajes mediante "
+"inteligencia artificial.<br><br> <strong>Requisitos previos:</strong><br> 1. "
+"Crea una cuenta en <a href=\"https://platform.openai.com/\" "
+"target=\"_blank\">la plataforma OpenAI</a> .<br> 2. Añada un método de pago "
+"en la <a href=\"https://platform.openai."
+"com/settings/organization/billing/overview\" target=\"_blank\">sección de "
+"Facturación</a> para el crédito disponible.<br> 3. Generar una clave API a "
+"partir de <a href=\"https://platform.openai.com/api-keys\" target=\"_blank\">"
+"las claves API</a> ."
+
+#: includes/class-pn-customers-manager-settings.php:165
+msgid "OpenAI API Key"
+msgstr "API Key de OpenAI"
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2465
+msgid "OpenAI API Key has not been configured."
+msgstr "La API Key de OpenAI no ha sido configurada."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:289
+#: includes/class-pn-customers-manager-email-campaigns.php:467
+msgid "Opened"
+msgstr "Abierto"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:760
+#: includes/class-pn-customers-manager-funnel-builder.php:952
+msgid "Opening hours"
+msgstr "Horario de apertura"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:508
 msgid "Opportunity"
 msgstr "Oportunidad"
 
-#: includes/class-pn-customers-manager-forms.php:451
-#: includes/class-pn-customers-manager-forms.php:467
+#: includes/class-pn-customers-manager-forms.php:454
+#: includes/class-pn-customers-manager-forms.php:470
 msgid "Order element"
 msgstr "Elemento de orden"
 
-#: includes/class-pn-customers-manager-common.php:266
+#: includes/class-pn-customers-manager-funnel-builder.php:125
+msgid "Order form"
+msgstr "Formulario de pedido"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:835
+#: includes/class-pn-customers-manager-settings.php:263
+msgid "Order notification email"
+msgstr "Correo electrónico de notificación de pedido"
+
+#: includes/class-pn-customers-manager-common.php:278
 msgid "Ordered element"
 msgstr "Elemento ordenado"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:93
+msgid "Organic social"
+msgstr "Redes sociales orgánicas"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:32
 #: includes/class-pn-customers-manager-post-type-organization.php:33
@@ -1446,9 +2651,9 @@ msgstr "Descripción de la organización"
 msgid "Organization details"
 msgstr "Detalles de la organización"
 
-#: includes/class-pn-customers-manager-ajax.php:358
-#: includes/class-pn-customers-manager-ajax.php:429
-#: includes/class-pn-customers-manager-ajax.php:466
+#: includes/class-pn-customers-manager-ajax.php:521
+#: includes/class-pn-customers-manager-ajax.php:592
+#: includes/class-pn-customers-manager-ajax.php:629
 msgid "Organization ID is required."
 msgstr "Se requiere ID de la organización."
 
@@ -1457,18 +2662,13 @@ msgstr "Se requiere ID de la organización."
 msgid "Organization title"
 msgstr "Título de la organización"
 
-#: includes/class-pn-customers-manager-ajax.php:302
+#: includes/class-pn-customers-manager-ajax.php:431
+#: includes/class-pn-customers-manager-settings.php:692
+#: includes/class-pn-customers-manager-settings.php:693
 #: includes/class-pn-customers-manager-post-type-organization.php:706
 #: includes/class-pn-customers-manager-post-type-organization.php:722
-#: includes/class-pn-customers-manager-settings.php:296
-#: includes/class-pn-customers-manager-settings.php:297
 msgid "Organizations"
 msgstr "Organizaciones"
-
-#: includes/class-pn-customers-manager-csv-import.php:538
-#: includes/class-pn-customers-manager-csv-import.php:1029
-msgid "organizations created successfully."
-msgstr "organizaciones creadas con éxito."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:361
 #: includes/class-pn-customers-manager-post-type-organization.php:598
@@ -1483,6 +2683,15 @@ msgstr "Otra fuente"
 msgid "Outbound prospecting"
 msgstr "Prospección saliente"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:599
+msgid "Outline"
+msgstr "Describir"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:720
+#: includes/class-pn-customers-manager-funnel-builder.php:912
+msgid "Override the global prompt for this node..."
+msgstr "Sobrescribir el prompt global para este nodo..."
+
 #: includes/class-pn-customers-manager-csv-import.php:46
 msgid "Owner (user ID)"
 msgstr "Propietario (ID de usuario)"
@@ -1491,17 +2700,9 @@ msgstr "Propietario (ID de usuario)"
 msgid "Padres en la Nube"
 msgstr "Padres en la Nube"
 
-#: includes/class-pn-customers-manager-settings.php:177
-msgid "Pagina del CRM"
-msgstr "Página del CRM"
-
 #: includes/class-pn-customers-manager-post-type-organization.php:490
 msgid "Paid campaigns"
 msgstr "Campañas pagadas"
-
-#: includes/class-pn-customers-manager-commercial.php:152
-msgid "Panel Comercial"
-msgstr "Panel Comercial"
 
 #: includes/class-pn-customers-manager-contact-messages.php:121
 msgid "Para:"
@@ -1523,11 +2724,6 @@ msgstr "Categoría del embudo principal:"
 msgid "Parent Organization"
 msgstr "Organización de padres"
 
-#: includes/class-pn-customers-manager-csv-import.php:470
-#: includes/class-pn-customers-manager-csv-import.php:961
-msgid "Parsing CSV…"
-msgstr "Analizando CSV…"
-
 #: includes/class-pn-customers-manager-post-type-organization.php:494
 msgid "Partner"
 msgstr "Pareja"
@@ -1536,42 +2732,75 @@ msgstr "Pareja"
 msgid "Password strength checker"
 msgstr "Comprobador de la fortaleza de la contraseña"
 
-#: includes/class-pn-customers-manager-commercial.php:431
+#: includes/class-pn-customers-manager-commercial.php:422
 msgid "Pendiente"
 msgstr "Pendiente"
 
-#: includes/class-pn-customers-manager-commercial.php:165
-#: includes/class-pn-customers-manager-commercial.php:390
+#: includes/class-pn-customers-manager-commercial.php:381
 msgid "Pendientes"
 msgstr "Pendientes"
 
-#: includes/class-pn-customers-manager-referral.php:251
+#: includes/class-pn-customers-manager-commercial.php:156
+#: includes/class-pn-customers-manager-referral.php:441
 msgid "Pending"
 msgstr "Pendiente"
 
-#: includes/class-pn-customers-manager-csv-import.php:609
-#: includes/class-pn-customers-manager-csv-import.php:695
+#: includes/class-pn-customers-manager-csv-import.php:436
+#: includes/class-pn-customers-manager-csv-import.php:522
 msgid "Permission denied."
 msgstr "Permiso denegado."
 
-#: includes/class-pn-customers-manager-common.php:285
+#: includes/class-pn-customers-manager-common.php:297
 msgid "Permission error: Security verification failed"
 msgstr "Error de permiso: Error en la verificación de seguridad"
 
+#: includes/class-pn-customers-manager-referral.php:242
+msgid "Personaliza tu mensaje:"
+msgstr "Personaliza tu mensaje:"
+
 #: includes/class-pn-customers-manager-csv-import.php:30
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2285
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2796
 msgid "Phone"
 msgstr "Teléfono"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:517
+#: includes/class-pn-customers-manager-settings.php:304
+msgid "Phone Number ID"
+msgstr "Phone Number ID"
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2520
+msgid "Phone Number ID has not been configured."
+msgstr "No se ha configurado el Phone Number ID."
+
+#: includes/class-pn-customers-manager-settings.php:335
+msgid ""
+"Phone number to send the test message to. Include the country code without "
+"the + sign (e.g.: <code>34612345678</code> for Spain)."
+msgstr ""
+"Número de teléfono al que enviar el mensaje de prueba. Incluya el código de "
+"país sin el signo + (por ejemplo: <code>34612345678</code> para España)."
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2165
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2390
+msgid "Phone:"
+msgstr "Teléfono:"
+
+#: includes/class-pn-customers-manager-settings.php:133
+#, fuzzy
+#| msgid "Frase"
+msgid "Phrase"
+msgstr "Frase"
+
 #: includes/class-pn-customers-manager-csv-import.php:42
+#: includes/class-pn-customers-manager-post-type-organization.php:517
 msgid "Pipeline stage"
 msgstr "Etapa de tubería"
 
-#: includes/class-pn-customers-manager-forms.php:520
+#: includes/class-pn-customers-manager-forms.php:523
 msgid "Play audio"
 msgstr "Reproducir audio"
 
-#: includes/class-pn-customers-manager-common.php:246
+#: includes/class-pn-customers-manager-common.php:258
 msgid "Please create a new user or login to save the information."
 msgstr ""
 "Por favor crea un nuevo usuario o inicia sesión para guardar la información."
@@ -1581,9 +2810,13 @@ msgid "Please enter a valid date."
 msgstr "Por favor, introduzca una fecha válida."
 
 #: includes/class-pn-customers-manager-validation.php:65
-#: includes/class-pn-customers-manager-common.php:293
+#: includes/class-pn-customers-manager-common.php:305
 msgid "Please enter a valid email address."
 msgstr "Por favor, introduce una dirección de correo electrónico válida."
+
+#: includes/class-pn-customers-manager-commercial.php:226
+msgid "Please enter a valid email."
+msgstr "Por favor, introduzca un correo electrónico válido."
 
 #: includes/class-pn-customers-manager-validation.php:84
 msgid "Please enter a valid number."
@@ -1593,20 +2826,19 @@ msgstr "Por favor, introduzca un número válido."
 msgid "Please enter a valid URL."
 msgstr "Introduzca una URL válida."
 
-#: includes/class-pn-customers-manager-referral.php:186
+#: includes/class-pn-customers-manager-commercial.php:219
+msgid "Please fill in all required fields."
+msgstr "Por favor, rellene todos los campos obligatorios."
+
+#: includes/class-pn-customers-manager-referral.php:191
 msgid "Please log in to access the referrals panel."
 msgstr "Inicie sesión para acceder al panel de referidos."
-
-#: includes/class-pn-customers-manager-csv-import.php:467
-#: includes/class-pn-customers-manager-csv-import.php:958
-msgid "Please select a CSV file first."
-msgstr "Primero seleccione un archivo CSV."
 
 #: includes/class-pn-customers-manager-validation.php:148
 msgid "Please select a valid option."
 msgstr "Seleccione una opción válida."
 
-#: includes/class-pn-customers-manager-ajax.php:438
+#: includes/class-pn-customers-manager-ajax.php:601
 msgid "Please select a valid user."
 msgstr "Seleccione un usuario válido."
 
@@ -1614,31 +2846,30 @@ msgstr "Seleccione un usuario válido."
 msgid "Please select valid options."
 msgstr "Seleccione opciones válidas."
 
-#: includes/class-pn-customers-manager-settings.php:342
+#: includes/class-pn-customers-manager-settings.php:762
 msgid "Plugin main Banner"
 msgstr "Banner principal del complemento"
 
 #. Name of the plugin
-#: includes/class-pn-customers-manager-settings.php:264
-#: includes/class-pn-customers-manager-settings.php:265
+#: includes/class-pn-customers-manager-ajax.php:817
+#: includes/class-pn-customers-manager-forms.php:650
 #: includes/class-pn-customers-manager-activator.php:28
+#: includes/class-pn-customers-manager-settings.php:593
+#: includes/class-pn-customers-manager-settings.php:595
+#: includes/class-pn-customers-manager-settings.php:651
+#: includes/class-pn-customers-manager-settings.php:652
 msgid "PN Customers Manager"
 msgstr "Gestorde Clientes - PN"
 
-#: includes/class-pn-customers-manager-settings.php:343
+#: includes/class-pn-customers-manager-settings.php:763
 msgid "PN Customers Manager Settings"
 msgstr "Configuración del administrador de clientes de PN"
 
-#: includes/class-pn-customers-manager-common.php:307
-#: includes/class-pn-customers-manager-contact-form.php:236
+#: includes/class-pn-customers-manager-common.php:319
+#: includes/class-pn-customers-manager-contact-form.php:230
 #: includes/class-pn-customers-manager-ajax-nopriv.php:189
-#: includes/class-pn-customers-manager-commercial.php:228
 msgid "Por favor, completa todos los campos obligatorios."
 msgstr "Por favor, completa todos los campos obligatorios."
-
-#: includes/class-pn-customers-manager-commercial.php:235
-msgid "Por favor, introduce un email valido."
-msgstr "Por favor, introduce un correo electrónico válido."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:549
 msgid "Possible churn"
@@ -1665,25 +2896,36 @@ msgctxt "Post Type singular name"
 msgid "Organization"
 msgstr "Organización"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:461
 #: includes/class-pn-customers-manager-csv-import.php:38
+#: includes/class-pn-customers-manager-post-type-organization.php:461
 msgid "Postal code"
 msgstr "Código Postal"
 
-#: includes/class-pn-customers-manager-csv-import.php:446
-#: includes/class-pn-customers-manager-csv-import.php:937
-msgid "Preview"
-msgstr "Avance"
+#: includes/class-pn-customers-manager-instagram-ai.php:606
+#: includes/class-pn-customers-manager-whatsapp-ai.php:798
+msgid "Postcode"
+msgstr "Código postal"
 
-#: includes/class-pn-customers-manager-settings.php:87
+#: includes/class-pn-customers-manager-settings.php:126
+msgid ""
+"Predefined phrases that users can select for the back of their business card."
+msgstr ""
+"Frases predefinidas que los usuarios pueden seleccionar para el reverso de "
+"su tarjeta de visita."
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2807
+msgid "Price"
+msgstr "Precio"
+
+#: includes/class-pn-customers-manager-settings.php:467
 msgid "Primary background color (default: #0000aa)"
 msgstr "Color de fondo primario (predeterminado: #0000aa)"
 
-#: includes/class-pn-customers-manager-settings.php:97
+#: includes/class-pn-customers-manager-settings.php:477
 msgid "Primary border color (default: #0000aa)"
 msgstr "Color de borde primario (predeterminado: #0000aa)"
 
-#: includes/class-pn-customers-manager-settings.php:77
+#: includes/class-pn-customers-manager-settings.php:457
 msgid ""
 "Primary color used for text, backgrounds, and borders (default: #0000aa)"
 msgstr ""
@@ -1707,18 +2949,34 @@ msgid "Priority"
 msgstr "Prioridad"
 
 #: includes/class-pn-customers-manager-csv-import.php:348
-#: includes/class-pn-customers-manager-csv-import.php:438
-#: includes/class-pn-customers-manager-csv-import.php:929
 msgid "Processing…"
 msgstr "Tratamiento…"
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2806
+msgid "Product"
+msgstr "Producto"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:805
+#: includes/class-pn-customers-manager-funnel-builder.php:997
+#: includes/class-pn-customers-manager-settings.php:231
+msgid ""
+"Product links will add the product to the cart directly. If disabled, links "
+"will point to the product page."
+msgstr ""
+"Los enlaces de producto añadirán el producto directamente al carrito. Si "
+"están desactivados, los enlaces redirigirán a la página del producto."
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2803
+msgid "Products mentioned"
+msgstr "Productos mencionados"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:355
 msgid "Professional services"
 msgstr "Servicios profesionales"
 
-#: includes/class-pn-customers-manager-commercial.php:35
-msgid "Programa de Agentes Comerciales"
-msgstr "Programa de Agentes Comerciales"
+#: includes/class-pn-customers-manager-funnel-builder.php:257
+msgid "Properties"
+msgstr "Propiedades"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:522
 msgid "Proposal"
@@ -1740,59 +2998,76 @@ msgstr "Página"
 msgid "Página de origen:"
 msgstr "Página de origen:"
 
+#: includes/class-pn-customers-manager-settings.php:90
+msgid "QR code logo"
+msgstr "Logotipo de código QR"
+
 #: includes/class-pn-customers-manager-post-type-organization.php:520
 msgid "Qualification"
 msgstr "Calificación"
 
-#: includes/class-pn-customers-manager-common.php:272
-#: includes/class-pn-customers-manager-forms.php:495
+#: includes/class-pn-customers-manager-email-campaigns.php:297
+msgid "Queued"
+msgstr "En cola"
+
+#: includes/class-pn-customers-manager-common.php:284
+#: includes/class-pn-customers-manager-forms.php:498
 msgid "Ready to record"
 msgstr "Listo para grabar"
 
-#: includes/class-pn-customers-manager-common.php:311
-#: includes/class-pn-customers-manager-commercial.php:433
+#: includes/class-pn-customers-manager-commercial.php:424
+#: includes/class-pn-customers-manager-common.php:323
 msgid "Rechazado"
 msgstr "Rechazado"
 
-#: includes/class-pn-customers-manager-commercial.php:392
+#: includes/class-pn-customers-manager-commercial.php:383
 msgid "Rechazados"
 msgstr "Rechazados"
 
-#: includes/class-pn-customers-manager-commercial.php:445
+#: includes/class-pn-customers-manager-commercial.php:436
 msgid "Rechazar"
 msgstr "Rechazar"
 
-#: includes/class-pn-customers-manager-common.php:275
+#: includes/class-pn-customers-manager-common.php:287
 msgid "Recording completed. Ready to transcribe."
 msgstr "Grabación completada. Lista para transcribir."
 
-#: includes/class-pn-customers-manager-common.php:274
+#: includes/class-pn-customers-manager-common.php:286
 msgid "Recording stopped. Ready to play or transcribe."
 msgstr "Grabación detenida. Listo para reproducir o transcribir."
 
-#: includes/class-pn-customers-manager-common.php:273
+#: includes/class-pn-customers-manager-common.php:285
 msgid "Recording..."
 msgstr "Grabación..."
-
-#: includes/class-pn-customers-manager-settings.php:190
-msgid "Referidos"
-msgstr "Referidos"
-
-#: includes/class-pn-customers-manager-commercial.php:157
-msgid "Referidos enviados"
-msgstr "Referidos enviados"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:492
 msgid "Referral"
 msgstr "Remisión"
 
-#: includes/class-pn-customers-manager-common.php:292
+#: includes/class-pn-customers-manager-ajax-nopriv.php:116
+#: includes/class-pn-customers-manager-ajax-nopriv.php:141
+msgid "Referral code is invalid."
+msgstr "El código de referencia no es válido."
+
+#: includes/class-pn-customers-manager-common.php:304
 msgid "Referral link copied to clipboard!"
 msgstr "¡Enlace de referencia copiado al portapapeles!"
 
-#: includes/class-pn-customers-manager-referral.php:207
+#: includes/class-pn-customers-manager-referral.php:212
 msgid "Referral link:"
 msgstr "Enlace de referencia:"
+
+#: includes/class-pn-customers-manager-settings.php:56
+msgid "Referral system and QR code configuration."
+msgstr "Configuración del sistema de referencias y del código QR."
+
+#: includes/class-pn-customers-manager-settings.php:55
+msgid "Referrals"
+msgstr "Referencias"
+
+#: includes/class-pn-customers-manager-commercial.php:148
+msgid "Referred sent"
+msgstr "Remitido enviado"
 
 #: includes/class-pn-customers-manager-csv-import.php:35
 msgid "Region"
@@ -1802,27 +3077,35 @@ msgstr "Región"
 msgid "Region / State"
 msgstr "Región / Estado"
 
-#: includes/class-pn-customers-manager-referral.php:155
+#: includes/class-pn-customers-manager-referral.php:164
 msgid "Registrarme"
 msgstr "Registrarme"
 
-#: includes/class-pn-customers-manager-common.php:302
 #: includes/class-pn-customers-manager-ajax-nopriv.php:167
 msgid "Registro completado! Revisa tu email para activar tu cuenta."
 msgstr ""
 "Registro completado! Revisa tu correo electrónico para activar tu cuenta."
 
+#: includes/class-pn-customers-manager-settings.php:118
+msgid "Reminder frequency"
+msgstr "Frecuencia de recordatorio"
+
 #: templates/pn-customers-manager-popups.php:39
 msgid "removal"
 msgstr "eliminación"
 
-#: templates/pn-customers-manager-popups.php:47
 #: includes/class-pn-customers-manager-post-type-organization.php:248
+#: templates/pn-customers-manager-popups.php:47
 msgid "Remove"
 msgstr "Eliminar"
 
-#: includes/class-pn-customers-manager-forms.php:455
-#: includes/class-pn-customers-manager-forms.php:471
+#: includes/class-pn-customers-manager-forms.php:731
+#, php-format
+msgid "Remove %s Role"
+msgstr "Eliminar el rol %s"
+
+#: includes/class-pn-customers-manager-forms.php:458
+#: includes/class-pn-customers-manager-forms.php:474
 msgid "Remove element"
 msgstr "Eliminar elemento"
 
@@ -1834,46 +3117,68 @@ msgstr "Eliminar embudo"
 msgid "Remove Organization"
 msgstr "Eliminar organización"
 
-#: includes/class-pn-customers-manager-settings.php:54
+#: includes/class-pn-customers-manager-settings.php:573
 msgid "Remove plugin options on deactivation"
 msgstr "Eliminar las opciones del plugin al desactivarlo"
 
-#: includes/class-pn-customers-manager-common.php:248
+#: includes/class-pn-customers-manager-common.php:260
 msgid "Removed successfully"
 msgstr "Eliminado exitosamente"
 
-#: includes/class-pn-customers-manager-forms.php:664
-#: includes/class-pn-customers-manager-forms.php:731
+#: includes/class-pn-customers-manager-forms.php:790
+#: includes/class-pn-customers-manager-forms.php:857
 msgid "Required field"
 msgstr "Campo obligatorio"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:239
+msgid "Reset view"
+msgstr "Restablecer vista"
+
+#: includes/class-pn-customers-manager-referral.php:296
+msgid "Restablecer"
+msgstr "Restablecer"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:360
 msgid "Retail / eCommerce"
 msgstr "Comercio minorista/comercio electrónico"
 
-#: includes/class-pn-customers-manager-csv-import.php:749
+#: includes/class-pn-customers-manager-referral.php:302
+msgid "Reverso"
+msgstr "Reverso"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:638
+#: includes/class-pn-customers-manager-funnel-builder.php:665
+msgid "Right"
+msgstr "Bien"
+
+#: includes/class-pn-customers-manager-csv-import.php:576
 #, php-format
 msgid "Row %d: Error creating post — %s"
 msgstr "Fila %d: Error al crear la publicación — %s"
 
-#: includes/class-pn-customers-manager-csv-import.php:726
+#: includes/class-pn-customers-manager-csv-import.php:553
 msgid "Row %d: post_title is empty, skipped."
 msgstr "Fila %d: post_title está vacío, se omitió."
 
-#: includes/class-pn-customers-manager-csv-import.php:508
-#: includes/class-pn-customers-manager-csv-import.php:999
-msgid "rows found"
-msgstr "filas encontradas"
+#: includes/class-pn-customers-manager-funnel-builder.php:113
+msgid "Sales page"
+msgstr "Página de ventas"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:507
 msgid "Sales qualified (SQL)"
 msgstr "Ventas calificadas (SQL)"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:69
+#: includes/class-pn-customers-manager-funnel-builder.php:1102
+msgid "Save"
+msgstr "Guardar"
+
 #: includes/class-pn-customers-manager-post-type-funnel.php:728
 msgid "Save Funnel"
 msgstr "Embudo de ahorro"
 
-#: includes/class-pn-customers-manager-settings.php:235
+#: includes/class-pn-customers-manager-settings.php:804
+#: includes/class-pn-customers-manager-settings.php:825
 msgid "Save options"
 msgstr "Guardar opciones"
 
@@ -1885,7 +3190,7 @@ msgstr "Guardar organización"
 msgid "Save the organization to start adding contacts."
 msgstr "Guarde la organización para comenzar a agregar contactos."
 
-#: includes/class-pn-customers-manager-common.php:247
+#: includes/class-pn-customers-manager-common.php:259
 msgid "Saved successfully"
 msgstr "Guardado con éxito"
 
@@ -1903,40 +3208,32 @@ msgstr "Embudos de búsqueda"
 msgid "Search Organizations"
 msgstr "Organizaciones de búsqueda"
 
+#: includes/class-pn-customers-manager-ajax.php:773
+msgid "Security check failed for role assignment."
+msgstr "Falló la comprobación de seguridad para la asignación de roles."
+
 #: includes/class-pn-customers-manager-ajax.php:34
+#: includes/class-pn-customers-manager-ajax-nopriv.php:33
 #: includes/class-pn-customers-manager-post-type-funnel.php:230
 #: includes/class-pn-customers-manager-post-type-organization.php:814
-#: includes/class-pn-customers-manager-ajax-nopriv.php:33
 msgid "Security check failed: Invalid nonce."
 msgstr "Error en la comprobación de seguridad: nonce no válido."
 
 #: includes/class-pn-customers-manager-ajax.php:25
+#: includes/class-pn-customers-manager-ajax-nopriv.php:24
 #: includes/class-pn-customers-manager-post-type-funnel.php:221
 #: includes/class-pn-customers-manager-post-type-organization.php:805
-#: includes/class-pn-customers-manager-ajax-nopriv.php:24
 msgid "Security check failed: Nonce is required."
 msgstr "Error en la comprobación de seguridad: se requiere Nonce."
 
-#: includes/class-pn-customers-manager-post-type-organization.php:337
 #: includes/class-pn-customers-manager-csv-import.php:26
+#: includes/class-pn-customers-manager-post-type-organization.php:337
 msgid "Segment"
 msgstr "Segmento"
 
-#: includes/class-pn-customers-manager-settings.php:178
-msgid ""
-"Selecciona la pagina del CRM a la que accederan los agentes comerciales "
-"aprobados."
-msgstr ""
-"Selecciona la pagina del CRM a la que accederan los agentes comerciales "
-"aprobados."
-
-#: includes/class-pn-customers-manager-settings.php:218
-msgid ""
-"Selecciona una imagen que se mostrara en el centro del codigo QR. "
-"Recomendado: cuadrada, minimo 80x80px."
-msgstr ""
-"Selecciona una imagen que se mostrará en el centro del código QR. "
-"Recomendado: cuadrado, mínimo 80x80px."
+#: includes/class-pn-customers-manager-referral.php:329
+msgid "Seleccionar imagen"
+msgstr "Seleccionar imagen"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:592
 msgid "Select a channel"
@@ -1947,6 +3244,10 @@ msgstr "Seleccione un canal"
 msgid "Select a funnel"
 msgstr "Seleccione un embudo"
 
+#: includes/class-pn-customers-manager-funnel-builder.php:411
+msgid "Select a funnel first."
+msgstr "Selecciona un embudo primero."
+
 #: includes/class-pn-customers-manager-post-type-organization.php:127
 #: includes/class-pn-customers-manager-post-type-organization.php:669
 msgid "Select a funnel stage"
@@ -1956,6 +3257,10 @@ msgstr "Seleccione una etapa del embudo"
 #: includes/class-pn-customers-manager-post-type-organization.php:678
 msgid "Select a funnel status"
 msgstr "Seleccione un estado de embudo"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:223
+msgid "Select a funnel to start designing"
+msgstr "Selecciona un embudo para comenzar a diseñar"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:546
 msgid "Select a health status"
@@ -1986,45 +3291,66 @@ msgstr "Seleccione un segmento"
 msgid "Select a source"
 msgstr "Seleccione una fuente"
 
-#: includes/class-pn-customers-manager-ajax.php:388
-#: includes/class-pn-customers-manager-ajax.php:390
+#: includes/class-pn-customers-manager-ajax.php:551
+#: includes/class-pn-customers-manager-ajax.php:553
 #: includes/class-pn-customers-manager-post-type-organization.php:50
 msgid "Select a user"
 msgstr "Seleccione un usuario"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:254
+msgid "Select an element to see its properties"
+msgstr "Selecciona un elemento para ver sus propiedades"
+
+#: includes/class-pn-customers-manager-settings.php:91
+msgid ""
+"Select an image to display in the center of the QR code. Recommended: square,"
+" minimum 80x80px."
+msgstr ""
+"Seleccione una imagen para mostrar en el centro del código QR. Recomendada: "
+"cuadrada, mínimo 80x80 píxeles."
 
 #: includes/class-pn-customers-manager-post-type-organization.php:353
 msgid "Select an industry"
 msgstr "Seleccione una industria"
 
-#: includes/class-pn-customers-manager-common.php:260
+#: includes/class-pn-customers-manager-common.php:329
+#: includes/class-pn-customers-manager-email-campaigns.php:542
+msgid "Select at least one user or enter an email."
+msgstr "Seleccione al menos un usuario o introduzca un correo electrónico."
+
+#: includes/class-pn-customers-manager-common.php:326
+msgid "Select at least one user."
+msgstr "Seleccione al menos un usuario."
+
+#: includes/class-pn-customers-manager-common.php:272
 msgid "Select audio"
 msgstr "Seleccionar audio"
 
-#: includes/class-pn-customers-manager-common.php:261
+#: includes/class-pn-customers-manager-common.php:273
 msgid "Select audios"
 msgstr "Seleccionar audios"
 
-#: includes/class-pn-customers-manager-common.php:264
+#: includes/class-pn-customers-manager-common.php:276
 msgid "Select file"
 msgstr "Seleccione archivo"
 
-#: includes/class-pn-customers-manager-common.php:265
+#: includes/class-pn-customers-manager-common.php:277
 msgid "Select files"
 msgstr "Selecciona archivos"
 
-#: includes/class-pn-customers-manager-common.php:252
+#: includes/class-pn-customers-manager-common.php:264
 msgid "Select image"
 msgstr "Seleccionar imagen"
 
-#: includes/class-pn-customers-manager-common.php:253
+#: includes/class-pn-customers-manager-common.php:265
 msgid "Select images"
 msgstr "Seleccionar imágenes"
 
-#: includes/class-pn-customers-manager-common.php:267
+#: includes/class-pn-customers-manager-common.php:279
 msgid "Select option"
 msgstr "Seleccionar opción"
 
-#: includes/class-pn-customers-manager-common.php:268
+#: includes/class-pn-customers-manager-common.php:280
 msgid "Select options"
 msgstr "Seleccionar opciones"
 
@@ -2032,36 +3358,132 @@ msgstr "Seleccionar opciones"
 msgid "Select other team members involved with the account."
 msgstr "Seleccione otros miembros del equipo involucrados con la cuenta."
 
-#: includes/class-pn-customers-manager-common.php:256
+#: includes/class-pn-customers-manager-settings.php:39
+msgid "Select the CRM page that approved commercial agents will access."
+msgstr ""
+"Seleccione la página del CRM a la que tendrán acceso los agentes comerciales "
+"autorizados."
+
+#: includes/class-pn-customers-manager-forms.php:692
+msgid "Select Users"
+msgstr "Seleccionar usuarios"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:253
+msgid "Select users"
+msgstr "Seleccionar usuarios"
+
+#: includes/class-pn-customers-manager-common.php:268
 msgid "Select video"
 msgstr "Seleccionar vídeo"
 
-#: includes/class-pn-customers-manager-common.php:257
+#: includes/class-pn-customers-manager-common.php:269
 msgid "Select videos"
 msgstr "Seleccionar vídeos"
 
-#: includes/class-pn-customers-manager-referral.php:204
+#: includes/class-pn-customers-manager-email-campaigns.php:309
+msgid "Send"
+msgstr "Enviar"
+
+#: includes/class-pn-customers-manager-commercial.php:87
+msgid "Send application"
+msgstr "Enviar solicitud"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:302
+msgid "Send campaign"
+msgstr "Enviar campaña"
+
+#: includes/class-pn-customers-manager-referral.php:209
 msgid "Send invitation"
 msgstr "Enviar invitación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:814
+#: includes/class-pn-customers-manager-settings.php:241
+msgid "Send product images"
+msgstr "Enviar imágenes del producto"
+
+#: includes/class-pn-customers-manager-settings.php:344
+#: includes/class-pn-customers-manager-settings.php:421
+msgid "Send test message"
+msgstr "Enviar mensaje de prueba"
+
+#: includes/class-pn-customers-manager-settings.php:420
+msgid ""
+"Sends a test message to the IGSID above to verify that the Access Token and "
+"Page ID are correct. <strong>Save settings before testing.</strong>"
+msgstr ""
+"Envía un mensaje de prueba al IGSID indicado anteriormente para verificar "
+"que el token de acceso y el ID de página sean correctos. <strong>Guarde la "
+"configuración antes de realizar la prueba.</strong>"
+
+#: includes/class-pn-customers-manager-settings.php:343
+msgid ""
+"Sends a test message to the number above to verify that the Access Token and "
+"Phone Number ID are correct. <strong>Save settings before testing.</strong>"
+msgstr ""
+"Envía un mensaje de prueba al número indicado anteriormente para verificar "
+"que el token de acceso y el ID del número de teléfono sean correctos. "
+"<strong>Guarde la configuración antes de realizar la prueba.</strong>"
+
+#: includes/class-pn-customers-manager-settings.php:273
+msgid ""
+"Sends a test message to the OpenAI API to verify that the API Key and model "
+"work correctly. It will use the model and temperature configured above."
+msgstr ""
+"Envía un mensaje de prueba a la API de OpenAI para verificar que la API Key "
+"y el modelo funcionan correctamente. Se usará el modelo y la temperatura "
+"configurados arriba."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:285
+msgid "Sent"
+msgstr "Enviado"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:324
+msgid "Sent emails"
+msgstr "Correos electrónicos enviados"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:636
 msgid "Separa las etiquetas con comas."
 msgstr "Separa las etiquetas con comas."
 
-#: includes/class-pn-customers-manager-common.php:286
+#: includes/class-pn-customers-manager-common.php:298
 msgid "Server error: Internal server problem"
 msgstr "Error del servidor: Problema interno del servidor"
 
-#: includes/class-pn-customers-manager-settings.php:274
-#: includes/class-pn-customers-manager-settings.php:275
-#: includes/class-pn-customers-manager-settings.php:468
+#: includes/class-pn-customers-manager-funnel-builder.php:265
+#: includes/class-pn-customers-manager-funnel-builder.php:351
+#: includes/class-pn-customers-manager-funnel-builder.php:421
+#: includes/class-pn-customers-manager-settings.php:661
+#: includes/class-pn-customers-manager-settings.php:662
+#: includes/class-pn-customers-manager-settings.php:950
 msgid "Settings"
 msgstr "Ajustes"
 
-#: includes/class-pn-customers-manager-csv-import.php:509
-#: includes/class-pn-customers-manager-csv-import.php:1000
-msgid "showing first 50"
-msgstr "mostrando los primeros 50"
+#: includes/class-pn-customers-manager-settings.php:875
+msgid "Settings imported successfully. Reloading..."
+msgstr "Configuración importada correctamente. Recargando..."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:698
+msgid "Shortcode"
+msgstr "Código corto"
+
+#: includes/class-pn-customers-manager-settings.php:74
+msgid "Show top referrers ranking"
+msgstr "Mostrar el ranking de los principales referentes"
+
+#: includes/class-pn-customers-manager-settings.php:75
+msgid "Shows the list of top referrers in the referral panel."
+msgstr ""
+"Muestra la lista de los principales referentes en el panel de referencias."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:622
+msgid "Size"
+msgstr "Tamaño"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:624
+#, fuzzy
+#| msgid "Call"
+msgid "Small"
+msgstr "Llamada"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:341
 msgid "Small / mid-sized business"
@@ -2071,19 +3493,15 @@ msgstr "Pequeñas y medianas empresas"
 msgid "Software / SaaS"
 msgstr "Software/SaaS"
 
-#: includes/class-pn-customers-manager-commercial.php:54
+#: includes/class-pn-customers-manager-commercial.php:45
 msgid "Solicitud de Agente Comercial"
 msgstr "Solicitud de Agente Comercial"
 
-#: includes/class-pn-customers-manager-commercial.php:109
-msgid "Solicitud en revision"
-msgstr "Solicitud de revisión"
+#: includes/class-pn-customers-manager-funnel-builder.php:598
+msgid "Solid"
+msgstr "Sólido"
 
-#: includes/class-pn-customers-manager-commercial.php:119
-msgid "Solicitud rechazada"
-msgstr "Solicitud rechazada"
-
-#: includes/class-pn-customers-manager-referral.php:457
+#: includes/class-pn-customers-manager-referral.php:649
 msgid "Someone"
 msgstr "Alguien"
 
@@ -2095,7 +3513,7 @@ msgstr "Carácter especial (!@#$%^&*)"
 msgid "Stalled / needs attention"
 msgstr "Estancado / necesita atención"
 
-#: includes/class-pn-customers-manager-forms.php:504
+#: includes/class-pn-customers-manager-forms.php:507
 msgid "Start recording"
 msgstr "Iniciar grabación"
 
@@ -2106,16 +3524,23 @@ msgstr "Puesta en marcha"
 #: includes/class-pn-customers-manager-csv-import.php:110
 #: includes/class-pn-customers-manager-csv-import.php:165
 #: includes/class-pn-customers-manager-csv-import.php:215
-#: includes/class-pn-customers-manager-csv-import.php:571
-#: includes/class-pn-customers-manager-referral.php:258
+#: includes/class-pn-customers-manager-csv-import.php:398
+#: includes/class-pn-customers-manager-instagram-ai.php:1601
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2289
+#: includes/class-pn-customers-manager-referral.php:448
 msgid "Status"
 msgstr "Estado"
 
-#: includes/class-pn-customers-manager-forms.php:527
+#: includes/class-pn-customers-manager-settings.php:352
+#: includes/class-pn-customers-manager-settings.php:429
+msgid "Stop"
+msgstr "Detener"
+
+#: includes/class-pn-customers-manager-forms.php:530
 msgid "Stop audio"
 msgstr "Detener el audio"
 
-#: includes/class-pn-customers-manager-forms.php:511
+#: includes/class-pn-customers-manager-forms.php:514
 msgid "Stop recording"
 msgstr "Detener la grabación"
 
@@ -2129,17 +3554,22 @@ msgstr ""
 msgid "Street, number, suite…"
 msgstr "Calle, número, suite…"
 
-#: includes/class-pn-customers-manager-settings.php:21
+#: includes/class-pn-customers-manager-funnel-builder.php:596
+msgid "Style"
+msgstr "Estilo"
+
+#: includes/class-pn-customers-manager-settings.php:540
 msgid "System"
 msgstr "Sistema"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:719
+#: includes/class-pn-customers-manager-funnel-builder.php:911
+msgid "System prompt"
+msgstr "Prompt del sistema"
 
 #: includes/class-pn-customers-manager-csv-import.php:53
 msgid "Tags (comma-separated)"
 msgstr "Etiquetas (separadas por comas)"
-
-#: includes/class-pn-customers-manager-commercial.php:169
-msgid "Tasa de conversion"
-msgstr "Tasa de conversión"
 
 #: includes/class-pn-customers-manager-csv-import.php:39
 msgid "Tax ID"
@@ -2160,19 +3590,78 @@ msgctxt "Taxonomy singular name"
 msgid "Funnel category"
 msgstr "Categoría de embudo"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:368
+#: includes/class-pn-customers-manager-referral.php:227
+msgid ""
+"Te invito a unirte! Registrate con mi enlace y empieza a disfrutar de todas "
+"las ventajas:"
+msgstr ""
+"¡Te invitamos a unirte! Regístrate con mi enlace y empieza a disfrutar de "
+"todas las ventajas:"
+
 #: includes/class-pn-customers-manager-csv-import.php:28
+#: includes/class-pn-customers-manager-post-type-organization.php:368
 msgid "Team size"
 msgstr "Tamaño del equipo"
 
-#: includes/class-pn-customers-manager-commercial.php:75
-#: includes/class-pn-customers-manager-commercial.php:400
+#: includes/class-pn-customers-manager-referral.php:379
 msgid "Telefono"
+msgstr "Teléfono"
+
+#: includes/class-pn-customers-manager-commercial.php:66
+#: includes/class-pn-customers-manager-commercial.php:391
+msgid "Teléfono"
 msgstr "Teléfono"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:620
 msgid "Teléfono de facturación"
 msgstr "Teléfono de facturación"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:883
+#: includes/class-pn-customers-manager-funnel-builder.php:1045
+msgid "Temperature"
+msgstr "Temperatura"
+
+#: includes/class-pn-customers-manager-settings.php:419
+msgid "Test Instagram send"
+msgstr "Enviar prueba de Instagram"
+
+#: includes/class-pn-customers-manager-settings.php:412
+msgid "Test Instagram User ID"
+msgstr "Prueba de ID de usuario de Instagram"
+
+#: includes/class-pn-customers-manager-settings.php:350
+#: includes/class-pn-customers-manager-settings.php:427
+msgid "Test message reception"
+msgstr "Probar recepción de mensajes"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:1816
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2549
+msgid "Test message sent successfully."
+msgstr "Mensaje de prueba enviado correctamente."
+
+#: includes/class-pn-customers-manager-settings.php:274
+msgid "Test OpenAI"
+msgstr "Probar OpenAI"
+
+#: includes/class-pn-customers-manager-settings.php:272
+msgid "Test OpenAI connection"
+msgstr "Probar conexión OpenAI"
+
+#: includes/class-pn-customers-manager-settings.php:334
+msgid "Test phone"
+msgstr "Teléfono de prueba"
+
+#: includes/class-pn-customers-manager-settings.php:342
+msgid "Test WhatsApp send"
+msgstr "Probar envío WhatsApp"
+
+#: includes/class-pn-customers-manager-settings.php:844
+msgid "Testing..."
+msgstr "Probando..."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:615
+msgid "Text color"
+msgstr "Color del texto"
 
 #. %d: Minimum character count
 #: includes/class-pn-customers-manager-validation.php:118
@@ -2184,17 +3673,54 @@ msgstr "El texto debe tener al menos %d caracteres."
 msgid "Text must be at most %d characters long."
 msgstr "El texto debe tener como máximo %d caracteres."
 
+#: includes/class-pn-customers-manager-settings.php:82
+msgid "Text to share referral link"
+msgstr "Texto para compartir el enlace de referencia"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:137
+msgid "Thank you"
+msgstr "Gracias"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:745
+#: includes/class-pn-customers-manager-funnel-builder.php:937
+msgid ""
+"The AI will always ask for the postal code before quoting a shipping cost."
+msgstr ""
+"La IA siempre solicitará el código postal antes de calcular el costo del "
+"envío."
+
 #: includes/class-pn-customers-manager-post-type-organization.php:670
 msgid "The available stages come from the funnel definition (one per line)."
 msgstr ""
 "Las etapas disponibles provienen de la definición del embudo (una por línea)."
 
-#: includes/class-pn-customers-manager-csv-import.php:493
-#: includes/class-pn-customers-manager-csv-import.php:984
-msgid "The CSV file has no data rows."
-msgstr "El archivo CSV no tiene filas de datos."
+#: includes/class-pn-customers-manager-email-campaigns.php:550
+msgid "The email template is not valid."
+msgstr "La plantilla de correo electrónico no es válida."
 
-#: includes/class-pn-customers-manager-common.php:294
+#: includes/class-pn-customers-manager-email-campaigns.php:518
+msgid "The mailpn plugin is not active."
+msgstr "El complemento mailpn no está activo."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:199
+msgid "The mailpn plugin is not active. Contact the administrator."
+msgstr "El plugin mailpn no está activo. Contacta con el administrador."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:133
+msgid "The mailpn plugin is required for email campaigns."
+msgstr "El plugin mailpn es necesario para las campañas de correo electrónico."
+
+#: includes/class-pn-customers-manager-email-campaigns.php:220
+msgid "The specified campaign was not found."
+msgstr "No se encontró la campaña especificada."
+
+#: includes/class-pn-customers-manager-commercial.php:272
+#: includes/class-pn-customers-manager-commercial.php:307
+msgid "This application is not pending."
+msgstr "Esta solicitud no está pendiente."
+
+#: includes/class-pn-customers-manager-common.php:306
+#: includes/class-pn-customers-manager-ajax-nopriv.php:151
 msgid "This email is already registered."
 msgstr "Este correo electrónico ya está registrado."
 
@@ -2202,8 +3728,24 @@ msgstr "Este correo electrónico ya está registrado."
 msgid "This field"
 msgstr "Este campo"
 
+#: includes/class-pn-customers-manager-instagram-ai.php:1792
+msgid ""
+"This is a test message from PN Customers Manager. If you receive it, the "
+"Instagram integration is working correctly."
+msgstr ""
+"Este es un mensaje de prueba del gestor de clientes de PN. Si lo recibe, la "
+"integración con Instagram funciona correctamente."
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2524
+msgid ""
+"This is a test message from PN Customers Manager. If you receive it, the "
+"WhatsApp integration is working correctly."
+msgstr ""
+"Este es un mensaje de prueba desde PN Customers Manager. Si lo recibes, la "
+"integración de WhatsApp funciona correctamente."
+
 #. %1$s: Post type name, %2$s: Archive URL, %3$s: Archive URL, %4$s: Single post URL
-#: includes/class-pn-customers-manager-settings.php:43
+#: includes/class-pn-customers-manager-settings.php:562
 #, php-format
 #| msgid ""
 #| "This option sets the slug of the main recipes archive page, and the "
@@ -2215,47 +3757,67 @@ msgstr ""
 "Esta opción establece el slug de la página de archivo %1$s y de las páginas "
 "%1$s. Por defecto, serán:"
 
+#: includes/class-pn-customers-manager-settings.php:874
+msgid "This will overwrite your current settings. Continue?"
+msgstr "Esto sobrescribirá tu configuración actual. ¿Continuar?"
+
+#: includes/class-pn-customers-manager-settings.php:852
+msgid "Timeout. No messages received."
+msgstr "Tiempo de espera agotado. No se recibió ningún mensaje."
+
 #: includes/class-pn-customers-manager-csv-import.php:107
 #: includes/class-pn-customers-manager-csv-import.php:162
 #: includes/class-pn-customers-manager-csv-import.php:212
-#: includes/class-pn-customers-manager-csv-import.php:568
+#: includes/class-pn-customers-manager-csv-import.php:395
 msgid "Title"
 msgstr "Título"
 
-#: includes/class-pn-customers-manager-commercial.php:389
+#: includes/class-pn-customers-manager-commercial.php:380
 msgid "Todos"
 msgstr "Todos"
 
-#: includes/class-pn-customers-manager-referral.php:282
+#: includes/class-pn-customers-manager-funnel-builder.php:227
+msgid "Toggle blocks panel"
+msgstr "Panel de bloques alternados"
+
+#: includes/class-pn-customers-manager-referral.php:472
 msgid "Top Referrers"
 msgstr "Principales referentes"
 
-#: includes/class-pn-customers-manager-referral.php:243
+#: includes/class-pn-customers-manager-referral.php:433
 msgid "Total"
 msgstr "Total"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:330
 #: includes/class-pn-customers-manager-csv-import.php:25
+#: includes/class-pn-customers-manager-post-type-organization.php:330
 msgid "Trade name"
 msgstr "Nombre comercial"
 
-#: includes/class-pn-customers-manager-forms.php:545
+#: includes/class-pn-customers-manager-funnel-builder.php:78
+msgid "Traffic"
+msgstr "Tráfico"
+
+#: includes/class-pn-customers-manager-forms.php:548
 msgid "Transcribe Audio"
 msgstr "Transcribir audio"
 
-#: includes/class-pn-customers-manager-forms.php:566
+#: includes/class-pn-customers-manager-forms.php:569
 msgid "Transcribed text will appear here..."
 msgstr "El texto transcrito aparecerá aquí..."
 
-#: includes/class-pn-customers-manager-common.php:280
+#: includes/class-pn-customers-manager-common.php:292
 msgid "Transcription completed"
 msgstr "Transcripción completada"
 
-#: includes/class-pn-customers-manager-referral.php:222
+#: includes/class-pn-customers-manager-funnel-builder.php:600
+msgid "Transparent"
+msgstr "Transparente"
+
+#: includes/class-pn-customers-manager-referral.php:263
 msgid "Tu codigo QR de referido"
 msgstr "Tu codigo QR de referido"
 
-#: includes/class-pn-customers-manager-referral.php:153
+#: includes/class-pn-customers-manager-referral.php:162
 msgid "Tu email"
 msgstr "Tu correo electrónico"
 
@@ -2263,23 +3825,7 @@ msgstr "Tu correo electrónico"
 msgid "Tu nombre"
 msgstr "Tu nombre"
 
-#: includes/class-pn-customers-manager-commercial.php:110
-msgid ""
-"Tu solicitud como agente comercial esta siendo revisada. Te notificaremos "
-"cuando haya una actualizacion."
-msgstr ""
-"Tu solicitud como agente comercial está siendo revisada. Te notificaremos "
-"cuando haya una actualización."
-
-#: includes/class-pn-customers-manager-commercial.php:120
-msgid ""
-"Tu solicitud como agente comercial ha sido rechazada. Si crees que es un "
-"error, contacta con soporte."
-msgstr ""
-"Tu solicitud como agente comercial ha sido rechazada. Si cree que es un "
-"error, contacte con soporte."
-
-#: includes/class-pn-customers-manager-common.php:306
+#: includes/class-pn-customers-manager-common.php:318
 msgid "Tu solicitud ha sido enviada correctamente. Te notificaremos pronto."
 msgstr ""
 "Tu solicitud ha sido enviada correctamente. Te lo notificaremos pronto."
@@ -2292,11 +3838,13 @@ msgstr "tu@email.com"
 msgid "Título de la organización"
 msgstr "Título de la organización"
 
-#: includes/class-pn-customers-manager-referral.php:286
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2780
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2781
+#: includes/class-pn-customers-manager-referral.php:476
 msgid "Unknown"
 msgstr "Desconocido"
 
-#: includes/class-pn-customers-manager-common.php:287
+#: includes/class-pn-customers-manager-common.php:299
 msgid "Unknown error"
 msgstr "Error desconocido"
 
@@ -2324,14 +3872,97 @@ msgstr ""
 "Sube un archivo CSV para importar organizaciones. El archivo debe incluir al "
 "menos una columna \"post_title\"."
 
-#: includes/class-pn-customers-manager-commercial.php:273
-#: includes/class-pn-customers-manager-commercial.php:308
-msgid "Usuario no valido."
-msgstr "Usuario no válido."
+#: includes/class-pn-customers-manager-funnel-builder.php:682
+msgid "Use image instead of text"
+msgstr "Utilice una imagen en lugar de texto."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:735
+#: includes/class-pn-customers-manager-funnel-builder.php:927
+msgid "Use WooCommerce shipping zones"
+msgstr "Utilice las zonas de envío de WooCommerce"
+
+#: includes/class-pn-customers-manager-email-campaigns.php:464
+msgid "User"
+msgstr "Usuario"
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:153
+msgid "User creation failed. Try again."
+msgstr "Error al crear el usuario. Inténtalo de nuevo."
+
+#: includes/class-pn-customers-manager-settings.php:586
+msgid "User Roles"
+msgstr "Roles de usuario"
+
+#: includes/class-pn-customers-manager-forms.php:663
+#, php-format
+msgid "Users with %s Role"
+msgstr "Usuarios con el rol %s"
+
+#: includes/class-pn-customers-manager-instagram-ai.php:641
+#: includes/class-pn-customers-manager-whatsapp-ai.php:833
+msgid "valid coupon"
+msgstr "cupón válido"
 
 #: includes/class-pn-customers-manager-contact-messages.php:110
 msgid "Ver mensaje"
 msgstr "Ver mensaje"
+
+#: includes/class-pn-customers-manager-settings.php:428
+msgid ""
+"Verifies that the webhook is correctly configured and your server can "
+"receive Instagram DMs.<br><strong>Instructions:</strong><br>1. Configure the "
+"<strong>Webhook URL</strong> and <strong>Verify Token</strong> in your Meta "
+"app.<br>2. Subscribe to the <strong>&laquo;messages&raquo;</strong> webhook "
+"field.<br>3. Click &laquo;Listen for messages&raquo;.<br>4. Send a DM to "
+"your Instagram account.<br>5. If everything is set up correctly, the message "
+"will appear here within seconds."
+msgstr ""
+"Verifica que el webhook esté configurado correctamente y que su servidor "
+"pueda recibir mensajes directos de Instagram.<br> <strong>Instrucciones:"
+"</strong><br> 1. Configure la <strong>URL del webhook</strong> y <strong>el "
+"token de verificación</strong> en su aplicación Meta.<br> 2. Suscríbase al "
+"campo webhook <strong>«mensajes»</strong> .<br> 3. Haz clic en «Escuchar "
+"mensajes».<br> 4. Envía un mensaje directo a tu cuenta de Instagram.<br> 5. "
+"Si todo está configurado correctamente, el mensaje aparecerá aquí en "
+"cuestión de segundos."
+
+#: includes/class-pn-customers-manager-settings.php:351
+msgid ""
+"Verifies that the webhook is correctly configured and your server can "
+"receive WhatsApp messages.<br><strong>Instructions:</strong><br>1. In <em>"
+"Meta Developers &gt; Your App &gt; WhatsApp &gt; Configuration</em>, "
+"configure the <strong>Webhook URL</strong> with the address shown above and "
+"the <strong>Verify Token</strong>.<br>2. In the <strong>Webhook "
+"fields</strong> table, enable the <strong>&laquo;messages&raquo;</strong> "
+"field. Without this, Meta will not send incoming messages to your server.<br>"
+"3. Click &laquo;Listen for messages&raquo;.<br>4. Send a WhatsApp message to "
+"your business number.<br>5. If everything is set up correctly, the message "
+"will appear here within seconds."
+msgstr ""
+"Verifica que el webhook esté configurado correctamente y que su servidor "
+"pueda recibir mensajes de WhatsApp.<br> <strong>Instrucciones:</strong><br> "
+"1. En <em>Meta Developers &gt; Tu aplicación &gt; WhatsApp &gt; "
+"Configuración</em> , configura la <strong>URL del webhook</strong> con la "
+"dirección que se muestra arriba y el <strong>token de verificación</strong> ."
+"<br> 2. En la tabla <strong>de campos de Webhook</strong> , habilite el "
+"campo <strong>«mensajes»</strong> . Sin esto, Meta no enviará los mensajes "
+"entrantes a su servidor.<br> 3. Haz clic en «Escuchar mensajes».<br> 4. "
+"Envía un mensaje de WhatsApp a tu número de empresa.<br> 5. Si todo está "
+"configurado correctamente, el mensaje aparecerá aquí en cuestión de segundos."
+
+#: includes/class-pn-customers-manager-settings.php:313
+#: includes/class-pn-customers-manager-settings.php:391
+msgid "Verify Token"
+msgstr "Verify Token"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:197
+msgid "Video"
+msgstr "Vídeo"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:273
+#: includes/class-pn-customers-manager-funnel-builder.php:282
+msgid "View conversations"
+msgstr "Ver conversaciones"
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:125
 #: includes/class-pn-customers-manager-post-type-funnel.php:584
@@ -2343,14 +3974,86 @@ msgstr "Ver embudo"
 msgid "View Organization"
 msgstr "Ver organización"
 
-#: includes/class-pn-customers-manager-post-type-organization.php:413
+#: includes/class-pn-customers-manager-referral.php:387
+msgid "Web"
+msgstr "Web"
+
+#: includes/class-pn-customers-manager-settings.php:324
+#: includes/class-pn-customers-manager-settings.php:402
+msgid "Webhook URL"
+msgstr "URL del Webhook"
+
 #: includes/class-pn-customers-manager-csv-import.php:32
+#: includes/class-pn-customers-manager-post-type-organization.php:413
 msgid "Website"
 msgstr "Sitio web"
 
 #: includes/class-pn-customers-manager-post-type-organization.php:489
 msgid "Website / SEO"
 msgstr "Sitio web / SEO"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:854
+#: includes/class-pn-customers-manager-funnel-builder.php:1016
+msgid "Website pages"
+msgstr "Páginas del sitio web"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:893
+#: includes/class-pn-customers-manager-funnel-builder.php:1055
+msgid "Welcome message"
+msgstr "Mensaje de bienvenida"
+
+#: includes/class-pn-customers-manager-settings.php:295
+msgid "WhatsApp Access Token"
+msgstr "WhatsApp Access Token"
+
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2513
+msgid "WhatsApp Access Token has not been configured."
+msgstr "No se ha configurado el WhatsApp Access Token."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:712
+#: includes/class-pn-customers-manager-shortcodes.php:260
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2258
+#: includes/class-pn-customers-manager-settings.php:286
+#: includes/class-pn-customers-manager-settings.php:720
+msgid "WhatsApp AI"
+msgstr "WhatsApp IA"
+
+#: includes/class-pn-customers-manager-settings.php:287
+msgid ""
+"WhatsApp Business Platform (Meta) integration to automatically receive and "
+"respond to messages with AI.<br><br><strong>Prerequisites:</strong><br>1. "
+"Create a <a href=\"https://business.facebook.com/\" target=\"_blank\">Meta "
+"Business</a> account.<br>2. Create an app at <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> with WhatsApp "
+"product.<br>3. Configure a phone number in the WhatsApp section of your app."
+msgstr ""
+"Integración con la plataforma WhatsApp Business (Meta) para recibir y "
+"responder automáticamente a los mensajes mediante inteligencia artificial."
+"<br><br> <strong>Requisitos previos:</strong><br> 1. Crea una cuenta <a "
+"href=\"https://business.facebook.com/\" target=\"_blank\">de Meta "
+"Business</a> .<br> 2. Crea una aplicación en <a href=\"https://developers."
+"facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> con el "
+"producto WhatsApp.<br> 3. Configura un número de teléfono en la sección de "
+"WhatsApp de tu aplicación."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:306
+#: includes/class-pn-customers-manager-funnel-builder.php:415
+msgid "WhatsApp Conversations"
+msgstr "Conversaciones de WhatsApp"
+
+#: includes/class-pn-customers-manager-settings.php:242
+msgid ""
+"When a customer asks about a product, send its photos via WhatsApp along "
+"with the product link."
+msgstr ""
+"Cuando un cliente pregunte por un producto, envíele fotos del mismo a través "
+"de WhatsApp junto con el enlace del producto."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:815
+msgid "When a customer asks about a product, send its photos via WhatsApp."
+msgstr ""
+"Cuando un cliente pregunte por un producto, envíele fotos a través de "
+"WhatsApp."
 
 #: templates/pn-customers-manager-popups.php:40
 msgid ""
@@ -2363,17 +4066,38 @@ msgstr ""
 msgid "Won"
 msgstr "Ganado"
 
-#: includes/class-pn-customers-manager-commercial.php:213
-msgid "Ya has enviado una solicitud anteriormente."
-msgstr "Ya has enviado una solicitud anteriormente."
+#: includes/class-pn-customers-manager-funnel-builder.php:785
+#: includes/class-pn-customers-manager-funnel-builder.php:977
+#: includes/class-pn-customers-manager-settings.php:209
+msgid "WooCommerce products"
+msgstr "Productos de WooCommerce"
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:152
-msgid "Ya se ha enviado una invitacion a este correo."
-msgstr "Ya se ha enviado una invitación a este correo."
+#: includes/class-pn-customers-manager-settings.php:134
+msgid "Write an inspiring phrase..."
+msgstr "Escribe una frase inspiradora..."
 
-#: includes/class-pn-customers-manager-forms.php:801
+#: includes/class-pn-customers-manager-forms.php:927
+#: includes/class-pn-customers-manager-email-campaigns.php:494
 msgid "Yes"
 msgstr "Sí"
+
+#: includes/class-pn-customers-manager-referral.php:311
+#: includes/class-pn-customers-manager-referral.php:315
+msgid "yo"
+msgstr "yo"
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:319
+#: includes/class-pn-customers-manager-ajax-nopriv.php:359
+#: includes/class-pn-customers-manager-ajax-nopriv.php:364
+msgid "You are not authorized to perform this action."
+msgstr "Usted no está autorizado a realizar esta acción."
+
+# ── WhatsApp AI (class-pn-customers-manager-whatsapp-ai.php) ──
+#: includes/class-pn-customers-manager-funnel-builder.php:24
+#: includes/class-pn-customers-manager-instagram-ai.php:1532
+#: includes/class-pn-customers-manager-whatsapp-ai.php:2218
+msgid "You do not have permission to access this page."
+msgstr "No tienes permiso para acceder a esta página."
 
 #: includes/class-pn-customers-manager-ajax.php:46
 #: includes/class-pn-customers-manager-post-type-funnel.php:446
@@ -2383,20 +4107,43 @@ msgstr "Sí"
 msgid "You do not have permission to access this section."
 msgstr "No tienes permiso para acceder a esta sección."
 
-#: includes/class-pn-customers-manager-ajax.php:286
+#: includes/class-pn-customers-manager-funnel-builder.php:456
+msgid "You do not have permission to edit this funnel."
+msgstr "No tienes permiso para editar este embudo."
+
+#: includes/class-pn-customers-manager-ajax.php:763
+#: includes/class-pn-customers-manager-forms.php:638
+msgid "You do not have permission to manage user roles."
+msgstr "No tienes permiso para administrar los roles de usuario."
+
+#: includes/class-pn-customers-manager-ajax.php:415
+#: includes/class-pn-customers-manager-ajax.php:675
 msgid "You do not have permission to perform this action."
 msgstr "No tienes permiso para realizar esta acción."
 
+#: includes/class-pn-customers-manager-commercial.php:204
+msgid "You have already sent an application previously."
+msgstr "Ya has enviado una solicitud anteriormente."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:412
+msgid "You have unsaved changes. Do you want to continue?"
+msgstr "Tienes cambios sin guardar. ¿Deseas continuar?"
+
 #: includes/class-pn-customers-manager-ajax.php:149
-#: includes/class-pn-customers-manager-ajax.php:247
+#: includes/class-pn-customers-manager-ajax.php:376
 #: includes/class-pn-customers-manager-post-type-funnel.php:687
 #: includes/class-pn-customers-manager-post-type-organization.php:1353
 msgid "You must be logged in to create a new asset."
 msgstr "Debe iniciar sesión para crear un nuevo activo."
 
-#: includes/class-pn-customers-manager-common.php:296
+#: includes/class-pn-customers-manager-common.php:308
 msgid "You must be logged in to send referrals."
 msgstr "Debes iniciar sesión para enviar referidos."
+
+#: includes/class-pn-customers-manager-ajax.php:662
+#: includes/class-pn-customers-manager-commercial.php:193
+msgid "You must be logged in to send your application."
+msgstr "Debes iniciar sesión para enviar tu solicitud."
 
 #: includes/class-pn-customers-manager-post-type-funnel.php:512
 #: includes/class-pn-customers-manager-post-type-organization.php:1160
@@ -2409,15 +4156,44 @@ msgstr ""
 msgid "You need an account"
 msgstr "Necesitas una cuenta"
 
-#: includes/class-pn-customers-manager-contact-messages.php:222
+#: includes/class-pn-customers-manager-commercial.php:111
+msgid ""
+"Your application as a commercial agent has been rejected. If you believe "
+"this is an error, contact support."
+msgstr ""
+"Su solicitud como agente comercial ha sido rechazada. Si cree que se trata "
+"de un error, póngase en contacto con el servicio de asistencia."
+
+#: includes/class-pn-customers-manager-commercial.php:101
+msgid ""
+"Your application as a commercial agent is being reviewed. We will notify you "
+"when there is an update."
+msgstr ""
+"Su solicitud como agente comercial está siendo revisada. Le notificaremos "
+"cuando haya alguna novedad."
+
+#: includes/class-pn-customers-manager-funnel-builder.php:236
+msgid "Zoom in"
+msgstr "Dar un golpe de zoom"
+
+#: includes/class-pn-customers-manager-funnel-builder.php:232
+msgid "Zoom out"
+msgstr "Aleja la vista"
+
+#: includes/class-pn-customers-manager-common.php:314
+msgid "¡Registro completado! Revisa tu email para activar tu cuenta."
+msgstr ""
+"¡Registro completado! Revisa tu correo electrónico para activar tu cuenta."
+
+#: includes/class-pn-customers-manager-contact-messages.php:162
 msgid "¿Estás seguro de que quieres eliminar este mensaje?"
 msgstr "¿Estás seguro de que quieres eliminar este mensaje?"
 
-#: includes/class-pn-customers-manager-common.php:308
+#: includes/class-pn-customers-manager-common.php:320
 msgid "¿Seguro que quieres aprobar a este agente comercial?"
 msgstr "¿Seguro que quieres aprobar a este agente comercial?"
 
-#: includes/class-pn-customers-manager-common.php:309
+#: includes/class-pn-customers-manager-common.php:321
 msgid "¿Seguro que quieres rechazar a este agente comercial?"
 msgstr "¿Seguro que quieres rechazar a este agente comercial?"
 

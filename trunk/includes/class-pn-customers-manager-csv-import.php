@@ -360,193 +360,20 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
    * ─────────────────────────────────────────────── */
 
   private static function pn_customers_manager_csv_render_js($ajax_url, $nonce) {
-    ?>
-    <script>
-    (function(){
-      'use strict';
+    wp_enqueue_script(
+      'pn-customers-manager-csv-import',
+      PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-csv-import.js',
+      [],
+      PN_CUSTOMERS_MANAGER_VERSION,
+      true
+    );
 
-      var ajaxUrl = <?php echo wp_json_encode($ajax_url); ?>;
-      var nonce   = <?php echo wp_json_encode($nonce); ?>;
-
-      /* Inject Import button next to Add New */
-      var addNewBtn = document.querySelector('.page-title-action');
-      if (addNewBtn) {
-        var importBtn = document.createElement('a');
-        importBtn.href = '#';
-        importBtn.className = 'page-title-action pn-cm-csv-import-btn';
-        importBtn.innerHTML = '<span class="dashicons dashicons-upload"></span> ' + <?php echo wp_json_encode(__('Import CSV', 'pn-customers-manager')); ?>;
-        addNewBtn.parentNode.insertBefore(importBtn, addNewBtn.nextSibling);
-        importBtn.addEventListener('click', function(e){ e.preventDefault(); openModal(); });
-      }
-
-      /* Elements */
-      var overlay   = document.getElementById('pn-cm-csv-overlay');
-      var closeBtn  = document.getElementById('pn-cm-csv-close');
-      var fileInput = document.getElementById('pn-cm-csv-file');
-      var fileZone  = document.getElementById('pn-cm-csv-file-zone');
-      var fileName  = document.getElementById('pn-cm-csv-file-name');
-      var footer    = document.getElementById('pn-cm-csv-footer');
-      var loader    = document.getElementById('pn-cm-csv-loader');
-      var loaderTxt = document.getElementById('pn-cm-csv-loader-text');
-      var previewData = null;
-
-      /* Modal */
-      function openModal() {
-        showStep(1);
-        fileInput.value = '';
-        fileName.textContent = '';
-        previewData = null;
-        overlay.classList.add('pn-cm-csv-open');
-      }
-
-      function closeModal() {
-        overlay.classList.remove('pn-cm-csv-open');
-      }
-
-      closeBtn.addEventListener('click', closeModal);
-      overlay.addEventListener('click', function(e){ if (e.target === overlay) closeModal(); });
-
-      /* Drag & drop */
-      ['dragenter','dragover'].forEach(function(evt){
-        fileZone.addEventListener(evt, function(e){ e.preventDefault(); fileZone.classList.add('pn-cm-csv-dragover'); });
-      });
-      ['dragleave','drop'].forEach(function(evt){
-        fileZone.addEventListener(evt, function(e){ e.preventDefault(); fileZone.classList.remove('pn-cm-csv-dragover'); });
-      });
-      fileZone.addEventListener('drop', function(e){
-        var files = e.dataTransfer.files;
-        if (files.length && files[0].name.toLowerCase().endsWith('.csv')) {
-          fileInput.files = files;
-          fileName.textContent = files[0].name;
-        }
-      });
-      fileInput.addEventListener('change', function(){
-        fileName.textContent = fileInput.files.length ? fileInput.files[0].name : '';
-      });
-
-      /* Steps */
-      function showStep(n) {
-        [1,2,3].forEach(function(i){
-          document.getElementById('pn-cm-csv-step-' + i).classList.toggle('pn-cm-csv-active', i === n);
-        });
-        loader.classList.remove('pn-cm-csv-active');
-        renderFooter(n);
-      }
-
-      function showLoader(text) {
-        [1,2,3].forEach(function(i){ document.getElementById('pn-cm-csv-step-' + i).classList.remove('pn-cm-csv-active'); });
-        loaderTxt.textContent = text || <?php echo wp_json_encode(__('Processing…', 'pn-customers-manager')); ?>;
-        loader.classList.add('pn-cm-csv-active');
-        footer.innerHTML = '';
-      }
-
-      function renderFooter(step) {
-        footer.innerHTML = '';
-        if (step === 1) {
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Preview', 'pn-customers-manager')); ?>, 'button button-primary', doPreview));
-        }
-        if (step === 2) {
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Back', 'pn-customers-manager')); ?>, 'button', function(){ showStep(1); }));
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Import', 'pn-customers-manager')); ?>, 'button button-primary', doImport));
-        }
-        if (step === 3) {
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Close & reload', 'pn-customers-manager')); ?>, 'button button-primary', function(){ window.location.reload(); }));
-        }
-      }
-
-      function btn(label, cls, handler) {
-        var b = document.createElement('button');
-        b.type = 'button'; b.className = cls; b.textContent = label;
-        b.addEventListener('click', handler);
-        return b;
-      }
-
-      /* Preview */
-      function doPreview() {
-        if (!fileInput.files.length) {
-          alert(<?php echo wp_json_encode(__('Please select a CSV file first.', 'pn-customers-manager')); ?>);
-          return;
-        }
-        showLoader(<?php echo wp_json_encode(__('Parsing CSV…', 'pn-customers-manager')); ?>);
-
-        var fd = new FormData();
-        fd.append('action', 'pn_customers_manager_csv_preview');
-        fd.append('_wpnonce', nonce);
-        fd.append('csv_file', fileInput.files[0]);
-
-        fetch(ajaxUrl, { method:'POST', body:fd, credentials:'same-origin' })
-          .then(function(r){ return r.json(); })
-          .then(function(resp){
-            if (!resp.success) { alert(resp.data || 'Error'); showStep(1); return; }
-            previewData = resp.data;
-            renderPreview(previewData);
-            showStep(2);
-          })
-          .catch(function(err){ alert('Network error: ' + err); showStep(1); });
-      }
-
-      function renderPreview(data) {
-        var wrap  = document.getElementById('pn-cm-csv-preview-wrap');
-        var count = document.getElementById('pn-cm-csv-row-count');
-        var displayHeader = data.display_header || data.header;
-        if (!data.rows.length) {
-          wrap.innerHTML = '<p style="padding:20px">' + <?php echo wp_json_encode(__('The CSV file has no data rows.', 'pn-customers-manager')); ?> + '</p>';
-          count.textContent = '';
-          return;
-        }
-        var html = '<table><thead><tr>';
-        displayHeader.forEach(function(h){ html += '<th>' + esc(h) + '</th>'; });
-        html += '</tr></thead><tbody>';
-        var max = Math.min(data.rows.length, 50);
-        for (var i = 0; i < max; i++) {
-          html += '<tr>';
-          data.header.forEach(function(h){ html += '<td>' + esc(data.rows[i][h] || '') + '</td>'; });
-          html += '</tr>';
-        }
-        html += '</tbody></table>';
-        wrap.innerHTML = html;
-        var msg = data.rows.length + ' ' + <?php echo wp_json_encode(__('rows found', 'pn-customers-manager')); ?>;
-        if (data.rows.length > 50) msg += ' — ' + <?php echo wp_json_encode(__('showing first 50', 'pn-customers-manager')); ?>;
-        count.textContent = msg;
-      }
-
-      function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-      /* Import */
-      function doImport() {
-        if (!previewData || !previewData.rows.length) return;
-        showLoader(<?php echo wp_json_encode(__('Importing organizations…', 'pn-customers-manager')); ?>);
-
-        var fd = new FormData();
-        fd.append('action', 'pn_customers_manager_csv_import');
-        fd.append('_wpnonce', nonce);
-        fd.append('rows', JSON.stringify(previewData.rows));
-
-        fetch(ajaxUrl, { method:'POST', body:fd, credentials:'same-origin' })
-          .then(function(r){ return r.json(); })
-          .then(function(resp){
-            if (!resp.success) { alert(resp.data || 'Error'); showStep(2); return; }
-            renderResults(resp.data);
-            showStep(3);
-          })
-          .catch(function(err){ alert('Network error: ' + err); showStep(2); });
-      }
-
-      function renderResults(data) {
-        var el = document.getElementById('pn-cm-csv-results');
-        var html = '<div class="pn-cm-csv-results-success"><strong>' + data.created + '</strong> '
-          + <?php echo wp_json_encode(__('organizations created successfully.', 'pn-customers-manager')); ?> + '</div>';
-        if (data.errors && data.errors.length) {
-          html += '<div class="pn-cm-csv-results-errors"><strong>' + <?php echo wp_json_encode(__('Errors:', 'pn-customers-manager')); ?> + '</strong><ul>';
-          data.errors.forEach(function(e){ html += '<li>' + esc(e) + '</li>'; });
-          html += '</ul></div>';
-        }
-        el.innerHTML = html;
-      }
-
-    })();
-    </script>
-    <?php
+    wp_localize_script('pn-customers-manager-csv-import', 'pnCmCsvImport', [
+      'ajaxUrl' => $ajax_url,
+      'nonce'   => $nonce,
+      'context' => 'admin',
+      'i18n'    => self::pn_customers_manager_csv_get_i18n(),
+    ]);
   }
 
   /* ───────────────────────────────────────────────
@@ -856,187 +683,41 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
    * ─────────────────────────────────────────────── */
 
   private static function pn_customers_manager_csv_render_js_frontend($ajax_url, $nonce) {
-    ?>
-    <script>
-    (function(){
-      'use strict';
+    wp_enqueue_script(
+      'pn-customers-manager-csv-import',
+      PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-csv-import.js',
+      [],
+      PN_CUSTOMERS_MANAGER_VERSION,
+      true
+    );
 
-      var ajaxUrl = <?php echo wp_json_encode($ajax_url); ?>;
-      var nonce   = <?php echo wp_json_encode($nonce); ?>;
+    wp_localize_script('pn-customers-manager-csv-import', 'pnCmCsvImport', [
+      'ajaxUrl' => $ajax_url,
+      'nonce'   => $nonce,
+      'context' => 'frontend',
+      'i18n'    => self::pn_customers_manager_csv_get_i18n(),
+    ]);
+  }
 
-      /* Bind click on the trigger button rendered in the toolbar */
-      var triggerBtn = document.getElementById('pn-cm-csv-import-trigger');
-      if (triggerBtn) {
-        triggerBtn.addEventListener('click', function(e){ e.preventDefault(); openModal(); });
-      }
-
-      /* Elements */
-      var overlay   = document.getElementById('pn-cm-csv-overlay');
-      var closeBtn  = document.getElementById('pn-cm-csv-close');
-      var fileInput = document.getElementById('pn-cm-csv-file');
-      var fileZone  = document.getElementById('pn-cm-csv-file-zone');
-      var fileName  = document.getElementById('pn-cm-csv-file-name');
-      var footer    = document.getElementById('pn-cm-csv-footer');
-      var loader    = document.getElementById('pn-cm-csv-loader');
-      var loaderTxt = document.getElementById('pn-cm-csv-loader-text');
-      var previewData = null;
-
-      /* Modal */
-      function openModal() {
-        showStep(1);
-        fileInput.value = '';
-        fileName.textContent = '';
-        previewData = null;
-        overlay.classList.add('pn-cm-csv-open');
-      }
-
-      function closeModal() {
-        overlay.classList.remove('pn-cm-csv-open');
-      }
-
-      closeBtn.addEventListener('click', closeModal);
-      overlay.addEventListener('click', function(e){ if (e.target === overlay) closeModal(); });
-
-      /* Drag & drop */
-      ['dragenter','dragover'].forEach(function(evt){
-        fileZone.addEventListener(evt, function(e){ e.preventDefault(); fileZone.classList.add('pn-cm-csv-dragover'); });
-      });
-      ['dragleave','drop'].forEach(function(evt){
-        fileZone.addEventListener(evt, function(e){ e.preventDefault(); fileZone.classList.remove('pn-cm-csv-dragover'); });
-      });
-      fileZone.addEventListener('drop', function(e){
-        var files = e.dataTransfer.files;
-        if (files.length && files[0].name.toLowerCase().endsWith('.csv')) {
-          fileInput.files = files;
-          fileName.textContent = files[0].name;
-        }
-      });
-      fileInput.addEventListener('change', function(){
-        fileName.textContent = fileInput.files.length ? fileInput.files[0].name : '';
-      });
-
-      /* Steps */
-      function showStep(n) {
-        [1,2,3].forEach(function(i){
-          document.getElementById('pn-cm-csv-step-' + i).classList.toggle('pn-cm-csv-active', i === n);
-        });
-        loader.classList.remove('pn-cm-csv-active');
-        renderFooter(n);
-      }
-
-      function showLoader(text) {
-        [1,2,3].forEach(function(i){ document.getElementById('pn-cm-csv-step-' + i).classList.remove('pn-cm-csv-active'); });
-        loaderTxt.textContent = text || <?php echo wp_json_encode(__('Processing…', 'pn-customers-manager')); ?>;
-        loader.classList.add('pn-cm-csv-active');
-        footer.innerHTML = '';
-      }
-
-      function renderFooter(step) {
-        footer.innerHTML = '';
-        if (step === 1) {
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Preview', 'pn-customers-manager')); ?>, 'pn-customers-manager-btn', doPreview));
-        }
-        if (step === 2) {
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Back', 'pn-customers-manager')); ?>, 'pn-customers-manager-btn', function(){ showStep(1); }));
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Import', 'pn-customers-manager')); ?>, 'pn-customers-manager-btn', doImport));
-        }
-        if (step === 3) {
-          footer.appendChild(btn(<?php echo wp_json_encode(__('Close & reload', 'pn-customers-manager')); ?>, 'pn-customers-manager-btn', function(){ window.location.reload(); }));
-        }
-      }
-
-      function btn(label, cls, handler) {
-        var b = document.createElement('button');
-        b.type = 'button'; b.className = cls; b.textContent = label;
-        b.addEventListener('click', handler);
-        return b;
-      }
-
-      /* Preview */
-      function doPreview() {
-        if (!fileInput.files.length) {
-          alert(<?php echo wp_json_encode(__('Please select a CSV file first.', 'pn-customers-manager')); ?>);
-          return;
-        }
-        showLoader(<?php echo wp_json_encode(__('Parsing CSV…', 'pn-customers-manager')); ?>);
-
-        var fd = new FormData();
-        fd.append('action', 'pn_customers_manager_csv_preview');
-        fd.append('_wpnonce', nonce);
-        fd.append('csv_file', fileInput.files[0]);
-
-        fetch(ajaxUrl, { method:'POST', body:fd, credentials:'same-origin' })
-          .then(function(r){ return r.json(); })
-          .then(function(resp){
-            if (!resp.success) { alert(resp.data || 'Error'); showStep(1); return; }
-            previewData = resp.data;
-            renderPreview(previewData);
-            showStep(2);
-          })
-          .catch(function(err){ alert('Network error: ' + err); showStep(1); });
-      }
-
-      function renderPreview(data) {
-        var wrap  = document.getElementById('pn-cm-csv-preview-wrap');
-        var count = document.getElementById('pn-cm-csv-row-count');
-        var displayHeader = data.display_header || data.header;
-        if (!data.rows.length) {
-          wrap.innerHTML = '<p style="padding:20px">' + <?php echo wp_json_encode(__('The CSV file has no data rows.', 'pn-customers-manager')); ?> + '</p>';
-          count.textContent = '';
-          return;
-        }
-        var html = '<table><thead><tr>';
-        displayHeader.forEach(function(h){ html += '<th>' + esc(h) + '</th>'; });
-        html += '</tr></thead><tbody>';
-        var max = Math.min(data.rows.length, 50);
-        for (var i = 0; i < max; i++) {
-          html += '<tr>';
-          data.header.forEach(function(h){ html += '<td>' + esc(data.rows[i][h] || '') + '</td>'; });
-          html += '</tr>';
-        }
-        html += '</tbody></table>';
-        wrap.innerHTML = html;
-        var msg = data.rows.length + ' ' + <?php echo wp_json_encode(__('rows found', 'pn-customers-manager')); ?>;
-        if (data.rows.length > 50) msg += ' — ' + <?php echo wp_json_encode(__('showing first 50', 'pn-customers-manager')); ?>;
-        count.textContent = msg;
-      }
-
-      function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-      /* Import */
-      function doImport() {
-        if (!previewData || !previewData.rows.length) return;
-        showLoader(<?php echo wp_json_encode(__('Importing organizations…', 'pn-customers-manager')); ?>);
-
-        var fd = new FormData();
-        fd.append('action', 'pn_customers_manager_csv_import');
-        fd.append('_wpnonce', nonce);
-        fd.append('rows', JSON.stringify(previewData.rows));
-
-        fetch(ajaxUrl, { method:'POST', body:fd, credentials:'same-origin' })
-          .then(function(r){ return r.json(); })
-          .then(function(resp){
-            if (!resp.success) { alert(resp.data || 'Error'); showStep(2); return; }
-            renderResults(resp.data);
-            showStep(3);
-          })
-          .catch(function(err){ alert('Network error: ' + err); showStep(2); });
-      }
-
-      function renderResults(data) {
-        var el = document.getElementById('pn-cm-csv-results');
-        var html = '<div class="pn-cm-csv-results-success"><strong>' + data.created + '</strong> '
-          + <?php echo wp_json_encode(__('organizations created successfully.', 'pn-customers-manager')); ?> + '</div>';
-        if (data.errors && data.errors.length) {
-          html += '<div class="pn-cm-csv-results-errors"><strong>' + <?php echo wp_json_encode(__('Errors:', 'pn-customers-manager')); ?> + '</strong><ul>';
-          data.errors.forEach(function(e){ html += '<li>' + esc(e) + '</li>'; });
-          html += '</ul></div>';
-        }
-        el.innerHTML = html;
-      }
-
-    })();
-    </script>
-    <?php
+  /**
+   * Shared i18n strings for the CSV import JS.
+   */
+  private static function pn_customers_manager_csv_get_i18n() {
+    return [
+      'importCsv'              => __('Import CSV', 'pn-customers-manager'),
+      'preview'                => __('Preview', 'pn-customers-manager'),
+      'back'                   => __('Back', 'pn-customers-manager'),
+      'importBtn'              => __('Import', 'pn-customers-manager'),
+      'closeReload'            => __('Close & reload', 'pn-customers-manager'),
+      'selectFile'             => __('Please select a CSV file first.', 'pn-customers-manager'),
+      'parsingCsv'             => __('Parsing CSV…', 'pn-customers-manager'),
+      'processing'             => __('Processing…', 'pn-customers-manager'),
+      'noDataRows'             => __('The CSV file has no data rows.', 'pn-customers-manager'),
+      'rowsFound'              => __('rows found', 'pn-customers-manager'),
+      'showingFirst50'         => __('showing first 50', 'pn-customers-manager'),
+      'importingOrganizations' => __('Importing organizations…', 'pn-customers-manager'),
+      'organizationsCreated'   => __('organizations created successfully.', 'pn-customers-manager'),
+      'errors'                 => __('Errors:', 'pn-customers-manager'),
+    ];
   }
 }

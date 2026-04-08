@@ -201,6 +201,135 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             exit;
           }
           break;
+        case 'pn_cm_funnel_node_settings':
+          $node_subtype = !empty($_POST['node_subtype']) ? sanitize_text_field(wp_unslash($_POST['node_subtype'])) : '';
+          echo PN_CUSTOMERS_MANAGER_Funnel_Builder::render_settings_popup_fields($node_subtype);
+          exit;
+        case 'pn_cm_funnel_builder_save':
+          PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_save_canvas($pn_cm_funnel_id);
+          break;
+        case 'pn_cm_funnel_builder_load':
+          PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_load_canvas($pn_cm_funnel_id);
+          break;
+        case 'pn_cm_openai_test':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_test_openai());
+          exit;
+        case 'pn_cm_whatsapp_test':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          $test_phone = !empty($_POST['test_phone']) ? sanitize_text_field(wp_unslash($_POST['test_phone'])) : '';
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_test_whatsapp($test_phone));
+          exit;
+        case 'pn_cm_whatsapp_test_receive':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          $since = !empty($_POST['since']) ? sanitize_text_field(wp_unslash($_POST['since'])) : '';
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_test_webhook_receive($since));
+          exit;
+        case 'pn_cm_wa_conversations_list':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_get_conversations_list());
+          exit;
+        case 'pn_cm_wa_conversation_messages':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          $conv_id = !empty($_POST['conv_id']) ? absint($_POST['conv_id']) : 0;
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_get_conversation_messages($conv_id));
+          exit;
+        case 'pn_cm_instagram_test':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          $test_ig_id = !empty($_POST['test_ig_id']) ? sanitize_text_field(wp_unslash($_POST['test_ig_id'])) : '';
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_test_instagram($test_ig_id));
+          exit;
+        case 'pn_cm_instagram_test_receive':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          $since = !empty($_POST['since']) ? sanitize_text_field(wp_unslash($_POST['since'])) : '';
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_test_webhook_receive($since));
+          exit;
+        case 'pn_cm_ig_conversations_list':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_get_conversations_list());
+          exit;
+        case 'pn_cm_ig_conversation_messages':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
+            exit;
+          }
+          $conv_id = !empty($_POST['conv_id']) ? absint($_POST['conv_id']) : 0;
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_get_conversation_messages($conv_id));
+          exit;
+        case 'pn_cm_wa_conversation_detail_html':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission']);
+            exit;
+          }
+          $conv_id = !empty($_POST['conv_id']) ? absint($_POST['conv_id']) : 0;
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_get_conversation_detail_html($conv_id));
+          exit;
+        case 'pn_cm_ig_conversation_detail_html':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission']);
+            exit;
+          }
+          $conv_id = !empty($_POST['conv_id']) ? absint($_POST['conv_id']) : 0;
+          echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_get_conversation_detail_html($conv_id));
+          exit;
+        case 'pn_cm_wa_conversation_action':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission']);
+            exit;
+          }
+          $conv_id = !empty($_POST['conv_id']) ? absint($_POST['conv_id']) : 0;
+          $conv_action = !empty($_POST['conv_action']) ? sanitize_text_field(wp_unslash($_POST['conv_action'])) : '';
+          if ($conv_action === 'close' && $conv_id) {
+            PN_CUSTOMERS_MANAGER_WhatsApp_AI::close_conversation_public($conv_id);
+            echo wp_json_encode(['error_key' => '', 'message' => 'closed']);
+          } elseif ($conv_action === 'delete' && $conv_id) {
+            PN_CUSTOMERS_MANAGER_WhatsApp_AI::delete_conversation_public($conv_id);
+            echo wp_json_encode(['error_key' => '', 'message' => 'deleted']);
+          } else {
+            echo wp_json_encode(['error_key' => 'invalid_action']);
+          }
+          exit;
+        case 'pn_cm_ig_conversation_action':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission']);
+            exit;
+          }
+          $conv_id = !empty($_POST['conv_id']) ? absint($_POST['conv_id']) : 0;
+          $conv_action = !empty($_POST['conv_action']) ? sanitize_text_field(wp_unslash($_POST['conv_action'])) : '';
+          if ($conv_action === 'close' && $conv_id) {
+            PN_CUSTOMERS_MANAGER_Instagram_AI::close_conversation_public($conv_id);
+            echo wp_json_encode(['error_key' => '', 'message' => 'closed']);
+          } elseif ($conv_action === 'delete' && $conv_id) {
+            PN_CUSTOMERS_MANAGER_Instagram_AI::delete_conversation_public($conv_id);
+            echo wp_json_encode(['error_key' => '', 'message' => 'deleted']);
+          } else {
+            echo wp_json_encode(['error_key' => 'invalid_action']);
+          }
+          exit;
         case 'pn_cm_organization_view':
           if (!empty($pn_cm_organization_id)) {
             $plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
@@ -530,7 +659,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!is_user_logged_in()) {
             echo wp_json_encode([
               'error_key' => 'not_logged_in',
-              'error_content' => esc_html__('Debes iniciar sesión.', 'pn-customers-manager'),
+              'error_content' => esc_html__('You must be logged in to send your application.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -543,7 +672,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_commercial_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('You do not have permission to perform this action.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -779,6 +908,61 @@ class PN_CUSTOMERS_MANAGER_Ajax {
 
           $result = PN_CUSTOMERS_MANAGER_Email_Campaigns::handle_refresh();
           echo wp_json_encode($result);
+          exit;
+          break;
+
+        case 'pn_cm_settings_export':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'permission_denied']);
+            exit;
+          }
+
+          $settings  = new PN_CUSTOMERS_MANAGER_Settings();
+          $options   = $settings->pn_customers_manager_get_options();
+          $export    = [];
+
+          foreach ($options as $key => $config) {
+            if (!isset($config['input']) || in_array($config['input'], ['html_multi'])) continue;
+            if (isset($config['type']) && in_array($config['type'], ['nonce', 'submit'])) continue;
+            if (isset($config['section'])) continue;
+
+            $value = get_option($key, '');
+            if ($value !== '') {
+              $export[$key] = $value;
+            }
+          }
+
+          echo wp_json_encode(['error_key' => '', 'settings' => $export]);
+          exit;
+          break;
+
+        case 'pn_cm_settings_import':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'permission_denied']);
+            exit;
+          }
+
+          $raw = isset($_POST['settings']) ? wp_unslash($_POST['settings']) : '';
+          $import = json_decode($raw, true);
+
+          if (!is_array($import) || empty($import)) {
+            echo wp_json_encode(['error_key' => 'invalid_data', 'error_content' => 'Invalid settings data.']);
+            exit;
+          }
+
+          $settings  = new PN_CUSTOMERS_MANAGER_Settings();
+          $options   = $settings->pn_customers_manager_get_options();
+          $allowed   = array_keys($options);
+          $count     = 0;
+
+          foreach ($import as $key => $value) {
+            if (in_array($key, $allowed)) {
+              update_option($key, sanitize_text_field($value));
+              $count++;
+            }
+          }
+
+          echo wp_json_encode(['error_key' => '', 'count' => $count]);
           exit;
           break;
       }
