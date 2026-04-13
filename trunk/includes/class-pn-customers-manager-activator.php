@@ -120,8 +120,10 @@ class PN_CUSTOMERS_MANAGER_Activator {
       source_title VARCHAR(255) DEFAULT '',
       ip_address VARCHAR(45) DEFAULT '',
       is_read TINYINT(1) DEFAULT 0,
+      is_spam TINYINT(1) DEFAULT 0,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY  (id)
+      PRIMARY KEY  (id),
+      KEY is_spam (is_spam)
     ) {$charset_collate};";
 
     $table_wa = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
@@ -164,6 +166,38 @@ class PN_CUSTOMERS_MANAGER_Activator {
       KEY ig_user_id (ig_user_id),
       KEY funnel_node (funnel_id, node_id),
       KEY status (status)
+    ) {$charset_collate};";
+
+    $table_projections = $wpdb->prefix . 'pn_cm_projections_snapshots';
+
+    $sql .= "CREATE TABLE {$table_projections} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      snapshot_date DATE NOT NULL,
+      metric_source VARCHAR(50) NOT NULL,
+      metric_key VARCHAR(100) NOT NULL,
+      metric_value DECIMAL(15,2) NOT NULL DEFAULT 0,
+      metadata LONGTEXT DEFAULT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      UNIQUE KEY source_key_date (metric_source, metric_key, snapshot_date),
+      KEY metric_source (metric_source),
+      KEY snapshot_date (snapshot_date)
+    ) {$charset_collate};";
+
+    $table_projections_manual = $wpdb->prefix . 'pn_cm_projections_manual';
+
+    $sql .= "CREATE TABLE {$table_projections_manual} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      metric_source VARCHAR(50) NOT NULL,
+      metric_key VARCHAR(100) NOT NULL,
+      target_date DATE NOT NULL,
+      projected_value DECIMAL(15,2) NOT NULL DEFAULT 0,
+      notes TEXT DEFAULT NULL,
+      created_by BIGINT(20) UNSIGNED DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY metric_lookup (metric_source, metric_key),
+      KEY target_date (target_date)
     ) {$charset_collate};";
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';

@@ -2364,6 +2364,42 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   .pn-customers-manager-msg-delete:hover{
     color:#a0132f!important;
   }
+  .pn-customers-manager-msg-mark-spam{
+    color:#d8731b!important;
+  }
+  .pn-customers-manager-msg-mark-spam:hover{
+    color:#a65610!important;
+  }
+  .pn-customers-manager-messages-tabs{
+    display:flex;
+    gap:8px;
+    border-bottom:1px solid #e0e0e0;
+  }
+  .pn-customers-manager-messages-tab{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:10px 14px;
+    text-decoration:none;
+    color:var(--pn-customers-manager-color-main);
+    font-size:13px;
+    font-weight:500;
+    border:1px solid transparent;
+    border-bottom:none;
+    border-radius:4px 4px 0 0;
+    margin-bottom:-1px;
+  }
+  .pn-customers-manager-messages-tab:hover{
+    background-color:var(--pn-customers-manager-color-main-grey);
+  }
+  .pn-customers-manager-messages-tab-active{
+    background-color:#ffffff;
+    border-color:#e0e0e0;
+    color:var(--pn-customers-manager-bg-color-main);
+  }
+  .pn-customers-manager-message-spam td{
+    background-color:#fff5e6;
+  }
   .pn-customers-manager-message-body{
     background-color:var(--pn-customers-manager-color-main-grey);
     padding:20px;

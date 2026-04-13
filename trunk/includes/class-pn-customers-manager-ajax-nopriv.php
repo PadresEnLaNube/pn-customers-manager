@@ -207,6 +207,66 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           $source_url   = isset($_POST['contact_source_url']) ? esc_url_raw(wp_unslash($_POST['contact_source_url'])) : '';
           $source_title = isset($_POST['contact_source_title']) ? sanitize_text_field(wp_unslash($_POST['contact_source_title'])) : '';
 
+          // ── Akismet bot detection ──
+          $is_spam = 0;
+          $akismet_enabled = get_option('pn_customers_manager_akismet_enabled') === 'on';
+          $akismet_discard = get_option('pn_customers_manager_akismet_discard') === 'on';
+
+          if ($akismet_enabled && class_exists('Akismet') && method_exists('Akismet', 'get_api_key') && Akismet::get_api_key()) {
+            $akismet_params = [
+              'blog'                 => home_url(),
+              'user_ip'              => sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? ''),
+              'user_agent'           => sanitize_text_field($_SERVER['HTTP_USER_AGENT'] ?? ''),
+              'referrer'             => sanitize_text_field($_SERVER['HTTP_REFERER'] ?? ''),
+              'permalink'            => $source_url,
+              'comment_type'         => 'contact-form',
+              'comment_author'       => $contact_name,
+              'comment_author_email' => $contact_email,
+              'comment_content'      => $contact_message,
+              'blog_lang'            => get_locale(),
+              'blog_charset'         => get_bloginfo('charset'),
+            ];
+
+            if (!empty($contact_subject)) {
+              $akismet_params['comment_author_url'] = '';
+            }
+
+            try {
+              $akismet_response = Akismet::http_post(http_build_query($akismet_params), 'comment-check');
+
+              // Response is an array: [headers, body]. Body is 'true' | 'false'.
+              if (is_array($akismet_response) && isset($akismet_response[1])) {
+                $akismet_body = trim((string) $akismet_response[1]);
+
+                // "discard" hint may arrive in the Akismet headers.
+                $is_discard = false;
+                if (isset($akismet_response[0]) && is_array($akismet_response[0])) {
+                  foreach ($akismet_response[0] as $h_key => $h_val) {
+                    if (strtolower((string) $h_key) === 'x-akismet-pro-tip' && strtolower(trim((string) $h_val)) === 'discard') {
+                      $is_discard = true;
+                      break;
+                    }
+                  }
+                }
+
+                if ($akismet_body === 'true') {
+                  $is_spam = 1;
+
+                  if ($is_discard && $akismet_discard) {
+                    // Silently accept the submission without storing it or
+                    // emailing anybody. The caller gets a success response
+                    // so the bot can't probe the filter.
+                    echo wp_json_encode(['error_key' => '']);
+                    exit;
+                  }
+                }
+              }
+            } catch (\Exception $e) {
+              // If Akismet fails, fall back to storing the message normally.
+              $is_spam = 0;
+            }
+          }
+
           // Save to database (always, regardless of email result)
           global $wpdb;
           $wpdb->insert(
@@ -221,10 +281,18 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
               'source_title'    => $source_title,
               'ip_address'      => sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? ''),
               'is_read'         => 0,
+              'is_spam'         => $is_spam,
               'created_at'      => current_time('mysql'),
             ],
-            ['%s','%s','%s','%s','%s','%s','%s','%s','%d','%s']
+            ['%s','%s','%s','%s','%s','%s','%s','%s','%d','%d','%s']
           );
+
+          // Do not send notification emails for spam; just return success so
+          // the bot can't infer that it was caught.
+          if ($is_spam) {
+            echo wp_json_encode(['error_key' => '']);
+            exit;
+          }
 
           $site_name = get_option('blogname', '');
           if (empty($site_name)) {

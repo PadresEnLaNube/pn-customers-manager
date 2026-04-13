@@ -366,7 +366,133 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
+    // ── Social Media APIs (nested subsection) ──
+    $pn_customers_manager_options['pn_customers_manager_social_media_section_start'] = [
+      'id' => 'pn_customers_manager_social_media_section_start',
+      'section' => 'start',
+      'label' => __('Social Media APIs', 'pn-customers-manager'),
+      'description' => __('Configure social media API credentials to collect analytics data for the Projections dashboard (followers, engagement, impressions).<br><br>These APIs are used exclusively for reading public metrics from your own accounts.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_ig_token'] = [
+      'id' => 'pn_customers_manager_social_ig_token',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Instagram Graph API Token', 'pn-customers-manager'),
+      'description' => __('Long-lived token with <code>instagram_basic</code> and <code>instagram_manage_insights</code> permissions. Generate it from <a href="https://developers.facebook.com/apps/" target="_blank">Meta for Developers</a>.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_ig_account_id'] = [
+      'id' => 'pn_customers_manager_social_ig_account_id',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Instagram Business Account ID', 'pn-customers-manager'),
+      'description' => __('The numeric Instagram Business or Creator account ID. Found in the Graph API Explorer or your Meta app dashboard.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_fb_token'] = [
+      'id' => 'pn_customers_manager_social_fb_token',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Facebook Page Access Token', 'pn-customers-manager'),
+      'description' => __('A Page Access Token with <code>pages_read_engagement</code> and <code>read_insights</code> permissions.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_fb_page_id'] = [
+      'id' => 'pn_customers_manager_social_fb_page_id',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Facebook Page ID', 'pn-customers-manager'),
+      'description' => __('The numeric ID of your Facebook Page. Found in Page Settings > About.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_tw_bearer'] = [
+      'id' => 'pn_customers_manager_social_tw_bearer',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Twitter/X Bearer Token', 'pn-customers-manager'),
+      'description' => __('Bearer Token from your Twitter/X Developer App. Generate it at <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">developer.twitter.com</a>.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_tw_account_id'] = [
+      'id' => 'pn_customers_manager_social_tw_account_id',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Twitter/X Account ID', 'pn-customers-manager'),
+      'description' => __('The numeric user ID of your Twitter/X account. You can find it using the <a href="https://tweeterid.com/" target="_blank">TweeterID</a> tool.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_media_test'] = [
+      'id' => 'pn_customers_manager_social_media_test',
+      'input' => 'html',
+      'label' => __('Test social media connections', 'pn-customers-manager'),
+      'description' => __('Tests the connection to all configured social media APIs. <strong>Save settings before testing.</strong>', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-social-media-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Test connections', 'pn-customers-manager') . '" /><span id="pn-cm-social-media-test-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_media_section_end'] = [
+      'id' => 'pn_customers_manager_social_media_section_end',
+      'section' => 'end',
+    ];
+
     // ── End API Configuration ──
+    // ── Akismet (nested subsection) ──
+    $akismet_active    = class_exists('Akismet');
+    $akismet_has_key   = $akismet_active && method_exists('Akismet', 'get_api_key') && Akismet::get_api_key();
+    $akismet_status_html = '';
+    if (!$akismet_active) {
+      $akismet_status_html = '<span style="color:#b32d2e;">' . esc_html__('Plugin Akismet no instalado o no activo.', 'pn-customers-manager') . '</span>';
+    } elseif (!$akismet_has_key) {
+      $akismet_status_html = '<span style="color:#b32d2e;">' . esc_html__('Plugin Akismet activo, pero sin clave de API configurada.', 'pn-customers-manager') . '</span>';
+    } else {
+      $akismet_status_html = '<span style="color:#2e7d32;">' . esc_html__('Plugin Akismet activo y configurado.', 'pn-customers-manager') . '</span>';
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_akismet_section_start'] = [
+      'id' => 'pn_customers_manager_akismet_section_start',
+      'section' => 'start',
+      'label' => __('Akismet', 'pn-customers-manager'),
+      'description' => __('Integration with the Akismet plugin to automatically detect bots and spam in the contact form.<br><br><strong>Prerequisites:</strong><br>1. Install and activate the <a href="https://wordpress.org/plugins/akismet/" target="_blank">Akismet Anti-Spam</a> plugin.<br>2. Sign up at <a href="https://akismet.com/" target="_blank">akismet.com</a> and configure the API key in Akismet settings.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_akismet_status'] = [
+      'id' => 'pn_customers_manager_akismet_status',
+      'input' => 'html',
+      'label' => __('Akismet status', 'pn-customers-manager'),
+      'description' => __('Current status of the Akismet integration on this site.', 'pn-customers-manager'),
+      'html_content' => $akismet_status_html,
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_akismet_enabled'] = [
+      'id' => 'pn_customers_manager_akismet_enabled',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'value' => 'on',
+      'label' => __('Enable Akismet for contact form', 'pn-customers-manager'),
+      'description' => __('When enabled, every contact form submission will be checked against the Akismet API. Suspected bots will still be stored but automatically flagged as spam and excluded from notification emails.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_akismet_discard'] = [
+      'id' => 'pn_customers_manager_akismet_discard',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Discard obvious spam silently', 'pn-customers-manager'),
+      'description' => __('If Akismet returns <code>discard</code> (highest spam confidence), reject the submission without saving it to the database. If this option is disabled, the message is still stored but marked as spam.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_akismet_section_end'] = [
+      'id' => 'pn_customers_manager_akismet_section_end',
+      'section' => 'end',
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_api_section_end'] = [
       'id' => 'pn_customers_manager_api_section_end',
       'section' => 'end',
@@ -466,6 +592,34 @@ class PN_CUSTOMERS_MANAGER_Settings {
     ];
 
     // System section
+    // Projections section
+    $pn_customers_manager_options['pn_customers_manager_projections_section_start'] = [
+      'id' => 'pn_customers_manager_projections_section_start',
+      'section' => 'start',
+      'label' => __('Projections', 'pn-customers-manager'),
+      'description' => __('Configure how often the system collects automatic snapshots of your business metrics. These snapshots build the historical evolution chart that you can compare against manual projections.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_projection_frequency'] = [
+      'id' => 'pn_customers_manager_projection_frequency',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'options' => [
+        'hourly'     => __('Hourly', 'pn-customers-manager'),
+        'twicedaily' => __('Twice daily', 'pn-customers-manager'),
+        'daily'      => __('Daily', 'pn-customers-manager'),
+        'weekly'     => __('Weekly', 'pn-customers-manager'),
+      ],
+      'value' => 'daily',
+      'label' => __('Snapshot frequency', 'pn-customers-manager'),
+      'description' => __('How often the cron collects a new snapshot of all metrics. Changing this value reschedules the cron automatically.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_projections_section_end'] = [
+      'id' => 'pn_customers_manager_projections_section_end',
+      'section' => 'end',
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_system_section_start'] = [
       'id' => 'pn_customers_manager_system_section_start',
       'section' => 'start',
@@ -669,6 +823,30 @@ class PN_CUSTOMERS_MANAGER_Settings {
       );
     }
 
+    // Add Projections submenu
+    if (current_user_can('manage_options')) {
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Projections', 'pn-customers-manager'),
+        esc_html__('Projections', 'pn-customers-manager'),
+        'manage_options',
+        'pn_customers_manager_projections',
+        ['PN_CUSTOMERS_MANAGER_Projections', 'render_page']
+      );
+    }
+
+    // Add Mail Statistics submenu
+    if (current_user_can('manage_options')) {
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Statistics', 'pn-customers-manager'),
+        esc_html__('Statistics', 'pn-customers-manager'),
+        'manage_options',
+        'pn_customers_manager_mail_stats',
+        ['PN_CUSTOMERS_MANAGER_Mail_Stats', 'render_page']
+      );
+    }
+
     // Add Contact Messages submenu
     if (current_user_can('manage_options')) {
       $unread = PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count();
@@ -738,6 +916,27 @@ class PN_CUSTOMERS_MANAGER_Settings {
         </div>
       </div>
 
+      <?php
+      // --- Recommended plugins ---
+      $pn_family = [
+        'mailpn'             => ['name' => 'MailPN',              'file' => 'mailpn/mailpn.php',                         'icon' => 'mail',     'settings_page' => 'mailpn_options',             'desc' => __('Email marketing and newsletter campaigns.', 'pn-customers-manager')],
+        'userspn'            => ['name' => 'UsersPN',             'file' => 'userspn/userspn.php',                       'icon' => 'group',    'settings_page' => 'userspn_options',            'desc' => __('User management and registration forms.', 'pn-customers-manager')],
+        'pn-tasks-manager'   => ['name' => 'PN Tasks Manager',    'file' => 'pn-tasks-manager/pn-tasks-manager.php',     'icon' => 'task_alt', 'settings_page' => 'pn_tasks_manager_options',   'desc' => __('Task and project management.', 'pn-customers-manager')],
+        'pn-cookies-manager' => ['name' => 'PN Cookies Manager',  'file' => 'pn-cookies-manager/pn-cookies-manager.php', 'icon' => 'cookie',   'settings_page' => 'pn_cookies_manager_options', 'desc' => __('Cookie consent and GDPR compliance.', 'pn-customers-manager')],
+      ];
+      $pn_recommended = ['mailpn', 'userspn'];
+      if (!function_exists('get_plugins')) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+      }
+      $pn_installed = get_plugins();
+      $pn_rp_badge = 0;
+      foreach ($pn_recommended as $pn_s) {
+        if (isset($pn_family[$pn_s]) && !isset($pn_installed[$pn_family[$pn_s]['file']])) {
+          $pn_rp_badge++;
+        }
+      }
+      ?>
+
       <!-- Sticky settings footer bar -->
       <div id="pn-customers-manager-settings-footer" class="pn-customers-manager-settings-footer">
         <div class="pn-customers-manager-settings-footer-inner">
@@ -746,6 +945,12 @@ class PN_CUSTOMERS_MANAGER_Settings {
             <span class="pn-customers-manager-settings-footer-version">v<?php echo esc_html(PN_CUSTOMERS_MANAGER_VERSION); ?></span>
           </div>
           <div class="pn-customers-manager-settings-footer-right">
+            <button type="button" id="pn-customers-manager-settings-recommended" class="pn-customers-manager-settings-footer-icon-btn pn-cm-rp-btn" title="<?php esc_attr_e('Recommended plugins', 'pn-customers-manager'); ?>">
+              <span class="material-icons-outlined">add</span>
+              <?php if ($pn_rp_badge > 0) : ?>
+                <span class="pn-cm-rp-badge"><?php echo (int) $pn_rp_badge; ?></span>
+              <?php endif; ?>
+            </button>
             <input type="file" id="pn-customers-manager-settings-import-file" class="pn-customers-manager-settings-hidden-input" accept=".json">
             <button type="button" id="pn-customers-manager-settings-import" class="pn-customers-manager-settings-footer-icon-btn" title="<?php esc_attr_e('Import settings', 'pn-customers-manager'); ?>">
               <span class="material-icons-outlined">file_upload</span>
@@ -760,7 +965,48 @@ class PN_CUSTOMERS_MANAGER_Settings {
         </div>
       </div>
 
+      <!-- Recommended plugins popup -->
+      <div class="pn-customers-manager-popup-overlay pn-customers-manager-display-none-soft" style="z-index:1000000;"></div>
+      <div id="pn-customers-manager-recommended-plugins" class="pn-customers-manager-popup pn-customers-manager-popup-size-medium pn-customers-manager-display-none-soft" style="z-index:1000001;">
+        <div class="pn-customers-manager-popup-content" style="padding:30px;">
+          <h3 style="margin:0 0 8px;"><?php esc_html_e('Recommended Plugins', 'pn-customers-manager'); ?></h3>
+          <p style="color:#787c82;margin:0 0 20px;"><?php esc_html_e('Enhance your workflow with these companion plugins.', 'pn-customers-manager'); ?></p>
+          <div class="pn-cm-rp-list">
+            <?php foreach ($pn_family as $pn_slug => $pn_pl) :
+              $pn_is_installed = isset($pn_installed[$pn_pl['file']]);
+              $pn_is_active    = $pn_is_installed && is_plugin_active($pn_pl['file']);
+              $pn_is_rec       = in_array($pn_slug, $pn_recommended, true);
+            ?>
+            <div class="pn-cm-rp-card" data-slug="<?php echo esc_attr($pn_slug); ?>">
+              <div class="pn-cm-rp-icon"><span class="material-icons-outlined"><?php echo esc_html($pn_pl['icon']); ?></span></div>
+              <div class="pn-cm-rp-info">
+                <div class="pn-cm-rp-name">
+                  <?php echo esc_html($pn_pl['name']); ?>
+                  <?php if ($pn_is_rec) : ?>
+                    <span class="pn-cm-rp-recommended"><?php esc_html_e('Recommended', 'pn-customers-manager'); ?></span>
+                  <?php endif; ?>
+                </div>
+                <div class="pn-cm-rp-desc"><?php echo esc_html($pn_pl['desc']); ?></div>
+              </div>
+              <div class="pn-cm-rp-action">
+                <?php if ($pn_is_active) : ?>
+                  <span class="pn-cm-rp-active-badge"><?php esc_html_e('Active', 'pn-customers-manager'); ?></span>
+                <?php elseif ($pn_is_installed) : ?>
+                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-cm-rp-activate" data-slug="<?php echo esc_attr($pn_slug); ?>"><?php esc_html_e('Activate', 'pn-customers-manager'); ?></button>
+                <?php else : ?>
+                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-cm-rp-install" data-slug="<?php echo esc_attr($pn_slug); ?>"><?php esc_html_e('Install', 'pn-customers-manager'); ?></button>
+                <?php endif; ?>
+              </div>
+            </div>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      </div>
+
       <?php
+      wp_enqueue_style('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-popups.css', [], PN_CUSTOMERS_MANAGER_VERSION);
+      wp_enqueue_script('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
+
       wp_enqueue_script(
         'pn-customers-manager-api-tests',
         PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-api-tests.js',
@@ -799,15 +1045,27 @@ class PN_CUSTOMERS_MANAGER_Settings {
         true
       );
 
+      $pn_rp_settings = [];
+      foreach ($pn_family as $pn_slug => $pn_pl) {
+        $pn_rp_settings[$pn_slug] = admin_url('admin.php?page=' . $pn_pl['settings_page']);
+      }
+
       wp_localize_script('pn-customers-manager-settings-footer', 'pnCustomersManagerSettingsFooter', [
-        'ajaxUrl' => admin_url('admin-ajax.php'),
-        'nonce'   => wp_create_nonce('pn-customers-manager-nonce'),
-        'i18n'    => [
+        'ajaxUrl'       => admin_url('admin-ajax.php'),
+        'nonce'         => wp_create_nonce('pn-customers-manager-nonce'),
+        'settingsPages' => $pn_rp_settings,
+        'i18n'          => [
           'confirmImport'  => __('This will overwrite your current settings. Continue?', 'pn-customers-manager'),
           'importSuccess'  => __('Settings imported successfully. Reloading...', 'pn-customers-manager'),
           'importError'    => __('Error importing settings.', 'pn-customers-manager'),
           'invalidFile'    => __('Invalid JSON file.', 'pn-customers-manager'),
           'exportError'    => __('Error exporting settings.', 'pn-customers-manager'),
+          'installing'     => __('Installing...', 'pn-customers-manager'),
+          'activating'     => __('Activating...', 'pn-customers-manager'),
+          'installError'   => __('Error installing plugin.', 'pn-customers-manager'),
+          'activateError'  => __('Error activating plugin.', 'pn-customers-manager'),
+          'active'         => __('Active', 'pn-customers-manager'),
+          'activate'       => __('Activate', 'pn-customers-manager'),
         ],
       ]);
       ?>
@@ -850,6 +1108,17 @@ class PN_CUSTOMERS_MANAGER_Settings {
     // Only run in admin and not during AJAX requests
     if (!is_admin() || defined('DOING_AJAX')) {
       return;
+    }
+
+    // Run pending schema upgrades on plugin updates (no re-activation needed).
+    if (get_option('pn_customers_manager_db_version', '0') !== PN_CUSTOMERS_MANAGER_DB_VERSION) {
+      require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-activator.php';
+      PN_CUSTOMERS_MANAGER_Activator::pn_customers_manager_create_tables();
+    }
+
+    // Keep projections cron aligned with the configured frequency.
+    if (function_exists('pn_customers_manager_reschedule_projections_cron')) {
+      pn_customers_manager_reschedule_projections_cron();
     }
 
     // Check if we're already in the redirection process

@@ -13,7 +13,7 @@
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
  * Description:       Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
- * Version:           1.0.61
+ * Version:           1.0.77
  * Requires at least: 3.0
  * Requires PHP:      7.2
  * Author:            Padres en la Nube
@@ -34,8 +34,8 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.0.61');
-define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.2');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.0.77');
+define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.5');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
 define('PN_CUSTOMERS_MANAGER_CPTS', [
@@ -248,6 +248,29 @@ function pn_customers_manager_activation_hook()
 	if (!wp_next_scheduled('pn_cm_referral_reminders_cron')) {
 		wp_schedule_event(time(), 'twicedaily', 'pn_cm_referral_reminders_cron');
 	}
+
+	// Schedule projections snapshot cron
+	pn_customers_manager_reschedule_projections_cron();
+}
+
+/**
+ * (Re)schedule the projections snapshot cron with the configured frequency.
+ * Reads the `pn_customers_manager_projection_frequency` option and applies it.
+ */
+function pn_customers_manager_reschedule_projections_cron() {
+	$frequency = get_option('pn_customers_manager_projection_frequency', 'daily');
+	$valid = ['hourly', 'twicedaily', 'daily', 'weekly'];
+	if (!in_array($frequency, $valid, true)) {
+		$frequency = 'daily';
+	}
+
+	$current = wp_get_scheduled_event('pn_cm_projections_snapshot_cron');
+	if ($current && $current->schedule === $frequency) {
+		return;
+	}
+
+	wp_clear_scheduled_hook('pn_cm_projections_snapshot_cron');
+	wp_schedule_event(time(), $frequency, 'pn_cm_projections_snapshot_cron');
 }
 
 // Register activation hook
@@ -261,6 +284,7 @@ function pn_customers_manager_deactivation_cleanup()
 {
 	delete_option('pn_customers_manager_redirecting');
 	wp_clear_scheduled_hook('pn_cm_referral_reminders_cron');
+	wp_clear_scheduled_hook('pn_cm_projections_snapshot_cron');
 }
 register_deactivation_hook(__FILE__, 'pn_customers_manager_deactivation_cleanup');
 

@@ -309,6 +309,9 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           } elseif ($conv_action === 'delete' && $conv_id) {
             PN_CUSTOMERS_MANAGER_WhatsApp_AI::delete_conversation_public($conv_id);
             echo wp_json_encode(['error_key' => '', 'message' => 'deleted']);
+          } elseif ($conv_action === 'reset' && $conv_id) {
+            PN_CUSTOMERS_MANAGER_WhatsApp_AI::reset_conversation_public($conv_id);
+            echo wp_json_encode(['error_key' => '', 'message' => 'reset']);
           } else {
             echo wp_json_encode(['error_key' => 'invalid_action']);
           }
@@ -326,6 +329,9 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           } elseif ($conv_action === 'delete' && $conv_id) {
             PN_CUSTOMERS_MANAGER_Instagram_AI::delete_conversation_public($conv_id);
             echo wp_json_encode(['error_key' => '', 'message' => 'deleted']);
+          } elseif ($conv_action === 'reset' && $conv_id) {
+            PN_CUSTOMERS_MANAGER_Instagram_AI::reset_conversation_public($conv_id);
+            echo wp_json_encode(['error_key' => '', 'message' => 'reset']);
           } else {
             echo wp_json_encode(['error_key' => 'invalid_action']);
           }
@@ -720,6 +726,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             echo wp_json_encode([
               'error_key'    => '',
               'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
             ]);
             exit;
           }
@@ -749,11 +756,100 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             echo wp_json_encode([
               'error_key'    => '',
               'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
             ]);
             exit;
           }
 
           echo wp_json_encode(['error_key' => 'pn_cm_contact_delete_error']);
+          exit;
+          break;
+        case 'pn_cm_contact_mark_spam':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode([
+              'error_key'     => 'pn_cm_contact_permission_error',
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $message_id = isset($_POST['message_id']) ? absint($_POST['message_id']) : 0;
+          $unmark     = isset($_POST['unmark']) && (int) $_POST['unmark'] === 1;
+
+          if (!empty($message_id)) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'pn_cm_contact_messages';
+
+            // Load existing row to submit ham/spam feedback to Akismet
+            $existing = $wpdb->get_row(
+              $wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", $message_id)
+            );
+
+            $wpdb->update(
+              $table,
+              ['is_spam' => $unmark ? 0 : 1],
+              ['id' => $message_id],
+              ['%d'],
+              ['%d']
+            );
+
+            // Send feedback to Akismet if enabled, so its filters keep learning
+            if ($existing && get_option('pn_customers_manager_akismet_enabled') === 'on' && class_exists('Akismet') && method_exists('Akismet', 'get_api_key') && Akismet::get_api_key()) {
+              $params = [
+                'blog'                 => home_url(),
+                'user_ip'              => $existing->ip_address,
+                'user_agent'           => '',
+                'referrer'             => $existing->source_url,
+                'permalink'            => $existing->source_url,
+                'comment_type'         => 'contact-form',
+                'comment_author'       => $existing->contact_name,
+                'comment_author_email' => $existing->contact_email,
+                'comment_content'      => $existing->contact_message,
+                'blog_lang'            => get_locale(),
+                'blog_charset'         => get_bloginfo('charset'),
+              ];
+
+              $endpoint = $unmark ? 'submit-ham' : 'submit-spam';
+              try {
+                Akismet::http_post(http_build_query($params), $endpoint);
+              } catch (\Exception $e) {
+                // Non-fatal: ignore feedback errors.
+              }
+            }
+
+            echo wp_json_encode([
+              'error_key'    => '',
+              'unmark'       => $unmark ? 1 : 0,
+              'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+            ]);
+            exit;
+          }
+
+          echo wp_json_encode(['error_key' => 'pn_cm_contact_mark_spam_error']);
+          exit;
+          break;
+        case 'pn_cm_contact_list':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode([
+              'error_key'     => 'pn_cm_contact_permission_error',
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $view  = isset($_POST['view']) ? sanitize_key(wp_unslash($_POST['view'])) : 'inbox';
+          $paged = isset($_POST['paged']) ? max(1, intval($_POST['paged'])) : 1;
+
+          echo wp_json_encode([
+            'error_key'    => '',
+            'view'         => in_array($view, ['inbox', 'spam'], true) ? $view : 'inbox',
+            'paged'        => $paged,
+            'html'         => PN_CUSTOMERS_MANAGER_Contact_Messages::render_messages_list($view, $paged),
+            'tabs_html'    => PN_CUSTOMERS_MANAGER_Contact_Messages::render_tabs($view),
+            'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+            'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+          ]);
           exit;
           break;
         case 'pn_cm_assign_role':
@@ -911,6 +1007,50 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
 
+        case 'pn_cm_projections_data':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Projections::ajax_get_projection_data();
+          exit;
+        case 'pn_cm_projection_create':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Projections::ajax_create_projection();
+          exit;
+        case 'pn_cm_projection_delete':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Projections::ajax_delete_projection();
+          exit;
+        case 'pn_cm_projections_social':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Projections::ajax_get_social_metrics();
+          exit;
+        case 'pn_cm_social_media_test':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Projections::ajax_test_social_media();
+          exit;
+
+        case 'pn_cm_mail_stats_period':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Mail_Stats::ajax_dashboard_period();
+          exit;
+
         case 'pn_cm_settings_export':
           if (!current_user_can('manage_options')) {
             echo wp_json_encode(['error_key' => 'permission_denied']);
@@ -963,6 +1103,82 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           }
 
           echo wp_json_encode(['error_key' => '', 'count' => $count]);
+          exit;
+          break;
+
+        case 'pn_cm_install_plugin':
+          if (!current_user_can('install_plugins')) {
+            echo wp_json_encode(['error_key' => 'permission_denied']);
+            exit;
+          }
+
+          $slug = isset($_POST['slug']) ? sanitize_text_field($_POST['slug']) : '';
+          $allowed_slugs = ['mailpn', 'userspn', 'pn-tasks-manager', 'pn-cookies-manager'];
+
+          if (!in_array($slug, $allowed_slugs, true)) {
+            echo wp_json_encode(['error_key' => 'invalid_slug']);
+            exit;
+          }
+
+          include_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+          include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+          include_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+          $api = plugins_api('plugin_information', [
+            'slug'   => $slug,
+            'fields' => ['sections' => false],
+          ]);
+
+          if (is_wp_error($api)) {
+            echo wp_json_encode(['error_key' => 'api_error', 'error_content' => $api->get_error_message()]);
+            exit;
+          }
+
+          $upgrader = new Plugin_Upgrader(new WP_Ajax_Upgrader_Skin());
+          $result   = $upgrader->install($api->download_link);
+
+          if (is_wp_error($result)) {
+            echo wp_json_encode(['error_key' => 'install_error', 'error_content' => $result->get_error_message()]);
+            exit;
+          }
+
+          if ($result === false) {
+            echo wp_json_encode(['error_key' => 'install_failed', 'error_content' => 'Installation failed.']);
+            exit;
+          }
+
+          echo wp_json_encode(['error_key' => '']);
+          exit;
+          break;
+
+        case 'pn_cm_activate_plugin':
+          if (!current_user_can('activate_plugins')) {
+            echo wp_json_encode(['error_key' => 'permission_denied']);
+            exit;
+          }
+
+          $slug = isset($_POST['slug']) ? sanitize_text_field($_POST['slug']) : '';
+          $plugin_files = [
+            'mailpn'             => 'mailpn/mailpn.php',
+            'userspn'            => 'userspn/userspn.php',
+            'pn-tasks-manager'   => 'pn-tasks-manager/pn-tasks-manager.php',
+            'pn-cookies-manager' => 'pn-cookies-manager/pn-cookies-manager.php',
+          ];
+
+          if (!isset($plugin_files[$slug])) {
+            echo wp_json_encode(['error_key' => 'invalid_slug']);
+            exit;
+          }
+
+          $plugin_file = $plugin_files[$slug];
+          $result = activate_plugin($plugin_file);
+
+          if (is_wp_error($result)) {
+            echo wp_json_encode(['error_key' => 'activate_error', 'error_content' => $result->get_error_message()]);
+            exit;
+          }
+
+          echo wp_json_encode(['error_key' => '']);
           exit;
           break;
       }

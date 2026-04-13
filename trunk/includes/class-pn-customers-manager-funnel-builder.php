@@ -733,7 +733,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           'input'       => 'input',
           'type'        => 'checkbox',
           'label'       => __('Use WooCommerce shipping zones', 'pn-customers-manager'),
-          'description' => __('Automatically sends configured shipping zones, methods and prices to the AI model.', 'pn-customers-manager'),
+          'description' => __('When a customer asks about shipping and provides a postal code, the plugin bypasses the AI model and uses WooCommerce\'s own shipping functions to match the correct zone and calculate the available methods and prices. The response is sent directly to the customer, ensuring accurate rates and preventing the model from picking the wrong zone or re-asking for the postal code. Configured shipping zones are also passed to the AI model as fallback context for any other shipping-related questions.', 'pn-customers-manager'),
           'parent'      => 'this',
         ];
         $fields[] = [
@@ -816,6 +816,36 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           'parent'        => 'wa_include_woo',
           'parent_option' => 'on',
         ];
+        $fields[] = [
+          'id'            => 'wa_include_woo_categories',
+          'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'         => 'input',
+          'type'          => 'checkbox',
+          'label'         => __('Include product categories', 'pn-customers-manager'),
+          'description'   => __('Adds product categories so the AI can classify and reason about product types.', 'pn-customers-manager'),
+          'parent'        => 'wa_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'            => 'wa_include_woo_tags',
+          'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'         => 'input',
+          'type'          => 'checkbox',
+          'label'         => __('Include product tags', 'pn-customers-manager'),
+          'description'   => __('Adds product tags so the AI can identify product features and characteristics.', 'pn-customers-manager'),
+          'parent'        => 'wa_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'            => 'wa_enable_recommendations',
+          'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'         => 'input',
+          'type'          => 'checkbox',
+          'label'         => __('Guided product recommendations', 'pn-customers-manager'),
+          'description'   => __('The AI will ask qualifying questions (budget, preferences) before recommending products.', 'pn-customers-manager'),
+          'parent'        => 'wa_include_woo',
+          'parent_option' => 'on',
+        ];
       }
 
       $fields[] = [
@@ -827,13 +857,56 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'description'   => __('Allow the AI to confirm orders during WhatsApp conversations and send an email notification.', 'pn-customers-manager'),
         'parent'        => 'this',
       ];
+      // Build user options for the multi-select (platform users who will receive order notifications)
+      $wa_chat_orders_user_options = [];
+      $wa_chat_orders_all_users    = get_users([
+        'fields'  => ['ID', 'display_name', 'user_email'],
+        'orderby' => 'display_name',
+        'order'   => 'ASC',
+      ]);
+      foreach ($wa_chat_orders_all_users as $wa_chat_orders_user) {
+        if (empty($wa_chat_orders_user->user_email)) {
+          continue;
+        }
+        $wa_chat_orders_user_options[$wa_chat_orders_user->ID] = $wa_chat_orders_user->display_name . ' (' . $wa_chat_orders_user->user_email . ')';
+      }
+
       $fields[] = [
-        'id'            => 'wa_chat_orders_email',
+        'id'            => 'wa_chat_orders_users',
+        'class'         => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+        'input'         => 'select',
+        'multiple'      => true,
+        'label'         => __('Order notification recipients (platform users)', 'pn-customers-manager'),
+        'description'   => __('Select platform users who will receive order notifications by email. Leave empty to use only external emails or the site admin email.', 'pn-customers-manager'),
+        'options'       => $wa_chat_orders_user_options,
+        'parent'        => 'wa_enable_chat_orders',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'                => 'wa_chat_orders_external_emails_wrapper',
+        'class'             => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'             => 'html_multi',
+        'label'             => __('Order notification recipients (external emails)', 'pn-customers-manager'),
+        'description'       => __('Add email addresses for people who are not registered users on this site.', 'pn-customers-manager'),
+        'html_multi_fields' => [
+          [
+            'id'          => 'wa_chat_orders_external_emails',
+            'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+            'input'       => 'input',
+            'type'        => 'email',
+            'placeholder' => 'email@example.com',
+          ],
+        ],
+        'parent'        => 'wa_enable_chat_orders',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'            => 'wa_chat_orders_payment_link',
         'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input'         => 'input',
-        'type'          => 'email',
-        'label'         => __('Order notification email', 'pn-customers-manager'),
-        'description'   => __('Email address to receive order notifications. Leave empty to use the site admin email.', 'pn-customers-manager'),
+        'type'          => 'checkbox',
+        'label'         => __('Send payment link on order confirmation', 'pn-customers-manager'),
+        'description'   => __('When an order is confirmed via chat, append a WooCommerce cart link that automatically adds the chosen products so the customer can pay. Requires WooCommerce.', 'pn-customers-manager'),
         'parent'        => 'wa_enable_chat_orders',
         'parent_option' => 'on',
       ];
@@ -893,6 +966,14 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'label'       => __('Welcome message', 'pn-customers-manager'),
         'placeholder' => esc_attr__('Message sent when starting the conversation...', 'pn-customers-manager'),
       ];
+      $fields[] = [
+        'id'          => 'wa_error_fallback_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Error fallback message', 'pn-customers-manager'),
+        'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Lo siento, en este momento no puedo responder. Por favor, inténtalo de nuevo más tarde.', 'pn-customers-manager'),
+      ];
     }
 
     // Instagram AI specific fields
@@ -925,7 +1006,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           'input'       => 'input',
           'type'        => 'checkbox',
           'label'       => __('Use WooCommerce shipping zones', 'pn-customers-manager'),
-          'description' => __('Automatically sends configured shipping zones, methods and prices to the AI model.', 'pn-customers-manager'),
+          'description' => __('When a customer asks about shipping and provides a postal code, the plugin bypasses the AI model and uses WooCommerce\'s own shipping functions to match the correct zone and calculate the available methods and prices. The response is sent directly to the customer, ensuring accurate rates and preventing the model from picking the wrong zone or re-asking for the postal code. Configured shipping zones are also passed to the AI model as fallback context for any other shipping-related questions.', 'pn-customers-manager'),
           'parent'      => 'this',
         ];
         $fields[] = [
@@ -998,6 +1079,36 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           'parent'        => 'ig_include_woo',
           'parent_option' => 'on',
         ];
+        $fields[] = [
+          'id'            => 'ig_include_woo_categories',
+          'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'         => 'input',
+          'type'          => 'checkbox',
+          'label'         => __('Include product categories', 'pn-customers-manager'),
+          'description'   => __('Adds product categories so the AI can classify and reason about product types.', 'pn-customers-manager'),
+          'parent'        => 'ig_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'            => 'ig_include_woo_tags',
+          'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'         => 'input',
+          'type'          => 'checkbox',
+          'label'         => __('Include product tags', 'pn-customers-manager'),
+          'description'   => __('Adds product tags so the AI can identify product features and characteristics.', 'pn-customers-manager'),
+          'parent'        => 'ig_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'            => 'ig_enable_recommendations',
+          'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'         => 'input',
+          'type'          => 'checkbox',
+          'label'         => __('Guided product recommendations', 'pn-customers-manager'),
+          'description'   => __('The AI will ask qualifying questions (budget, preferences) before recommending products.', 'pn-customers-manager'),
+          'parent'        => 'ig_include_woo',
+          'parent_option' => 'on',
+        ];
       }
 
       $fields[] = [
@@ -1054,6 +1165,14 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'input'       => 'textarea',
         'label'       => __('Welcome message', 'pn-customers-manager'),
         'placeholder' => esc_attr__('Message sent when starting the conversation...', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'ig_error_fallback_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Error fallback message', 'pn-customers-manager'),
+        'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Lo siento, en este momento no puedo responder. Por favor, inténtalo de nuevo más tarde.', 'pn-customers-manager'),
       ];
     }
 

@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.0.61';
+			$this->pn_customers_manager_version = '1.0.77';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -78,6 +78,7 @@ class PN_CUSTOMERS_MANAGER {
 		self::pn_customers_manager_define_csv_import_hooks();
 		self::pn_customers_manager_define_whatsapp_ai_hooks();
 		self::pn_customers_manager_define_instagram_ai_hooks();
+		self::pn_customers_manager_define_projections_hooks();
 	}
 			
 	/**
@@ -257,6 +258,11 @@ class PN_CUSTOMERS_MANAGER {
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-funnel-builder.php';
 
 		/**
+		 * Shared AI chat trait (must be loaded before WhatsApp/Instagram classes).
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/trait-pn-customers-manager-ai-chat-common.php';
+
+		/**
 		 * The class providing WhatsApp AI integration.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-whatsapp-ai.php';
@@ -265,6 +271,16 @@ class PN_CUSTOMERS_MANAGER {
 		 * The class providing Instagram AI integration.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-instagram-ai.php';
+
+		/**
+		 * The class providing business projections.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-projections.php';
+
+		/**
+		 * The class providing MailPn statistics dashboard.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-mail-stats.php';
 
 		$this->pn_customers_manager_loader = new PN_CUSTOMERS_MANAGER_Loader();
 	}
@@ -542,6 +558,13 @@ class PN_CUSTOMERS_MANAGER {
 	 */
 	private function pn_customers_manager_define_instagram_ai_hooks() {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_Instagram_AI', 'register_routes');
+	}
+
+	/**
+	 * Register hooks for business projections.
+	 */
+	private function pn_customers_manager_define_projections_hooks() {
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_projections_snapshot_cron', 'PN_CUSTOMERS_MANAGER_Projections', 'collect_snapshot');
 	}
 
 	/**

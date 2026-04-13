@@ -330,6 +330,7 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
 
     wp_localize_script('pn-cm-conversations-front', 'pnCmConvFrontI18n', [
       'confirmDelete' => __('Delete this conversation?', 'pn-customers-manager'),
+      'confirmReset'  => __('Reset this conversation? The message history will be cleared so the next reply regenerates the AI input from scratch.', 'pn-customers-manager'),
       'closed'        => __('Closed', 'pn-customers-manager'),
       'active'        => __('Active', 'pn-customers-manager'),
     ]);
@@ -409,6 +410,9 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
                 </div>
               </div>
               <div class="pn-cm-conv-card-actions">
+                <button type="button" class="pn-cm-conv-card-action pn-cm-conv-reset-btn" data-conv-id="<?php echo esc_attr($conv->id); ?>" title="<?php esc_attr_e('Reset (clear history)', 'pn-customers-manager'); ?>">
+                  <span class="material-icons-outlined">refresh</span>
+                </button>
                 <?php if ($conv->status === 'active'): ?>
                   <button type="button" class="pn-cm-conv-card-action pn-cm-conv-close-btn" data-conv-id="<?php echo esc_attr($conv->id); ?>" title="<?php esc_attr_e('Close', 'pn-customers-manager'); ?>">
                     <span class="material-icons-outlined">close</span>

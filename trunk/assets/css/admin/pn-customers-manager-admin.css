@@ -94,3 +94,100 @@ body.folded .pn-customers-manager-settings-footer{
 #pn-customers-manager-settings-import-file.pn-customers-manager-settings-hidden-input{
   display:none !important;
 }
+/* Recommended plugins – badge on footer button */
+.pn-cm-rp-btn{
+  position:relative;
+}
+.pn-cm-rp-badge{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  background:#d63638;
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  pointer-events:none;
+}
+/* Recommended plugins – popup cards */
+.pn-cm-rp-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.pn-cm-rp-card{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:16px;
+  border:1px solid #dcdcde;
+  border-radius:8px;
+  background:#f9f9f9;
+}
+.pn-cm-rp-icon{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:#2271b1;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.pn-cm-rp-icon .material-icons-outlined{
+  font-size:24px;
+}
+.pn-cm-rp-info{
+  flex:1;
+  min-width:0;
+}
+.pn-cm-rp-name{
+  font-weight:600;
+  font-size:14px;
+  color:#1d2327;
+}
+.pn-cm-rp-desc{
+  font-size:13px;
+  color:#787c82;
+  margin-top:4px;
+}
+.pn-cm-rp-action{
+  flex-shrink:0;
+}
+.pn-cm-rp-active-badge{
+  display:inline-block;
+  padding:4px 12px;
+  background:#dff0d8;
+  color:#3c763d;
+  border-radius:4px;
+  font-size:12px;
+  font-weight:600;
+}
+.pn-cm-rp-recommended{
+  display:inline-block;
+  padding:2px 8px;
+  background:#fef3cd;
+  color:#856404;
+  border-radius:4px;
+  font-size:11px;
+  font-weight:600;
+  margin-left:8px;
+  vertical-align:middle;
+}
+@media screen and (max-width:600px){
+  .pn-cm-rp-card{
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .pn-cm-rp-action{
+    width:100%;
+    text-align:right;
+  }
+}

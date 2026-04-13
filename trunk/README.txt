@@ -4,7 +4,7 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 6.9.1
-Stable tag: 1.0.61
+Stable tag: 1.0.77
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
@@ -147,12 +147,6 @@ Licensed under: SEE LICENSE IN https://github.com/OwlCarousel2/OwlCarousel2/blob
 Copyright 2013-2018 David Deutsch
 https://owlcarousel2.github.io/OwlCarousel2/
 https://github.com/OwlCarousel2/OwlCarousel2/blob/develop/dist/owl.carousel.js
-
-Select2 4.0.13
-License MIT - https://github.com/select2/select2/blob/master/LICENSE.md
-https://github.com/select2/select2/tree/master
-https://github.com/select2/select2/blob/master/dist/js/select2.js
-https://github.com/select2/select2/blob/master/dist/css/select2.css
 
 Trumbowyg v2.27.3 - A lightweight WYSIWYG editor
 alex-d.github.io/Trumbowyg/
