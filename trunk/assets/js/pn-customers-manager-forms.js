@@ -117,7 +117,7 @@
     if ($('.pn-customers-manager-field[data-pn-customers-manager-parent]').length) {
       cm_pn_form_update();
 
-      $(document).on('change', '.pn-customers-manager-field[data-pn-customers-manager-parent~="this"]', function(e) {
+      $(document).on('change', '.pn-customers-manager-field[data-pn-customers-manager-parent]', function(e) {
         cm_pn_form_update();
       });
     }

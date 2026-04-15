@@ -319,6 +319,29 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 				</div>
 			</div>
 
+			<?php
+			$mail_post = get_post($mail_id);
+			if ($mail_post && !empty($mail_post->post_content)) :
+			?>
+			<div class="pn-cm-email-campaigns-preview-section">
+				<a href="#" class="pn-cm-email-campaigns-preview-toggle">
+					<span class="material-icons-outlined pn-cm-email-campaigns-preview-icon">expand_more</span>
+					<span><?php esc_html_e('Email content', 'pn-customers-manager'); ?></span>
+				</a>
+				<div class="pn-cm-email-campaigns-preview-body" style="display:none;">
+					<div class="pn-cm-email-campaigns-preview-actions">
+						<button type="button" class="pn-cm-email-campaigns-btn pn-cm-email-campaigns-btn-copy">
+							<span class="material-icons-outlined">content_copy</span>
+							<?php esc_html_e('Copy content', 'pn-customers-manager'); ?>
+						</button>
+					</div>
+					<div class="pn-cm-email-campaigns-preview-frame">
+						<?php echo wp_kses_post($mail_post->post_content); ?>
+					</div>
+				</div>
+			</div>
+			<?php endif; ?>
+
 			<div class="pn-cm-email-campaigns-send-section">
 				<h3><?php esc_html_e('Send campaign', 'pn-customers-manager'); ?></h3>
 				<div class="pn-cm-email-campaigns-send-form">

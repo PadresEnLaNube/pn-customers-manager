@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.0.77';
+			$this->pn_customers_manager_version = '1.0.85';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -512,6 +512,7 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-commercial-panel', 'PN_CUSTOMERS_MANAGER_Commercial', 'render_commercial_panel');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Commercial', 'register_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_ensure_commercial_role');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_ensure_crm_cap');
 	}
 
 	/**
@@ -524,6 +525,21 @@ class PN_CUSTOMERS_MANAGER {
 			if ($role instanceof WP_Role) {
 				$role->add_cap('read');
 			}
+		}
+	}
+
+	/**
+	 * Ensure pn_cm_manage_crm capability exists on manager and admin roles
+	 * (upgrade path for existing installs).
+	 */
+	public function pn_customers_manager_ensure_crm_cap() {
+		$manager = get_role('pn_customers_manager_role_manager');
+		if ($manager instanceof \WP_Role && !$manager->has_cap('pn_cm_manage_crm')) {
+			$manager->add_cap('pn_cm_manage_crm');
+		}
+		$admin = get_role('administrator');
+		if ($admin instanceof \WP_Role && !$admin->has_cap('pn_cm_manage_crm')) {
+			$admin->add_cap('pn_cm_manage_crm');
 		}
 	}
 

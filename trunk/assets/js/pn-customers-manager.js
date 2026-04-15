@@ -183,20 +183,35 @@
   window.cm_pn_form_update = function (){
     $('.pn-customers-manager-field[data-pn-customers-manager-parent-option]').closest('.pn-customers-manager-input-wrapper').addClass('pn-customers-manager-display-none');
 
-    $('.pn-customers-manager-field[data-pn-customers-manager-parent~="this"]').each(function(index_parent, element_parent) {
-      var parent_this = $(this);
+    function process_parent(parent_field) {
+      var parent_this = $(parent_field);
+      var parent_id = parent_this.attr('id');
+      if (!parent_id) return;
 
-      $('.pn-customers-manager-field[data-pn-customers-manager-parent~=' + parent_this.attr('id') + ']').each(function(index, element) {
+      var is_active = false;
+      if (parent_this.hasClass('pn-customers-manager-checkbox')) {
+        is_active = parent_this.is(':checked');
+      }
+
+      $('.pn-customers-manager-field[data-pn-customers-manager-parent~=' + parent_id + ']').each(function() {
+        var child = $(this);
+        var match = false;
+
         if (parent_this.hasClass('pn-customers-manager-checkbox')) {
-          if (parent_this.is(':checked') && $(this).attr('data-pn-customers-manager-parent-option') == 'on') {
-            $(this).closest('.pn-customers-manager-input-wrapper').removeClass('pn-customers-manager-display-none');
-          }
+          match = is_active && child.attr('data-pn-customers-manager-parent-option') == 'on';
         } else {
-          if (parent_this.val() == $(this).attr('data-pn-customers-manager-parent-option')) {
-            $(this).closest('.pn-customers-manager-input-wrapper').removeClass('pn-customers-manager-display-none');
-          }
+          match = parent_this.val() == child.attr('data-pn-customers-manager-parent-option');
+        }
+
+        if (match) {
+          child.closest('.pn-customers-manager-input-wrapper').removeClass('pn-customers-manager-display-none');
+          process_parent(child);
         }
       });
+    }
+
+    $('.pn-customers-manager-field[data-pn-customers-manager-parent~="this"]').each(function() {
+      process_parent(this);
     });
   }
 

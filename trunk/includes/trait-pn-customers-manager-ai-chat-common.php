@@ -308,36 +308,78 @@ trait PN_CM_AI_Chat_Common {
     }
 
     // 4. Order acceptance protocol
-    $enable_chat_orders = !empty($node_config[$prefix . 'enable_chat_orders']);
+    $enable_chat_orders    = !empty($node_config[$prefix . 'enable_chat_orders']);
+    $enable_special_orders = !empty($node_config[$prefix . 'enable_special_orders']);
+    $custom_order_redirect = trim(get_option('pn_customers_manager_order_redirect_message', ''));
+    $order_redirect_instruction = !empty($custom_order_redirect)
+      ? 'redirect the customer with this exact message: "' . $custom_order_redirect . '"'
+      : 'politely redirect them to call by phone or use the contact methods available on the website';
+
+    // Build the complex/special order instruction depending on whether special order forwarding is enabled.
+    if ($enable_special_orders) {
+      $complex_order_block = "SPECIAL ORDER FORWARDING (for requests that CANNOT be fulfilled with a simple purchase link):\n"
+        . "When the customer's request is complex (bulk/wholesale orders, B2B proposals, custom products, special shipping arrangements, orders that require a formal quote), do NOT redirect them away. Instead, follow this flow:\n"
+        . "  1. Collect ALL relevant details from the customer naturally in conversation: what they need, quantities, any special requirements, their name, contact email or phone, and delivery preferences.\n"
+        . "  2. Once you have enough details, present a clear summary of their request and ask them to confirm that the details are correct.\n"
+        . "  3. ONLY after the customer explicitly confirms (e.g. \"sí\", \"correcto\", \"adelante\"), include the hidden tag [PEDIDO_ESPECIAL] at the END of your response message. The system will automatically strip this tag before the customer sees it and will forward the full conversation by email to the sales team.\n"
+        . "  4. In the SAME message where you include [PEDIDO_ESPECIAL], tell the customer that their request has been forwarded to the team and someone will contact them shortly.\n"
+        . "CRITICAL RULES:\n"
+        . "- You MUST include [PEDIDO_ESPECIAL] exactly ONCE after the customer confirms. Do NOT forget this tag — without it the email will NOT be sent.\n"
+        . "- NEVER include [PEDIDO_ESPECIAL] without the customer's explicit confirmation.\n"
+        . "- Place the tag at the very end of your message, after all visible text.\n";
+    } else {
+      $complex_order_block = "COMPLEX ORDER REDIRECT:\n"
+        . "If the customer's request CANNOT be fulfilled with a simple purchase link (e.g. bulk/wholesale orders, B2B proposals, custom products, special shipping arrangements, orders that require a formal quote), do NOT attempt to process the order through this chat. Instead, " . $order_redirect_instruction . ".\n";
+    }
+
     if ($enable_chat_orders) {
-      $parts[] = "ORDER ACCEPTANCE PROTOCOL (two mandatory steps):\n"
-        . "You CAN accept orders through this chat, but ONLY following this exact two-step flow. NEVER skip step 1.\n"
+      $order_protocol = "ORDER ACCEPTANCE PROTOCOL (three mandatory steps):\n"
+        . "You CAN accept orders through this chat, but ONLY following this exact three-step flow. NEVER skip any step.\n"
         . "\n"
-        . "STEP 1 — ORDER SUMMARY AND EXPLICIT CONFIRMATION REQUEST:\n"
-        . "When the customer indicates they want to place an order, or after they have chosen the specific products they want, you MUST FIRST send a clear summary of the order and ask the customer to confirm it. Do NOT include any [PEDIDO_CONFIRMADO] tag in this message.\n"
+        . $complex_order_block . "\n"
+        . "\n"
+        . "STEP 1 — DELIVERY INFORMATION COLLECTION:\n"
+        . "Before showing any order summary, you MUST collect the following delivery details from the customer:\n"
+        . "  • Customer name (who will receive the order).\n"
+        . "  • Postal code" . ($require_postal ? " (MANDATORY — you already have a rule about this)" : "") . ".\n"
+        . "  • Delivery address (street, number, city).\n"
+        . "  • Phone number (if not already known from this chat).\n"
+        . "Ask for the missing details naturally in flowing prose — do NOT use numbered lists or bullet points for these questions. For example, say something like: \"Para proceder con el pedido, ¿podrías darme tu nombre y código postal?\" instead of listing them as 1., 2., 3. If the customer has ALREADY provided some of these details earlier in the conversation (e.g. a postal code when asking about shipping), do NOT ask again — reuse what you already know.\n"
+        . "Do NOT proceed to Step 2 until you have at least: name, postal code, and address.\n"
+        . "EXCEPTION: If the customer explicitly says they will pick up in store (no shipping needed), you may skip postal code and address, but still collect the customer name.\n"
+        . "\n"
+        . "STEP 2 — ORDER SUMMARY AND EXPLICIT CONFIRMATION REQUEST:\n"
+        . "Once you have the delivery details AND the chosen products, send a clear summary and ask the customer to confirm. Do NOT include any [PEDIDO_CONFIRMADO] tag in this message.\n"
         . "The summary MUST include:\n"
         . "  • The list of chosen products with their quantities and prices (only the products the customer actually picked — never include products that were just shown as options or suggestions).\n"
+        . "  • Delivery details: name, address, postal code (or \"pickup in store\").\n"
         . "  • Shipping method and cost (or pickup), if already known.\n"
         . "  • Estimated total (products + shipping), if it can be computed.\n"
         . "  • A direct question asking the customer to confirm the order (e.g. \"¿Confirmas el pedido?\" / \"Do you confirm the order?\").\n"
-        . "If you are missing information (products, quantities, shipping address / postal code), ask for it BEFORE sending the summary. Do NOT invent quantities — if the customer did not specify a quantity, assume 1 and state it explicitly.\n"
+        . "Do NOT invent quantities — if the customer did not specify a quantity, assume 1 and state it explicitly.\n"
         . "\n"
-        . "STEP 2 — FINAL CONFIRMATION TAG:\n"
+        . "STEP 3 — FINAL CONFIRMATION TAG:\n"
         . "ONLY after the customer EXPLICITLY accepts the summary (e.g. \"sí\", \"confirmo\", \"perfecto, adelante\", \"sí, preparadlo\", \"yes\", \"confirm\"), send a short confirmation message AND include the tag [PEDIDO_CONFIRMADO:IDS] in that message, where IDS is a comma-separated list of the WooCommerce product IDs that the customer actually confirmed (ONLY those). Use the product IDs shown in the PRODUCT CATALOG section of this prompt.\n"
         . "Example: if the customer confirmed two products with IDs 123 and 456, include exactly: [PEDIDO_CONFIRMADO:123,456]\n"
         . "The system will strip this tag before the customer sees it.\n"
         . "\n"
         . "IMPORTANT RULES:\n"
-        . "- NEVER emit [PEDIDO_CONFIRMADO] without first showing a summary and getting an explicit confirmation in a PREVIOUS message.\n"
+        . "- NEVER skip Step 1. You MUST have the customer's delivery information before showing the order summary.\n"
+        . "- NEVER emit [PEDIDO_CONFIRMADO] without first showing a summary (Step 2) and getting an explicit confirmation in a PREVIOUS message.\n"
         . "- NEVER include product IDs of items the customer did not explicitly choose (do NOT include items you merely suggested or listed as options).\n"
-        . "- Include the tag exactly ONCE per confirmed order. After you have emitted [PEDIDO_CONFIRMADO:...] for an order, NEVER emit it again in the same conversation, even if the customer provides additional information (postal code, address, etc.) afterwards.\n"
+        . "- Include the tag exactly ONCE per confirmed order. After you have emitted [PEDIDO_CONFIRMADO:...] for an order, NEVER emit it again in the same conversation, even if the customer provides additional information afterwards.\n"
         . "- If the customer asks to modify the order after the summary but before confirming, update the summary and ask again — do NOT emit the tag yet.\n"
         . "- If you cannot determine the exact product IDs, ask the customer to clarify which product they want before sending the summary.";
+      $parts[] = $order_protocol;
     } else {
-      $parts[] = "ORDER POLICY:\n"
+      $order_policy = "ORDER POLICY:\n"
         . "You CANNOT accept or confirm orders through this chat. "
-        . "If a customer wants to place an order, politely redirect them to call by phone or use the contact methods available on the website.\n"
+        . "If a customer wants to place a simple order, " . $order_redirect_instruction . ".\n"
         . "NEVER include the tag [PEDIDO_CONFIRMADO] or [PEDIDO_CONFIRMADO:...] in your responses.";
+      if ($enable_special_orders) {
+        $order_policy .= "\n\n" . $complex_order_block;
+      }
+      $parts[] = $order_policy;
     }
 
     // 5. Base prompt
@@ -391,7 +433,17 @@ trait PN_CM_AI_Chat_Common {
 
     $schedule_info = isset($node_config[$prefix . 'schedule_info']) ? $strip_html($node_config[$prefix . 'schedule_info']) : '';
     if (!empty($schedule_info)) {
-      $parts[] = "OPENING HOURS:\n" . $schedule_info;
+      $current_time_str = wp_date('H:i', null, $tz);
+      $current_day_name = $day_names[$day_num];
+      $parts[] = "OPENING HOURS:\n" . $schedule_info
+        . "\n\nMANDATORY — OPEN/CLOSED CHECK:\n"
+        . "Right now it is " . $current_day_name . " at " . $current_time_str . ".\n"
+        . "Step 1: Find today's schedule in the OPENING HOURS above. Identify the opening time and closing time for " . $current_day_name . ".\n"
+        . "Step 2: Compare the current time (" . $current_time_str . ") against that range.\n"
+        . "  - If " . $current_time_str . " >= opening time AND " . $current_time_str . " < closing time → the store is OPEN.\n"
+        . "  - Otherwise → the store is CLOSED.\n"
+        . "Step 3: If the customer asks about visiting, availability, or if the store is open, respond based on this check.\n"
+        . "IMPORTANT: Do NOT guess or assume. Follow the comparison strictly. If the store closes at 20:00 and the current time is 15:17, the store IS open.";
     }
 
     $knowledge = isset($node_config[$prefix . 'knowledge_base']) ? $strip_html($node_config[$prefix . 'knowledge_base']) : '';
@@ -416,17 +468,38 @@ trait PN_CM_AI_Chat_Common {
       $include_categories  = $resolve_node_flag($prefix . 'include_woo_categories');
       $include_tags        = $resolve_node_flag($prefix . 'include_woo_tags');
 
+      // Category filter: array of term IDs selected by the user (empty = all)
+      $categories_filter = [];
+      if ($include_categories && !empty($node_config[$prefix . 'woo_categories_filter'])) {
+        $raw_filter = $node_config[$prefix . 'woo_categories_filter'];
+        if (is_array($raw_filter)) {
+          $categories_filter = array_map('intval', array_filter($raw_filter));
+        } elseif (is_string($raw_filter)) {
+          $categories_filter = array_map('intval', array_filter(explode(',', $raw_filter)));
+        }
+      }
+
       self::log('build_enriched_system_prompt — WooCommerce flags:'
         . ' add_to_cart_links=' . ($add_to_cart_links ? 'YES' : 'NO')
         . ' include_woo_images=' . ($include_woo_images ? 'YES' : 'NO')
         . ' include_categories=' . ($include_categories ? 'YES' : 'NO')
-        . ' include_tags=' . ($include_tags ? 'YES' : 'NO'));
+        . ' include_tags=' . ($include_tags ? 'YES' : 'NO')
+        . ' categories_filter=' . (!empty($categories_filter) ? implode(',', $categories_filter) : 'ALL'));
 
-      $woo_context = self::get_woo_products_context($include_variations, $add_to_cart_links, $include_woo_images, $include_categories, $include_tags);
+      $woo_context = self::get_woo_products_context($include_variations, $add_to_cart_links, $include_woo_images, $include_categories, $include_tags, $categories_filter);
+      // Recommendations are ON by default when WooCommerce is active.
+      // Only disabled if the node explicitly opts out.
+      $disable_recommendations = $resolve_node_flag($prefix . 'disable_recommendations');
+      $enable_recommendations = !$disable_recommendations;
       if (!empty($woo_context)) {
-        $link_instruction = $add_to_cart_links
-          ? 'when a user asks about a product ALWAYS include the "Buy link" so they can add it to cart directly'
-          : 'when a user asks about a product ALWAYS include the "Product link" so they can visit the product page';
+        if ($enable_recommendations) {
+          $link_label = $add_to_cart_links ? 'Buy link' : 'Product link';
+          $link_instruction = 'include the "' . $link_label . '" ONLY when showing individual product details to a customer who has already chosen a product — NOT during the guided recommendation flow (see GUIDED PRODUCT RECOMMENDATION PROTOCOL below)';
+        } else {
+          $link_instruction = $add_to_cart_links
+            ? 'when a user asks about a product ALWAYS include the "Buy link" so they can add it to cart directly'
+            : 'when a user asks about a product ALWAYS include the "Product link" so they can visit the product page';
+        }
 
         if (static::supports_native_images()) {
           $parts[] = "PRODUCT CATALOG (use this data to answer questions about products, prices, availability; {$link_instruction}):\n" . $woo_context;
@@ -437,15 +510,17 @@ trait PN_CM_AI_Chat_Common {
 
         $image_rules = static::get_image_rules($include_woo_images);
         if (!empty($image_rules)) {
+          if ($enable_recommendations) {
+            $image_rules .= "\n- IMPORTANT OVERRIDE: When the GUIDED PRODUCT RECOMMENDATION PROTOCOL is active, do NOT include [PRODUCT_IMAGES:ID] tags during Steps 1 or 2. Only include them in Step 3 after the customer has seen the text-only list and explicitly asked for photos.";
+          }
           $parts[] = $image_rules;
         }
 
-        self::log('build_enriched_system_prompt — added WooCommerce products (variations=' . ($include_variations ? 'yes' : 'no') . ', add_to_cart_links=' . ($add_to_cart_links ? 'yes' : 'no') . ', images=' . ($include_woo_images ? 'yes' : 'no') . ', categories=' . ($include_categories ? 'yes' : 'no') . ', tags=' . ($include_tags ? 'yes' : 'no') . ')');
+        self::log('build_enriched_system_prompt — added WooCommerce products (variations=' . ($include_variations ? 'yes' : 'no') . ', add_to_cart_links=' . ($add_to_cart_links ? 'yes' : 'no') . ', images=' . ($include_woo_images ? 'yes' : 'no') . ', categories=' . ($include_categories ? 'yes' : 'no') . ', tags=' . ($include_tags ? 'yes' : 'no') . ', recommendations=' . ($enable_recommendations ? 'YES' : 'NO') . ')');
 
         // 7b. Product recommendation protocol
-        $enable_recommendations = $resolve_node_flag($prefix . 'enable_recommendations');
         if ($enable_recommendations) {
-          $taxonomy_summary = self::get_woo_taxonomy_summary($include_categories, $include_tags);
+          $taxonomy_summary = self::get_woo_taxonomy_summary($include_categories, $include_tags, $categories_filter);
           $recommendation_protocol = self::build_recommendation_protocol(
             $include_categories, $include_tags, $include_woo_images, $taxonomy_summary
           );
@@ -499,17 +574,27 @@ trait PN_CM_AI_Chat_Common {
    * WOOCOMMERCE PRODUCTS
    * ================================================================ */
 
-  private static function get_woo_products_context($include_variations = false, $add_to_cart_links = false, $include_images = false, $include_categories = false, $include_tags = false) {
+  private static function get_woo_products_context($include_variations = false, $add_to_cart_links = false, $include_images = false, $include_categories = false, $include_tags = false, $categories_filter = []) {
     if (!class_exists('WooCommerce') && !function_exists('wc_get_products')) {
       return '';
     }
 
-    $products = wc_get_products([
+    $query_args = [
       'status'  => 'publish',
       'limit'   => 50,
       'orderby' => 'total_sales',
       'order'   => 'DESC',
-    ]);
+    ];
+
+    if (!empty($categories_filter)) {
+      $query_args['category'] = array_map(function ($term_id) {
+        $term = get_term($term_id, 'product_cat');
+        return ($term && !is_wp_error($term)) ? $term->slug : '';
+      }, $categories_filter);
+      $query_args['category'] = array_filter($query_args['category']);
+    }
+
+    $products = wc_get_products($query_args);
 
     if (empty($products)) {
       return '';
@@ -538,7 +623,7 @@ trait PN_CM_AI_Chat_Common {
         $max_price = $product->get_variation_price('max', true);
         if ($min_price) {
           if ($min_price !== $max_price) {
-            $block .= 'Price: from ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
+            $block .= 'Price: ' . __('from', 'pn-customers-manager') . ' ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
           } else {
             $block .= 'Price: ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
           }
@@ -630,7 +715,7 @@ trait PN_CM_AI_Chat_Common {
    * Uses the same query as get_woo_products_context() — WP object cache
    * prevents a real duplicate DB hit.
    */
-  private static function get_woo_taxonomy_summary($include_categories = false, $include_tags = false) {
+  private static function get_woo_taxonomy_summary($include_categories = false, $include_tags = false, $categories_filter = []) {
     $result = ['categories' => [], 'tags' => []];
 
     if (!$include_categories && !$include_tags) {
@@ -641,12 +726,22 @@ trait PN_CM_AI_Chat_Common {
       return $result;
     }
 
-    $products = wc_get_products([
+    $query_args = [
       'status'  => 'publish',
       'limit'   => 50,
       'orderby' => 'total_sales',
       'order'   => 'DESC',
-    ]);
+    ];
+
+    if (!empty($categories_filter)) {
+      $query_args['category'] = array_map(function ($term_id) {
+        $term = get_term($term_id, 'product_cat');
+        return ($term && !is_wp_error($term)) ? $term->slug : '';
+      }, $categories_filter);
+      $query_args['category'] = array_filter($query_args['category']);
+    }
+
+    $products = wc_get_products($query_args);
 
     if (empty($products)) {
       return $result;
@@ -692,7 +787,11 @@ trait PN_CM_AI_Chat_Common {
   private static function build_recommendation_protocol($include_categories, $include_tags, $include_images, $taxonomy_summary) {
     $lines = [];
     $lines[] = '=== GUIDED PRODUCT RECOMMENDATION PROTOCOL ===';
-    $lines[] = 'When the customer asks a GENERIC product question (e.g. "what do you have?", "I\'m looking for a gift", "show me products"), follow these steps IN ORDER. Do NOT skip steps.';
+    $lines[] = 'IMPORTANT: This protocol OVERRIDES any other product-link or image instructions when it applies.';
+    $lines[] = 'When the customer asks a GENERIC product question, follow these steps IN ORDER. Do NOT skip steps.';
+    $lines[] = 'A question is GENERIC when it refers to a product category, type, occasion, or general intent — NOT a specific product by its exact name.';
+    $lines[] = 'Examples of GENERIC questions: "what do you have?", "I\'m looking for a gift", "show me seasonal flowers", "I want a bouquet", "send me photos of your products", "what flowers do you recommend?".';
+    $lines[] = 'Even if the customer says "send photos" or "show me images" in their first message, you MUST follow the steps below first.';
     $lines[] = '';
 
     // Step 1 — Qualifying questions
@@ -712,19 +811,20 @@ trait PN_CM_AI_Chat_Common {
     $lines[] = '';
 
     // Step 2 — Filtered product list
-    $lines[] = 'STEP 2 — FILTERED PRODUCT LIST (text only):';
+    $lines[] = 'STEP 2 — FILTERED PRODUCT LIST (text only, NO links, NO images):';
     $lines[] = '- Present a maximum of 5 products that match the customer\'s criteria.';
-    $lines[] = '- For each product: Name + Price + one short line explaining why it matches.';
-    $lines[] = '- Do NOT include product URLs or links in this step.';
-    $lines[] = '- Do NOT include [PRODUCT_IMAGES:ID] tags in this step.';
+    $lines[] = '- For each product show ONLY: Name + Price + one short line explaining why it matches.';
+    $lines[] = '- FORBIDDEN in this step: product URLs, product links, buy links, [PRODUCT_IMAGES:ID] tags, or any image reference.';
+    $lines[] = '- Then ask the customer which ones interest them or if they want to see more options.';
     $lines[] = '';
 
     // Step 3 — conditional
     if ($include_images) {
-      $lines[] = 'STEP 3 — OFFER PHOTOS:';
-      $lines[] = '- After showing the filtered list, ask the customer if they would like to see photos of any of the recommended products.';
-      $lines[] = '- Only include [PRODUCT_IMAGES:ID] tags AFTER the customer explicitly accepts or asks to see photos.';
+      $lines[] = 'STEP 3 — OFFER PHOTOS (only after Step 2 is complete):';
+      $lines[] = '- After showing the filtered list in Step 2, ask the customer if they would like to see photos of any of the recommended products.';
+      $lines[] = '- Only include [PRODUCT_IMAGES:ID] tags AFTER the customer has seen the text-only list AND explicitly accepts or asks to see photos in a SUBSEQUENT message.';
       $lines[] = '- When sending photos, also include the product URL/link.';
+      $lines[] = '- If the customer asked for photos in their INITIAL message, acknowledge it but still complete Steps 1-2 first, then offer photos.';
     } else {
       $lines[] = 'STEP 3 — NEXT STEPS:';
       $lines[] = '- After showing the filtered list, ask the customer if any product interests them.';
@@ -733,7 +833,7 @@ trait PN_CM_AI_Chat_Common {
     $lines[] = '';
 
     // Exception
-    $lines[] = 'EXCEPTION: If the customer asks a SPECIFIC question about a product by name (e.g. "how much is Product X?", "tell me about Product Y"), answer directly with the product information. Do NOT start the guided flow.';
+    $lines[] = 'EXCEPTION: If the customer asks about a SPECIFIC product using its EXACT NAME from the catalog (e.g. "how much is JARRON CUERDA CON FLORES?", "tell me about CESTON CON FLORES DE TEMPORADA"), answer directly with the product information and link. Do NOT start the guided flow. Asking for a product CATEGORY (e.g. "seasonal flowers", "bouquets") is NOT a specific product name — that is a GENERIC query and must follow the protocol.';
     $lines[] = '';
 
     // Rules
@@ -1893,9 +1993,9 @@ trait PN_CM_AI_Chat_Common {
     $postal_found     = false;
     $shipping_inquiry = '/(?:'
       . 'enviar?\s+(?:a\s+|flores\s+a\s+)?(?:la\s+)?calle'
-      . '|enviar?\s+a\b'
-      . '|entregar?\s+en'
-      . '|envío\s+a\b'
+      . '|enviar?\s+a\s+(?!casa\b|domicilio\b)\w+'
+      . '|entregar?\s+en\s+(?!casa\b|domicilio\b|mi\b)\w+'
+      . '|envío\s+a\s+(?!casa\b|domicilio\b|mi\b)\w+'
       . '|env[ií](?:o|ar|áis|ais)\b.*(?:calle|pueblo|ciudad|zona|direcci[oó]n)'
       . '|(?:y\s+)?(?:a\s+)?(?:la\s+)?calle\s+\w+'
       . '|(?:y\s+)?al?\s+pueblo\s+(?:de\s+)?\w+'
@@ -2502,6 +2602,197 @@ trait PN_CM_AI_Chat_Common {
         self::log('detect_and_notify_order — payment link enabled but could not build URL (no product IDs)');
       }
     }
+
+    return $ai_response;
+  }
+
+  private static function detect_and_notify_special_order($ai_response, $conversation, $messages, $node_config) {
+    $tag_regex = '/\[PEDIDO_ESPECIAL\]/';
+    if (!preg_match($tag_regex, $ai_response)) {
+      return $ai_response;
+    }
+
+    $prefix = static::platform_prefix();
+
+    self::log('detect_and_notify_special_order — tag detected in response');
+
+    // Guard: prevent duplicate emails for the same conversation.
+    $transient_key = 'pn_cm_special_order_notified_' . $conversation->id;
+    if (get_transient($transient_key)) {
+      self::log('detect_and_notify_special_order — SKIPPING duplicate: email already sent for conversation ' . $conversation->id);
+      $ai_response = preg_replace($tag_regex, '', $ai_response);
+      return trim($ai_response);
+    }
+
+    if (empty($node_config[$prefix . 'enable_special_orders'])) {
+      self::log('detect_and_notify_special_order — SECURITY: tag found but special orders are DISABLED. Stripping tag.');
+      return preg_replace($tag_regex, '', $ai_response);
+    }
+
+    // Resolve notification recipients.
+    $recipients = [];
+
+    // 1) Platform user IDs → emails
+    if (!empty($node_config[$prefix . 'special_orders_users'])) {
+      $user_ids = $node_config[$prefix . 'special_orders_users'];
+      if (!is_array($user_ids)) {
+        $user_ids = [$user_ids];
+      }
+      foreach ($user_ids as $uid) {
+        $uid = (int) $uid;
+        if ($uid <= 0) {
+          continue;
+        }
+        $user = get_userdata($uid);
+        if ($user && !empty($user->user_email)) {
+          $maybe = sanitize_email($user->user_email);
+          if (!empty($maybe)) {
+            $recipients[] = $maybe;
+          }
+        }
+      }
+    }
+
+    // 2) External emails (html_multi rows)
+    if (!empty($node_config[$prefix . 'special_orders_external_emails'])) {
+      $external = $node_config[$prefix . 'special_orders_external_emails'];
+      if (!is_array($external)) {
+        $external = [$external];
+      }
+      foreach ($external as $ext_email) {
+        if (!is_string($ext_email)) {
+          continue;
+        }
+        $ext_email = trim($ext_email);
+        if ($ext_email === '') {
+          continue;
+        }
+        $maybe = sanitize_email($ext_email);
+        if (!empty($maybe)) {
+          $recipients[] = $maybe;
+        }
+      }
+    }
+
+    // Deduplicate (case-insensitive)
+    $seen       = [];
+    $recipients = array_filter($recipients, function ($addr) use (&$seen) {
+      $key = strtolower($addr);
+      if (isset($seen[$key])) {
+        return false;
+      }
+      $seen[$key] = true;
+      return true;
+    });
+    $recipients = array_values($recipients);
+
+    // Fallback to site admin email if nothing configured
+    if (empty($recipients)) {
+      $recipients[] = get_option('admin_email');
+    }
+
+    self::log('detect_and_notify_special_order — sending notification to: ' . implode(', ', $recipients));
+
+    // Build conversation excerpt from recent messages
+    $recent  = array_slice($messages, -15);
+    $excerpt = '';
+    foreach ($recent as $msg) {
+      $role    = ($msg['role'] === 'user') ? '👤 Cliente' : '🤖 Asistente';
+      $content = $msg['content'];
+      $content = preg_replace('/\[Se enviaron imágenes de:[^\]]*\]/', '', $content);
+      $content = trim($content);
+      if ($content === '') {
+        continue;
+      }
+
+      $time_marker = '';
+      if (!empty($msg['timestamp'])) {
+        $ts = strtotime($msg['timestamp']);
+        if ($ts !== false) {
+          $time_marker = '[' . date_i18n('d/m/Y H:i', $ts) . '] ';
+        }
+      }
+
+      $excerpt .= $time_marker . $role . ': ' . $content . "\n\n";
+    }
+
+    // Build email
+    $platform_name = static::platform_display_name();
+    $color         = static::brand_color();
+    $customer_name = !empty($conversation->contact_name) ? $conversation->contact_name : __('Unknown', 'pn-customers-manager');
+    $customer_id   = static::get_identifier_value($conversation) ?: __('Unknown', 'pn-customers-manager');
+    $id_label      = static::get_identifier_label();
+    $order_date    = current_time('d/m/Y H:i');
+    $site_name     = get_bloginfo('name');
+
+    $subject = sprintf(
+      /* translators: 1: site name, 2: platform name */
+      __('[%1$s] Special order request via %2$s', 'pn-customers-manager'),
+      $site_name,
+      $platform_name
+    );
+
+    $html  = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">';
+    $html .= '<h2 style="color:' . esc_attr($color) . ';">' . sprintf(esc_html__('Special order request via %s', 'pn-customers-manager'), esc_html($platform_name)) . '</h2>';
+    $html .= '<p style="margin-bottom:20px;color:#555;">' . esc_html__('A customer has made a request that requires special attention (B2B, bulk, custom products, special shipping, etc.).', 'pn-customers-manager') . '</p>';
+    $html .= '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;">';
+    $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Customer', 'pn-customers-manager') . '</td>';
+    $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($customer_name) . '</td></tr>';
+    $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html($id_label) . '</td>';
+    $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($customer_id) . '</td></tr>';
+    $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Date', 'pn-customers-manager') . '</td>';
+    $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($order_date) . '</td></tr>';
+    $html .= '</table>';
+
+    $html .= '<h3>' . esc_html__('Conversation excerpt', 'pn-customers-manager') . '</h3>';
+    $html .= '<div style="background:#f9f9f9;padding:15px;border-radius:8px;white-space:pre-wrap;font-size:13px;line-height:1.5;">';
+    $html .= esc_html($excerpt);
+    $html .= '</div>';
+    $html .= '</div>';
+
+    // Send email
+    $mailing = class_exists('MAILPN_Mailing') ? new \MAILPN_Mailing() : null;
+    $total   = count($recipients);
+    $i       = 0;
+    self::log('detect_and_notify_special_order — dispatching to ' . $total . ' recipient(s): ' . implode(', ', $recipients));
+
+    foreach ($recipients as $recipient_email) {
+      $i++;
+      $recipient_email = sanitize_email($recipient_email);
+      if (empty($recipient_email) || !is_email($recipient_email)) {
+        self::log(sprintf('detect_and_notify_special_order — [%d/%d] SKIP invalid recipient "%s"', $i, $total, $recipient_email));
+        continue;
+      }
+
+      $sent = false;
+
+      if ($mailing !== null) {
+        try {
+          $sent = $mailing->mailpn_sender([
+            'mailpn_user_to' => $recipient_email,
+            'mailpn_subject' => $subject,
+            'mailpn_type'    => static::email_type(),
+          ], $html);
+          self::log(sprintf('detect_and_notify_special_order — [%d/%d] MAILPN to %s result=%s', $i, $total, $recipient_email, var_export($sent, true)));
+        } catch (\Exception $e) {
+          self::log(sprintf('detect_and_notify_special_order — [%d/%d] MAILPN exception for %s: %s', $i, $total, $recipient_email, $e->getMessage()));
+          $sent = false;
+        }
+      }
+
+      if (!$sent) {
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+        $sent    = wp_mail($recipient_email, $subject, $html, $headers);
+        self::log(sprintf('detect_and_notify_special_order — [%d/%d] wp_mail fallback to %s result=%s', $i, $total, $recipient_email, $sent ? 'OK' : 'FAILED'));
+      }
+    }
+
+    // Mark this conversation so subsequent tags are suppressed.
+    set_transient($transient_key, time(), HOUR_IN_SECONDS);
+
+    // Strip tag from visible response
+    $ai_response = preg_replace($tag_regex, '', $ai_response);
+    $ai_response = trim($ai_response);
 
     return $ai_response;
   }

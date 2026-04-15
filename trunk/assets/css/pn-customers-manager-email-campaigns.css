@@ -232,6 +232,80 @@
   border: 1px solid #fecaca;
 }
 
+/* --- Email Content Preview --- */
+.pn-cm-email-campaigns-preview-section {
+  margin-bottom: 32px;
+}
+
+.pn-cm-email-campaigns-preview-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s;
+}
+
+.pn-cm-email-campaigns-preview-toggle:hover {
+  color: var(--pn-customers-manager-color-main, #0000aa);
+  text-decoration: none;
+}
+
+.pn-cm-email-campaigns-preview-icon {
+  font-size: 22px;
+  transition: transform 0.25s ease;
+}
+
+.pn-cm-email-campaigns-preview-icon.pn-cm-rotated {
+  transform: rotate(180deg);
+}
+
+.pn-cm-email-campaigns-preview-body {
+  margin-top: 12px;
+}
+
+.pn-cm-email-campaigns-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.pn-cm-email-campaigns-btn-copy {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d0d5dd;
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.pn-cm-email-campaigns-btn-copy:hover {
+  background: #e5e7eb;
+}
+
+.pn-cm-email-campaigns-btn-copy .material-icons-outlined {
+  font-size: 16px;
+}
+
+.pn-cm-email-campaigns-preview-frame {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  max-height: 500px;
+  overflow-y: auto;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.pn-cm-email-campaigns-preview-frame img {
+  max-width: 100%;
+  height: auto;
+}
+
 /* --- Records Section --- */
 .pn-cm-email-campaigns-records-section {
   margin-top: 0;

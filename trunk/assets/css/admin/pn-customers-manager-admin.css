@@ -134,15 +134,15 @@ body.folded .pn-customers-manager-settings-footer{
   width:48px;
   height:48px;
   border-radius:50%;
-  background:#2271b1;
-  color:#fff;
+  background:#f0f0f1;
   display:flex;
   align-items:center;
   justify-content:center;
   flex-shrink:0;
 }
-.pn-cm-rp-icon .material-icons-outlined{
-  font-size:24px;
+.pn-cm-rp-icon svg{
+  width:28px;
+  height:28px;
 }
 .pn-cm-rp-info{
   flex:1;

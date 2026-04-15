@@ -38,8 +38,10 @@ class PN_CUSTOMERS_MANAGER_Activator {
     $pn_customers_manager_role_manager = get_role('pn_customers_manager_role_manager');
     $pn_customers_manager_role_client = get_role('pn_customers_manager_role_client');
 
-    $pn_customers_manager_role_manager->add_cap('upload_files'); 
-    $pn_customers_manager_role_manager->add_cap('read'); 
+    $pn_customers_manager_role_manager->add_cap('upload_files');
+    $pn_customers_manager_role_manager->add_cap('read');
+    $pn_customers_manager_role_manager->add_cap('pn_cm_manage_crm');
+    $pn_customers_manager_role_admin->add_cap('pn_cm_manage_crm');
     if ($pn_customers_manager_role_client instanceof WP_Role) {
       $pn_customers_manager_role_client->add_cap('read');
     }

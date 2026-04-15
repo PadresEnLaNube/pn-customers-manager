@@ -281,6 +281,7 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
       $ai_response = self::strip_hallucinated_image_urls($ai_response);
       $ai_response = self::validate_response_urls($ai_response);
       $ai_response = self::detect_and_notify_order($ai_response, $conversation, $messages, $node_config);
+      $ai_response = self::detect_and_notify_special_order($ai_response, $conversation, $messages, $node_config);
     }
 
     $messages[] = [

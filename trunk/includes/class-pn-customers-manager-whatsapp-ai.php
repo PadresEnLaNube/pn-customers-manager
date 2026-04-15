@@ -355,8 +355,18 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       // Detect order confirmation tag and send email notification
       $ai_response = self::detect_and_notify_order($ai_response, $conversation, $messages, $node_config);
 
-      // Auto-inject image tags for products mentioned by URL
-      $ai_response = self::auto_inject_product_image_tags($ai_response);
+      // Detect special order tag and forward by email
+      $ai_response = self::detect_and_notify_special_order($ai_response, $conversation, $messages, $node_config);
+
+      // Auto-inject image tags for products mentioned by URL.
+      // Recommendations are ON by default when WooCommerce is active.
+      // When active, the AI controls image delivery (Step 3), so we skip
+      // automatic injection to avoid sending photos prematurely.
+      $woo_active = !empty($node_config['wa_include_woo']);
+      $recommendations_disabled = !empty($node_config['wa_disable_recommendations']);
+      if (!$woo_active || $recommendations_disabled) {
+        $ai_response = self::auto_inject_product_image_tags($ai_response);
+      }
 
       // Extract and send product images (before sending text)
       $ai_response = self::extract_and_send_product_images($ai_response, $phone, $sent_images);

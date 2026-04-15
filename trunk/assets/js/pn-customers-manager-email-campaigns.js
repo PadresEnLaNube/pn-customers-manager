@@ -128,6 +128,39 @@
     }, 5000);
   }
 
+  // --- Email content preview toggle ---
+  $(document).on('click', '.pn-cm-email-campaigns-preview-toggle', function(e) {
+    e.preventDefault();
+    var $toggle = $(this);
+    var $body = $toggle.siblings('.pn-cm-email-campaigns-preview-body');
+    $toggle.find('.pn-cm-email-campaigns-preview-icon').toggleClass('pn-cm-rotated');
+    $body.slideToggle(250);
+  });
+
+  // --- Copy email content ---
+  $(document).on('click', '.pn-cm-email-campaigns-btn-copy', function() {
+    var $btn = $(this);
+    var $frame = $btn.closest('.pn-cm-email-campaigns-preview-body').find('.pn-cm-email-campaigns-preview-frame');
+
+    // Copy the inner HTML so the user can paste it as rich text in an email client
+    var range = document.createRange();
+    range.selectNodeContents($frame[0]);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    try {
+      document.execCommand('copy');
+      var originalHtml = $btn.html();
+      $btn.html('<span class="material-icons-outlined" style="font-size:16px">check</span> ' + (pn_customers_manager_ajax.copied_label || 'Copied'));
+      setTimeout(function() { $btn.html(originalHtml); }, 2000);
+    } catch (err) {
+      // Fallback: silent fail
+    }
+
+    selection.removeAllRanges();
+  });
+
   function showMessage($el, text, type) {
     $el.text(text)
        .removeClass('pn-cm-email-campaigns-message-success pn-cm-email-campaigns-message-error')

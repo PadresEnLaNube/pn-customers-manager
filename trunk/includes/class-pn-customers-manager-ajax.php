@@ -40,7 +40,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
       $pn_customers_manager_ajax_type = PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['pn_customers_manager_ajax_type']));
 
       // Only CRM managers and administrators can use the CRM AJAX endpoints.
-      if (!current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization') && !current_user_can('manage_options')) {
+      if (!current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization') && !current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
         echo wp_json_encode([
           'error_key' => 'pn_customers_manager_access_denied',
           'error_content' => esc_html(__('You do not have permission to access this section.', 'pn-customers-manager')),
@@ -212,14 +212,14 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_load_canvas($pn_cm_funnel_id);
           break;
         case 'pn_cm_openai_test':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_test_openai());
           exit;
         case 'pn_cm_whatsapp_test':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
@@ -227,7 +227,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_test_whatsapp($test_phone));
           exit;
         case 'pn_cm_whatsapp_test_receive':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
@@ -235,14 +235,14 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_test_webhook_receive($since));
           exit;
         case 'pn_cm_wa_conversations_list':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_get_conversations_list());
           exit;
         case 'pn_cm_wa_conversation_messages':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
@@ -250,7 +250,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_get_conversation_messages($conv_id));
           exit;
         case 'pn_cm_instagram_test':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
@@ -258,7 +258,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_test_instagram($test_ig_id));
           exit;
         case 'pn_cm_instagram_test_receive':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
@@ -266,14 +266,14 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_test_webhook_receive($since));
           exit;
         case 'pn_cm_ig_conversations_list':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_get_conversations_list());
           exit;
         case 'pn_cm_ig_conversation_messages':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);
             exit;
           }
@@ -281,7 +281,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_get_conversation_messages($conv_id));
           exit;
         case 'pn_cm_wa_conversation_detail_html':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission']);
             exit;
           }
@@ -289,7 +289,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::ajax_get_conversation_detail_html($conv_id));
           exit;
         case 'pn_cm_ig_conversation_detail_html':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission']);
             exit;
           }
@@ -297,7 +297,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode(PN_CUSTOMERS_MANAGER_Instagram_AI::ajax_get_conversation_detail_html($conv_id));
           exit;
         case 'pn_cm_wa_conversation_action':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission']);
             exit;
           }
@@ -317,7 +317,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           }
           exit;
         case 'pn_cm_ig_conversation_action':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission']);
             exit;
           }
@@ -415,7 +415,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           }
           break;
         case 'pn_cm_create_organization_page':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_create_organization_page_error',
               'error_content' => esc_html(__('You do not have permission to perform this action.', 'pn-customers-manager')),
@@ -467,7 +467,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
         case 'pn_cm_bizcard_user_data':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'access_denied']);
             exit;
           }
@@ -675,7 +675,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
         case 'pn_cm_commercial_approve':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_commercial_permission_error',
               'error_content' => esc_html__('You do not have permission to perform this action.', 'pn-customers-manager'),
@@ -689,7 +689,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
         case 'pn_cm_commercial_reject':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_commercial_permission_error',
               'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
@@ -703,7 +703,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
         case 'pn_cm_contact_mark_read':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
               'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
@@ -735,7 +735,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
         case 'pn_cm_contact_delete':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
               'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
@@ -765,7 +765,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
         case 'pn_cm_contact_mark_spam':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
               'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
@@ -830,7 +830,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
         case 'pn_cm_contact_list':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
               'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
@@ -1008,35 +1008,35 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           break;
 
         case 'pn_cm_projections_data':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
             exit;
           }
           PN_CUSTOMERS_MANAGER_Projections::ajax_get_projection_data();
           exit;
         case 'pn_cm_projection_create':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
             exit;
           }
           PN_CUSTOMERS_MANAGER_Projections::ajax_create_projection();
           exit;
         case 'pn_cm_projection_delete':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
             exit;
           }
           PN_CUSTOMERS_MANAGER_Projections::ajax_delete_projection();
           exit;
         case 'pn_cm_projections_social':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
             exit;
           }
           PN_CUSTOMERS_MANAGER_Projections::ajax_get_social_metrics();
           exit;
         case 'pn_cm_social_media_test':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
             exit;
           }
@@ -1044,7 +1044,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
 
         case 'pn_cm_mail_stats_period':
-          if (!current_user_can('manage_options')) {
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
             exit;
           }
