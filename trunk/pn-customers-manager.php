@@ -13,7 +13,7 @@
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
  * Description:       Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
- * Version:           1.0.85
+ * Version:           1.1.20
  * Requires at least: 3.0
  * Requires PHP:      7.2
  * Author:            Padres en la Nube
@@ -34,13 +34,14 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.0.85');
-define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.5');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.1.20');
+define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.7');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
 define('PN_CUSTOMERS_MANAGER_CPTS', [
 	'pn_cm_funnel' => 'Funnel',
 	'pn_cm_organization' => 'Organization',
+	'pn_cm_budget' => 'Budget',
 ]);
 
 /**
@@ -95,6 +96,7 @@ $pn_customers_manager_kses = [
 		'data-pn-customers-manager-popup-disable-esc' => [],
 		'data-pn-customers-manager-popup-disable-overlay-close' => [],
 		'data-pn_cm_organization_alt-id' => [],
+		'data-pn_cm_budget-id' => [],
 	],
 	'section' => ['id' => [], 'class' => []],
 	'article' => ['id' => [], 'class' => []],
@@ -135,6 +137,7 @@ $pn_customers_manager_kses = [
 		'target' => [],
 		'data-pn-customers-manager-ajax-type' => [],
 		'data-pn-customers-manager-popup-id' => [],
+		'data-pn-customers-manager-copy-text' => [],
 		'data-pn_cm_organization_alt-id' => [],
 		'data-contact-id' => [],
 		'data-org-alt-id' => [],
@@ -167,14 +170,19 @@ $pn_customers_manager_kses = [
 		'checked' => [],
 		'multiple' => [],
 		'disabled' => [],
+		'readonly' => [],
 		'value' => [],
 		'placeholder' => [],
+		'step' => [],
+		'min' => [],
+		'max' => [],
 		'data-pn-customers-manager-parent' => [],
 		'data-pn-customers-manager-parent-option' => [],
 		'data-pn-customers-manager-type' => [],
 		'data-pn-customers-manager-subtype' => [],
 		'data-pn-customers-manager-user-id' => [],
 		'data-pn-customers-manager-post-id' => [],
+		'data-pn-customers-manager-post-type' => [],
 	],
 	'select' => [
 		'name' => [],
@@ -216,6 +224,15 @@ $pn_customers_manager_kses = [
 		'class' => [],
 		'for' => [],
 	],
+
+	// Table elements
+	'table' => ['id' => [], 'class' => []],
+	'thead' => ['id' => [], 'class' => []],
+	'tbody' => ['id' => [], 'class' => []],
+	'tfoot' => ['id' => [], 'class' => []],
+	'tr' => ['id' => [], 'class' => [], 'data-item-id' => []],
+	'th' => ['id' => [], 'class' => [], 'colspan' => [], 'rowspan' => []],
+	'td' => ['id' => [], 'class' => [], 'colspan' => [], 'rowspan' => []],
 ];
 
 foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {

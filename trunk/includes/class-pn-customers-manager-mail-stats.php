@@ -699,7 +699,7 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 			'chartjs',
 			PN_CUSTOMERS_MANAGER_URL . 'assets/js/vendor/chart.min.js',
 			[],
-			'4.4.7',
+			'4.5.1',
 			true
 		);
 

@@ -11,36 +11,81 @@
  * @author     Padres en la Nube
  */
 class PN_CUSTOMERS_MANAGER_Settings {
+  private static $managed_pages = [
+    'pn_customers_manager_commercial_crm_page' => [
+      'shortcode' => 'pn-customers-manager-organization-list',
+      'block'     => 'pn-customers-manager/organization-list',
+      'label'     => 'Organizations',
+    ],
+    'pn_customers_manager_page_budget_list' => [
+      'shortcode' => 'pn-customers-manager-budget-list',
+      'block'     => null,
+      'label'     => 'Budgets',
+    ],
+  ];
+
+  public static function pn_customers_manager_get_managed_pages() {
+    return self::$managed_pages;
+  }
+
   public function pn_customers_manager_get_options() {
     $pn_customers_manager_options = [];
 
-    // Commercial section
+    // Pages section
     $pn_customers_manager_options['pn_customers_manager_commercial_section_start'] = [
       'id' => 'pn_customers_manager_commercial_section_start',
       'section' => 'start',
-      'label' => __('Commercial', 'pn-customers-manager'),
-      'description' => __('Commercial agents system configuration.', 'pn-customers-manager'),
+      'label' => __('Pages', 'pn-customers-manager'),
+      'description' => __('Page assignments for the CRM.', 'pn-customers-manager'),
     ];
-
-    $pages = get_pages(['sort_column' => 'post_title', 'sort_order' => 'ASC']);
-    $page_options = ['' => __('-- Select page --', 'pn-customers-manager')];
-    if (!empty($pages)) {
-      foreach ($pages as $page) {
-        $page_options[$page->ID] = $page->post_title;
-      }
-    }
 
     $pn_customers_manager_options['pn_customers_manager_commercial_crm_page'] = [
       'id' => 'pn_customers_manager_commercial_crm_page',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'select',
-      'options' => $page_options,
-      'label' => __('CRM Page', 'pn-customers-manager'),
-      'description' => __('Select the CRM page that approved commercial agents will access.', 'pn-customers-manager'),
+      'input' => 'page_manager',
+      'label' => __('Organizations', 'pn-customers-manager'),
+      'description' => __('Page that approved commercial agents will access to manage organizations.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-organization-list',
+      'page_option' => 'pn_customers_manager_commercial_crm_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_budget_list'] = [
+      'id' => 'pn_customers_manager_page_budget_list',
+      'input' => 'page_manager',
+      'label' => __('Budgets', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-budget-list',
+      'page_option' => 'pn_customers_manager_page_budget_list',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_commercial_section_end'] = [
       'id' => 'pn_customers_manager_commercial_section_end',
+      'section' => 'end',
+    ];
+
+    // Projections section
+    $pn_customers_manager_options['pn_customers_manager_projections_section_start'] = [
+      'id' => 'pn_customers_manager_projections_section_start',
+      'section' => 'start',
+      'label' => __('Projections', 'pn-customers-manager'),
+      'description' => __('Configure how often the system collects automatic snapshots of your business metrics. These snapshots build the historical evolution chart that you can compare against manual projections.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_projection_frequency'] = [
+      'id' => 'pn_customers_manager_projection_frequency',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'options' => [
+        'hourly'     => __('Hourly', 'pn-customers-manager'),
+        'twicedaily' => __('Twice daily', 'pn-customers-manager'),
+        'daily'      => __('Daily', 'pn-customers-manager'),
+        'weekly'     => __('Weekly', 'pn-customers-manager'),
+      ],
+      'value' => 'daily',
+      'label' => __('Snapshot frequency', 'pn-customers-manager'),
+      'description' => __('How often the cron collects a new snapshot of all metrics. Changing this value reschedules the cron automatically.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_projections_section_end'] = [
+      'id' => 'pn_customers_manager_projections_section_end',
       'section' => 'end',
     ];
 
@@ -138,6 +183,157 @@ class PN_CUSTOMERS_MANAGER_Settings {
 
     $pn_customers_manager_options['pn_customers_manager_referral_section_end'] = [
       'id' => 'pn_customers_manager_referral_section_end',
+      'section' => 'end',
+    ];
+
+    // ── Budgets section ──
+    $pn_customers_manager_options['pn_customers_manager_budget_section_start'] = [
+      'id' => 'pn_customers_manager_budget_section_start',
+      'section' => 'start',
+      'label' => __('Budgets', 'pn-customers-manager'),
+      'description' => __('Configure default values and company information for budget generation.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_dashboard_link'] = [
+      'id' => 'pn_customers_manager_budget_dashboard_link',
+      'input' => 'html',
+      'html_content' => '<a href="' . esc_url(admin_url('edit.php?post_type=pn_cm_budget')) . '" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">open_in_new</i> ' . esc_html__('Open Budgets in Dashboard', 'pn-customers-manager') . '</a>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_public_slug'] = [
+      'id' => 'pn_customers_manager_budget_public_slug',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'value' => 'budget',
+      'label' => __('Public URL slug', 'pn-customers-manager'),
+      'description' => __('Slug used in the public budget URL (e.g. yoursite.com/<strong>budget</strong>/token). Save and flush permalinks after changing.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_number_prefix'] = [
+      'id' => 'pn_customers_manager_budget_number_prefix',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'value' => 'BUD',
+      'label' => __('Budget number prefix', 'pn-customers-manager'),
+      'description' => __('Prefix for auto-generated budget numbers (e.g. BUD-00001).', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_next_number'] = [
+      'id' => 'pn_customers_manager_budget_next_number',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '1',
+      'label' => __('Next budget number', 'pn-customers-manager'),
+      'description' => __('The next auto-incremented number to be assigned. This value increases automatically.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_default_hourly_rate'] = [
+      'id' => 'pn_customers_manager_budget_default_hourly_rate',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '0',
+      'label' => __('Default hourly rate', 'pn-customers-manager'),
+      'description' => __('Default unit price when adding hourly items.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_default_tax_rate'] = [
+      'id' => 'pn_customers_manager_budget_default_tax_rate',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '21',
+      'label' => __('Default tax rate (%)', 'pn-customers-manager'),
+      'description' => __('Default tax percentage applied to new budgets.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_currency_symbol'] = [
+      'id' => 'pn_customers_manager_budget_currency_symbol',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'value' => '€',
+      'label' => __('Currency symbol', 'pn-customers-manager'),
+      'description' => __('Currency symbol to display in budgets (e.g. €, $, £).', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_currency_position'] = [
+      'id' => 'pn_customers_manager_budget_currency_position',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'options' => [
+        'before' => __('Before amount (€100)', 'pn-customers-manager'),
+        'after'  => __('After amount (100 €)', 'pn-customers-manager'),
+      ],
+      'value' => 'after',
+      'label' => __('Currency position', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_default_validity_days'] = [
+      'id' => 'pn_customers_manager_budget_default_validity_days',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '30',
+      'label' => __('Default validity (days)', 'pn-customers-manager'),
+      'description' => __('Number of days a budget remains valid from the issue date.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_company_name'] = [
+      'id' => 'pn_customers_manager_budget_company_name',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Company name', 'pn-customers-manager'),
+      'description' => __('Your company name as it will appear in the budget header.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_company_address'] = [
+      'id' => 'pn_customers_manager_budget_company_address',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Company address', 'pn-customers-manager'),
+      'description' => __('Full company address shown in the budget header.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_company_fiscal_id'] = [
+      'id' => 'pn_customers_manager_budget_company_fiscal_id',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Company fiscal ID', 'pn-customers-manager'),
+      'description' => __('Tax identification number (CIF / NIF / VAT / EIN).', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_company_logo'] = [
+      'id' => 'pn_customers_manager_budget_company_logo',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Company logo', 'pn-customers-manager'),
+      'description' => __('Logo displayed in the budget header. Select from the media library.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_terms'] = [
+      'id' => 'pn_customers_manager_budget_terms',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Terms and conditions', 'pn-customers-manager'),
+      'description' => __('Default terms and conditions shown at the bottom of every budget.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_default_client_notes'] = [
+      'id' => 'pn_customers_manager_budget_default_client_notes',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Default client notes', 'pn-customers-manager'),
+      'description' => __('Default notes visible to the client, pre-filled when creating a new budget.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_section_end'] = [
+      'id' => 'pn_customers_manager_budget_section_end',
       'section' => 'end',
     ];
 
@@ -601,34 +797,6 @@ class PN_CUSTOMERS_MANAGER_Settings {
     ];
 
     // System section
-    // Projections section
-    $pn_customers_manager_options['pn_customers_manager_projections_section_start'] = [
-      'id' => 'pn_customers_manager_projections_section_start',
-      'section' => 'start',
-      'label' => __('Projections', 'pn-customers-manager'),
-      'description' => __('Configure how often the system collects automatic snapshots of your business metrics. These snapshots build the historical evolution chart that you can compare against manual projections.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_projection_frequency'] = [
-      'id' => 'pn_customers_manager_projection_frequency',
-      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
-      'input' => 'select',
-      'options' => [
-        'hourly'     => __('Hourly', 'pn-customers-manager'),
-        'twicedaily' => __('Twice daily', 'pn-customers-manager'),
-        'daily'      => __('Daily', 'pn-customers-manager'),
-        'weekly'     => __('Weekly', 'pn-customers-manager'),
-      ],
-      'value' => 'daily',
-      'label' => __('Snapshot frequency', 'pn-customers-manager'),
-      'description' => __('How often the cron collects a new snapshot of all metrics. Changing this value reschedules the cron automatically.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_projections_section_end'] = [
-      'id' => 'pn_customers_manager_projections_section_end',
-      'section' => 'end',
-    ];
-
     $pn_customers_manager_options['pn_customers_manager_system_section_start'] = [
       'id' => 'pn_customers_manager_system_section_start',
       'section' => 'start',
@@ -659,6 +827,15 @@ class PN_CUSTOMERS_MANAGER_Settings {
         ) . '<br><a href="' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '</a><br>' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug/' . $pn_customers_manager_cpt_key)),
       ];
     }
+
+    $pn_customers_manager_options['pn_customers_manager_allow_crm_indexing'] = [
+      'id' => 'pn_customers_manager_allow_crm_indexing',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Allow search engine indexing on CRM pages', 'pn-customers-manager'),
+      'description' => __('By default, CRM management pages include a noindex tag to prevent search engines from indexing them. Enable this option to remove those tags and allow indexing.', 'pn-customers-manager'),
+    ];
 
     $pn_customers_manager_options['pn_customers_manager_options_remove'] = [
       'id' => 'pn_customers_manager_options_remove',
@@ -793,6 +970,17 @@ class PN_CUSTOMERS_MANAGER_Settings {
       );
     }
 
+    // Add Budgets submenu (only if user has the capability)
+    if (current_user_can('edit_pn_cm_budget')) {
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Budgets', 'pn-customers-manager'),
+        esc_html__('Budgets', 'pn-customers-manager'),
+        'edit_pn_cm_budget',
+        'edit.php?post_type=pn_cm_budget'
+      );
+    }
+
     // Add Commercial Agents submenu
     if (current_user_can('pn_cm_manage_crm')) {
       $pending_commercial = PN_CUSTOMERS_MANAGER_Commercial::get_pending_count();
@@ -846,18 +1034,6 @@ class PN_CUSTOMERS_MANAGER_Settings {
       );
     }
 
-    // Add Mail Statistics submenu
-    if (current_user_can('pn_cm_manage_crm')) {
-      add_submenu_page(
-        'pn_customers_manager_options',
-        esc_html__('Statistics', 'pn-customers-manager'),
-        esc_html__('Statistics', 'pn-customers-manager'),
-        'pn_cm_manage_crm',
-        'pn_customers_manager_mail_stats',
-        ['PN_CUSTOMERS_MANAGER_Mail_Stats', 'render_page']
-      );
-    }
-
     // Add Contact Messages submenu
     if (current_user_can('pn_cm_manage_crm')) {
       $unread = PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count();
@@ -874,45 +1050,26 @@ class PN_CUSTOMERS_MANAGER_Settings {
         ['PN_CUSTOMERS_MANAGER_Contact_Messages', 'render_page']
       );
     }
+
+    // Add Mail Statistics submenu
+    if (current_user_can('pn_cm_manage_crm')) {
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Statistics', 'pn-customers-manager'),
+        esc_html__('Statistics', 'pn-customers-manager'),
+        'pn_cm_manage_crm',
+        'pn_customers_manager_mail_stats',
+        ['PN_CUSTOMERS_MANAGER_Mail_Stats', 'render_page']
+      );
+    }
 	}
 
 	public function pn_customers_manager_options() {
-    $organization_page = self::pn_customers_manager_find_organization_page();
 	  ?>
 	    <div class="pn-customers-manager-options pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mt-50 pn-customers-manager-mb-50">
         <img src="<?php echo esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/banner-1544x500.png'); ?>" alt="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" title="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" class="pn-customers-manager-width-100-percent pn-customers-manager-border-radius-20 pn-customers-manager-mb-30">
         <h1 class="pn-customers-manager-mb-30"><?php esc_html_e('PN Customers Manager Settings', 'pn-customers-manager'); ?></h1>
-        <?php if (!$organization_page): ?>
-          <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30">
-            <div class="pn-customers-manager-p-30">
-              <p class="pn-customers-manager-mb-15">
-                <?php esc_html_e('No page with the Organizations block has been detected on your site. Click the button below to automatically create a new page with the Organizations block already inserted. Once the page is created, you will be redirected to its editor so you can review it and publish it or make any changes you need.', 'pn-customers-manager'); ?>
-              </p>
-              <button type="button" id="pn-customers-manager-create-organization-page" class="pn-customers-manager-btn pn-customers-manager-btn-mini">
-                <?php esc_html_e('Create Organizations page', 'pn-customers-manager'); ?>
-              </button>
-            </div>
-          </div>
-          <?php
-          wp_enqueue_script(
-            'pn-customers-manager-settings',
-            PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-settings.js',
-            [],
-            PN_CUSTOMERS_MANAGER_VERSION,
-            true
-          );
-
-          wp_localize_script('pn-customers-manager-settings', 'pnCmSettings', [
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce'   => wp_create_nonce('pn-customers-manager-nonce'),
-            'i18n'    => [
-              'creatingPage' => __('Creating page...', 'pn-customers-manager'),
-              'createPage'   => __('Create Organizations page', 'pn-customers-manager'),
-              'errorCreating' => __('An error occurred while creating the page.', 'pn-customers-manager'),
-            ],
-          ]);
-          ?>
-        <?php endif; ?>
+        <?php PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages()); ?>
         <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30 pn-customers-manager-settings-pb-80">
           <form action="" method="post" id="pn-customers-manager-form-setting" class="pn-customers-manager-form pn-customers-manager-p-30">
           <?php
@@ -1109,28 +1266,6 @@ class PN_CUSTOMERS_MANAGER_Settings {
       ?>
 	  <?php
 	}
-
-  public static function pn_customers_manager_find_organization_page() {
-    $pages = get_posts([
-      'post_type'   => 'page',
-      'post_status' => ['publish', 'draft', 'private'],
-      'numberposts' => -1,
-      'fields'      => 'ids',
-    ]);
-
-    foreach ($pages as $page_id) {
-      $content = get_post_field('post_content', $page_id);
-
-      if (
-        has_shortcode($content, 'pn-customers-manager-organization-list') ||
-        strpos($content, '<!-- wp:pn-customers-manager/organization-list') !== false
-      ) {
-        return $page_id;
-      }
-    }
-
-    return false;
-  }
 
   public function pn_customers_manager_activated_plugin($plugin) {
     if($plugin == 'pn-customers-manager/pn-customers-manager.php') {

@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.0.85';
+			$this->pn_customers_manager_version = '1.1.20';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -76,6 +76,7 @@ class PN_CUSTOMERS_MANAGER {
 		self::pn_customers_manager_define_commercial_hooks();
 		self::pn_customers_manager_define_email_campaigns_hooks();
 		self::pn_customers_manager_define_csv_import_hooks();
+		self::pn_customers_manager_define_budget_csv_hooks();
 		self::pn_customers_manager_define_whatsapp_ai_hooks();
 		self::pn_customers_manager_define_instagram_ai_hooks();
 		self::pn_customers_manager_define_projections_hooks();
@@ -248,6 +249,11 @@ class PN_CUSTOMERS_MANAGER {
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-csv-import.php';
 
 		/**
+		 * The class providing CSV import/export for Budgets.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-budget-csv.php';
+
+		/**
 		 * The class managing email campaigns with mailpn integration.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-email-campaigns.php';
@@ -281,6 +287,11 @@ class PN_CUSTOMERS_MANAGER {
 		 * The class providing MailPn statistics dashboard.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-mail-stats.php';
+
+		/**
+		 * The class responsible for create the Budget custom post type.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-post-type-budget.php';
 
 		$this->pn_customers_manager_loader = new PN_CUSTOMERS_MANAGER_Loader();
 	}
@@ -321,6 +332,9 @@ class PN_CUSTOMERS_MANAGER {
 
 		$plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('Pn_cm_organization_form_save', $plugin_post_type_organization, 'pn_cm_organization_form_save', 999, 5);
+
+		$plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_budget_form_save', $plugin_post_type_budget, 'pn_cm_budget_form_save', 999, 5);
 	}
 
 	/**
@@ -348,6 +362,65 @@ class PN_CUSTOMERS_MANAGER {
 
 		$plugin_user = new PN_CUSTOMERS_MANAGER_Functions_User();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_login', $plugin_user, 'pn_customers_manager_user_wp_login');
+
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_head', $this, 'pn_customers_manager_maybe_noindex_crm_pages', 1);
+	}
+
+	/**
+	 * Output noindex meta tag on CRM management pages unless allowed by settings.
+	 */
+	public function pn_customers_manager_maybe_noindex_crm_pages() {
+		if (is_admin()) {
+			return;
+		}
+
+		if (get_option('pn_customers_manager_allow_crm_indexing') === 'on') {
+			return;
+		}
+
+		// Budget public URL (template already has noindex, but cover wp_head too)
+		if (get_query_var('pn_cm_budget_token')) {
+			return; // Already handled in the budget template
+		}
+
+		$post = get_queried_object();
+		if (!($post instanceof WP_Post)) {
+			return;
+		}
+
+		$crm_shortcodes = [
+			'pn-customers-manager-funnel-list',
+			'pn-customers-manager-organization-list',
+			'pn-customers-manager-commercial-panel',
+			'pn-customers-manager-email-campaigns',
+			'pn-customers-manager-referrals',
+			'pn-customers-manager-whatsapp-ai',
+			'pn-customers-manager-instagram-ai',
+			'pn-customers-manager-client-form',
+			'pn-customers-manager-budget-list',
+		];
+
+		$crm_blocks = [
+			'pn-customers-manager/organization-list',
+			'pn-customers-manager/commercial-panel',
+			'pn-customers-manager/email-campaigns',
+			'pn-customers-manager/client-form',
+			'pn-customers-manager/budget-list',
+		];
+
+		foreach ($crm_shortcodes as $shortcode) {
+			if (has_shortcode($post->post_content, $shortcode)) {
+				echo '<meta name="robots" content="noindex, nofollow">' . "\n";
+				return;
+			}
+		}
+
+		foreach ($crm_blocks as $block) {
+			if (has_block($block, $post)) {
+				echo '<meta name="robots" content="noindex, nofollow">' . "\n";
+				return;
+			}
+		}
 	}
 
 	/**
@@ -373,6 +446,16 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('archive_template', $plugin_post_type_organization, 'pn_cm_organization_archive_template', 10, 3);
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-organization-list', $plugin_post_type_organization, 'pn_cm_organization_list_wrapper');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_post_type_organization, 'register_organization_list_block');
+
+		$plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_post_type_budget, 'pn_cm_budget_register_post_type');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $plugin_post_type_budget, 'pn_cm_budget_add_meta_box');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('save_post_pn_cm_budget', $plugin_post_type_budget, 'pn_cm_budget_save_post', 10, 3);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('single_template', $plugin_post_type_budget, 'pn_cm_budget_single_template', 10, 3);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_post_type_budget, 'pn_cm_budget_init_rewrite');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', $plugin_post_type_budget, 'pn_cm_budget_template_redirect');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('query_vars', $plugin_post_type_budget, 'pn_cm_budget_query_vars');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-budget-list', $plugin_post_type_budget, 'pn_cm_budget_list_wrapper');
 	}
 
 	/**
@@ -560,6 +643,17 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_csv_template', $csv_import, 'pn_customers_manager_csv_download_template');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_csv_preview', $csv_import, 'pn_customers_manager_csv_preview');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_csv_import', $csv_import, 'pn_customers_manager_csv_import');
+	}
+
+	/**
+	 * Register hooks for Budget CSV import/export.
+	 */
+	private function pn_customers_manager_define_budget_csv_hooks() {
+		$budget_csv = new PN_CUSTOMERS_MANAGER_Budget_Csv();
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_budget_csv_download_template', $budget_csv, 'pn_customers_manager_budget_csv_download_template');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_budget_csv_export', $budget_csv, 'pn_customers_manager_budget_csv_export');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_budget_csv_preview', $budget_csv, 'pn_customers_manager_budget_csv_preview');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_budget_csv_import', $budget_csv, 'pn_customers_manager_budget_csv_import');
 	}
 
 	/**

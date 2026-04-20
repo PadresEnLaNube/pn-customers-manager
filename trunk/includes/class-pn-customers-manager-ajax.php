@@ -414,43 +414,88 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             exit;
           }
           break;
-        case 'pn_cm_create_organization_page':
-          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+        case 'pn_cm_create_plugin_page':
+          if (!current_user_can('manage_options')) {
             echo wp_json_encode([
-              'error_key' => 'pn_cm_create_organization_page_error',
-              'error_content' => esc_html(__('You do not have permission to perform this action.', 'pn-customers-manager')),
+              'error_key' => 'pn_cm_create_plugin_page_error',
+              'error_content' => esc_html(__('You do not have permission to create pages.', 'pn-customers-manager')),
             ]);
             exit;
           }
 
-          $existing_page = PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_find_organization_page();
+          $page_title = !empty($_POST['page_title']) ? sanitize_text_field(wp_unslash($_POST['page_title'])) : '';
+          $shortcode_name = !empty($_POST['shortcode']) ? sanitize_text_field(wp_unslash($_POST['shortcode'])) : '';
+          $page_option = !empty($_POST['page_option']) ? sanitize_key(wp_unslash($_POST['page_option'])) : '';
 
-          if ($existing_page) {
+          if (empty($page_title) || empty($shortcode_name) || empty($page_option)) {
             echo wp_json_encode([
-              'error_key' => '',
-              'redirect_url' => get_edit_post_link($existing_page, 'raw'),
+              'error_key' => 'pn_cm_create_plugin_page_error',
+              'error_content' => esc_html(__('Missing required fields.', 'pn-customers-manager')),
             ]);
             exit;
           }
+
+          $allowed_options = array_keys(PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_get_managed_pages());
+          if (!in_array($page_option, $allowed_options, true)) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_create_plugin_page_error',
+              'error_content' => esc_html(__('Invalid page option.', 'pn-customers-manager')),
+            ]);
+            exit;
+          }
+
+          $page_content = '[' . $shortcode_name . ']';
 
           $page_id = wp_insert_post([
-            'post_title'   => __('Organizations', 'pn-customers-manager'),
-            'post_content' => '<!-- wp:pn-customers-manager/organization-list /-->',
-            'post_status'  => 'draft',
+            'post_title'   => $page_title,
+            'post_content' => $page_content,
+            'post_status'  => 'publish',
             'post_type'    => 'page',
           ]);
 
           if (is_wp_error($page_id)) {
             echo wp_json_encode([
-              'error_key' => 'pn_cm_create_organization_page_error',
+              'error_key' => 'pn_cm_create_plugin_page_error',
               'error_content' => esc_html($page_id->get_error_message()),
             ]);
             exit;
           }
 
+          update_option($page_option, $page_id);
+
           echo wp_json_encode([
-            'error_key'    => '',
-            'redirect_url' => get_edit_post_link($page_id, 'raw'),
+            'error_key'  => '',
+            'page_id'    => $page_id,
+            'page_title' => esc_html($page_title),
+            'page_url'   => esc_url(get_permalink($page_id)),
+            'edit_url'   => esc_url(get_edit_post_link($page_id, 'raw')),
+          ]);
+          exit;
+          break;
+        case 'pn_cm_unlink_plugin_page':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_unlink_plugin_page_error',
+              'error_content' => esc_html(__('You do not have permission to manage pages.', 'pn-customers-manager')),
+            ]);
+            exit;
+          }
+
+          $page_option = !empty($_POST['page_option']) ? sanitize_key(wp_unslash($_POST['page_option'])) : '';
+
+          $allowed_options = array_keys(PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_get_managed_pages());
+          if (empty($page_option) || !in_array($page_option, $allowed_options, true)) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_unlink_plugin_page_error',
+              'error_content' => esc_html(__('Invalid page option.', 'pn-customers-manager')),
+            ]);
+            exit;
+          }
+
+          delete_option($page_option);
+
+          echo wp_json_encode([
+            'error_key' => '',
           ]);
           exit;
           break;
@@ -1179,6 +1224,308 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           }
 
           echo wp_json_encode(['error_key' => '']);
+          exit;
+          break;
+
+        // ── Budget AJAX cases ──
+        case 'pn_cm_budget_view':
+          $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
+          if (!empty($pn_cm_budget_id)) {
+            $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_budget->pn_cm_budget_view($pn_cm_budget_id),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_view_error', 'error_content' => esc_html(__('An error occurred while showing the Budget.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_budget_edit':
+          $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
+          if (!empty($pn_cm_budget_id)) {
+            $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_budget->pn_cm_budget_edit($pn_cm_budget_id),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_edit_error', 'error_content' => esc_html(__('An error occurred while showing the Budget.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_budget_new':
+          if (!is_user_logged_in()) {
+            echo wp_json_encode(['error_key' => 'not_logged_in', 'error_content' => esc_html(__('You must be logged in to create a new asset.', 'pn-customers-manager'))]);
+            exit;
+          }
+          $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+          echo wp_json_encode([
+            'error_key' => '',
+            'html' => $plugin_post_type_budget->pn_cm_budget_new(),
+          ]);
+          exit;
+          break;
+
+        case 'pn_cm_budget_remove':
+          $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
+          if (!empty($pn_cm_budget_id)) {
+            wp_delete_post($pn_cm_budget_id, true);
+            // Also delete items
+            global $wpdb;
+            $wpdb->delete($wpdb->prefix . 'pn_cm_budget_items', ['budget_id' => $pn_cm_budget_id], ['%d']);
+
+            $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_budget->pn_cm_budget_list(),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_remove_error', 'error_content' => esc_html(__('An error occurred while removing the Budget.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_budget_duplicate':
+          $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
+          if (!empty($pn_cm_budget_id)) {
+            $original = get_post($pn_cm_budget_id);
+            if ($original) {
+              $new_id = wp_insert_post([
+                'post_type' => 'pn_cm_budget',
+                'post_title' => $original->post_title . ' (' . __('Copy', 'pn-customers-manager') . ')',
+                'post_status' => 'publish',
+                'post_author' => get_current_user_id(),
+              ]);
+
+              if ($new_id && !is_wp_error($new_id)) {
+                // Copy meta
+                $meta_keys = ['pn_cm_budget_organization_id', 'pn_cm_budget_tax_rate', 'pn_cm_budget_discount_rate', 'pn_cm_budget_notes', 'pn_cm_budget_client_notes'];
+                foreach ($meta_keys as $mk) {
+                  $val = get_post_meta($pn_cm_budget_id, $mk, true);
+                  if ($val !== '') update_post_meta($new_id, $mk, $val);
+                }
+
+                // Generate new number, date, token
+                $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+                update_post_meta($new_id, 'pn_cm_budget_number', $budget_class->pn_cm_budget_generate_number());
+                update_post_meta($new_id, 'pn_cm_budget_date', current_time('Y-m-d'));
+                $validity = intval(get_option('pn_customers_manager_budget_default_validity_days', 30));
+                update_post_meta($new_id, 'pn_cm_budget_valid_until', date('Y-m-d', strtotime('+' . $validity . ' days')));
+                update_post_meta($new_id, 'pn_cm_budget_status', 'draft');
+                update_post_meta($new_id, 'pn_cm_budget_token', $budget_class->pn_cm_budget_generate_token());
+
+                // Copy items
+                global $wpdb;
+                $items = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}pn_cm_budget_items WHERE budget_id = %d ORDER BY sort_order ASC", $pn_cm_budget_id));
+                foreach ($items as $item) {
+                  $wpdb->insert($wpdb->prefix . 'pn_cm_budget_items', [
+                    'budget_id' => $new_id,
+                    'item_type' => $item->item_type,
+                    'description' => $item->description,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'total' => $item->total,
+                    'is_optional' => $item->is_optional,
+                    'is_selected' => $item->is_selected,
+                    'sort_order' => $item->sort_order,
+                  ]);
+                }
+
+                $budget_class->pn_cm_budget_recalculate_totals($new_id);
+              }
+            }
+
+            $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_budget->pn_cm_budget_list(),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_duplicate_error']);
+          exit;
+          break;
+
+        case 'pn_cm_budget_add_item':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          if (!empty($pn_cm_budget_id)) {
+            global $wpdb;
+            $item_type = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
+            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+            $quantity = floatval($_POST['quantity'] ?? 1);
+            $unit_price = floatval($_POST['unit_price'] ?? 0);
+            $is_optional = intval($_POST['is_optional'] ?? 0);
+            $total = $quantity * $unit_price;
+
+            $max_order = $wpdb->get_var($wpdb->prepare("SELECT MAX(sort_order) FROM {$wpdb->prefix}pn_cm_budget_items WHERE budget_id = %d", $pn_cm_budget_id));
+            $sort_order = intval($max_order) + 1;
+
+            $wpdb->insert($wpdb->prefix . 'pn_cm_budget_items', [
+              'budget_id' => $pn_cm_budget_id,
+              'item_type' => $item_type,
+              'description' => $description,
+              'quantity' => $quantity,
+              'unit_price' => $unit_price,
+              'total' => $total,
+              'is_optional' => $is_optional,
+              'is_selected' => 1,
+              'sort_order' => $sort_order,
+            ], ['%d', '%s', '%s', '%f', '%f', '%f', '%d', '%d', '%d']);
+
+            $item_id = $wpdb->insert_id;
+
+            $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+            $budget_class->pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            echo wp_json_encode([
+              'error_key' => '',
+              'item' => [
+                'id' => $item_id,
+                'item_type' => $item_type,
+                'description' => $description,
+                'quantity' => $quantity,
+                'unit_price' => $unit_price,
+                'total' => $total,
+                'is_optional' => $is_optional,
+                'is_selected' => 1,
+              ],
+              'totals' => [
+                'subtotal' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_add_item_error']);
+          exit;
+          break;
+
+        case 'pn_cm_budget_remove_item':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            global $wpdb;
+            $wpdb->delete($wpdb->prefix . 'pn_cm_budget_items', ['id' => $item_id, 'budget_id' => $pn_cm_budget_id], ['%d', '%d']);
+
+            $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+            $budget_class->pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            echo wp_json_encode([
+              'error_key' => '',
+              'totals' => [
+                'subtotal' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_remove_item_error']);
+          exit;
+          break;
+
+        case 'pn_cm_budget_reorder_items':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $order = !empty($_POST['order']) ? json_decode(sanitize_text_field(wp_unslash($_POST['order'])), true) : [];
+          if (!empty($pn_cm_budget_id) && !empty($order)) {
+            global $wpdb;
+            foreach ($order as $item) {
+              $wpdb->update(
+                $wpdb->prefix . 'pn_cm_budget_items',
+                ['sort_order' => intval($item['position'])],
+                ['id' => intval($item['id']), 'budget_id' => $pn_cm_budget_id],
+                ['%d'],
+                ['%d', '%d']
+              );
+            }
+            echo wp_json_encode(['error_key' => '']);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_reorder_error']);
+          exit;
+          break;
+
+        case 'pn_cm_budget_update_item':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            global $wpdb;
+            $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
+            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+            $quantity    = floatval($_POST['quantity'] ?? 0);
+            $unit_price  = floatval($_POST['unit_price'] ?? 0);
+            $is_optional = intval($_POST['is_optional'] ?? 0);
+            $total       = $quantity * $unit_price;
+
+            $wpdb->update(
+              $wpdb->prefix . 'pn_cm_budget_items',
+              [
+                'item_type'   => $item_type,
+                'description' => $description,
+                'quantity'    => $quantity,
+                'unit_price'  => $unit_price,
+                'total'       => $total,
+                'is_optional' => $is_optional,
+              ],
+              ['id' => $item_id, 'budget_id' => $pn_cm_budget_id],
+              ['%s', '%s', '%f', '%f', '%f', '%d'],
+              ['%d', '%d']
+            );
+
+            $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+            $budget_class->pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'item' => [
+                'id'         => $item_id,
+                'item_type'  => $item_type,
+                'description'=> $description,
+                'quantity'   => $quantity,
+                'unit_price' => $unit_price,
+                'total'      => $total,
+                'is_optional'=> $is_optional,
+              ],
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_update_item_error']);
+          break;
+
+        case 'pn_cm_budget_edit_item_form':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_budget_edit_form_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            wp_send_json([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_render_item_edit_form($item_id, $pn_cm_budget_id),
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_edit_form_error']);
+          break;
+
+        case 'pn_cm_budget_send':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          if (!empty($pn_cm_budget_id)) {
+            update_post_meta($pn_cm_budget_id, 'pn_cm_budget_status', 'sent');
+            echo wp_json_encode(['error_key' => '', 'status' => 'sent']);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_budget_send_error']);
           exit;
           break;
       }

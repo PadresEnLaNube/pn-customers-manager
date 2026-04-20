@@ -4,10 +4,10 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 6.9.1
-Stable tag: 1.0.85
+Stable tag: 1.1.20
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-A powerful CRM with AI-powered WhatsApp and Instagram chat, sales funnels, organization management, contact forms, email campaigns, business projections, and WooCommerce integration — all inside WordPress.
+A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, contact forms, email campaigns, and WooCommerce integration for WordPress.
 
 == Description ==
 

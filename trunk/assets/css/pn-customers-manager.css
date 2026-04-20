@@ -796,7 +796,6 @@ input:checked + .pn-customers-manager-slider:before{
 .pn-customers-manager-btn{
   background-color:var(--pn-customers-manager-color-main);
   color:#ffffff;
-  text-shadow:0 0 20px var(--pn-customers-manager-color-main);
   display:inline-block;
   margin:auto;
   font-size:var(--wp--preset--font-size--normal);
@@ -824,6 +823,16 @@ input:checked + .pn-customers-manager-slider:before{
 .pn-customers-manager-btn-mini{
   line-height:20px;
   padding:5px 30px;
+}
+.pn-customers-manager-btn-transparent{
+  color:var(--pn-customers-manager-color-main);
+  border:1px solid var(--pn-customers-manager-color-main);
+  background-color: transparent;
+}
+.pn-customers-manager-btn-transparent:hover{
+  color:#ffffff;
+  background-color: var(--pn-customers-manager-color-main);
+  ;
 }
 .pn-customers-manager-cursor-pointer{
   cursor:pointer;
@@ -1731,6 +1740,9 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   .pn-customers-manager-section-wrapper label{
     color:var(--pn-customers-manager-color-main);
     font-size:16px;
+  }
+  .pn-customers-manager-section-wrapper > .pn-customers-manager-toggle-content > .pn-customers-manager-input-wrapper{
+    padding:10px;
   }
   .pn-customers-manager-input-wrapper:has(input[type="hidden"]){
     height:0;

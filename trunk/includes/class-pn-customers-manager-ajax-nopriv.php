@@ -478,6 +478,10 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                      */
                     do_action('Pn_cm_organization_form_save', $post_id, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype);
                   }
+
+                  if (!empty($post_type) && $post_type === 'pn_cm_budget') {
+                    do_action('pn_cm_budget_form_save', $post_id, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype, $post_type);
+                  }
                   break;
                 case 'option':
                   if (PN_CUSTOMERS_MANAGER_Functions_User::pn_customers_manager_user_is_admin(get_current_user_id())) {
@@ -537,6 +541,10 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     $plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
                     $update_html = $plugin_post_type_organization->pn_cm_organization_list();
                     break;
+                  case 'pn_cm_budget':
+                    $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
+                    $update_html = $plugin_post_type_budget->pn_cm_budget_list();
+                    break;
                 }
               }else{
                 $update_html = '';
@@ -548,6 +556,115 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
             echo wp_json_encode(['error_key' => 'cm_pn_form_save_error', ]);exit;
           }
           break;
+
+        case 'pn_cm_budget_toggle_item':
+          $budget_id    = isset($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $budget_token = isset($_POST['budget_token']) ? sanitize_text_field(wp_unslash($_POST['budget_token'])) : '';
+          $item_id      = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          $is_selected  = isset($_POST['is_selected']) ? intval($_POST['is_selected']) : 0;
+
+          if (empty($budget_id) || empty($budget_token) || empty($item_id)) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid request.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          // Validate token
+          $stored_token = get_post_meta($budget_id, 'pn_cm_budget_token', true);
+          if (empty($stored_token) || $stored_token !== $budget_token) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid token.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          // Only allow toggling when status is "sent"
+          $status = get_post_meta($budget_id, 'pn_cm_budget_status', true);
+          if ($status !== 'sent') {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('This budget cannot be modified.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          global $wpdb;
+          $table = $wpdb->prefix . 'pn_cm_budget_items';
+
+          // Verify item belongs to this budget and is optional
+          $item = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, is_optional FROM {$table} WHERE id = %d AND budget_id = %d",
+            $item_id, $budget_id
+          ));
+
+          if (!$item || !$item->is_optional) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Item not found or not optional.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $wpdb->update($table, ['is_selected' => $is_selected ? 1 : 0], ['id' => $item_id], ['%d'], ['%d']);
+
+          // Recalculate totals
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($budget_id);
+
+          echo wp_json_encode([
+            'success' => true,
+            'data' => [
+              'subtotal' => get_post_meta($budget_id, 'pn_cm_budget_subtotal', true),
+              'discount' => get_post_meta($budget_id, 'pn_cm_budget_discount_amount', true),
+              'tax'      => get_post_meta($budget_id, 'pn_cm_budget_tax_amount', true),
+              'total'    => get_post_meta($budget_id, 'pn_cm_budget_total', true),
+            ],
+          ]);
+          exit;
+
+        case 'pn_cm_budget_accept':
+          $budget_id    = isset($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $budget_token = isset($_POST['budget_token']) ? sanitize_text_field(wp_unslash($_POST['budget_token'])) : '';
+
+          if (empty($budget_id) || empty($budget_token)) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid request.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $stored_token = get_post_meta($budget_id, 'pn_cm_budget_token', true);
+          if (empty($stored_token) || $stored_token !== $budget_token) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid token.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $status = get_post_meta($budget_id, 'pn_cm_budget_status', true);
+          if ($status !== 'sent') {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('This budget cannot be accepted.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          update_post_meta($budget_id, 'pn_cm_budget_status', 'accepted');
+          update_post_meta($budget_id, 'pn_cm_budget_accepted_at', current_time('mysql'));
+
+          echo wp_json_encode(['success' => true]);
+          exit;
+
+        case 'pn_cm_budget_reject':
+          $budget_id    = isset($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $budget_token = isset($_POST['budget_token']) ? sanitize_text_field(wp_unslash($_POST['budget_token'])) : '';
+
+          if (empty($budget_id) || empty($budget_token)) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid request.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $stored_token = get_post_meta($budget_id, 'pn_cm_budget_token', true);
+          if (empty($stored_token) || $stored_token !== $budget_token) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid token.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $status = get_post_meta($budget_id, 'pn_cm_budget_status', true);
+          if ($status !== 'sent') {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('This budget cannot be rejected.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          update_post_meta($budget_id, 'pn_cm_budget_status', 'rejected');
+          update_post_meta($budget_id, 'pn_cm_budget_rejected_at', current_time('mysql'));
+
+          echo wp_json_encode(['success' => true]);
+          exit;
       }
 
       echo wp_json_encode(['error_key' => '', ]);exit;

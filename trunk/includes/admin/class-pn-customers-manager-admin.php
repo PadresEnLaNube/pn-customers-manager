@@ -49,6 +49,7 @@ class PN_CUSTOMERS_MANAGER_Admin {
 	 */
 	public function pn_customers_manager_enqueue_styles() {
 		wp_enqueue_style($this->plugin_name . '-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/css/admin/pn-customers-manager-admin.css', [], $this->version, 'all');
+		wp_enqueue_style($this->plugin_name . '-budget', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-budget.css', [], $this->version, 'all');
 	}
 
 	/**
@@ -59,5 +60,22 @@ class PN_CUSTOMERS_MANAGER_Admin {
 	public function pn_customers_manager_enqueue_scripts() {
 		wp_enqueue_media();
 		wp_enqueue_script($this->plugin_name . '-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-admin.js', ['jquery'], $this->version, false);
+
+		wp_enqueue_script($this->plugin_name . '-budget-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-budget-admin.js', ['jquery'], $this->version, true);
+		wp_localize_script($this->plugin_name . '-budget-admin', 'pnCmBudgetAdmin', [
+			'ajaxUrl' => admin_url('admin-ajax.php'),
+			'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
+			'budgetId' => 0,
+			'currencySymbol' => get_option('pn_customers_manager_budget_currency_symbol', '€'),
+			'currencyPosition' => get_option('pn_customers_manager_budget_currency_position', 'after'),
+			'defaultHourlyRate' => get_option('pn_customers_manager_budget_default_hourly_rate', '0'),
+			'i18n' => [
+				'error' => esc_html__('An error occurred.', 'pn-customers-manager'),
+				'confirmDelete' => esc_html__('Are you sure you want to delete this item?', 'pn-customers-manager'),
+				'confirmSend' => esc_html__('Are you sure you want to send this budget?', 'pn-customers-manager'),
+				'budgetSent' => esc_html__('Budget sent successfully.', 'pn-customers-manager'),
+				'noDescription' => esc_html__('Please enter a description.', 'pn-customers-manager'),
+			],
+		]);
 	}
 }

@@ -629,6 +629,43 @@ class PN_CUSTOMERS_MANAGER_Forms {
         </div>
         <?php
         break;
+      case 'page_manager':
+        if (!current_user_can('manage_options')) {
+          ?><div class="pn-customers-manager-field"><p class="pn-customers-manager-color-error"><?php esc_html_e('You do not have permission to manage plugin pages.', 'pn-customers-manager'); ?></p></div><?php
+          break;
+        }
+        $page_option = isset($pn_customers_manager_input['page_option']) ? $pn_customers_manager_input['page_option'] : '';
+        $shortcode_name = isset($pn_customers_manager_input['shortcode']) ? $pn_customers_manager_input['shortcode'] : '';
+        $page_id = !empty($page_option) ? intval(get_option($page_option)) : 0;
+        $page = $page_id ? get_post($page_id) : null;
+        $page_exists = $page && $page->post_status !== 'trash';
+        ?>
+        <div class="pn-customers-manager-page-manager-wrapper" data-page-option="<?php echo esc_attr($page_option); ?>" data-shortcode="<?php echo esc_attr($shortcode_name); ?>">
+          <?php if ($page_exists): ?>
+            <div class="pn-customers-manager-page-manager-info">
+              <div class="pn-customers-manager-page-manager-status pn-customers-manager-mb-10">
+                <i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-color-green">check</i>
+                <strong><?php echo esc_html($page->post_title); ?></strong>
+                <span class="pn-customers-manager-page-manager-badge pn-customers-manager-ml-10"><?php echo esc_html(ucfirst($page->post_status)); ?></span>
+              </div>
+              <div class="pn-customers-manager-page-manager-actions">
+                <a href="<?php echo esc_url(get_permalink($page_id)); ?>" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-mr-20"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">visibility</i> <?php esc_html_e('View', 'pn-customers-manager'); ?></a>
+                <a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-mr-20"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">edit</i> <?php esc_html_e('Edit', 'pn-customers-manager'); ?></a>
+                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-page-manager-unlink-btn"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">link_off</i> <?php esc_html_e('Unlink', 'pn-customers-manager'); ?></button>
+              </div>
+            </div>
+          <?php else: ?>
+            <div class="pn-customers-manager-page-manager-create">
+              <div class="pn-customers-manager-page-manager-create-form">
+                <input type="text" class="pn-customers-manager-input pn-customers-manager-page-manager-title-input pn-customers-manager-width-100-percent pn-customers-manager-mb-10" placeholder="<?php esc_attr_e('Page title', 'pn-customers-manager'); ?>" value="<?php echo esc_attr(isset($pn_customers_manager_input['label']) ? $pn_customers_manager_input['label'] : ''); ?>">
+                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-page-manager-create-btn"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">add_circle</i> <?php esc_html_e('Create page', 'pn-customers-manager'); ?></button>
+              </div>
+            </div>
+          <?php endif; ?>
+          <div class="pn-customers-manager-page-manager-message pn-customers-manager-mt-10 pn-customers-manager-display-none-soft"></div>
+        </div>
+        <?php
+        break;
       case 'user_role_selector':
         // Only administrators can use this field
         if (!current_user_can('manage_options')) {
@@ -1066,12 +1103,123 @@ class PN_CUSTOMERS_MANAGER_Forms {
   public static function pn_customers_manager_sanitizer($value, $node = '', $type = '', $field_config = []) {
     // Use the new validation system
     $result = PN_CUSTOMERS_MANAGER_Validation::pn_customers_manager_validate_and_sanitize($value, $node, $type, $field_config);
-    
+
     // If validation failed, return empty value and log the error
     if (is_wp_error($result)) {
         return '';
     }
-    
+
     return $result;
+  }
+
+  /**
+   * Scan published / draft / private pages looking for a specific shortcode or
+   * Gutenberg block.
+   *
+   * @param string      $shortcode Shortcode tag (without brackets).
+   * @param string|null $block     Optional block name (e.g. 'my-plugin/my-block').
+   * @return int|false  Page ID on success, false when not found.
+   */
+  public static function pn_customers_manager_find_page_by_content($shortcode = null, $block = null) {
+    $pages = get_posts([
+      'post_type'   => 'page',
+      'post_status' => ['publish', 'draft', 'private'],
+      'numberposts' => -1,
+      'fields'      => 'ids',
+    ]);
+
+    foreach ($pages as $page_id) {
+      $content = get_post_field('post_content', $page_id);
+
+      if (!empty($shortcode) && has_shortcode($content, $shortcode)) {
+        return $page_id;
+      }
+
+      if ($block && strpos($content, '<!-- wp:' . $block) !== false) {
+        return $page_id;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * For every managed-page entry whose option is empty or points to a trashed
+   * page, try to auto-detect the page by scanning site content.  Pages that are
+   * found are saved into their option automatically.
+   *
+   * @param array $managed_pages Associative array keyed by option name.
+   *   Each value must contain at least 'shortcode' (string) and may contain
+   *   'block' (string|null) and 'label' (string).
+   * @return array Subset of $managed_pages that could NOT be auto-detected.
+   */
+  public static function pn_customers_manager_auto_detect_pages($managed_pages) {
+    $missing = [];
+
+    foreach ($managed_pages as $option_key => $cfg) {
+      $current = get_option($option_key);
+
+      if ($current) {
+        $page = get_post(intval($current));
+        if ($page && $page->post_status !== 'trash') {
+          continue;
+        }
+      }
+
+      $block = isset($cfg['block']) ? $cfg['block'] : null;
+      $found = self::pn_customers_manager_find_page_by_content($cfg['shortcode'], $block);
+
+      if ($found) {
+        update_option($option_key, $found);
+      } else {
+        $missing[$option_key] = $cfg;
+      }
+    }
+
+    return $missing;
+  }
+
+  /**
+   * Render an alert block for every managed page that has not been detected,
+   * reusing the page_manager markup so the existing JS handlers work out of
+   * the box.
+   *
+   * Usage from any plugin settings page:
+   *   PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts($my_managed_pages);
+   *
+   * @param array $managed_pages Same format accepted by auto_detect_pages().
+   */
+  public static function pn_customers_manager_page_manager_alerts($managed_pages) {
+    $missing = self::pn_customers_manager_auto_detect_pages($managed_pages);
+
+    if (empty($missing)) {
+      return;
+    }
+    ?>
+    <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30">
+      <div class="pn-customers-manager-p-30">
+        <p class="pn-customers-manager-mb-15">
+          <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">warning</i>
+          <?php esc_html_e('The following plugin pages have not been detected. You can create them below or assign them manually in the Pages section.', 'pn-customers-manager'); ?>
+        </p>
+        <?php foreach ($missing as $option_key => $cfg):
+          $label = isset($cfg['label']) ? $cfg['label'] : '';
+        ?>
+          <div class="pn-customers-manager-mb-15">
+            <h4 class="pn-customers-manager-mb-5"><?php echo esc_html($label); ?></h4>
+            <?php
+            self::pn_customers_manager_input_builder([
+              'id'          => $option_key,
+              'input'       => 'page_manager',
+              'label'       => $label,
+              'shortcode'   => $cfg['shortcode'],
+              'page_option' => $option_key,
+            ], 'option');
+            ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php
   }
 }

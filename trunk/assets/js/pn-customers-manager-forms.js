@@ -685,4 +685,111 @@
       $message.addClass('pn-customers-manager-display-none-soft');
     }, 5000);
   }
+  // ── Page Manager: Create page ──
+  $(document).on('click', '.pn-customers-manager-page-manager-create-btn', function (e) {
+    e.preventDefault();
+    var $btn = $(this);
+    var $wrapper = $btn.closest('.pn-customers-manager-page-manager-wrapper');
+    var $input = $wrapper.find('.pn-customers-manager-page-manager-title-input');
+    var $message = $wrapper.find('.pn-customers-manager-page-manager-message');
+    var pageTitle = $input.val().trim();
+    var shortcode = $wrapper.data('shortcode');
+    var pageOption = $wrapper.data('page-option');
+
+    if (!pageTitle) {
+      $message.removeClass('pn-customers-manager-display-none-soft').html('<p class="pn-customers-manager-color-red">Please enter a page title.</p>');
+      return;
+    }
+
+    $btn.prop('disabled', true);
+    $message.removeClass('pn-customers-manager-display-none-soft').html('<p>Creating page…</p>');
+
+    $.ajax({
+      url: pn_customers_manager_ajax.ajax_url,
+      type: 'POST',
+      data: {
+        action: 'pn_customers_manager_ajax',
+        pn_customers_manager_ajax_type: 'pn_cm_create_plugin_page',
+        pn_customers_manager_ajax_nonce: $('#pn_customers_manager_nonce').val(),
+        page_title: pageTitle,
+        shortcode: shortcode,
+        page_option: pageOption
+      },
+      dataType: 'json',
+      success: function (data) {
+        if (data.error_key === '') {
+          $wrapper.find('.pn-customers-manager-page-manager-create').replaceWith(
+            '<div class="pn-customers-manager-page-manager-info">' +
+              '<div class="pn-customers-manager-page-manager-status pn-customers-manager-mb-10">' +
+                '<i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-color-green">check</i> ' +
+                '<strong>' + data.page_title + '</strong>' +
+                '<span class="pn-customers-manager-page-manager-badge pn-customers-manager-ml-10">Publish</span>' +
+              '</div>' +
+              '<div class="pn-customers-manager-page-manager-actions">' +
+                '<a href="' + data.page_url + '" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-mr-10"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">visibility</i> View</a>' +
+                '<a href="' + data.edit_url + '" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-mr-10"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">edit</i> Edit</a>' +
+                '<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-page-manager-unlink-btn"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">link_off</i> Unlink</button>' +
+              '</div>' +
+            '</div>'
+          );
+          $message.html('<p class="pn-customers-manager-color-green">Page created successfully.</p>');
+          setTimeout(function () { $message.addClass('pn-customers-manager-display-none-soft'); }, 3000);
+        } else {
+          $message.html('<p class="pn-customers-manager-color-red">' + (data.error_content || 'Error creating page.') + '</p>');
+        }
+      },
+      error: function () {
+        $message.html('<p class="pn-customers-manager-color-red">Connection error. Please try again.</p>');
+      },
+      complete: function () {
+        $btn.prop('disabled', false);
+      }
+    });
+  });
+
+  // ── Page Manager: Unlink page ──
+  $(document).on('click', '.pn-customers-manager-page-manager-unlink-btn', function (e) {
+    e.preventDefault();
+    var $btn = $(this);
+    var $wrapper = $btn.closest('.pn-customers-manager-page-manager-wrapper');
+    var $message = $wrapper.find('.pn-customers-manager-page-manager-message');
+    var pageOption = $wrapper.data('page-option');
+
+    $btn.prop('disabled', true);
+
+    $.ajax({
+      url: pn_customers_manager_ajax.ajax_url,
+      type: 'POST',
+      data: {
+        action: 'pn_customers_manager_ajax',
+        pn_customers_manager_ajax_type: 'pn_cm_unlink_plugin_page',
+        pn_customers_manager_ajax_nonce: $('#pn_customers_manager_nonce').val(),
+        page_option: pageOption
+      },
+      dataType: 'json',
+      success: function (data) {
+        if (data.error_key === '') {
+          $wrapper.find('.pn-customers-manager-page-manager-info').replaceWith(
+            '<div class="pn-customers-manager-page-manager-create">' +
+              '<div class="pn-customers-manager-page-manager-create-form">' +
+                '<input type="text" class="pn-customers-manager-input pn-customers-manager-page-manager-title-input pn-customers-manager-width-100-percent pn-customers-manager-mb-10" placeholder="Page title" value="">' +
+                '<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-page-manager-create-btn"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">add_circle</i> Create page</button>' +
+              '</div>' +
+            '</div>'
+          );
+          $message.removeClass('pn-customers-manager-display-none-soft').html('<p class="pn-customers-manager-color-green">Page unlinked.</p>');
+          setTimeout(function () { $message.addClass('pn-customers-manager-display-none-soft'); }, 3000);
+        } else {
+          $message.removeClass('pn-customers-manager-display-none-soft').html('<p class="pn-customers-manager-color-red">' + (data.error_content || 'Error unlinking page.') + '</p>');
+        }
+      },
+      error: function () {
+        $message.removeClass('pn-customers-manager-display-none-soft').html('<p class="pn-customers-manager-color-red">Connection error.</p>');
+      },
+      complete: function () {
+        $btn.prop('disabled', false);
+      }
+    });
+  });
+
 })(jQuery);

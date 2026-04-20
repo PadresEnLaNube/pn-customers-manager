@@ -116,6 +116,27 @@
           return;
         }
 
+        // Bracket-notation array fields (name="field[]"): collect as array
+        if (fieldName.slice(-2) === '[]' && !is_multiple) {
+          if (!seenFields[fieldName]) {
+            seenFields[fieldName] = true;
+            data[fieldName] = [];
+            data.pn_customers_manager_ajax_keys.push({
+              id: fieldName,
+              node: element.nodeName,
+              type: element.type,
+              multiple: true,
+            });
+          }
+
+          if ($(this).is(':checkbox')) {
+            data[fieldName].push($(this).is(':checked') ? $(element).val() : '');
+          } else {
+            data[fieldName].push($(element).val());
+          }
+          return;
+        }
+
         if (is_multiple) {
           if (!(typeof window['pn_customers_manager_window_vars']['form_field_' + element.name] !== 'undefined')) {
             window['pn_customers_manager_window_vars']['form_field_' + element.name] = [];
@@ -266,7 +287,13 @@
       if (!pn_cm_organization_id) {
         pn_cm_organization_id = pn_customers_manager_btn.closest('[data-pn_cm_organization_alt-id]').attr('data-pn_cm_organization_alt-id') || '';
       }
-      
+
+      // Get budget ID
+      var pn_cm_budget_id = pn_customers_manager_btn.attr('data-pn_cm_budget-id') || '';
+      if (!pn_cm_budget_id) {
+        pn_cm_budget_id = pn_customers_manager_btn.closest('[data-pn_cm_budget-id]').attr('data-pn_cm_budget-id') || '';
+      }
+
       // Debug log (can be removed later)
       if (pn_customers_manager_ajax_type === 'pn_cm_organization_edit' && !pn_cm_organization_id) {
         console.warn('pn-customers-manager AJAX - Organization ID not found for edit action. Button attributes:', {
@@ -301,6 +328,7 @@
             pn_customers_manager_get_nonce: pn_customers_manager_action.pn_customers_manager_get_nonce,
             pn_cm_funnel_id: pn_cm_funnel_id ? pn_cm_funnel_id : '',
             pn_cm_organization_id: pn_cm_organization_id ? pn_cm_organization_id : '',
+            pn_cm_budget_id: pn_cm_budget_id ? pn_cm_budget_id : '',
           };
 
           // Log the data being sent

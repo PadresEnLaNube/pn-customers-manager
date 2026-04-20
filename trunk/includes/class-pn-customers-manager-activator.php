@@ -130,7 +130,7 @@ class PN_CUSTOMERS_MANAGER_Activator {
 
     $table_wa = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
 
-    $sql .= "CREATE TABLE {$table_wa} (
+    $sql .= "\nCREATE TABLE {$table_wa} (
       id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
       wa_conversation_id VARCHAR(255) DEFAULT '',
       phone_number VARCHAR(20) NOT NULL,
@@ -151,7 +151,7 @@ class PN_CUSTOMERS_MANAGER_Activator {
 
     $table_ig = $wpdb->prefix . 'pn_cm_instagram_conversations';
 
-    $sql .= "CREATE TABLE {$table_ig} (
+    $sql .= "\nCREATE TABLE {$table_ig} (
       id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
       ig_conversation_id VARCHAR(255) DEFAULT '',
       ig_user_id VARCHAR(255) NOT NULL,
@@ -172,7 +172,7 @@ class PN_CUSTOMERS_MANAGER_Activator {
 
     $table_projections = $wpdb->prefix . 'pn_cm_projections_snapshots';
 
-    $sql .= "CREATE TABLE {$table_projections} (
+    $sql .= "\nCREATE TABLE {$table_projections} (
       id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
       snapshot_date DATE NOT NULL,
       metric_source VARCHAR(50) NOT NULL,
@@ -188,7 +188,7 @@ class PN_CUSTOMERS_MANAGER_Activator {
 
     $table_projections_manual = $wpdb->prefix . 'pn_cm_projections_manual';
 
-    $sql .= "CREATE TABLE {$table_projections_manual} (
+    $sql .= "\nCREATE TABLE {$table_projections_manual} (
       id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
       metric_source VARCHAR(50) NOT NULL,
       metric_key VARCHAR(100) NOT NULL,
@@ -200,6 +200,25 @@ class PN_CUSTOMERS_MANAGER_Activator {
       PRIMARY KEY  (id),
       KEY metric_lookup (metric_source, metric_key),
       KEY target_date (target_date)
+    ) {$charset_collate};";
+
+    $table_budget_items = $wpdb->prefix . 'pn_cm_budget_items';
+
+    $sql .= "\nCREATE TABLE {$table_budget_items} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      budget_id BIGINT(20) UNSIGNED NOT NULL,
+      item_type VARCHAR(10) NOT NULL DEFAULT 'fixed',
+      description TEXT NOT NULL,
+      quantity DECIMAL(10,2) NOT NULL DEFAULT 1,
+      unit_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+      total DECIMAL(10,2) NOT NULL DEFAULT 0,
+      is_optional TINYINT(1) NOT NULL DEFAULT 0,
+      is_selected TINYINT(1) NOT NULL DEFAULT 1,
+      sort_order INT NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY budget_id (budget_id),
+      KEY sort_order (sort_order)
     ) {$charset_collate};";
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';

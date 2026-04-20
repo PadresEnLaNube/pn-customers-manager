@@ -715,35 +715,35 @@ class PN_CUSTOMERS_MANAGER_Projections {
 			<!-- Plugin status cards -->
 			<div class="pn-cm-proj-status-cards">
 				<div class="pn-cm-proj-status-card <?php echo $userspn_active ? 'pn-cm-proj-active' : 'pn-cm-proj-inactive'; ?>">
-					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $userspn_active ? 'check_circle' : 'cancel'; ?></span>
+					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $userspn_active ? 'check' : 'cancel'; ?></span>
 					<span class="pn-cm-proj-status-label"><?php esc_html_e('Users', 'pn-customers-manager'); ?></span>
 					<?php if (!$userspn_active): ?>
 						<small><?php esc_html_e('Not installed', 'pn-customers-manager'); ?></small>
 					<?php endif; ?>
 				</div>
 				<div class="pn-cm-proj-status-card <?php echo $mailpn_active ? 'pn-cm-proj-active' : 'pn-cm-proj-inactive'; ?>">
-					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $mailpn_active ? 'check_circle' : 'cancel'; ?></span>
+					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $mailpn_active ? 'check' : 'cancel'; ?></span>
 					<span class="pn-cm-proj-status-label"><?php esc_html_e('Emails', 'pn-customers-manager'); ?></span>
 					<?php if (!$mailpn_active): ?>
 						<small><?php esc_html_e('Not installed', 'pn-customers-manager'); ?></small>
 					<?php endif; ?>
 				</div>
 				<div class="pn-cm-proj-status-card <?php echo $ig_configured ? 'pn-cm-proj-active' : 'pn-cm-proj-inactive'; ?>">
-					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $ig_configured ? 'check_circle' : 'cancel'; ?></span>
+					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $ig_configured ? 'check' : 'cancel'; ?></span>
 					<span class="pn-cm-proj-status-label">Instagram</span>
 					<?php if (!$ig_configured): ?>
 						<small><a href="<?php echo esc_url($settings_url); ?>"><?php esc_html_e('Configure', 'pn-customers-manager'); ?></a></small>
 					<?php endif; ?>
 				</div>
 				<div class="pn-cm-proj-status-card <?php echo $fb_configured ? 'pn-cm-proj-active' : 'pn-cm-proj-inactive'; ?>">
-					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $fb_configured ? 'check_circle' : 'cancel'; ?></span>
+					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $fb_configured ? 'check' : 'cancel'; ?></span>
 					<span class="pn-cm-proj-status-label">Facebook</span>
 					<?php if (!$fb_configured): ?>
 						<small><a href="<?php echo esc_url($settings_url); ?>"><?php esc_html_e('Configure', 'pn-customers-manager'); ?></a></small>
 					<?php endif; ?>
 				</div>
 				<div class="pn-cm-proj-status-card <?php echo $tw_configured ? 'pn-cm-proj-active' : 'pn-cm-proj-inactive'; ?>">
-					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $tw_configured ? 'check_circle' : 'cancel'; ?></span>
+					<span class="pn-cm-proj-status-icon material-icons-outlined"><?php echo $tw_configured ? 'check' : 'cancel'; ?></span>
 					<span class="pn-cm-proj-status-label">X / Twitter</span>
 					<?php if (!$tw_configured): ?>
 						<small><a href="<?php echo esc_url($settings_url); ?>"><?php esc_html_e('Configure', 'pn-customers-manager'); ?></a></small>
@@ -965,7 +965,7 @@ class PN_CUSTOMERS_MANAGER_Projections {
 			'chartjs',
 			PN_CUSTOMERS_MANAGER_URL . 'assets/js/vendor/chart.min.js',
 			[],
-			'4.4.7',
+			'4.5.1',
 			true
 		);
 
