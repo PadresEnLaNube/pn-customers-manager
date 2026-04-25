@@ -50,6 +50,7 @@ class PN_CUSTOMERS_MANAGER_Admin {
 	public function pn_customers_manager_enqueue_styles() {
 		wp_enqueue_style($this->plugin_name . '-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/css/admin/pn-customers-manager-admin.css', [], $this->version, 'all');
 		wp_enqueue_style($this->plugin_name . '-budget', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-budget.css', [], $this->version, 'all');
+		wp_enqueue_style($this->plugin_name . '-invoice', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-invoice.css', [], $this->version, 'all');
 	}
 
 	/**
@@ -75,6 +76,30 @@ class PN_CUSTOMERS_MANAGER_Admin {
 				'confirmSend' => esc_html__('Are you sure you want to send this budget?', 'pn-customers-manager'),
 				'budgetSent' => esc_html__('Budget sent successfully.', 'pn-customers-manager'),
 				'noDescription' => esc_html__('Please enter a description.', 'pn-customers-manager'),
+			'confirmGenerateInvoice' => esc_html__('Are you sure you want to generate an invoice from this budget?', 'pn-customers-manager'),
+			'invoiceGenerated' => esc_html__('Invoice generated successfully.', 'pn-customers-manager'),
+			'selectImage' => esc_html__('Select image', 'pn-customers-manager'),
+			'useImage' => esc_html__('Use image', 'pn-customers-manager'),
+			],
+		]);
+
+		wp_enqueue_script($this->plugin_name . '-invoice-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-invoice-admin.js', ['jquery'], $this->version, true);
+		wp_localize_script($this->plugin_name . '-invoice-admin', 'pnCmInvoiceAdmin', [
+			'ajaxUrl' => admin_url('admin-ajax.php'),
+			'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
+			'invoiceId' => 0,
+			'currencySymbol' => get_option('pn_customers_manager_budget_currency_symbol', '€'),
+			'currencyPosition' => get_option('pn_customers_manager_budget_currency_position', 'after'),
+			'defaultHourlyRate' => get_option('pn_customers_manager_budget_default_hourly_rate', '0'),
+			'i18n' => [
+				'error' => esc_html__('An error occurred.', 'pn-customers-manager'),
+				'confirmDelete' => esc_html__('Are you sure you want to delete this item?', 'pn-customers-manager'),
+				'confirmSend' => esc_html__('Are you sure you want to send this invoice?', 'pn-customers-manager'),
+				'invoiceSent' => esc_html__('Invoice sent successfully.', 'pn-customers-manager'),
+				'invoiceRemoved' => esc_html__('Invoice removed successfully.', 'pn-customers-manager'),
+				'invoiceDuplicated' => esc_html__('Invoice duplicated successfully.', 'pn-customers-manager'),
+				'noDescription' => esc_html__('Please enter a description.', 'pn-customers-manager'),
+				'newPhase' => esc_html__('New phase', 'pn-customers-manager'),
 			],
 		]);
 	}

@@ -22,6 +22,11 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'block'     => null,
       'label'     => 'Budgets',
     ],
+    'pn_customers_manager_page_invoice_list' => [
+      'shortcode' => 'pn-customers-manager-invoice-list',
+      'block'     => null,
+      'label'     => 'Invoices',
+    ],
   ];
 
   public static function pn_customers_manager_get_managed_pages() {
@@ -54,6 +59,14 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'label' => __('Budgets', 'pn-customers-manager'),
       'shortcode' => 'pn-customers-manager-budget-list',
       'page_option' => 'pn_customers_manager_page_budget_list',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_invoice_list'] = [
+      'id' => 'pn_customers_manager_page_invoice_list',
+      'input' => 'page_manager',
+      'label' => __('Invoices', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-invoice-list',
+      'page_option' => 'pn_customers_manager_page_invoice_list',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_commercial_section_end'] = [
@@ -186,12 +199,12 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
-    // ── Budgets section ──
+    // ── Budgets & Invoices section ──
     $pn_customers_manager_options['pn_customers_manager_budget_section_start'] = [
       'id' => 'pn_customers_manager_budget_section_start',
       'section' => 'start',
-      'label' => __('Budgets', 'pn-customers-manager'),
-      'description' => __('Configure default values and company information for budget generation.', 'pn-customers-manager'),
+      'label' => __('Budgets & Invoices', 'pn-customers-manager'),
+      'description' => __('Configure default values and company information for budget and invoice generation.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_budget_dashboard_link'] = [
@@ -334,6 +347,91 @@ class PN_CUSTOMERS_MANAGER_Settings {
 
     $pn_customers_manager_options['pn_customers_manager_budget_section_end'] = [
       'id' => 'pn_customers_manager_budget_section_end',
+      'section' => 'end',
+    ];
+
+    // ── Invoices section ──
+    $pn_customers_manager_options['pn_customers_manager_invoice_section_start'] = [
+      'id' => 'pn_customers_manager_invoice_section_start',
+      'section' => 'start',
+      'label' => __('Invoice settings', 'pn-customers-manager'),
+      'description' => __('Invoice-specific defaults. Company info, currency, and tax rate are shared with budgets above.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_dashboard_link'] = [
+      'id' => 'pn_customers_manager_invoice_dashboard_link',
+      'input' => 'html',
+      'html_content' => '<a href="' . esc_url(admin_url('edit.php?post_type=pn_cm_invoice')) . '" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">open_in_new</i> ' . esc_html__('Open Invoices in Dashboard', 'pn-customers-manager') . '</a>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_public_slug'] = [
+      'id' => 'pn_customers_manager_invoice_public_slug',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'value' => 'invoice',
+      'label' => __('Public URL slug', 'pn-customers-manager'),
+      'description' => __('Slug used in the public invoice URL (e.g. yoursite.com/<strong>invoice</strong>/token). Save and flush permalinks after changing.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_number_prefix'] = [
+      'id' => 'pn_customers_manager_invoice_number_prefix',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'value' => 'INV',
+      'label' => __('Invoice number prefix', 'pn-customers-manager'),
+      'description' => __('Prefix for auto-generated invoice numbers (e.g. INV-00001).', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_next_number'] = [
+      'id' => 'pn_customers_manager_invoice_next_number',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '1',
+      'label' => __('Next invoice number', 'pn-customers-manager'),
+      'description' => __('The next auto-incremented number to be assigned. This value increases automatically.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_default_due_days'] = [
+      'id' => 'pn_customers_manager_invoice_default_due_days',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '30',
+      'label' => __('Default due days', 'pn-customers-manager'),
+      'description' => __('Number of days until the invoice due date, starting from the issue date.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_default_tax_rate'] = [
+      'id' => 'pn_customers_manager_invoice_default_tax_rate',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '21',
+      'label' => __('Default tax rate (%)', 'pn-customers-manager'),
+      'description' => __('Default tax percentage applied to new invoices. Leave empty to use the budget default.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_terms'] = [
+      'id' => 'pn_customers_manager_invoice_terms',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Invoice terms and conditions', 'pn-customers-manager'),
+      'description' => __('Default terms and conditions shown at the bottom of every invoice. Leave empty to use budget terms.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_default_client_notes'] = [
+      'id' => 'pn_customers_manager_invoice_default_client_notes',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Default client notes', 'pn-customers-manager'),
+      'description' => __('Default notes visible to the client, pre-filled when creating a new invoice.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_section_end'] = [
+      'id' => 'pn_customers_manager_invoice_section_end',
       'section' => 'end',
     ];
 
@@ -978,6 +1076,17 @@ class PN_CUSTOMERS_MANAGER_Settings {
         esc_html__('Budgets', 'pn-customers-manager'),
         'edit_pn_cm_budget',
         'edit.php?post_type=pn_cm_budget'
+      );
+    }
+
+    // Add Invoices submenu (only if user has the capability)
+    if (current_user_can('edit_pn_cm_invoice')) {
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Invoices', 'pn-customers-manager'),
+        esc_html__('Invoices', 'pn-customers-manager'),
+        'edit_pn_cm_invoice',
+        'edit.php?post_type=pn_cm_invoice'
       );
     }
 

@@ -197,6 +197,22 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         'id' => 'pn_cm_budget_section_totals_end',
         'section' => 'end',
       ];
+      $pn_customers_manager_fields_meta['pn_cm_budget_section_footer_image_start'] = [
+        'id' => 'pn_cm_budget_section_footer_image_start',
+        'section' => 'start',
+        'label' => esc_html__('Footer image', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_budget_footer_image'] = [
+        'id' => 'pn_cm_budget_footer_image',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'image',
+        'label' => esc_html__('Footer image', 'pn-customers-manager'),
+        'description' => esc_html__('Image displayed at the end of the budget, before terms and conditions.', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_budget_section_footer_image_end'] = [
+        'id' => 'pn_cm_budget_section_footer_image_end',
+        'section' => 'end',
+      ];
       $pn_customers_manager_fields_meta['pn_cm_budget_section_public_link_start'] = [
         'id' => 'pn_cm_budget_section_public_link_start',
         'section' => 'start',
@@ -405,79 +421,63 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
   }
 
   /**
-   * Save budget items from POST data.
+   * Save budget items from POST data to post meta.
    *
    * @param int $budget_id
    */
-  private function pn_cm_budget_save_items($budget_id) {
-    global $wpdb;
-    $table = $wpdb->prefix . 'pn_cm_budget_items';
-
-    if (!isset($_POST['pn_cm_budget_item_description']) || !is_array($_POST['pn_cm_budget_item_description'])) {
+  private function pn_cm_budget_save_items( $budget_id ) {
+    if ( ! isset( $_POST['pn_cm_budget_item_description'] ) || ! is_array( $_POST['pn_cm_budget_item_description'] ) ) {
       return;
     }
 
-    $descriptions = array_map('sanitize_text_field', wp_unslash($_POST['pn_cm_budget_item_description']));
-    $types = isset($_POST['pn_cm_budget_item_type']) ? array_map('sanitize_text_field', wp_unslash($_POST['pn_cm_budget_item_type'])) : [];
-    $quantities = isset($_POST['pn_cm_budget_item_quantity']) ? array_map('floatval', wp_unslash($_POST['pn_cm_budget_item_quantity'])) : [];
-    $unit_prices = isset($_POST['pn_cm_budget_item_unit_price']) ? array_map('floatval', wp_unslash($_POST['pn_cm_budget_item_unit_price'])) : [];
-    $is_optional = isset($_POST['pn_cm_budget_item_is_optional']) ? array_map('intval', wp_unslash($_POST['pn_cm_budget_item_is_optional'])) : [];
-    $item_ids = isset($_POST['pn_cm_budget_item_id']) ? array_map('intval', wp_unslash($_POST['pn_cm_budget_item_id'])) : [];
-
-    // Collect submitted item IDs to track which ones to keep
-    $submitted_ids = [];
+    $descriptions = array_map( 'sanitize_text_field', wp_unslash( $_POST['pn_cm_budget_item_description'] ) );
+    $types        = isset( $_POST['pn_cm_budget_item_type'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['pn_cm_budget_item_type'] ) ) : [];
+    $quantities   = isset( $_POST['pn_cm_budget_item_quantity'] ) ? array_map( 'floatval', wp_unslash( $_POST['pn_cm_budget_item_quantity'] ) ) : [];
+    $unit_prices  = isset( $_POST['pn_cm_budget_item_unit_price'] ) ? array_map( 'floatval', wp_unslash( $_POST['pn_cm_budget_item_unit_price'] ) ) : [];
+    $is_optional  = isset( $_POST['pn_cm_budget_item_is_optional'] ) ? array_map( 'intval', wp_unslash( $_POST['pn_cm_budget_item_is_optional'] ) ) : [];
+    $item_ids     = isset( $_POST['pn_cm_budget_item_id'] ) ? array_map( 'intval', wp_unslash( $_POST['pn_cm_budget_item_id'] ) ) : [];
 
     $has_any_description = false;
+    $new_items           = [];
 
-    foreach ($descriptions as $index => $description) {
-      if (empty($description)) {
+    foreach ( $descriptions as $index => $description ) {
+      if ( empty( $description ) ) {
         continue;
       }
 
       $has_any_description = true;
+      $item_id  = isset( $item_ids[ $index ] ) ? $item_ids[ $index ] : 0;
+      $qty      = isset( $quantities[ $index ] ) ? $quantities[ $index ] : 1;
+      $price    = isset( $unit_prices[ $index ] ) ? $unit_prices[ $index ] : 0;
+      $type     = isset( $types[ $index ] ) ? $types[ $index ] : 'fixed';
+      $optional = isset( $is_optional[ $index ] ) ? $is_optional[ $index ] : 0;
 
-      $qty = isset($quantities[$index]) ? $quantities[$index] : 1;
-      $price = isset($unit_prices[$index]) ? $unit_prices[$index] : 0;
+      // Preserve is_selected from existing item, default 1 for new.
+      $existing   = ! empty( $item_id ) ? self::get_budget_item( $budget_id, $item_id ) : null;
+      $selected   = $existing ? intval( $existing['is_selected'] ) : 1;
 
-      $data = [
-        'budget_id' => $budget_id,
-        'description' => $description,
-        'item_type' => isset($types[$index]) ? $types[$index] : 'fixed',
-        'quantity' => $qty,
-        'unit_price' => $price,
-        'total' => round($qty * $price, 2),
-        'is_optional' => isset($is_optional[$index]) ? $is_optional[$index] : 0,
-        'is_selected' => 1,
-        'sort_order' => $index,
-      ];
-
-      $item_id = isset($item_ids[$index]) ? $item_ids[$index] : 0;
-
-      if (!empty($item_id)) {
-        $wpdb->update($table, $data, ['id' => $item_id], ['%d', '%s', '%s', '%f', '%f', '%f', '%d', '%d', '%d'], ['%d']);
-        $submitted_ids[] = $item_id;
-      } else {
-        $wpdb->insert($table, $data, ['%d', '%s', '%s', '%f', '%f', '%f', '%d', '%d', '%d']);
-        $submitted_ids[] = $wpdb->insert_id;
+      if ( empty( $item_id ) ) {
+        $item_id = self::get_next_item_id( $budget_id );
       }
+
+      $new_items[] = [
+        'id'          => $item_id,
+        'item_type'   => $type,
+        'description' => $description,
+        'quantity'    => $qty,
+        'unit_price'  => $price,
+        'total'       => round( $qty * $price, 2 ),
+        'is_optional' => $optional,
+        'is_selected' => $selected,
+        'sort_order'  => $index,
+      ];
     }
 
-    // Only delete items if at least one valid description was submitted.
-    // This prevents accidental deletion when the form has only empty rows.
-    if (!$has_any_description) {
+    if ( ! $has_any_description ) {
       return;
     }
 
-    // Delete items not in the submitted list
-    if (!empty($submitted_ids)) {
-      $placeholders = implode(',', array_fill(0, count($submitted_ids), '%d'));
-      $wpdb->query(
-        $wpdb->prepare(
-          "DELETE FROM {$table} WHERE budget_id = %d AND id NOT IN ({$placeholders})",
-          array_merge([$budget_id], $submitted_ids)
-        )
-      );
-    }
+    self::save_budget_items( $budget_id, $new_items );
   }
 
   /**
@@ -542,47 +542,52 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
   }
 
   /**
-   * Recalculate totals from items table.
+   * Recalculate totals from items in post meta.
    *
    * @param int $budget_id
    */
-  public static function pn_cm_budget_recalculate_totals($budget_id) {
-    global $wpdb;
-    $table = $wpdb->prefix . 'pn_cm_budget_items';
+  public static function pn_cm_budget_recalculate_totals( $budget_id ) {
+    $items = self::get_budget_items( $budget_id );
 
-    // Update individual item totals
-    $wpdb->query(
-      $wpdb->prepare(
-        "UPDATE {$table} SET total = ROUND(quantity * unit_price, 2) WHERE budget_id = %d",
-        $budget_id
-      )
-    );
-
-    $items = $wpdb->get_results(
-      $wpdb->prepare(
-        "SELECT quantity, unit_price FROM {$table} WHERE budget_id = %d AND is_selected = 1 AND item_type != 'phase'",
-        $budget_id
-      )
-    );
-
-    $subtotal = 0;
-    if (!empty($items)) {
-      foreach ($items as $item) {
-        $subtotal += floatval($item->quantity) * floatval($item->unit_price);
+    // Update individual item totals and re-save.
+    $changed = false;
+    foreach ( $items as &$item ) {
+      if ( isset( $item['item_type'] ) && in_array( $item['item_type'], array( 'phase', 'image' ), true ) ) {
+        continue;
+      }
+      $calc = round( floatval( $item['quantity'] ) * floatval( $item['unit_price'] ), 2 );
+      if ( floatval( $item['total'] ) !== $calc ) {
+        $item['total'] = $calc;
+        $changed       = true;
       }
     }
+    unset( $item );
+    if ( $changed ) {
+      update_post_meta( $budget_id, 'pn_cm_budget_items', $items );
+    }
 
-    $tax_rate = floatval(get_post_meta($budget_id, 'pn_cm_budget_tax_rate', true));
-    $discount_rate = floatval(get_post_meta($budget_id, 'pn_cm_budget_discount_rate', true));
+    $subtotal = 0;
+    foreach ( $items as $item ) {
+      if ( isset( $item['item_type'] ) && in_array( $item['item_type'], array( 'phase', 'image' ), true ) ) {
+        continue;
+      }
+      if ( empty( $item['is_selected'] ) ) {
+        continue;
+      }
+      $subtotal += floatval( $item['quantity'] ) * floatval( $item['unit_price'] );
+    }
+
+    $tax_rate      = floatval( get_post_meta( $budget_id, 'pn_cm_budget_tax_rate', true ) );
+    $discount_rate = floatval( get_post_meta( $budget_id, 'pn_cm_budget_discount_rate', true ) );
 
     $discount_amount = $subtotal * $discount_rate / 100;
-    $tax_amount = ($subtotal - $discount_amount) * $tax_rate / 100;
-    $total = $subtotal - $discount_amount + $tax_amount;
+    $tax_amount      = ( $subtotal - $discount_amount ) * $tax_rate / 100;
+    $total           = $subtotal - $discount_amount + $tax_amount;
 
-    update_post_meta($budget_id, 'pn_cm_budget_subtotal', round($subtotal, 2));
-    update_post_meta($budget_id, 'pn_cm_budget_discount_amount', round($discount_amount, 2));
-    update_post_meta($budget_id, 'pn_cm_budget_tax_amount', round($tax_amount, 2));
-    update_post_meta($budget_id, 'pn_cm_budget_total', round($total, 2));
+    update_post_meta( $budget_id, 'pn_cm_budget_subtotal', round( $subtotal, 2 ) );
+    update_post_meta( $budget_id, 'pn_cm_budget_discount_amount', round( $discount_amount, 2 ) );
+    update_post_meta( $budget_id, 'pn_cm_budget_tax_amount', round( $tax_amount, 2 ) );
+    update_post_meta( $budget_id, 'pn_cm_budget_total', round( $total, 2 ) );
   }
 
   /**
@@ -617,18 +622,38 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
           <tbody class="pn-customers-manager-budget-items-body">
             <?php if (!empty($items)): ?>
               <?php foreach ($items as $item): ?>
-                <?php if ($item->item_type === 'phase'): ?>
-                  <tr class="pn-customers-manager-budget-item-row pn-customers-manager-budget-item-phase" data-item-id="<?php echo esc_attr($item->id); ?>">
+                <?php if ($item['item_type'] === 'phase'): ?>
+                  <tr class="pn-customers-manager-budget-item-row pn-customers-manager-budget-item-phase" data-item-id="<?php echo esc_attr($item['id']); ?>">
                     <td class="pn-customers-manager-budget-col-drag">
                       <i class="material-icons-outlined pn-customers-manager-cursor-grab pn-customers-manager-vertical-align-middle">drag_indicator</i>
-                      <input type="hidden" name="pn_cm_budget_item_id[]" value="<?php echo esc_attr($item->id); ?>" />
+                      <input type="hidden" name="pn_cm_budget_item_id[]" value="<?php echo esc_attr($item['id']); ?>" />
                       <input type="hidden" name="pn_cm_budget_item_type[]" value="phase" />
                       <input type="hidden" name="pn_cm_budget_item_quantity[]" value="0" />
                       <input type="hidden" name="pn_cm_budget_item_unit_price[]" value="0" />
                       <input type="hidden" name="pn_cm_budget_item_is_optional[]" value="0" />
                     </td>
                     <td colspan="6" class="pn-customers-manager-budget-col-description">
-                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-budget-phase-input" value="<?php echo esc_attr($item->description); ?>" />
+                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-budget-phase-input" value="<?php echo esc_attr($item['description']); ?>" />
+                    </td>
+                    <td class="pn-customers-manager-budget-col-actions">
+                      <a href="#" class="pn-customers-manager-budget-item-delete pn-customers-manager-text-decoration-none">
+                        <i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-cursor-pointer">delete</i>
+                      </a>
+                    </td>
+                  </tr>
+                <?php elseif ($item['item_type'] === 'image'): ?>
+                  <tr class="pn-customers-manager-budget-item-row pn-customers-manager-budget-item-image" data-item-id="<?php echo esc_attr($item['id']); ?>">
+                    <td class="pn-customers-manager-budget-col-drag">
+                      <i class="material-icons-outlined pn-customers-manager-cursor-grab pn-customers-manager-vertical-align-middle">drag_indicator</i>
+                      <input type="hidden" name="pn_cm_budget_item_id[]" value="<?php echo esc_attr($item['id']); ?>" />
+                      <input type="hidden" name="pn_cm_budget_item_type[]" value="image" />
+                      <input type="hidden" name="pn_cm_budget_item_quantity[]" value="0" />
+                      <input type="hidden" name="pn_cm_budget_item_unit_price[]" value="0" />
+                      <input type="hidden" name="pn_cm_budget_item_is_optional[]" value="0" />
+                    </td>
+                    <td colspan="6" class="pn-customers-manager-budget-col-description">
+                      <input type="hidden" name="pn_cm_budget_item_description[]" value="<?php echo esc_attr($item['description']); ?>" />
+                      <img src="<?php echo esc_url($item['description']); ?>" class="pn-customers-manager-budget-image-preview" alt="" />
                     </td>
                     <td class="pn-customers-manager-budget-col-actions">
                       <a href="#" class="pn-customers-manager-budget-item-delete pn-customers-manager-text-decoration-none">
@@ -637,32 +662,32 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
                     </td>
                   </tr>
                 <?php else: ?>
-                  <tr class="pn-customers-manager-budget-item-row" data-item-id="<?php echo esc_attr($item->id); ?>">
+                  <tr class="pn-customers-manager-budget-item-row" data-item-id="<?php echo esc_attr($item['id']); ?>">
                     <td class="pn-customers-manager-budget-col-drag">
                       <i class="material-icons-outlined pn-customers-manager-cursor-grab pn-customers-manager-vertical-align-middle">drag_indicator</i>
-                      <input type="hidden" name="pn_cm_budget_item_id[]" value="<?php echo esc_attr($item->id); ?>" />
+                      <input type="hidden" name="pn_cm_budget_item_id[]" value="<?php echo esc_attr($item['id']); ?>" />
                     </td>
                     <td class="pn-customers-manager-budget-col-description">
-                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent" value="<?php echo esc_attr($item->description); ?>" />
+                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent" value="<?php echo esc_attr($item['description']); ?>" />
                     </td>
                     <td class="pn-customers-manager-budget-col-type">
                       <select name="pn_cm_budget_item_type[]" class="pn-customers-manager-select">
-                        <option value="hours" <?php selected($item->item_type, 'hours'); ?>><?php esc_html_e('Hours', 'pn-customers-manager'); ?></option>
-                        <option value="fixed" <?php selected($item->item_type, 'fixed'); ?>><?php esc_html_e('Fixed', 'pn-customers-manager'); ?></option>
+                        <option value="hours" <?php selected($item['item_type'], 'hours'); ?>><?php esc_html_e('Hours', 'pn-customers-manager'); ?></option>
+                        <option value="fixed" <?php selected($item['item_type'], 'fixed'); ?>><?php esc_html_e('Fixed', 'pn-customers-manager'); ?></option>
                       </select>
                     </td>
                     <td class="pn-customers-manager-budget-col-quantity">
-                      <input type="number" name="pn_cm_budget_item_quantity[]" class="pn-customers-manager-input pn-customers-manager-budget-item-quantity" value="<?php echo esc_attr($item->quantity); ?>" step="0.01" min="0" />
+                      <input type="number" name="pn_cm_budget_item_quantity[]" class="pn-customers-manager-input pn-customers-manager-budget-item-quantity" value="<?php echo esc_attr($item['quantity']); ?>" step="0.01" min="0" />
                     </td>
                     <td class="pn-customers-manager-budget-col-price">
-                      <input type="number" name="pn_cm_budget_item_unit_price[]" class="pn-customers-manager-input pn-customers-manager-budget-item-unit-price" value="<?php echo esc_attr($item->unit_price); ?>" step="0.01" min="0" />
+                      <input type="number" name="pn_cm_budget_item_unit_price[]" class="pn-customers-manager-input pn-customers-manager-budget-item-unit-price" value="<?php echo esc_attr($item['unit_price']); ?>" step="0.01" min="0" />
                     </td>
                     <td class="pn-customers-manager-budget-col-total">
-                      <span class="pn-customers-manager-budget-item-line-total"><?php echo esc_html(self::format_currency(floatval($item->quantity) * floatval($item->unit_price))); ?></span>
+                      <span class="pn-customers-manager-budget-item-line-total"><?php echo esc_html(self::format_currency(floatval($item['quantity']) * floatval($item['unit_price']))); ?></span>
                     </td>
                     <td class="pn-customers-manager-budget-col-optional">
-                      <input type="hidden" name="pn_cm_budget_item_is_optional[]" value="<?php echo esc_attr($item->is_optional); ?>" />
-                      <input type="checkbox" class="pn-customers-manager-budget-item-optional-toggle" <?php checked($item->is_optional, 1); ?> />
+                      <input type="hidden" name="pn_cm_budget_item_is_optional[]" value="<?php echo esc_attr($item['is_optional']); ?>" />
+                      <input type="checkbox" class="pn-customers-manager-budget-item-optional-toggle" <?php checked($item['is_optional'], 1); ?> />
                     </td>
                     <td class="pn-customers-manager-budget-col-actions">
                       <a href="#" class="pn-customers-manager-budget-item-delete pn-customers-manager-text-decoration-none">
@@ -682,6 +707,9 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
           </a>
           <a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-item">
             <?php esc_html_e('Add item', 'pn-customers-manager'); ?>
+          </a>
+          <a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-image">
+            <?php esc_html_e('Add image', 'pn-customers-manager'); ?>
           </a>
         </div>
       </div>
@@ -776,21 +804,153 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
   }
 
   /**
-   * Get budget items from database.
+   * Get budget items from post meta.
    *
    * @param int $budget_id
-   * @return array
+   * @return array Array of item arrays sorted by sort_order.
    */
-  public static function get_budget_items($budget_id) {
-    global $wpdb;
-    $table = $wpdb->prefix . 'pn_cm_budget_items';
+  public static function get_budget_items( $budget_id ) {
+    $items = get_post_meta( $budget_id, 'pn_cm_budget_items', true );
+    if ( empty( $items ) || ! is_array( $items ) ) {
+      return [];
+    }
+    usort( $items, function ( $a, $b ) {
+      return intval( $a['sort_order'] ) - intval( $b['sort_order'] );
+    } );
+    return $items;
+  }
 
-    return $wpdb->get_results(
-      $wpdb->prepare(
-        "SELECT * FROM {$table} WHERE budget_id = %d ORDER BY sort_order ASC",
-        $budget_id
-      )
-    );
+  /**
+   * Save budget items to post meta.
+   *
+   * @param int   $budget_id
+   * @param array $items
+   */
+  public static function save_budget_items( $budget_id, $items ) {
+    // Auto-recalculate each item total.
+    foreach ( $items as &$item ) {
+      if ( isset( $item['item_type'] ) && $item['item_type'] === 'phase' ) {
+        $item['total'] = 0;
+      } else {
+        $item['total'] = round( floatval( $item['quantity'] ) * floatval( $item['unit_price'] ), 2 );
+      }
+    }
+    unset( $item );
+    update_post_meta( $budget_id, 'pn_cm_budget_items', $items );
+  }
+
+  /**
+   * Get a single budget item by its ID.
+   *
+   * @param int $budget_id
+   * @param int $item_id
+   * @return array|null
+   */
+  public static function get_budget_item( $budget_id, $item_id ) {
+    $items = self::get_budget_items( $budget_id );
+    foreach ( $items as $item ) {
+      if ( intval( $item['id'] ) === intval( $item_id ) ) {
+        return $item;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get and increment next item ID counter.
+   *
+   * @param int $budget_id
+   * @return int
+   */
+  public static function get_next_item_id( $budget_id ) {
+    $next = intval( get_post_meta( $budget_id, 'pn_cm_budget_next_item_id', true ) );
+    if ( $next < 1 ) {
+      $next = 1;
+    }
+    update_post_meta( $budget_id, 'pn_cm_budget_next_item_id', $next + 1 );
+    return $next;
+  }
+
+  /**
+   * Add a new item to a budget.
+   *
+   * @param int   $budget_id
+   * @param array $data Item data (item_type, description, quantity, unit_price, is_optional, is_selected).
+   * @return int The new item ID.
+   */
+  public static function add_budget_item( $budget_id, $data ) {
+    $items    = self::get_budget_items( $budget_id );
+    $new_id   = self::get_next_item_id( $budget_id );
+    $max_sort = 0;
+    foreach ( $items as $item ) {
+      if ( intval( $item['sort_order'] ) > $max_sort ) {
+        $max_sort = intval( $item['sort_order'] );
+      }
+    }
+
+    $new_item = [
+      'id'          => $new_id,
+      'item_type'   => isset( $data['item_type'] ) ? $data['item_type'] : 'fixed',
+      'description' => isset( $data['description'] ) ? $data['description'] : '',
+      'quantity'    => isset( $data['quantity'] ) ? floatval( $data['quantity'] ) : 1,
+      'unit_price'  => isset( $data['unit_price'] ) ? floatval( $data['unit_price'] ) : 0,
+      'total'       => 0,
+      'is_optional' => isset( $data['is_optional'] ) ? intval( $data['is_optional'] ) : 0,
+      'is_selected' => isset( $data['is_selected'] ) ? intval( $data['is_selected'] ) : 1,
+      'sort_order'  => isset( $data['sort_order'] ) ? intval( $data['sort_order'] ) : $max_sort + 1,
+    ];
+    $new_item['total'] = round( $new_item['quantity'] * $new_item['unit_price'], 2 );
+
+    $items[] = $new_item;
+    self::save_budget_items( $budget_id, $items );
+
+    return $new_id;
+  }
+
+  /**
+   * Update an existing budget item.
+   *
+   * @param int   $budget_id
+   * @param int   $item_id
+   * @param array $data Fields to update.
+   * @return bool
+   */
+  public static function update_budget_item( $budget_id, $item_id, $data ) {
+    $items = self::get_budget_items( $budget_id );
+    $found = false;
+    foreach ( $items as &$item ) {
+      if ( intval( $item['id'] ) === intval( $item_id ) ) {
+        foreach ( $data as $key => $value ) {
+          $item[ $key ] = $value;
+        }
+        $found = true;
+        break;
+      }
+    }
+    unset( $item );
+    if ( $found ) {
+      self::save_budget_items( $budget_id, $items );
+    }
+    return $found;
+  }
+
+  /**
+   * Delete a budget item.
+   *
+   * @param int $budget_id
+   * @param int $item_id
+   * @return bool
+   */
+  public static function delete_budget_item( $budget_id, $item_id ) {
+    $items    = self::get_budget_items( $budget_id );
+    $filtered = array_values( array_filter( $items, function ( $item ) use ( $item_id ) {
+      return intval( $item['id'] ) !== intval( $item_id );
+    } ) );
+    if ( count( $filtered ) < count( $items ) ) {
+      self::save_budget_items( $budget_id, $filtered );
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -971,13 +1131,15 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
           'budgetDuplicated' => esc_html__('Budget duplicated successfully.', 'pn-customers-manager'),
           'noDescription' => esc_html__('Please enter a description.', 'pn-customers-manager'),
           'newPhase' => esc_html__('New phase', 'pn-customers-manager'),
+          'confirmGenerateInvoice' => esc_html__('Are you sure you want to generate an invoice from this budget?', 'pn-customers-manager'),
+          'invoiceGenerated' => esc_html__('Invoice generated successfully.', 'pn-customers-manager'),
         ],
       ]);
     }
 
     ob_start();
     ?>
-      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_budget-list pn-customers-manager-mb-50 pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto">
+      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_budget-list pn-customers-manager-mb-50 pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mb-100">
         <div class="pn-customers-manager-cpt-search-container pn-customers-manager-mb-20 pn-customers-manager-text-align-right">
           <div class="pn-customers-manager-cpt-search-wrapper">
             <input type="text" class="pn-customers-manager-cpt-search-input pn-customers-manager-input pn-customers-manager-display-none" placeholder="<?php esc_attr_e('Filter...', 'pn-customers-manager'); ?>" />
@@ -1064,6 +1226,8 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
             $org_name = !empty($org_id) ? get_the_title($org_id) : '';
             $accepted_at = get_post_meta($budget_id, 'pn_cm_budget_accepted_at', true);
             $rejected_at = get_post_meta($budget_id, 'pn_cm_budget_rejected_at', true);
+            $budget_invoice_ids = get_post_meta($budget_id, 'pn_cm_budget_invoice_ids', true);
+            $has_invoices = is_array($budget_invoice_ids) && !empty($budget_invoice_ids);
           ?>
             <li class="pn-customers-manager-budget pn-customers-manager-pn_cm_budget-list-item pn-customers-manager-mb-10" data-pn_cm_budget-id="<?php echo esc_attr($budget_id); ?>">
               <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent">
@@ -1102,6 +1266,13 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
                           /* translators: %s: date */
                           __('Rejected %s', 'pn-customers-manager'),
                           date_i18n(get_option('date_format'), strtotime($rejected_at))
+                        )); ?>
+                      <?php endif; ?>
+                      <?php if ($has_invoices): ?>
+                        &middot; <i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-font-size-14">receipt_long</i> <?php echo esc_html(sprintf(
+                          /* translators: %d: number of invoices */
+                          _n('%d invoice', '%d invoices', count($budget_invoice_ids), 'pn-customers-manager'),
+                          count($budget_invoice_ids)
                         )); ?>
                       <?php endif; ?>
                     </small>
@@ -1180,6 +1351,18 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
                         </a>
                       </li>
                       <li>
+                        <a href="#" class="pn-customers-manager-pn_cm_budget-generate-invoice pn-customers-manager-text-decoration-none" data-pn_cm_budget-id="<?php echo esc_attr($budget_id); ?>">
+                          <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent">
+                            <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-70-percent">
+                              <p><?php esc_html_e('Generate Invoice', 'pn-customers-manager'); ?></p>
+                            </div>
+                            <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-20-percent pn-customers-manager-text-align-right">
+                              <i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-font-size-30 pn-customers-manager-ml-30">receipt_long</i>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                      <li>
                         <a href="#" class="pn-customers-manager-popup-open" data-pn-customers-manager-popup-id="pn-customers-manager-popup-pn_cm_budget-remove">
                           <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent">
                             <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-70-percent">
@@ -1247,9 +1430,31 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
             <?php echo wp_kses(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_display_wrapper($pn_customers_manager_field, 'post', $budget_id), PN_CUSTOMERS_MANAGER_KSES); ?>
           <?php endforeach ?>
 
-          <div class="pn-customers-manager-text-align-right pn-customers-manager-budget" data-pn_cm_budget-id="<?php echo esc_attr($budget_id); ?>">
+          <div class="pn-customers-manager-text-align-right pn-customers-manager-budget pn-customers-manager-mt-20" data-pn_cm_budget-id="<?php echo esc_attr($budget_id); ?>">
             <a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-popup-open-ajax" data-pn-customers-manager-popup-id="pn-customers-manager-popup-pn_cm_budget-edit" data-pn-customers-manager-ajax-type="pn_cm_budget_edit"><?php esc_html_e('Edit Budget', 'pn-customers-manager'); ?></a>
+            <a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-pn_cm_budget-generate-invoice" data-pn_cm_budget-id="<?php echo esc_attr($budget_id); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-font-size-18">receipt_long</i> <?php esc_html_e('Generate Invoice', 'pn-customers-manager'); ?></a>
           </div>
+
+          <?php
+          // Linked invoices section
+          $linked_invoice_ids = get_post_meta($budget_id, 'pn_cm_budget_invoice_ids', true);
+          if (is_array($linked_invoice_ids) && !empty($linked_invoice_ids)): ?>
+            <div class="pn-customers-manager-linked-documents pn-customers-manager-mt-20 pn-customers-manager-pt-20" style="border-top: 1px solid #eee;">
+              <p class="pn-customers-manager-mb-10"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-font-size-18">receipt_long</i> <strong><?php esc_html_e('Linked Invoices', 'pn-customers-manager'); ?></strong></p>
+              <?php foreach ($linked_invoice_ids as $linked_invoice_id):
+                if (get_post_status($linked_invoice_id) === false) continue;
+                $inv_number = get_post_meta($linked_invoice_id, 'pn_cm_invoice_number', true);
+                $inv_status = get_post_meta($linked_invoice_id, 'pn_cm_invoice_status', true);
+              ?>
+                <div class="pn-customers-manager-mb-5">
+                  <a href="#" class="pn-customers-manager-popup-open-ajax pn-customers-manager-text-decoration-none" data-pn-customers-manager-popup-id="pn-customers-manager-popup-pn_cm_invoice-view" data-pn-customers-manager-ajax-type="pn_cm_invoice_view" data-pn_cm_invoice-id="<?php echo esc_attr($linked_invoice_id); ?>">
+                    <?php echo esc_html($inv_number); ?> &mdash; <?php echo esc_html(get_the_title($linked_invoice_id)); ?>
+                    <?php echo wp_kses(PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_status_badge($inv_status), PN_CUSTOMERS_MANAGER_KSES); ?>
+                  </a>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
     <?php
@@ -1445,80 +1650,78 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
    * @param int $budget_id
    * @return string
    */
-  public static function pn_cm_budget_render_item_edit_form($item_id, $budget_id) {
-    global $wpdb;
-    $table = $wpdb->prefix . 'pn_cm_budget_items';
-    $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d AND budget_id = %d", $item_id, $budget_id));
+  public static function pn_cm_budget_render_item_edit_form( $item_id, $budget_id ) {
+    $item = self::get_budget_item( $budget_id, $item_id );
 
-    if (!$item) {
-      return '<p>' . esc_html__('Item not found.', 'pn-customers-manager') . '</p>';
+    if ( ! $item ) {
+      return '<p>' . esc_html__( 'Item not found.', 'pn-customers-manager' ) . '</p>';
     }
 
-    $is_phase = ($item->item_type === 'phase');
+    $is_phase = ( $item['item_type'] === 'phase' );
 
     $fields = [];
 
     $fields['pn_cm_item_description'] = [
-      'id' => 'pn_cm_item_description',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'text',
+      'id'       => 'pn_cm_item_description',
+      'class'    => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input'    => 'input',
+      'type'     => 'text',
       'required' => true,
-      'value' => $item->description,
-      'label' => __('Description', 'pn-customers-manager'),
+      'value'    => $item['description'],
+      'label'    => __( 'Description', 'pn-customers-manager' ),
     ];
 
-    if (!$is_phase) {
+    if ( ! $is_phase ) {
       $fields['pn_cm_item_type'] = [
-        'id' => 'pn_cm_item_type',
-        'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
-        'input' => 'select',
-        'label' => __('Type', 'pn-customers-manager'),
-        'value' => $item->item_type,
+        'id'      => 'pn_cm_item_type',
+        'class'   => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+        'input'   => 'select',
+        'label'   => __( 'Type', 'pn-customers-manager' ),
+        'value'   => $item['item_type'],
         'options' => [
-          'hours' => esc_html__('Hours', 'pn-customers-manager'),
-          'fixed' => esc_html__('Fixed', 'pn-customers-manager'),
+          'hours' => esc_html__( 'Hours', 'pn-customers-manager' ),
+          'fixed' => esc_html__( 'Fixed', 'pn-customers-manager' ),
         ],
       ];
 
       $fields['pn_cm_item_quantity'] = [
-        'id' => 'pn_cm_item_quantity',
+        'id'    => 'pn_cm_item_quantity',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
-        'type' => 'number',
-        'label' => __('Quantity', 'pn-customers-manager'),
-        'value' => $item->quantity,
-        'step' => '0.01',
-        'min' => 0,
+        'type'  => 'number',
+        'label' => __( 'Quantity', 'pn-customers-manager' ),
+        'value' => $item['quantity'],
+        'step'  => '0.01',
+        'min'   => 0,
       ];
 
       $fields['pn_cm_item_unit_price'] = [
-        'id' => 'pn_cm_item_unit_price',
+        'id'    => 'pn_cm_item_unit_price',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
-        'type' => 'number',
-        'label' => __('Unit price', 'pn-customers-manager'),
-        'value' => $item->unit_price,
-        'step' => '0.01',
-        'min' => 0,
+        'type'  => 'number',
+        'label' => __( 'Unit price', 'pn-customers-manager' ),
+        'value' => $item['unit_price'],
+        'step'  => '0.01',
+        'min'   => 0,
       ];
 
       $fields['pn_cm_item_is_optional'] = [
-        'id' => 'pn_cm_item_is_optional',
+        'id'    => 'pn_cm_item_is_optional',
         'class' => 'pn-customers-manager-input',
         'input' => 'input',
-        'type' => 'checkbox',
-        'label' => __('Optional item', 'pn-customers-manager'),
-        'value' => $item->is_optional ? 'on' : '',
+        'type'  => 'checkbox',
+        'label' => __( 'Optional item', 'pn-customers-manager' ),
+        'value' => ! empty( $item['is_optional'] ) ? 'on' : '',
       ];
     }
 
     ob_start();
     ?>
     <div class="pn-cm-budget-edit-item-popup pn-customers-manager-p-30"
-         data-item-id="<?php echo esc_attr($item_id); ?>"
-         data-budget-id="<?php echo esc_attr($budget_id); ?>"
-         data-item-type="<?php echo esc_attr($item->item_type); ?>">
+         data-item-id="<?php echo esc_attr( $item_id ); ?>"
+         data-budget-id="<?php echo esc_attr( $budget_id ); ?>"
+         data-item-type="<?php echo esc_attr( $item['item_type'] ); ?>">
       <h4 class="pn-customers-manager-mb-30">
         <?php echo $is_phase ? esc_html__('Edit phase', 'pn-customers-manager') : esc_html__('Edit item', 'pn-customers-manager'); ?>
       </h4>
@@ -1527,6 +1730,86 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
       <?php endforeach; ?>
       <div class="pn-customers-manager-text-align-right pn-customers-manager-mt-15">
         <a href="#" class="pn-customers-manager-btn pn-cm-budget-popup-save"><?php esc_html_e('Save', 'pn-customers-manager'); ?></a>
+      </div>
+    </div>
+    <?php
+    return ob_get_clean();
+  }
+
+  /**
+   * Render the "add item" form using the Forms class.
+   */
+  public static function pn_cm_budget_render_item_add_form($budget_id) {
+    $default_rate = get_option('pn_customers_manager_budget_default_hourly_rate', '0');
+
+    $fields = [];
+
+    $fields['pn_cm_item_type'] = [
+      'id' => 'pn_cm_item_type',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'label' => __('Type', 'pn-customers-manager'),
+      'value' => 'hours',
+      'options' => [
+        'hours' => esc_html__('Hours', 'pn-customers-manager'),
+        'fixed' => esc_html__('Fixed', 'pn-customers-manager'),
+      ],
+    ];
+
+    $fields['pn_cm_item_description'] = [
+      'id' => 'pn_cm_item_description',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'type' => 'text',
+      'required' => true,
+      'value' => '',
+      'label' => __('Description', 'pn-customers-manager'),
+    ];
+
+    $fields['pn_cm_item_quantity'] = [
+      'id' => 'pn_cm_item_quantity',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'label' => __('Quantity', 'pn-customers-manager'),
+      'value' => '1',
+      'step' => '0.01',
+      'min' => 0,
+    ];
+
+    $fields['pn_cm_item_unit_price'] = [
+      'id' => 'pn_cm_item_unit_price',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'label' => __('Unit price', 'pn-customers-manager'),
+      'value' => $default_rate,
+      'step' => '0.01',
+      'min' => 0,
+    ];
+
+    $fields['pn_cm_item_is_optional'] = [
+      'id' => 'pn_cm_item_is_optional',
+      'class' => 'pn-customers-manager-input',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Optional item', 'pn-customers-manager'),
+      'value' => '',
+    ];
+
+    ob_start();
+    ?>
+    <div class="pn-cm-budget-edit-item-popup pn-customers-manager-p-30"
+         data-budget-id="<?php echo esc_attr($budget_id); ?>"
+         data-form-mode="add">
+      <h4 class="pn-customers-manager-mb-30">
+        <?php esc_html_e('Add item', 'pn-customers-manager'); ?>
+      </h4>
+      <?php foreach ($fields as $field): ?>
+        <?php echo wp_kses(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($field, 'post', 0), PN_CUSTOMERS_MANAGER_KSES); ?>
+      <?php endforeach; ?>
+      <div class="pn-customers-manager-text-align-right pn-customers-manager-mt-15">
+        <a href="#" class="pn-customers-manager-btn pn-cm-budget-popup-add-save"><?php esc_html_e('Add item', 'pn-customers-manager'); ?></a>
       </div>
     </div>
     <?php

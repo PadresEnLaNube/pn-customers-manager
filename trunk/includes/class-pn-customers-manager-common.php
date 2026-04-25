@@ -51,6 +51,10 @@ class PN_CUSTOMERS_MANAGER_Common
 	 */
 	public function pn_customers_manager_enqueue_styles()
 	{
+		if ( ! is_admin() && ! self::pn_customers_manager_is_crm_page() ) {
+			return;
+		}
+
 		if (!wp_style_is('wph-material-icons-outlined', 'enqueued')) {
 			wp_enqueue_style('wph-material-icons-outlined', PN_CUSTOMERS_MANAGER_URL . 'assets/css/material-icons-outlined.min.css', [], $this->version, 'all');
 		}
@@ -153,6 +157,10 @@ class PN_CUSTOMERS_MANAGER_Common
 	 */
 	public function pn_customers_manager_enqueue_scripts()
 	{
+		if ( ! is_admin() && ! self::pn_customers_manager_is_crm_page() ) {
+			return;
+		}
+
 		if (!wp_script_is('jquery-ui-sortable', 'enqueued')) {
 			wp_enqueue_script('jquery-ui-sortable');
 		}
@@ -334,6 +342,79 @@ class PN_CUSTOMERS_MANAGER_Common
 
 		// Initialize selectors
 		PN_CUSTOMERS_MANAGER_Selector::instance();
+	}
+
+	/**
+	 * Detect whether the current frontend page uses any CRM feature.
+	 *
+	 * @since 1.1.30
+	 * @return bool
+	 */
+	public static function pn_customers_manager_is_crm_page() {
+		static $result = null;
+
+		if ( null !== $result ) {
+			return $result;
+		}
+
+		// Token-based budget/invoice public pages.
+		if ( get_query_var( 'pn_cm_budget_token' ) || get_query_var( 'pn_cm_invoice_token' ) ) {
+			$result = true;
+			/** @since 1.1.30 */
+			return apply_filters( 'pn_customers_manager_is_crm_page', $result );
+		}
+
+		$post = get_queried_object();
+		if ( ! ( $post instanceof WP_Post ) ) {
+			$result = false;
+			return apply_filters( 'pn_customers_manager_is_crm_page', $result );
+		}
+
+		$crm_shortcodes = array(
+			'pn-customers-manager-funnel-list',
+			'pn-customers-manager-organization-list',
+			'pn-customers-manager-budget-list',
+			'pn-customers-manager-invoice-list',
+			'pn-customers-manager-funnel',
+			'pn-customers-manager-test',
+			'pn-customers-manager-call-to-action',
+			'pn-customers-manager-client-form',
+			'pn-customers-manager-contact-form',
+			'pn-customers-manager-button',
+			'pn-customers-manager-whatsapp-ai',
+			'pn-customers-manager-instagram-ai',
+			'pn-customers-manager-referrals',
+			'pn-customers-manager-commercial-panel',
+			'pn-customers-manager-email-campaigns',
+		);
+
+		$crm_blocks = array(
+			'pn-customers-manager/organization-list',
+			'pn-customers-manager/commercial-panel',
+			'pn-customers-manager/email-campaigns',
+			'pn-customers-manager/client-form',
+			'pn-customers-manager/budget-list',
+			'pn-customers-manager/button',
+			'pn-customers-manager/contact-form',
+			'pn-customers-manager/referrals',
+		);
+
+		foreach ( $crm_shortcodes as $shortcode ) {
+			if ( has_shortcode( $post->post_content, $shortcode ) ) {
+				$result = true;
+				return apply_filters( 'pn_customers_manager_is_crm_page', $result );
+			}
+		}
+
+		foreach ( $crm_blocks as $block ) {
+			if ( has_block( $block, $post ) ) {
+				$result = true;
+				return apply_filters( 'pn_customers_manager_is_crm_page', $result );
+			}
+		}
+
+		$result = false;
+		return apply_filters( 'pn_customers_manager_is_crm_page', $result );
 	}
 
 	public function pn_customers_manager_body_classes($classes)

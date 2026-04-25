@@ -582,23 +582,60 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
             exit;
           }
 
-          global $wpdb;
-          $table = $wpdb->prefix . 'pn_cm_budget_items';
-
           // Verify item belongs to this budget and is optional
-          $item = $wpdb->get_row($wpdb->prepare(
-            "SELECT id, is_optional FROM {$table} WHERE id = %d AND budget_id = %d",
-            $item_id, $budget_id
-          ));
+          $item = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_item($budget_id, $item_id);
 
-          if (!$item || !$item->is_optional) {
+          if (!$item || empty($item['is_optional'])) {
             echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Item not found or not optional.', 'pn-customers-manager')]]);
             exit;
           }
 
-          $wpdb->update($table, ['is_selected' => $is_selected ? 1 : 0], ['id' => $item_id], ['%d'], ['%d']);
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($budget_id, $item_id, ['is_selected' => $is_selected ? 1 : 0]);
 
           // Recalculate totals
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($budget_id);
+
+          echo wp_json_encode([
+            'success' => true,
+            'data' => [
+              'subtotal' => get_post_meta($budget_id, 'pn_cm_budget_subtotal', true),
+              'discount' => get_post_meta($budget_id, 'pn_cm_budget_discount_amount', true),
+              'tax'      => get_post_meta($budget_id, 'pn_cm_budget_tax_amount', true),
+              'total'    => get_post_meta($budget_id, 'pn_cm_budget_total', true),
+            ],
+          ]);
+          exit;
+
+        case 'pn_cm_budget_toggle_phase_items':
+          $budget_id    = isset($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $budget_token = isset($_POST['budget_token']) ? sanitize_text_field(wp_unslash($_POST['budget_token'])) : '';
+          $item_ids     = isset($_POST['item_ids']) ? array_map('intval', (array) $_POST['item_ids']) : [];
+          $is_selected  = isset($_POST['is_selected']) ? intval($_POST['is_selected']) : 0;
+
+          if (empty($budget_id) || empty($budget_token) || empty($item_ids)) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid request.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          // Validate token.
+          $stored_token = get_post_meta($budget_id, 'pn_cm_budget_token', true);
+          if (empty($stored_token) || $stored_token !== $budget_token) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid token.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          // Only allow toggling when status is "sent".
+          $status = get_post_meta($budget_id, 'pn_cm_budget_status', true);
+          if ($status !== 'sent') {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('This budget cannot be modified.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          foreach ($item_ids as $iid) {
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($budget_id, $iid, ['is_selected' => $is_selected ? 1 : 0]);
+          }
+
+          // Recalculate totals.
           PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($budget_id);
 
           echo wp_json_encode([
@@ -636,6 +673,9 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           update_post_meta($budget_id, 'pn_cm_budget_status', 'accepted');
           update_post_meta($budget_id, 'pn_cm_budget_accepted_at', current_time('mysql'));
 
+          // --- Send acceptance notification emails ---
+          $this->pn_cm_budget_send_acceptance_email($budget_id);
+
           echo wp_json_encode(['success' => true]);
           exit;
 
@@ -668,6 +708,151 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
       }
 
       echo wp_json_encode(['error_key' => '', ]);exit;
+    }
+  }
+
+  /**
+   * Send acceptance notification emails to client and admin.
+   *
+   * @param int $budget_id
+   */
+  private function pn_cm_budget_send_acceptance_email( $budget_id ) {
+    global $wpdb;
+
+    // Budget meta.
+    $budget_number  = get_post_meta( $budget_id, 'pn_cm_budget_number', true );
+    $accepted_at    = get_post_meta( $budget_id, 'pn_cm_budget_accepted_at', true );
+    $subtotal       = floatval( get_post_meta( $budget_id, 'pn_cm_budget_subtotal', true ) );
+    $discount_amount = floatval( get_post_meta( $budget_id, 'pn_cm_budget_discount_amount', true ) );
+    $tax_amount     = floatval( get_post_meta( $budget_id, 'pn_cm_budget_tax_amount', true ) );
+    $total          = floatval( get_post_meta( $budget_id, 'pn_cm_budget_total', true ) );
+
+    // Organization / client data.
+    $org_id    = get_post_meta( $budget_id, 'pn_cm_budget_organization_id', true );
+    $org_name  = ! empty( $org_id ) ? get_the_title( $org_id ) : '';
+    $org_email = ! empty( $org_id ) ? get_post_meta( $org_id, 'pn_cm_organization_email', true ) : '';
+
+    // Company data.
+    $company_name = get_option( 'pn_customers_manager_budget_company_name', '' );
+
+    // Admin email.
+    $admin_email = get_option( 'admin_email' );
+
+    // Fetch budget items from post meta.
+    $items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items( $budget_id );
+
+    // Build items HTML table.
+    $items_html = '<table style="width:100%;border-collapse:collapse;margin:16px 0;">';
+    $items_html .= '<thead><tr style="background:#f5f5f5;">';
+    $items_html .= '<th style="text-align:left;padding:8px;border:1px solid #ddd;">' . esc_html__( 'Description', 'pn-customers-manager' ) . '</th>';
+    $items_html .= '<th style="text-align:center;padding:8px;border:1px solid #ddd;">' . esc_html__( 'Qty', 'pn-customers-manager' ) . '</th>';
+    $items_html .= '<th style="text-align:right;padding:8px;border:1px solid #ddd;">' . esc_html__( 'Unit price', 'pn-customers-manager' ) . '</th>';
+    $items_html .= '<th style="text-align:right;padding:8px;border:1px solid #ddd;">' . esc_html__( 'Total', 'pn-customers-manager' ) . '</th>';
+    $items_html .= '<th style="text-align:center;padding:8px;border:1px solid #ddd;">' . esc_html__( 'Status', 'pn-customers-manager' ) . '</th>';
+    $items_html .= '</tr></thead><tbody>';
+
+    $current_phase = '';
+    foreach ( $items as $item ) {
+      if ( 'phase' === $item['item_type'] ) {
+        $current_phase = $item['description'];
+        $items_html .= '<tr style="background:#eef2f7;">';
+        $items_html .= '<td colspan="5" style="padding:8px;border:1px solid #ddd;font-weight:bold;">' . esc_html( $item['description'] ) . '</td>';
+        $items_html .= '</tr>';
+        continue;
+      }
+
+      $line_total  = floatval( $item['quantity'] ) * floatval( $item['unit_price'] );
+      $is_selected = intval( $item['is_selected'] );
+      $is_optional = intval( $item['is_optional'] );
+
+      $status_label = '';
+      if ( $is_optional ) {
+        $status_label = $is_selected
+          ? '<span style="color:#2e7d32;">' . esc_html__( 'Approved', 'pn-customers-manager' ) . '</span>'
+          : '<span style="color:#c62828;">' . esc_html__( 'Excluded', 'pn-customers-manager' ) . '</span>';
+      } else {
+        $status_label = '<span style="color:#555;">' . esc_html__( 'Included', 'pn-customers-manager' ) . '</span>';
+      }
+
+      $row_style = $is_optional && ! $is_selected ? 'color:#999;text-decoration:line-through;' : '';
+
+      $items_html .= '<tr style="' . $row_style . '">';
+      $items_html .= '<td style="padding:8px;border:1px solid #ddd;">' . esc_html( $item['description'] ) . '</td>';
+      $items_html .= '<td style="text-align:center;padding:8px;border:1px solid #ddd;">' . esc_html( number_format( floatval( $item['quantity'] ), 2 ) ) . '</td>';
+      $items_html .= '<td style="text-align:right;padding:8px;border:1px solid #ddd;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( floatval( $item['unit_price'] ) ) ) . '</td>';
+      $items_html .= '<td style="text-align:right;padding:8px;border:1px solid #ddd;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $line_total ) ) . '</td>';
+      $items_html .= '<td style="text-align:center;padding:8px;border:1px solid #ddd;">' . $status_label . '</td>';
+      $items_html .= '</tr>';
+    }
+
+    $items_html .= '</tbody></table>';
+
+    // Totals summary.
+    $totals_html = '<table style="width:auto;margin-left:auto;border-collapse:collapse;margin-top:8px;">';
+    $totals_html .= '<tr><td style="padding:4px 16px;text-align:right;">' . esc_html__( 'Subtotal', 'pn-customers-manager' ) . '</td>';
+    $totals_html .= '<td style="padding:4px 16px;text-align:right;font-weight:bold;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $subtotal ) ) . '</td></tr>';
+    if ( $discount_amount > 0 ) {
+      $totals_html .= '<tr><td style="padding:4px 16px;text-align:right;">' . esc_html__( 'Discount', 'pn-customers-manager' ) . '</td>';
+      $totals_html .= '<td style="padding:4px 16px;text-align:right;color:#c62828;">-' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $discount_amount ) ) . '</td></tr>';
+    }
+    if ( $tax_amount > 0 ) {
+      $totals_html .= '<tr><td style="padding:4px 16px;text-align:right;">' . esc_html__( 'Tax', 'pn-customers-manager' ) . '</td>';
+      $totals_html .= '<td style="padding:4px 16px;text-align:right;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $tax_amount ) ) . '</td></tr>';
+    }
+    $totals_html .= '<tr style="border-top:2px solid #333;"><td style="padding:8px 16px;text-align:right;font-weight:bold;">' . esc_html__( 'Total', 'pn-customers-manager' ) . '</td>';
+    $totals_html .= '<td style="padding:8px 16px;text-align:right;font-weight:bold;font-size:1.1em;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $total ) ) . '</td></tr>';
+    $totals_html .= '</table>';
+
+    // Compose email body.
+    $site_name = get_option( 'blogname', '' );
+    if ( empty( $site_name ) ) {
+      $site_name = wp_parse_url( home_url(), PHP_URL_HOST );
+    }
+
+    $subject = sprintf(
+      '[%s] %s #%s',
+      $site_name,
+      __( 'Budget accepted', 'pn-customers-manager' ),
+      $budget_number
+    );
+
+    $html_body  = '<h2>' . sprintf( esc_html__( 'Budget %s has been accepted', 'pn-customers-manager' ), '#' . esc_html( $budget_number ) ) . '</h2>';
+    if ( ! empty( $org_name ) ) {
+      $html_body .= '<p><strong>' . esc_html__( 'Client', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $org_name ) . '</p>';
+    }
+    $html_body .= '<p><strong>' . esc_html__( 'Accepted on', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $accepted_at ) . '</p>';
+    $html_body .= '<h3>' . esc_html__( 'Items detail', 'pn-customers-manager' ) . '</h3>';
+    $html_body .= $items_html;
+    $html_body .= $totals_html;
+
+    // Recipients: admin + client.
+    $recipients = array();
+    if ( ! empty( $admin_email ) ) {
+      $recipients[] = $admin_email;
+    }
+    if ( ! empty( $org_email ) && $org_email !== $admin_email ) {
+      $recipients[] = $org_email;
+    }
+
+    if ( empty( $recipients ) ) {
+      return;
+    }
+
+    // Send via MailPN if available, otherwise wp_mail.
+    if ( class_exists( 'MAILPN_Mailing' ) ) {
+      $mailing = new MAILPN_Mailing();
+      foreach ( $recipients as $to ) {
+        $mailing->mailpn_sender( [
+          'mailpn_user_to' => $to,
+          'mailpn_subject' => $subject,
+          'mailpn_type'    => 'pn_cm_budget_accepted',
+        ], $html_body );
+      }
+    } else {
+      $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+      foreach ( $recipients as $to ) {
+        wp_mail( $to, $subject, $html_body, $headers );
+      }
     }
   }
 }

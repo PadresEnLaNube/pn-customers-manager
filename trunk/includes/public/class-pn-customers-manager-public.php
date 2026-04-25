@@ -48,6 +48,10 @@ class PN_CUSTOMERS_MANAGER_Public {
 	 * @since    1.0.0
 	 */
 	public function pn_customers_manager_enqueue_styles() {
+		if ( ! PN_CUSTOMERS_MANAGER_Common::pn_customers_manager_is_crm_page() ) {
+			return;
+		}
+
 		wp_enqueue_style($this->plugin_name . '-public', PN_CUSTOMERS_MANAGER_URL . 'assets/css/public/pn-customers-manager-public.css', [], $this->version, 'all');
 	}
 
@@ -57,6 +61,10 @@ class PN_CUSTOMERS_MANAGER_Public {
 	 * @since    1.0.0
 	 */
 	public function pn_customers_manager_enqueue_scripts() {
+		if ( ! PN_CUSTOMERS_MANAGER_Common::pn_customers_manager_is_crm_page() ) {
+			return;
+		}
+
 		wp_enqueue_script($this->plugin_name . '-public', PN_CUSTOMERS_MANAGER_URL . 'assets/js/public/pn-customers-manager-public.js', ['jquery'], $this->version, false);
 	}
 }

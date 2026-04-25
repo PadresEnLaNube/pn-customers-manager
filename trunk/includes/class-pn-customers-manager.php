@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.1.20';
+			$this->pn_customers_manager_version = '1.1.35';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -293,6 +293,16 @@ class PN_CUSTOMERS_MANAGER {
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-post-type-budget.php';
 
+		/**
+		 * The class responsible for create the Invoice custom post type.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-post-type-invoice.php';
+
+		/**
+		 * One-time migration: budget items from custom table to post meta.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-migration.php';
+
 		$this->pn_customers_manager_loader = new PN_CUSTOMERS_MANAGER_Loader();
 	}
 
@@ -335,6 +345,9 @@ class PN_CUSTOMERS_MANAGER {
 
 		$plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_budget_form_save', $plugin_post_type_budget, 'pn_cm_budget_form_save', 999, 5);
+
+		$plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_invoice_form_save', $plugin_post_type_invoice, 'pn_cm_invoice_form_save', 999, 5);
 	}
 
 	/**
@@ -347,6 +360,18 @@ class PN_CUSTOMERS_MANAGER {
 		$plugin_admin = new PN_CUSTOMERS_MANAGER_Admin(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_admin, 'pn_customers_manager_enqueue_styles');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_admin, 'pn_customers_manager_enqueue_scripts');
+
+		// One-time migration: budget items from custom table to post meta.
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_maybe_migrate_budget_items');
+	}
+
+	/**
+	 * Run one-time migration of budget items to post meta if not done yet.
+	 */
+	public function pn_customers_manager_maybe_migrate_budget_items() {
+		if ( get_option( 'pn_cm_budget_items_migrated' ) !== '1' ) {
+			PN_CUSTOMERS_MANAGER_Migration::migrate_budget_items_to_meta();
+		}
 	}
 
 	/**
@@ -364,6 +389,8 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_login', $plugin_user, 'pn_customers_manager_user_wp_login');
 
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_head', $this, 'pn_customers_manager_maybe_noindex_crm_pages', 1);
+
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('rest_pre_dispatch', $this, 'pn_customers_manager_restrict_crm_rest_api', 10, 3);
 	}
 
 	/**
@@ -424,6 +451,37 @@ class PN_CUSTOMERS_MANAGER {
 	}
 
 	/**
+	 * Block unauthenticated REST API requests to CRM custom post types.
+	 *
+	 * @param mixed            $result  Response to replace the requested version with.
+	 * @param WP_REST_Server   $server  Server instance.
+	 * @param WP_REST_Request  $request Request used to generate the response.
+	 * @return mixed|WP_Error
+	 */
+	public function pn_customers_manager_restrict_crm_rest_api( $result, $server, $request ) {
+		if ( null !== $result ) {
+			return $result;
+		}
+
+		$route = $request->get_route();
+
+		foreach ( array_keys( PN_CUSTOMERS_MANAGER_CPTS ) as $cpt_slug ) {
+			if ( preg_match( '#^/wp/v2/' . preg_quote( $cpt_slug, '#' ) . '(/|$)#', $route ) ) {
+				if ( ! current_user_can( 'manage_options' ) ) {
+					return new WP_Error(
+						'rest_forbidden',
+						__( 'You do not have permission to access this resource.', 'pn-customers-manager' ),
+						array( 'status' => 401 )
+					);
+				}
+				break;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Register all Post Types with meta boxes and templates.
 	 *
 	 * @since    1.0.0
@@ -456,6 +514,16 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', $plugin_post_type_budget, 'pn_cm_budget_template_redirect');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('query_vars', $plugin_post_type_budget, 'pn_cm_budget_query_vars');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-budget-list', $plugin_post_type_budget, 'pn_cm_budget_list_wrapper');
+
+		$plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_post_type_invoice, 'pn_cm_invoice_register_post_type');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $plugin_post_type_invoice, 'pn_cm_invoice_add_meta_box');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('save_post_pn_cm_invoice', $plugin_post_type_invoice, 'pn_cm_invoice_save_post', 10, 3);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('single_template', $plugin_post_type_invoice, 'pn_cm_invoice_single_template', 10, 3);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_post_type_invoice, 'pn_cm_invoice_init_rewrite');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', $plugin_post_type_invoice, 'pn_cm_invoice_template_redirect');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('query_vars', $plugin_post_type_invoice, 'pn_cm_invoice_query_vars');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-invoice-list', $plugin_post_type_invoice, 'pn_cm_invoice_list_wrapper');
 	}
 
 	/**

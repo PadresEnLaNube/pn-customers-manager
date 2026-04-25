@@ -288,21 +288,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
     $temperature = self::get_conversation_temperature($conversation);
 
-    $openai_messages = [];
-
-    if (!empty($system_prompt)) {
-      $openai_messages[] = [
-        'role'    => 'system',
-        'content' => $system_prompt,
-      ];
-    }
-
-    foreach ($messages as $msg) {
-      $openai_messages[] = [
-        'role'    => $msg['role'],
-        'content' => $msg['content'],
-      ];
-    }
+    $openai_messages = self::build_openai_messages_with_gap_markers($messages, $system_prompt);
 
     // Try to answer shipping questions directly with WooCommerce, bypassing
     // the model. This only kicks in when the "Use WooCommerce shipping zones"
@@ -358,18 +344,53 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       // Detect special order tag and forward by email
       $ai_response = self::detect_and_notify_special_order($ai_response, $conversation, $messages, $node_config);
 
+      // Collect product IDs whose images were already sent in this
+      // conversation so we never send the same photo twice.
+      $already_sent_ids = [];
+      foreach ($messages as $msg) {
+        if (!empty($msg['images'])) {
+          foreach ($msg['images'] as $img) {
+            if (!empty($img['product_id'])) {
+              $already_sent_ids[] = (int) $img['product_id'];
+            }
+          }
+        }
+      }
+      $already_sent_ids = array_unique($already_sent_ids);
+
       // Auto-inject image tags for products mentioned by URL.
-      // Recommendations are ON by default when WooCommerce is active.
-      // When active, the AI controls image delivery (Step 3), so we skip
-      // automatic injection to avoid sending photos prematurely.
+      // When the recommendation protocol is active the AI should control
+      // image delivery (Step 3). However GPT-4o-mini often forgets the
+      // [PRODUCT_IMAGES:ID] tag when showing a specific product. We
+      // auto-inject when the response mentions only 1-2 product URLs
+      // (specific showcase) but skip when 3+ URLs appear (listing phase).
       $woo_active = !empty($node_config['wa_include_woo']);
       $recommendations_disabled = !empty($node_config['wa_disable_recommendations']);
       if (!$woo_active || $recommendations_disabled) {
         $ai_response = self::auto_inject_product_image_tags($ai_response);
+      } elseif (!preg_match('/\[PRODUCT_IMAGES:\d+\]/', $ai_response)) {
+        // Recommendation mode is active but the AI forgot the image tag.
+        // Count product URLs: inject only for 1-2 products (showcase),
+        // not for 3+ (listing).
+        $site_url      = home_url();
+        $product_base  = 'product';
+        $permalinks    = (array) get_option('woocommerce_permalinks', []);
+        if (!empty($permalinks['product_base'])) {
+          $product_base = trim($permalinks['product_base'], '/');
+        }
+        $url_count = preg_match_all(
+          '#' . preg_quote($site_url, '#') . '/' . preg_quote($product_base, '#') . '/[a-z0-9\-]+/?#i',
+          $ai_response
+        );
+        if ($url_count >= 1 && $url_count <= 2) {
+          $ai_response = self::auto_inject_product_image_tags($ai_response);
+        }
       }
 
-      // Extract and send product images (before sending text)
-      $ai_response = self::extract_and_send_product_images($ai_response, $phone, $sent_images);
+      // Extract and send product images (before sending text).
+      // Pass already-sent IDs so images are not re-sent within the
+      // same conversation.
+      $ai_response = self::extract_and_send_product_images($ai_response, $phone, $sent_images, $already_sent_ids);
     }
 
     // Add assistant message to history
@@ -709,11 +730,18 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * @param array  &$sent_images Reference array to collect sent image URLs.
    * @return string              Text with tags removed.
    */
-  private static function extract_and_send_product_images($text, $phone, &$sent_images = []) {
+  private static function extract_and_send_product_images($text, $phone, &$sent_images = [], $already_sent_ids = []) {
     if (preg_match_all('/\[PRODUCT_IMAGES:(\d+)\]/', $text, $matches)) {
       foreach ($matches[1] as $product_id) {
         $product_id = (int) $product_id;
-        $product    = wc_get_product($product_id);
+
+        // Skip products whose images were already sent in this conversation.
+        if (in_array($product_id, $already_sent_ids, true)) {
+          self::log('extract_and_send_product_images — product ' . $product_id . ' already sent in conversation, skipping');
+          continue;
+        }
+
+        $product = wc_get_product($product_id);
 
         if (!$product) {
           self::log('extract_and_send_product_images — product ' . $product_id . ' not found');
@@ -873,6 +901,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
     $messages = [];
     if (!empty($welcome_msg)) {
+      // The welcome message may contain HTML from a WYSIWYG editor.
+      $welcome_msg = self::strip_html_to_plain_text($welcome_msg);
+
       $messages[] = [
         'role'      => 'assistant',
         'content'   => $welcome_msg,

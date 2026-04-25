@@ -17,6 +17,10 @@ class PN_CUSTOMERS_MANAGER_Templates {
 	 * @since    1.0.0
 	 */
 	public function load_plugin_templates() {
+		if ( ! is_admin() && ! PN_CUSTOMERS_MANAGER_Common::pn_customers_manager_is_crm_page() ) {
+			return;
+		}
+
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'templates/pn-customers-manager-footer.php';
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'templates/pn-customers-manager-popups.php';
 	}

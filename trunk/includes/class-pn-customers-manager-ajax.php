@@ -1273,9 +1273,6 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
             wp_delete_post($pn_cm_budget_id, true);
-            // Also delete items
-            global $wpdb;
-            $wpdb->delete($wpdb->prefix . 'pn_cm_budget_items', ['budget_id' => $pn_cm_budget_id], ['%d']);
 
             $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
             echo wp_json_encode([
@@ -1309,32 +1306,25 @@ class PN_CUSTOMERS_MANAGER_Ajax {
                 }
 
                 // Generate new number, date, token
-                $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
-                update_post_meta($new_id, 'pn_cm_budget_number', $budget_class->pn_cm_budget_generate_number());
+                update_post_meta($new_id, 'pn_cm_budget_number', PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_generate_number());
                 update_post_meta($new_id, 'pn_cm_budget_date', current_time('Y-m-d'));
                 $validity = intval(get_option('pn_customers_manager_budget_default_validity_days', 30));
-                update_post_meta($new_id, 'pn_cm_budget_valid_until', date('Y-m-d', strtotime('+' . $validity . ' days')));
+                update_post_meta($new_id, 'pn_cm_budget_valid_until', gmdate('Y-m-d', strtotime('+' . $validity . ' days')));
                 update_post_meta($new_id, 'pn_cm_budget_status', 'draft');
-                update_post_meta($new_id, 'pn_cm_budget_token', $budget_class->pn_cm_budget_generate_token());
+                update_post_meta($new_id, 'pn_cm_budget_token', PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_generate_token());
 
-                // Copy items
-                global $wpdb;
-                $items = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}pn_cm_budget_items WHERE budget_id = %d ORDER BY sort_order ASC", $pn_cm_budget_id));
-                foreach ($items as $item) {
-                  $wpdb->insert($wpdb->prefix . 'pn_cm_budget_items', [
-                    'budget_id' => $new_id,
-                    'item_type' => $item->item_type,
-                    'description' => $item->description,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->unit_price,
-                    'total' => $item->total,
-                    'is_optional' => $item->is_optional,
-                    'is_selected' => $item->is_selected,
-                    'sort_order' => $item->sort_order,
-                  ]);
+                // Copy items from post meta — reassign IDs
+                $src_items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($pn_cm_budget_id);
+                $new_items = [];
+                $next_id   = 1;
+                foreach ($src_items as $si) {
+                  $si['id'] = $next_id++;
+                  $new_items[] = $si;
                 }
+                PN_CUSTOMERS_MANAGER_Post_Type_Budget::save_budget_items($new_id, $new_items);
+                update_post_meta($new_id, 'pn_cm_budget_next_item_id', $next_id);
 
-                $budget_class->pn_cm_budget_recalculate_totals($new_id);
+                PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($new_id);
               }
             }
 
@@ -1352,145 +1342,176 @@ class PN_CUSTOMERS_MANAGER_Ajax {
         case 'pn_cm_budget_add_item':
           $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
-            global $wpdb;
-            $item_type = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
-            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
-            $quantity = floatval($_POST['quantity'] ?? 1);
-            $unit_price = floatval($_POST['unit_price'] ?? 0);
-            $is_optional = intval($_POST['is_optional'] ?? 0);
-            $total = $quantity * $unit_price;
-
-            $max_order = $wpdb->get_var($wpdb->prepare("SELECT MAX(sort_order) FROM {$wpdb->prefix}pn_cm_budget_items WHERE budget_id = %d", $pn_cm_budget_id));
-            $sort_order = intval($max_order) + 1;
-
-            $wpdb->insert($wpdb->prefix . 'pn_cm_budget_items', [
-              'budget_id' => $pn_cm_budget_id,
-              'item_type' => $item_type,
-              'description' => $description,
-              'quantity' => $quantity,
-              'unit_price' => $unit_price,
-              'total' => $total,
-              'is_optional' => $is_optional,
-              'is_selected' => 1,
-              'sort_order' => $sort_order,
-            ], ['%d', '%s', '%s', '%f', '%f', '%f', '%d', '%d', '%d']);
-
-            $item_id = $wpdb->insert_id;
-
-            $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
-            $budget_class->pn_cm_budget_recalculate_totals($pn_cm_budget_id);
-
-            echo wp_json_encode([
-              'error_key' => '',
-              'item' => [
-                'id' => $item_id,
-                'item_type' => $item_type,
-                'description' => $description,
-                'quantity' => $quantity,
-                'unit_price' => $unit_price,
-                'total' => $total,
-                'is_optional' => $is_optional,
-                'is_selected' => 1,
-              ],
-              'totals' => [
-                'subtotal' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
-                'tax_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
-                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
-                'total' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
-              ],
-            ]);
-            exit;
-          }
-          echo wp_json_encode(['error_key' => 'pn_cm_budget_add_item_error']);
-          exit;
-          break;
-
-        case 'pn_cm_budget_remove_item':
-          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
-          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
-          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
-            global $wpdb;
-            $wpdb->delete($wpdb->prefix . 'pn_cm_budget_items', ['id' => $item_id, 'budget_id' => $pn_cm_budget_id], ['%d', '%d']);
-
-            $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
-            $budget_class->pn_cm_budget_recalculate_totals($pn_cm_budget_id);
-
-            echo wp_json_encode([
-              'error_key' => '',
-              'totals' => [
-                'subtotal' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
-                'tax_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
-                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
-                'total' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
-              ],
-            ]);
-            exit;
-          }
-          echo wp_json_encode(['error_key' => 'pn_cm_budget_remove_item_error']);
-          exit;
-          break;
-
-        case 'pn_cm_budget_reorder_items':
-          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
-          $order = !empty($_POST['order']) ? json_decode(sanitize_text_field(wp_unslash($_POST['order'])), true) : [];
-          if (!empty($pn_cm_budget_id) && !empty($order)) {
-            global $wpdb;
-            foreach ($order as $item) {
-              $wpdb->update(
-                $wpdb->prefix . 'pn_cm_budget_items',
-                ['sort_order' => intval($item['position'])],
-                ['id' => intval($item['id']), 'budget_id' => $pn_cm_budget_id],
-                ['%d'],
-                ['%d', '%d']
-              );
-            }
-            echo wp_json_encode(['error_key' => '']);
-            exit;
-          }
-          echo wp_json_encode(['error_key' => 'pn_cm_budget_reorder_error']);
-          exit;
-          break;
-
-        case 'pn_cm_budget_update_item':
-          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
-          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
-          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
-            global $wpdb;
             $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
             $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
-            $quantity    = floatval($_POST['quantity'] ?? 0);
+            $quantity    = floatval($_POST['quantity'] ?? 1);
             $unit_price  = floatval($_POST['unit_price'] ?? 0);
             $is_optional = intval($_POST['is_optional'] ?? 0);
-            $total       = $quantity * $unit_price;
+            $total       = round($quantity * $unit_price, 2);
 
-            $wpdb->update(
-              $wpdb->prefix . 'pn_cm_budget_items',
-              [
+            $item_id = PN_CUSTOMERS_MANAGER_Post_Type_Budget::add_budget_item($pn_cm_budget_id, [
+              'item_type'   => $item_type,
+              'description' => $description,
+              'quantity'    => $quantity,
+              'unit_price'  => $unit_price,
+              'is_optional' => $is_optional,
+              'is_selected' => 1,
+            ]);
+
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'item' => [
+                'id'          => $item_id,
                 'item_type'   => $item_type,
                 'description' => $description,
                 'quantity'    => $quantity,
                 'unit_price'  => $unit_price,
                 'total'       => $total,
                 'is_optional' => $is_optional,
+                'is_selected' => 1,
               ],
-              ['id' => $item_id, 'budget_id' => $pn_cm_budget_id],
-              ['%s', '%s', '%f', '%f', '%f', '%d'],
-              ['%d', '%d']
-            );
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_add_item_error']);
+          break;
 
-            $budget_class = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
-            $budget_class->pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+        case 'pn_cm_budget_add_item_form':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_budget_add_form_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          if (!empty($pn_cm_budget_id)) {
+            wp_send_json([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_render_item_add_form($pn_cm_budget_id),
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_add_form_error']);
+          break;
+
+        case 'pn_cm_budget_remove_item':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::delete_budget_item($pn_cm_budget_id, $item_id);
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_remove_item_error']);
+          break;
+
+        case 'pn_cm_budget_reorder_items':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $order = !empty($_POST['order']) ? json_decode(sanitize_text_field(wp_unslash($_POST['order'])), true) : [];
+          if (!empty($pn_cm_budget_id) && !empty($order)) {
+            $items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($pn_cm_budget_id);
+            $order_map = [];
+            foreach ($order as $o) {
+              $order_map[ intval($o['id']) ] = intval($o['position']);
+            }
+            foreach ($items as &$item) {
+              if (isset($order_map[ intval($item['id']) ])) {
+                $item['sort_order'] = $order_map[ intval($item['id']) ];
+              }
+            }
+            unset($item);
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::save_budget_items($pn_cm_budget_id, $items);
+            wp_send_json(['error_key' => '']);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_reorder_error']);
+          break;
+
+        case 'pn_cm_budget_toggle_item':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_id         = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          $is_selected     = intval($_POST['is_selected'] ?? 1);
+          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($pn_cm_budget_id, $item_id, ['is_selected' => $is_selected ? 1 : 0]);
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_toggle_item_error']);
+          break;
+
+        case 'pn_cm_budget_toggle_phase_items':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_ids = !empty($_POST['item_ids']) ? array_map('intval', (array)$_POST['item_ids']) : [];
+          $selected = intval($_POST['is_selected'] ?? 1);
+          if (!empty($pn_cm_budget_id) && !empty($item_ids)) {
+            foreach ($item_ids as $iid) {
+              PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($pn_cm_budget_id, $iid, ['is_selected' => $selected ? 1 : 0]);
+            }
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_toggle_phase_error']);
+          break;
+
+        case 'pn_cm_budget_update_item':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
+            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+            $quantity    = floatval($_POST['quantity'] ?? 0);
+            $unit_price  = floatval($_POST['unit_price'] ?? 0);
+            $is_optional = intval($_POST['is_optional'] ?? 0);
+            $total       = round($quantity * $unit_price, 2);
+
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($pn_cm_budget_id, $item_id, [
+              'item_type'   => $item_type,
+              'description' => $description,
+              'quantity'    => $quantity,
+              'unit_price'  => $unit_price,
+              'is_optional' => $is_optional,
+            ]);
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
 
             wp_send_json([
               'error_key' => '',
               'item' => [
-                'id'         => $item_id,
-                'item_type'  => $item_type,
-                'description'=> $description,
-                'quantity'   => $quantity,
-                'unit_price' => $unit_price,
-                'total'      => $total,
-                'is_optional'=> $is_optional,
+                'id'          => $item_id,
+                'item_type'   => $item_type,
+                'description' => $description,
+                'quantity'    => $quantity,
+                'unit_price'  => $unit_price,
+                'total'       => $total,
+                'is_optional' => $is_optional,
               ],
               'totals' => [
                 'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
@@ -1522,11 +1543,353 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
             update_post_meta($pn_cm_budget_id, 'pn_cm_budget_status', 'sent');
-            echo wp_json_encode(['error_key' => '', 'status' => 'sent']);
+            wp_send_json(['error_key' => '', 'status' => 'sent']);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_send_error']);
+          break;
+
+        case 'pn_cm_budget_generate_invoice':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          if (empty($pn_cm_budget_id)) {
+            wp_send_json(['error_key' => 'pn_cm_budget_generate_invoice_error', 'error_content' => esc_html(__('Budget ID is required.', 'pn-customers-manager'))]);
+          }
+
+          // Read budget data
+          $budget_items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($pn_cm_budget_id);
+          $budget_org_id = get_post_meta($pn_cm_budget_id, 'pn_cm_budget_organization_id', true);
+          $budget_tax_rate = get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_rate', true);
+          $budget_discount_rate = get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_rate', true);
+          $budget_client_notes = get_post_meta($pn_cm_budget_id, 'pn_cm_budget_client_notes', true);
+          $budget_title = get_the_title($pn_cm_budget_id);
+
+          // Create invoice post
+          $post_functions = new PN_CUSTOMERS_MANAGER_Functions_Post();
+          $invoice_id = $post_functions->pn_customers_manager_insert_post(
+            esc_html($budget_title),
+            '',
+            '',
+            sanitize_title(esc_html($budget_title)),
+            'pn_cm_invoice',
+            'publish',
+            get_current_user_id()
+          );
+
+          if (empty($invoice_id) || is_wp_error($invoice_id)) {
+            wp_send_json(['error_key' => 'pn_cm_budget_generate_invoice_error', 'error_content' => esc_html(__('Failed to create invoice.', 'pn-customers-manager'))]);
+          }
+
+          // Generate number and token
+          $invoice_number = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_generate_number();
+          update_post_meta($invoice_id, 'pn_cm_invoice_number', $invoice_number);
+
+          $token = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_generate_token();
+          update_post_meta($invoice_id, 'pn_cm_invoice_token', $token);
+
+          // Copy meta from budget
+          update_post_meta($invoice_id, 'pn_cm_invoice_organization_id', $budget_org_id);
+          update_post_meta($invoice_id, 'pn_cm_invoice_tax_rate', $budget_tax_rate);
+          update_post_meta($invoice_id, 'pn_cm_invoice_discount_rate', $budget_discount_rate);
+          update_post_meta($invoice_id, 'pn_cm_invoice_client_notes', $budget_client_notes);
+          update_post_meta($invoice_id, 'pn_cm_invoice_status', 'draft');
+          update_post_meta($invoice_id, 'pn_cm_invoice_date', gmdate('Y-m-d'));
+
+          $due_days = intval(get_option('pn_customers_manager_invoice_default_due_days', 30));
+          update_post_meta($invoice_id, 'pn_cm_invoice_due_date', gmdate('Y-m-d', strtotime('+' . $due_days . ' days')));
+
+          // Store source budget reference (bidirectional)
+          update_post_meta($invoice_id, 'pn_cm_invoice_source_budget_id', $pn_cm_budget_id);
+
+          $existing_invoice_ids = get_post_meta($pn_cm_budget_id, 'pn_cm_budget_invoice_ids', true);
+          if (!is_array($existing_invoice_ids)) $existing_invoice_ids = [];
+          $existing_invoice_ids[] = $invoice_id;
+          update_post_meta($pn_cm_budget_id, 'pn_cm_budget_invoice_ids', array_unique($existing_invoice_ids));
+
+          // Copy selected items (strip is_optional / is_selected, assign new IDs)
+          $invoice_items = [];
+          $next_id = 1;
+          foreach ($budget_items as $item) {
+            // Only copy selected items
+            if (isset($item['is_selected']) && empty($item['is_selected']) && $item['item_type'] !== 'phase') {
+              continue;
+            }
+
+            $invoice_items[] = [
+              'id'          => $next_id,
+              'item_type'   => $item['item_type'],
+              'description' => $item['description'],
+              'quantity'    => floatval($item['quantity']),
+              'unit_price'  => floatval($item['unit_price']),
+              'total'       => round(floatval($item['quantity']) * floatval($item['unit_price']), 2),
+              'sort_order'  => $next_id - 1,
+            ];
+            $next_id++;
+          }
+
+          update_post_meta($invoice_id, 'pn_cm_invoice_items', $invoice_items);
+          update_post_meta($invoice_id, 'pn_cm_invoice_next_item_id', $next_id);
+
+          // Recalculate totals
+          PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($invoice_id);
+
+          wp_send_json([
+            'error_key' => '',
+            'invoice_id' => $invoice_id,
+            'invoice_number' => $invoice_number,
+          ]);
+          break;
+
+        // ── Invoice AJAX cases ──
+        case 'pn_cm_invoice_view':
+          $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
+          if (!empty($pn_cm_invoice_id)) {
+            $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_invoice->pn_cm_invoice_view($pn_cm_invoice_id),
+            ]);
             exit;
           }
-          echo wp_json_encode(['error_key' => 'pn_cm_budget_send_error']);
+          echo wp_json_encode(['error_key' => 'pn_cm_invoice_view_error', 'error_content' => esc_html(__('An error occurred while showing the Invoice.', 'pn-customers-manager'))]);
           exit;
+          break;
+
+        case 'pn_cm_invoice_edit':
+          $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
+          if (!empty($pn_cm_invoice_id)) {
+            $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_invoice->pn_cm_invoice_edit($pn_cm_invoice_id),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_invoice_edit_error', 'error_content' => esc_html(__('An error occurred while showing the Invoice.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_invoice_new':
+          if (!is_user_logged_in()) {
+            echo wp_json_encode(['error_key' => 'not_logged_in', 'error_content' => esc_html(__('You must be logged in to create a new asset.', 'pn-customers-manager'))]);
+            exit;
+          }
+          $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+          echo wp_json_encode([
+            'error_key' => '',
+            'html' => $plugin_post_type_invoice->pn_cm_invoice_new(),
+          ]);
+          exit;
+          break;
+
+        case 'pn_cm_invoice_remove':
+          $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
+          if (!empty($pn_cm_invoice_id)) {
+            wp_delete_post($pn_cm_invoice_id, true);
+
+            $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_invoice->pn_cm_invoice_list(),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_invoice_remove_error', 'error_content' => esc_html(__('An error occurred while removing the Invoice.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_invoice_duplicate':
+          $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
+          if (!empty($pn_cm_invoice_id)) {
+            $original = get_post($pn_cm_invoice_id);
+            if ($original) {
+              $new_id = wp_insert_post([
+                'post_type' => 'pn_cm_invoice',
+                'post_title' => $original->post_title . ' (' . __('Copy', 'pn-customers-manager') . ')',
+                'post_status' => 'publish',
+                'post_author' => get_current_user_id(),
+              ]);
+
+              if ($new_id && !is_wp_error($new_id)) {
+                $meta_keys = ['pn_cm_invoice_organization_id', 'pn_cm_invoice_tax_rate', 'pn_cm_invoice_discount_rate', 'pn_cm_invoice_notes', 'pn_cm_invoice_client_notes'];
+                foreach ($meta_keys as $mk) {
+                  $val = get_post_meta($pn_cm_invoice_id, $mk, true);
+                  if ($val !== '') update_post_meta($new_id, $mk, $val);
+                }
+
+                update_post_meta($new_id, 'pn_cm_invoice_number', PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_generate_number());
+                update_post_meta($new_id, 'pn_cm_invoice_date', current_time('Y-m-d'));
+                $due_days = intval(get_option('pn_customers_manager_invoice_default_due_days', 30));
+                update_post_meta($new_id, 'pn_cm_invoice_due_date', gmdate('Y-m-d', strtotime('+' . $due_days . ' days')));
+                update_post_meta($new_id, 'pn_cm_invoice_status', 'draft');
+                update_post_meta($new_id, 'pn_cm_invoice_token', PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_generate_token());
+
+                $src_items = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_items($pn_cm_invoice_id);
+                $new_items = [];
+                $next_id   = 1;
+                foreach ($src_items as $si) {
+                  $si['id'] = $next_id++;
+                  $new_items[] = $si;
+                }
+                PN_CUSTOMERS_MANAGER_Post_Type_Invoice::save_invoice_items($new_id, $new_items);
+                update_post_meta($new_id, 'pn_cm_invoice_next_item_id', $next_id);
+
+                PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($new_id);
+              }
+            }
+
+            $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => $plugin_post_type_invoice->pn_cm_invoice_list(),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_invoice_duplicate_error']);
+          exit;
+          break;
+
+        case 'pn_cm_invoice_add_item':
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          if (!empty($pn_cm_invoice_id)) {
+            $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
+            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+            $quantity    = floatval($_POST['quantity'] ?? 1);
+            $unit_price  = floatval($_POST['unit_price'] ?? 0);
+            $total       = round($quantity * $unit_price, 2);
+
+            $item_id = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::add_invoice_item($pn_cm_invoice_id, [
+              'item_type'   => $item_type,
+              'description' => $description,
+              'quantity'    => $quantity,
+              'unit_price'  => $unit_price,
+            ]);
+
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($pn_cm_invoice_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'item' => [
+                'id'          => $item_id,
+                'item_type'   => $item_type,
+                'description' => $description,
+                'quantity'    => $quantity,
+                'unit_price'  => $unit_price,
+                'total'       => $total,
+              ],
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_add_item_error']);
+          break;
+
+        case 'pn_cm_invoice_add_item_form':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_add_form_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          if (!empty($pn_cm_invoice_id)) {
+            wp_send_json([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_render_item_add_form($pn_cm_invoice_id),
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_add_form_error']);
+          break;
+
+        case 'pn_cm_invoice_remove_item':
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_invoice_id) && !empty($item_id)) {
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::delete_invoice_item($pn_cm_invoice_id, $item_id);
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($pn_cm_invoice_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_remove_item_error']);
+          break;
+
+        case 'pn_cm_invoice_reorder_items':
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $order = !empty($_POST['order']) ? json_decode(sanitize_text_field(wp_unslash($_POST['order'])), true) : [];
+          if (!empty($pn_cm_invoice_id) && !empty($order)) {
+            $items = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_items($pn_cm_invoice_id);
+            $order_map = array_flip($order);
+            foreach ($items as &$it) {
+              $id_str = strval($it['id']);
+              if (isset($order_map[$id_str])) {
+                $it['sort_order'] = $order_map[$id_str];
+              }
+            }
+            unset($it);
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::save_invoice_items($pn_cm_invoice_id, $items);
+            wp_send_json(['error_key' => '']);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_reorder_error']);
+          break;
+
+        case 'pn_cm_invoice_update_item':
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_invoice_id) && !empty($item_id)) {
+            $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
+            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+            $quantity    = floatval($_POST['quantity'] ?? 1);
+            $unit_price  = floatval($_POST['unit_price'] ?? 0);
+
+            $update_data = [
+              'item_type'   => $item_type,
+              'description' => $description,
+              'quantity'    => $quantity,
+              'unit_price'  => $unit_price,
+            ];
+
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::update_invoice_item($pn_cm_invoice_id, $item_id, $update_data);
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($pn_cm_invoice_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_update_item_error']);
+          break;
+
+        case 'pn_cm_invoice_edit_item_form':
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_invoice_id) && !empty($item_id)) {
+            wp_send_json([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_render_item_edit_form($item_id, $pn_cm_invoice_id),
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_edit_form_error']);
+          break;
+
+        case 'pn_cm_invoice_send':
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          if (!empty($pn_cm_invoice_id)) {
+            update_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_status', 'sent');
+            wp_send_json(['error_key' => '', 'status' => 'sent']);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_send_error']);
           break;
       }
 

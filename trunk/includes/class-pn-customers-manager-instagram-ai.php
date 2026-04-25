@@ -228,21 +228,7 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
 
     $temperature = self::get_conversation_temperature($conversation);
 
-    $openai_messages = [];
-
-    if (!empty($system_prompt)) {
-      $openai_messages[] = [
-        'role'    => 'system',
-        'content' => $system_prompt,
-      ];
-    }
-
-    foreach ($messages as $msg) {
-      $openai_messages[] = [
-        'role'    => $msg['role'],
-        'content' => $msg['content'],
-      ];
-    }
+    $openai_messages = self::build_openai_messages_with_gap_markers($messages, $system_prompt);
 
     // Try to answer shipping questions directly with WooCommerce, bypassing
     // the model. This only kicks in when the "Use WooCommerce shipping zones"

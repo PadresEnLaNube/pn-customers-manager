@@ -284,9 +284,6 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
 
     check_admin_referer(self::NONCE_ACTION);
 
-    global $wpdb;
-    $items_table = $wpdb->prefix . 'pn_cm_budget_items';
-
     $query_args = [
       'post_type'   => 'pn_cm_budget',
       'numberposts' => -1,
@@ -333,15 +330,20 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
 
       foreach ($meta as $key => $info) {
         if ($key === '_items_json') {
-          // Encode items as JSON
-          $items = $wpdb->get_results(
-            $wpdb->prepare(
-              "SELECT item_type, description, quantity, unit_price, is_optional, sort_order FROM {$items_table} WHERE budget_id = %d ORDER BY sort_order ASC",
-              $budget_id
-            ),
-            ARRAY_A
-          );
-          $row[] = !empty($items) ? wp_json_encode($items) : '[]';
+          // Encode items as JSON from post meta
+          $items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($budget_id);
+          $export_items = [];
+          foreach ($items as $item) {
+            $export_items[] = [
+              'item_type'   => $item['item_type'],
+              'description' => $item['description'],
+              'quantity'    => $item['quantity'],
+              'unit_price'  => $item['unit_price'],
+              'is_optional' => $item['is_optional'],
+              'sort_order'  => $item['sort_order'],
+            ];
+          }
+          $row[] = !empty($export_items) ? wp_json_encode($export_items) : '[]';
         } elseif ($key === 'pn_cm_budget_organization_id') {
           // Resolve org ID to name
           $org_id = get_post_meta($budget_id, $key, true);
@@ -464,9 +466,6 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
       wp_send_json_error(__('No data to import.', 'pn-customers-manager'));
     }
 
-    global $wpdb;
-    $items_table = $wpdb->prefix . 'pn_cm_budget_items';
-
     $results = [
       'created' => 0,
       'errors'  => [],
@@ -563,24 +562,15 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
         $items = json_decode(trim($row['_items_json']), true);
         if (is_array($items)) {
           foreach ($items as $sort => $item) {
-            $qty   = isset($item['quantity']) ? floatval($item['quantity']) : 1;
-            $price = isset($item['unit_price']) ? floatval($item['unit_price']) : 0;
-
-            $wpdb->insert(
-              $items_table,
-              [
-                'budget_id'   => $post_id,
-                'item_type'   => isset($item['item_type']) ? sanitize_text_field($item['item_type']) : 'fixed',
-                'description' => isset($item['description']) ? sanitize_text_field($item['description']) : '',
-                'quantity'    => $qty,
-                'unit_price'  => $price,
-                'total'       => round($qty * $price, 2),
-                'is_optional' => isset($item['is_optional']) ? intval($item['is_optional']) : 0,
-                'is_selected' => 1,
-                'sort_order'  => isset($item['sort_order']) ? intval($item['sort_order']) : $sort,
-              ],
-              ['%d', '%s', '%s', '%f', '%f', '%f', '%d', '%d', '%d']
-            );
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::add_budget_item($post_id, [
+              'item_type'   => isset($item['item_type']) ? sanitize_text_field($item['item_type']) : 'fixed',
+              'description' => isset($item['description']) ? sanitize_text_field($item['description']) : '',
+              'quantity'    => isset($item['quantity']) ? floatval($item['quantity']) : 1,
+              'unit_price'  => isset($item['unit_price']) ? floatval($item['unit_price']) : 0,
+              'is_optional' => isset($item['is_optional']) ? intval($item['is_optional']) : 0,
+              'is_selected' => 1,
+              'sort_order'  => isset($item['sort_order']) ? intval($item['sort_order']) : $sort,
+            ]);
           }
         }
       }

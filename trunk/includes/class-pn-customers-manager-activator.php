@@ -202,25 +202,6 @@ class PN_CUSTOMERS_MANAGER_Activator {
       KEY target_date (target_date)
     ) {$charset_collate};";
 
-    $table_budget_items = $wpdb->prefix . 'pn_cm_budget_items';
-
-    $sql .= "\nCREATE TABLE {$table_budget_items} (
-      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-      budget_id BIGINT(20) UNSIGNED NOT NULL,
-      item_type VARCHAR(10) NOT NULL DEFAULT 'fixed',
-      description TEXT NOT NULL,
-      quantity DECIMAL(10,2) NOT NULL DEFAULT 1,
-      unit_price DECIMAL(10,2) NOT NULL DEFAULT 0,
-      total DECIMAL(10,2) NOT NULL DEFAULT 0,
-      is_optional TINYINT(1) NOT NULL DEFAULT 0,
-      is_selected TINYINT(1) NOT NULL DEFAULT 1,
-      sort_order INT NOT NULL DEFAULT 0,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY  (id),
-      KEY budget_id (budget_id),
-      KEY sort_order (sort_order)
-    ) {$charset_collate};";
-
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
 

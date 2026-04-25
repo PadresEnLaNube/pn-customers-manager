@@ -44,7 +44,10 @@ $org_fiscal_id = ! empty( $org_id ) ? get_post_meta( $org_id, 'pn_cm_organizatio
 $company_name      = get_option( 'pn_customers_manager_budget_company_name', '' );
 $company_address   = get_option( 'pn_customers_manager_budget_company_address', '' );
 $company_fiscal_id = get_option( 'pn_customers_manager_budget_company_fiscal_id', '' );
-$company_logo      = get_option( 'pn_customers_manager_budget_company_logo', '' );
+$company_logo_raw  = get_option( 'pn_customers_manager_budget_company_logo', '' );
+$company_logo      = ( ! empty( $company_logo_raw ) && is_numeric( $company_logo_raw ) )
+	? wp_get_attachment_url( intval( $company_logo_raw ) )
+	: $company_logo_raw;
 $terms             = get_option( 'pn_customers_manager_budget_terms', '' );
 
 // Currency settings.
@@ -57,20 +60,13 @@ $is_admin = current_user_can( 'manage_options' );
 // Hide admin bar on this standalone page (prevents Chrome local-network-access dialog).
 show_admin_bar( false );
 
-// Budget items.
-global $wpdb;
-$items_table = $wpdb->prefix . 'pn_cm_budget_items';
-$items       = $wpdb->get_results(
-	$wpdb->prepare(
-		"SELECT * FROM {$items_table} WHERE budget_id = %d ORDER BY sort_order ASC",
-		$budget_id
-	)
-);
+// Budget items from post meta.
+$items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items( $budget_id );
 
 // Detect optional items.
 $has_optional = false;
 foreach ( $items as $item ) {
-	if ( $item->is_optional ) {
+	if ( ! empty( $item['is_optional'] ) ) {
 		$has_optional = true;
 		break;
 	}
@@ -119,6 +115,7 @@ wp_localize_script(
 
 // Admin inline editing scripts.
 if ( $is_admin ) {
+	wp_enqueue_media();
 	wp_enqueue_script( 'jquery-ui-sortable' );
 	wp_enqueue_script(
 		'pn-customers-manager-budget-admin',
@@ -143,6 +140,8 @@ if ( $is_admin ) {
 				'confirmDelete' => __( 'Are you sure you want to delete this item?', 'pn-customers-manager' ),
 				'noDescription' => __( 'Please enter a description.', 'pn-customers-manager' ),
 				'newPhase'      => __( 'New phase', 'pn-customers-manager' ),
+				'selectImage'   => __( 'Select image', 'pn-customers-manager' ),
+				'useImage'      => __( 'Use image', 'pn-customers-manager' ),
 			),
 		)
 	);
@@ -209,6 +208,14 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 		'wph-material-icons-outlined',
 	);
 
+	// Allow wp.media styles for admin image uploads.
+	if ( $is_admin ) {
+		$allowed_styles = array_merge( $allowed_styles, array(
+			'media-views', 'wp-mediaelement', 'mediaelement',
+			'imgareaselect', 'buttons', 'dashicons',
+		) );
+	}
+
 	global $wp_styles;
 	if ( ! empty( $wp_styles->queue ) ) {
 		$queued_styles = array_values( $wp_styles->queue );
@@ -234,6 +241,19 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 		'pn-customers-manager-popups',
 	);
 
+	// Allow wp.media scripts for admin image uploads.
+	if ( $is_admin ) {
+		$media_scripts = array(
+			'media-editor', 'media-audiovideo', 'media-views', 'media-models',
+			'media-grid', 'wp-mediaelement', 'mediaelement-core',
+			'mediaelement-migrate', 'wp-plupload', 'plupload',
+			'backbone', 'underscore', 'wp-backbone', 'wp-util', 'wp-api-request',
+			'wp-a11y', 'shortcode', 'wp-i18n', 'wp-hooks',
+			'imgareaselect', 'image-edit',
+		);
+		$allowed_scripts = array_merge( $allowed_scripts, $media_scripts );
+	}
+
 	global $wp_scripts;
 	if ( ! empty( $wp_scripts->queue ) ) {
 		$queued_scripts = array_values( $wp_scripts->queue );
@@ -245,6 +265,29 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 		}
 	}
 }, 999 );
+
+// Pre-process items into groups: loose items and phase groups.
+$groups        = array();
+$current_phase = null;
+foreach ( $items as $item ) {
+	if ( 'phase' === $item['item_type'] ) {
+		$current_phase = count( $groups );
+		$groups[]      = array(
+			'phase' => $item,
+			'items' => array(),
+		);
+	} else {
+		if ( null !== $current_phase ) {
+			$groups[ $current_phase ]['items'][] = $item;
+		} else {
+			// Loose item (before any phase).
+			$groups[] = array(
+				'phase' => null,
+				'items' => array( $item ),
+			);
+		}
+	}
+}
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -253,6 +296,39 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="robots" content="noindex, nofollow">
 	<title><?php echo esc_html( sprintf( __( 'Budget %s', 'pn-customers-manager' ), $budget_number ) ); ?></title>
+	<?php
+	// Schema.org JSON-LD structured data.
+	$pn_cm_currency_map = array( '€' => 'EUR', '$' => 'USD', '£' => 'GBP', '¥' => 'JPY' );
+	$pn_cm_currency_code = isset( $pn_cm_currency_map[ $currency_symbol ] ) ? $pn_cm_currency_map[ $currency_symbol ] : $currency_symbol;
+	$pn_cm_schema = array(
+		'@context'        => 'https://schema.org',
+		'@type'           => 'Invoice',
+		'identifier'      => $budget_number,
+		'description'     => sprintf( 'Budget %s', $budget_number ),
+		'totalPaymentDue' => array(
+			'@type'    => 'PriceSpecification',
+			'price'    => number_format( $budget_total, 2, '.', '' ),
+			'priceCurrency' => $pn_cm_currency_code,
+		),
+		'paymentStatus'   => ( 'accepted' === $budget_status ) ? 'PaymentComplete' : 'PaymentDue',
+	);
+	if ( ! empty( $budget_date ) ) {
+		$pn_cm_schema['paymentDueDate'] = $budget_date;
+	}
+	if ( ! empty( $company_name ) ) {
+		$pn_cm_schema['provider'] = array(
+			'@type' => 'Organization',
+			'name'  => $company_name,
+		);
+	}
+	if ( ! empty( $org_name ) ) {
+		$pn_cm_schema['customer'] = array(
+			'@type' => 'Organization',
+			'name'  => $org_name,
+		);
+	}
+	?>
+	<script type="application/ld+json"><?php echo wp_json_encode( $pn_cm_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ); ?></script>
 	<?php wp_head(); ?>
 </head>
 <body class="pn-customers-manager-budget-public">
@@ -319,50 +395,105 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 				<input type="hidden" id="pn_cm_budget_discount_rate" value="<?php echo esc_attr( $budget_discount_rate ); ?>" />
 			<?php endif; ?>
 			<div class="pn-cm-budget-items-list" id="pn-cm-budget-items-body">
-				<?php if ( ! empty( $items ) ) : ?>
-					<?php foreach ( $items as $item ) : ?>
-						<?php if ( 'phase' === $item->item_type ) : ?>
-							<div class="pn-cm-budget-item-row pn-cm-budget-item-phase"
-								data-item-id="<?php echo esc_attr( $item->id ); ?>"
-								data-item-type="phase"
-								data-item-description="<?php echo esc_attr( $item->description ); ?>">
-								<?php if ( $is_admin ) : ?>
-									<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle">drag_indicator</i></span>
-								<?php endif; ?>
-								<div class="pn-cm-budget-item-content">
-									<span class="pn-cm-budget-col-phase"><?php echo esc_html( $item->description ); ?></span>
+				<?php if ( ! empty( $groups ) ) : ?>
+					<?php foreach ( $groups as $group ) : ?>
+						<?php if ( null === $group['phase'] ) : ?>
+							<?php // Loose items (no phase parent). ?>
+							<?php foreach ( $group['items'] as $item ) : ?>
+								<?php if ( 'image' === $item['item_type'] ) : ?>
+									<div class="pn-cm-budget-item-row pn-cm-budget-item-image"
+										data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
+										data-item-type="image"
+										data-item-description="<?php echo esc_attr( $item['description'] ); ?>">
+										<?php if ( $is_admin ) : ?>
+											<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'pn-customers-manager' ); ?>">drag_indicator</i></span>
+										<?php endif; ?>
+										<div class="pn-cm-budget-item-content">
+											<img src="<?php echo esc_url( $item['description'] ); ?>" class="pn-cm-budget-image-preview" alt="" />
+											<?php if ( $is_admin ) : ?>
+												<span class="pn-cm-budget-col-actions">
+													<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
+												</span>
+											<?php endif; ?>
+										</div>
+									</div>
+								<?php else : ?>
+								<div class="pn-cm-budget-item-row <?php echo ! empty( $item['is_optional'] ) && empty( $item['is_selected'] ) ? 'pn-cm-budget-item-deselected' : ''; ?>"
+									data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
+									data-item-type="<?php echo esc_attr( $item['item_type'] ); ?>"
+									data-item-description="<?php echo esc_attr( $item['description'] ); ?>"
+									data-item-quantity="<?php echo esc_attr( number_format( floatval( $item['quantity'] ), 2, '.', '' ) ); ?>"
+									data-item-unit-price="<?php echo esc_attr( number_format( floatval( $item['unit_price'] ), 2, '.', '' ) ); ?>"
+									data-item-optional="<?php echo esc_attr( $item['is_optional'] ); ?>"
+									data-item-total="<?php echo esc_attr( floatval( $item['quantity'] ) * floatval( $item['unit_price'] ) ); ?>">
 									<?php if ( $is_admin ) : ?>
-										<span class="pn-cm-budget-col-actions">
-											<a href="#" class="pn-cm-budget-row-edit" title="<?php esc_attr_e( 'Edit', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">edit</i></a>
-											<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
-										</span>
+										<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'pn-customers-manager' ); ?>">drag_indicator</i></span>
 									<?php endif; ?>
+									<div class="pn-cm-budget-item-content">
+										<div class="pn-cm-budget-item-title">
+											<span class="pn-cm-budget-col-desc"><?php echo esc_html( $item['description'] ); ?></span>
+											<?php if ( $has_optional ) : ?>
+												<span class="pn-cm-budget-col-toggle">
+													<?php if ( ! empty( $item['is_optional'] ) ) : ?>
+														<label class="pn-cm-budget-toggle">
+															<input type="checkbox" class="pn-cm-budget-toggle-item" data-item-id="<?php echo esc_attr( $item['id'] ); ?>" <?php checked( $item['is_selected'], 1 ); ?> <?php echo ( ! $is_admin && 'sent' !== $budget_status ) ? 'disabled' : ''; ?>>
+															<span class="pn-cm-budget-toggle-slider"></span>
+														</label>
+													<?php endif; ?>
+												</span>
+											<?php endif; ?>
+											<?php if ( $is_admin ) : ?>
+												<span class="pn-cm-budget-col-actions">
+													<a href="#" class="pn-cm-budget-row-edit" title="<?php esc_attr_e( 'Edit', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">edit</i></a>
+													<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
+												</span>
+											<?php endif; ?>
+										</div>
+										<div class="pn-cm-budget-item-meta">
+											<span class="pn-cm-budget-col-type"><i class="material-icons-outlined" title="<?php echo 'hours' === $item['item_type'] ? esc_attr__( 'Hourly rate', 'pn-customers-manager' ) : esc_attr__( 'Fixed price', 'pn-customers-manager' ); ?>"><?php echo 'hours' === $item['item_type'] ? 'schedule' : 'payments'; ?></i></span>
+											<span class="pn-cm-budget-col-qty"><?php echo esc_html( number_format( floatval( $item['quantity'] ), 2, ',', '.' ) ); ?></span>
+											<span class="pn-cm-budget-col-price"><?php echo esc_html( $format_currency( $item['unit_price'] ) ); ?></span>
+											<span class="pn-cm-budget-col-total"><?php echo esc_html( $format_currency( floatval( $item['quantity'] ) * floatval( $item['unit_price'] ) ) ); ?></span>
+										</div>
+									</div>
 								</div>
-							</div>
-						<?php else : ?>
-							<div class="pn-cm-budget-item-row <?php echo $item->is_optional && ! $item->is_selected ? 'pn-cm-budget-item-deselected' : ''; ?>"
-								data-item-id="<?php echo esc_attr( $item->id ); ?>"
-								data-item-type="<?php echo esc_attr( $item->item_type ); ?>"
-								data-item-description="<?php echo esc_attr( $item->description ); ?>"
-								data-item-quantity="<?php echo esc_attr( number_format( floatval( $item->quantity ), 2, '.', '' ) ); ?>"
-								data-item-unit-price="<?php echo esc_attr( number_format( floatval( $item->unit_price ), 2, '.', '' ) ); ?>"
-								data-item-optional="<?php echo esc_attr( $item->is_optional ); ?>"
-								data-item-total="<?php echo esc_attr( floatval( $item->quantity ) * floatval( $item->unit_price ) ); ?>">
-								<?php if ( $is_admin ) : ?>
-									<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle">drag_indicator</i></span>
 								<?php endif; ?>
-								<div class="pn-cm-budget-item-content">
-									<div class="pn-cm-budget-item-title">
-										<span class="pn-cm-budget-col-desc"><?php echo esc_html( $item->description ); ?></span>
-										<?php if ( $has_optional ) : ?>
-											<span class="pn-cm-budget-col-toggle">
-												<?php if ( $item->is_optional ) : ?>
-													<label class="pn-cm-budget-toggle">
-														<input type="checkbox" class="pn-cm-budget-toggle-item" data-item-id="<?php echo esc_attr( $item->id ); ?>" <?php checked( $item->is_selected, 1 ); ?> <?php echo 'sent' !== $budget_status ? 'disabled' : ''; ?>>
-														<span class="pn-cm-budget-toggle-slider"></span>
-													</label>
-												<?php endif; ?>
-											</span>
+							<?php endforeach; ?>
+						<?php else : ?>
+							<?php
+							// Phase group.
+							$phase_item   = $group['phase'];
+							$phase_items  = $group['items'];
+							$all_selected = true;
+							$phase_total  = 0;
+							foreach ( $phase_items as $pi ) {
+								if ( 'image' === $pi['item_type'] ) {
+									continue;
+								}
+								if ( empty( $pi['is_selected'] ) ) {
+									$all_selected = false;
+								} else {
+									$phase_total += floatval( $pi['quantity'] ) * floatval( $pi['unit_price'] );
+								}
+							}
+							?>
+							<div class="pn-cm-budget-phase-group" data-phase-id="<?php echo esc_attr( $phase_item['id'] ); ?>">
+								<div class="pn-cm-budget-item-row pn-cm-budget-item-phase"
+									data-item-id="<?php echo esc_attr( $phase_item['id'] ); ?>"
+									data-item-type="phase"
+									data-item-description="<?php echo esc_attr( $phase_item['description'] ); ?>">
+									<?php if ( $is_admin ) : ?>
+										<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'pn-customers-manager' ); ?>">drag_indicator</i></span>
+									<?php endif; ?>
+									<i class="material-icons-outlined pn-cm-budget-phase-toggle" title="<?php esc_attr_e( 'Collapse / Expand', 'pn-customers-manager' ); ?>">expand_more</i>
+									<div class="pn-cm-budget-item-content">
+										<span class="pn-cm-budget-col-phase"><?php echo esc_html( $phase_item['description'] ); ?></span>
+										<span class="pn-cm-budget-phase-total"><?php echo esc_html( $format_currency( $phase_total ) ); ?></span>
+										<?php if ( ! empty( $phase_items ) && ( $is_admin || 'sent' === $budget_status ) ) : ?>
+											<label class="pn-cm-budget-toggle pn-cm-budget-phase-switch">
+												<input type="checkbox" class="pn-cm-budget-phase-switch-input" <?php checked( $all_selected ); ?>>
+												<span class="pn-cm-budget-toggle-slider"></span>
+											</label>
 										<?php endif; ?>
 										<?php if ( $is_admin ) : ?>
 											<span class="pn-cm-budget-col-actions">
@@ -371,12 +502,68 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 											</span>
 										<?php endif; ?>
 									</div>
-									<div class="pn-cm-budget-item-meta">
-										<span class="pn-cm-budget-col-type"><i class="material-icons-outlined"><?php echo 'hours' === $item->item_type ? 'schedule' : 'payments'; ?></i><?php echo 'hours' === $item->item_type ? esc_html__( 'Hours', 'pn-customers-manager' ) : esc_html__( 'Fixed', 'pn-customers-manager' ); ?></span>
-										<span class="pn-cm-budget-col-qty"><?php echo esc_html( number_format( floatval( $item->quantity ), 2, ',', '.' ) ); ?></span>
-										<span class="pn-cm-budget-col-price"><?php echo esc_html( $format_currency( $item->unit_price ) ); ?></span>
-										<span class="pn-cm-budget-col-total"><?php echo esc_html( $format_currency( floatval( $item->quantity ) * floatval( $item->unit_price ) ) ); ?></span>
-									</div>
+								</div>
+								<div class="pn-cm-budget-phase-items">
+									<?php foreach ( $phase_items as $item ) : ?>
+										<?php if ( 'image' === $item['item_type'] ) : ?>
+											<div class="pn-cm-budget-item-row pn-cm-budget-item-image"
+												data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
+												data-item-type="image"
+												data-item-description="<?php echo esc_attr( $item['description'] ); ?>">
+												<?php if ( $is_admin ) : ?>
+													<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'pn-customers-manager' ); ?>">drag_indicator</i></span>
+												<?php endif; ?>
+												<div class="pn-cm-budget-item-content">
+													<img src="<?php echo esc_url( $item['description'] ); ?>" class="pn-cm-budget-image-preview" alt="" />
+													<?php if ( $is_admin ) : ?>
+														<span class="pn-cm-budget-col-actions">
+															<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
+														</span>
+													<?php endif; ?>
+												</div>
+											</div>
+										<?php else : ?>
+										<div class="pn-cm-budget-item-row <?php echo ! empty( $item['is_optional'] ) && empty( $item['is_selected'] ) ? 'pn-cm-budget-item-deselected' : ''; ?>"
+											data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
+											data-item-type="<?php echo esc_attr( $item['item_type'] ); ?>"
+											data-item-description="<?php echo esc_attr( $item['description'] ); ?>"
+											data-item-quantity="<?php echo esc_attr( number_format( floatval( $item['quantity'] ), 2, '.', '' ) ); ?>"
+											data-item-unit-price="<?php echo esc_attr( number_format( floatval( $item['unit_price'] ), 2, '.', '' ) ); ?>"
+											data-item-optional="<?php echo esc_attr( $item['is_optional'] ); ?>"
+											data-item-total="<?php echo esc_attr( floatval( $item['quantity'] ) * floatval( $item['unit_price'] ) ); ?>">
+											<?php if ( $is_admin ) : ?>
+												<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'pn-customers-manager' ); ?>">drag_indicator</i></span>
+											<?php endif; ?>
+											<div class="pn-cm-budget-item-content">
+												<div class="pn-cm-budget-item-title">
+													<span class="pn-cm-budget-col-desc"><?php echo esc_html( $item['description'] ); ?></span>
+													<?php if ( $has_optional ) : ?>
+														<span class="pn-cm-budget-col-toggle">
+															<?php if ( ! empty( $item['is_optional'] ) ) : ?>
+																<label class="pn-cm-budget-toggle">
+																	<input type="checkbox" class="pn-cm-budget-toggle-item" data-item-id="<?php echo esc_attr( $item['id'] ); ?>" <?php checked( $item['is_selected'], 1 ); ?> <?php echo ( ! $is_admin && 'sent' !== $budget_status ) ? 'disabled' : ''; ?>>
+																	<span class="pn-cm-budget-toggle-slider"></span>
+																</label>
+															<?php endif; ?>
+														</span>
+													<?php endif; ?>
+													<?php if ( $is_admin ) : ?>
+														<span class="pn-cm-budget-col-actions">
+															<a href="#" class="pn-cm-budget-row-edit" title="<?php esc_attr_e( 'Edit', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">edit</i></a>
+															<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
+														</span>
+													<?php endif; ?>
+												</div>
+												<div class="pn-cm-budget-item-meta">
+													<span class="pn-cm-budget-col-type"><i class="material-icons-outlined" title="<?php echo 'hours' === $item['item_type'] ? esc_attr__( 'Hourly rate', 'pn-customers-manager' ) : esc_attr__( 'Fixed price', 'pn-customers-manager' ); ?>"><?php echo 'hours' === $item['item_type'] ? 'schedule' : 'payments'; ?></i></span>
+													<span class="pn-cm-budget-col-qty"><?php echo esc_html( number_format( floatval( $item['quantity'] ), 2, ',', '.' ) ); ?></span>
+													<span class="pn-cm-budget-col-price"><?php echo esc_html( $format_currency( $item['unit_price'] ) ); ?></span>
+													<span class="pn-cm-budget-col-total"><?php echo esc_html( $format_currency( floatval( $item['quantity'] ) * floatval( $item['unit_price'] ) ) ); ?></span>
+												</div>
+											</div>
+										</div>
+										<?php endif; ?>
+									<?php endforeach; ?>
 								</div>
 							</div>
 						<?php endif; ?>
@@ -396,6 +583,10 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 					<a href="#" class="pn-cm-budget-btn pn-cm-budget-btn-secondary pn-customers-manager-budget-add-item">
 						<i class="material-icons-outlined">add</i>
 						<?php esc_html_e( 'Add item', 'pn-customers-manager' ); ?>
+					</a>
+					<a href="#" class="pn-cm-budget-btn pn-cm-budget-btn-secondary pn-customers-manager-budget-add-image">
+						<i class="material-icons-outlined">image</i>
+						<?php esc_html_e( 'Add image', 'pn-customers-manager' ); ?>
 					</a>
 				</div>
 			<?php endif; ?>
@@ -432,10 +623,6 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 					<i class="material-icons-outlined">check</i>
 					<?php esc_html_e( 'Accept budget', 'pn-customers-manager' ); ?>
 				</button>
-				<button type="button" id="pn-cm-budget-reject" class="pn-cm-budget-btn pn-cm-budget-btn-reject">
-					<i class="material-icons-outlined">cancel</i>
-					<?php esc_html_e( 'Reject budget', 'pn-customers-manager' ); ?>
-				</button>
 			</div>
 		<?php elseif ( 'accepted' === $budget_status ) : ?>
 			<div class="pn-cm-budget-status-message pn-cm-budget-status-accepted-msg">
@@ -466,6 +653,21 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 				?>
 			</div>
 		<?php endif; ?>
+
+		<!-- Footer image -->
+		<?php
+		$footer_image_id = get_post_meta( $budget_id, 'pn_cm_budget_footer_image', true );
+		if ( ! empty( $footer_image_id ) && is_numeric( $footer_image_id ) ) :
+			$footer_image_url = wp_get_attachment_url( intval( $footer_image_id ) );
+			if ( $footer_image_url ) :
+				?>
+				<div class="pn-cm-budget-footer-image">
+					<img src="<?php echo esc_url( $footer_image_url ); ?>" alt="<?php esc_attr_e( 'Budget image', 'pn-customers-manager' ); ?>" />
+				</div>
+				<?php
+			endif;
+		endif;
+		?>
 
 		<!-- Terms -->
 		<?php if ( ! empty( $terms ) ) : ?>

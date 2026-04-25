@@ -174,11 +174,28 @@ trait PN_CM_AI_Chat_Common {
     if (!empty($node_config[$key]) && is_string($node_config[$key])) {
       $configured = trim($node_config[$key]);
       if ($configured !== '') {
-        return $configured;
+        return self::strip_html_to_plain_text($configured);
       }
     }
 
     return $default;
+  }
+
+  /**
+   * Convert HTML from a WYSIWYG editor to plain text suitable for
+   * WhatsApp / Instagram. Preserves paragraph breaks as newlines.
+   *
+   * @param string $html
+   * @return string
+   */
+  protected static function strip_html_to_plain_text($html) {
+    $text = preg_replace('/<\/p>\s*<p[^>]*>/i', "\n", $html);
+    $text = preg_replace('/<br\s*\/?>/i', "\n", $text);
+    $text = wp_strip_all_tags($text);
+    $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+    $text = preg_replace('/[ \t]+/', ' ', $text);
+    $text = preg_replace('/\n{3,}/', "\n\n", $text);
+    return trim($text);
   }
 
   /* ================================================================
@@ -289,8 +306,22 @@ trait PN_CM_AI_Chat_Common {
     $day_num   = (int) $now->format('N');
     $day_names = [1 => 'lunes', 2 => 'martes', 3 => 'miércoles', 4 => 'jueves', 5 => 'viernes', 6 => 'sábado', 7 => 'domingo'];
     $day_type  = $day_num <= 5 ? 'weekday (lunes-viernes)' : ($day_num === 6 ? 'sábado' : 'domingo');
-    $parts[]   = "CURRENT DATE AND TIME: " . $day_names[$day_num] . ", " . wp_date('j F Y, H:i', null, $tz)
-      . " (" . wp_timezone_string() . "). Day type: " . $day_type . ".";
+    // Build a mini-calendar of the next 7 days so the model can correctly
+    // map dates to day names without hallucinating.
+    $upcoming = [];
+    for ($d = 0; $d <= 7; $d++) {
+      $future   = $now->modify('+' . $d . ' days');
+      $fday_num = (int) $future->format('N');
+      $fday_type = $fday_num <= 5 ? 'weekday' : ($fday_num === 6 ? 'sábado' : 'domingo');
+      $label     = $d === 0 ? 'TODAY' : ($d === 1 ? 'TOMORROW' : '');
+      $upcoming[] = '- ' . $day_names[$fday_num] . ' ' . $future->format('j M')
+        . ' (' . $fday_type . ')' . ($label ? ' ← ' . $label : '');
+    }
+
+    $parts[] = "CURRENT DATE AND TIME: " . $day_names[$day_num] . ", " . wp_date('j F Y, H:i', null, $tz)
+      . " (" . wp_timezone_string() . "). Day type: " . $day_type . ".\n"
+      . "UPCOMING DAYS (use this to determine the day of the week for any date — NEVER guess):\n"
+      . implode("\n", $upcoming);
 
     // 2. Platform formatting rules
     $parts[] = static::get_formatting_rules();
@@ -303,6 +334,7 @@ trait PN_CM_AI_Chat_Common {
         . "However, you are FORBIDDEN from giving any SHIPPING cost, DELIVERY estimate, or DELIVERY confirmation unless the customer has provided their POSTAL CODE.\n"
         . "BEFORE asking the customer for a postal code, you MUST scan the customer's CURRENT message AND their previous messages for any 5-digit number that looks like a postal code (e.g. \"28080\", \"08001\", \"46015\"). If one is present — even embedded inside another question such as \"¿hacéis envíos al 28080?\" or \"mi CP es 28080\" — treat it as the customer's postal code and USE it directly to answer. Do NOT ask for it again when it has already been given.\n"
         . "Only ask for the postal code when the customer is asking about shipping/delivery AND no postal code appears anywhere in the conversation. Example: \"Para poder indicarte si realizamos envíos a tu zona y el coste exacto, ¿podrías facilitarme tu código postal?\"\n"
+        . "TIMING: NEVER ask for the postal code while you are in the middle of the product recommendation flow (showing products, sharing photos, discussing preferences, or helping the customer choose). Complete the entire product selection process FIRST. Only ask for the postal code AFTER the customer has chosen a product and explicitly asks about shipping/delivery costs, or when you need to collect delivery information.\n"
         . "IMPORTANT: A postal code provided earlier for a DIFFERENT address does NOT count. If the customer later asks about shipping to a new place without giving a new postal code, ask again.\n"
         . "Do NOT say \"we deliver to [location]\" or \"shipping costs X€\" without having the postal code first.";
     }
@@ -318,7 +350,7 @@ trait PN_CM_AI_Chat_Common {
     // Build the complex/special order instruction depending on whether special order forwarding is enabled.
     if ($enable_special_orders) {
       $complex_order_block = "SPECIAL ORDER FORWARDING (for requests that CANNOT be fulfilled with a simple purchase link):\n"
-        . "When the customer's request is complex (bulk/wholesale orders, B2B proposals, custom products, special shipping arrangements, orders that require a formal quote), do NOT redirect them away. Instead, follow this flow:\n"
+        . "When the customer's request is complex (bulk/wholesale orders, B2B proposals, custom products, orders that require a formal quote), do NOT redirect them away. Instead, follow this flow:\n"
         . "  1. Collect ALL relevant details from the customer naturally in conversation: what they need, quantities, any special requirements, their name, contact email or phone, and delivery preferences.\n"
         . "  2. Once you have enough details, present a clear summary of their request and ask them to confirm that the details are correct.\n"
         . "  3. ONLY after the customer explicitly confirms (e.g. \"sí\", \"correcto\", \"adelante\"), include the hidden tag [PEDIDO_ESPECIAL] at the END of your response message. The system will automatically strip this tag before the customer sees it and will forward the full conversation by email to the sales team.\n"
@@ -329,7 +361,7 @@ trait PN_CM_AI_Chat_Common {
         . "- Place the tag at the very end of your message, after all visible text.\n";
     } else {
       $complex_order_block = "COMPLEX ORDER REDIRECT:\n"
-        . "If the customer's request CANNOT be fulfilled with a simple purchase link (e.g. bulk/wholesale orders, B2B proposals, custom products, special shipping arrangements, orders that require a formal quote), do NOT attempt to process the order through this chat. Instead, " . $order_redirect_instruction . ".\n";
+        . "If the customer's request CANNOT be fulfilled with a simple purchase link (e.g. bulk/wholesale orders, B2B proposals, custom products, orders that require a formal quote), do NOT attempt to process the order through this chat. Instead, " . $order_redirect_instruction . ".\n";
     }
 
     if ($enable_chat_orders) {
@@ -373,8 +405,9 @@ trait PN_CM_AI_Chat_Common {
       $parts[] = $order_protocol;
     } else {
       $order_policy = "ORDER POLICY:\n"
-        . "You CANNOT accept or confirm orders through this chat. "
-        . "If a customer wants to place a simple order, " . $order_redirect_instruction . ".\n"
+        . "You CANNOT process or manage full orders through this chat (no delivery details collection, no order summaries, no confirmation flows).\n"
+        . "However, when a customer expresses interest in a product or confirms they want it, you MUST ALWAYS provide the product link (Buy link or Product link from the catalog) so they can purchase directly through the platform. For example: \"You can buy it directly here: [URL]\". This is your PRIMARY way to help customers complete a purchase.\n"
+        . "If the customer needs additional assistance beyond the purchase link (e.g. custom orders, special requests, complex delivery questions), " . $order_redirect_instruction . ".\n"
         . "NEVER include the tag [PEDIDO_CONFIRMADO] or [PEDIDO_CONFIRMADO:...] in your responses.";
       if ($enable_special_orders) {
         $order_policy .= "\n\n" . $complex_order_block;
@@ -501,6 +534,17 @@ trait PN_CM_AI_Chat_Common {
             : 'when a user asks about a product ALWAYS include the "Product link" so they can visit the product page';
         }
 
+        if ($include_variations) {
+          $parts[] = "CRITICAL — PRODUCT VARIATIONS RULE:\n"
+            . "Products marked with [HAS VARIATIONS — ask customer to choose] in the catalog below have multiple options (e.g. different sizes, colors, with/without accessories). "
+            . "When a customer selects one of these products, you MUST:\n"
+            . "1. Tell the customer that this product has several options available.\n"
+            . "2. List ALL the available variations with their attributes and prices.\n"
+            . "3. Ask the customer which variation they prefer.\n"
+            . "4. ONLY after the customer picks a variation, provide the purchase link.\n"
+            . "NEVER skip this step. NEVER provide a purchase link for a product marked [HAS VARIATIONS] without first showing the options and letting the customer choose.";
+        }
+
         if (static::supports_native_images()) {
           $parts[] = "PRODUCT CATALOG (use this data to answer questions about products, prices, availability; {$link_instruction}):\n" . $woo_context;
         } else {
@@ -613,8 +657,10 @@ trait PN_CM_AI_Chat_Common {
         $product_url = get_permalink($product_id);
       }
 
+      $has_variations = $include_variations && $product->is_type('variable');
+
       $block  = '---' . "\n";
-      $block .= 'Product: ' . $product->get_name() . "\n";
+      $block .= 'Product: ' . $product->get_name() . ($has_variations ? '  [HAS VARIATIONS — ask customer to choose]' : '') . "\n";
       $block .= 'ID: ' . $product_id . "\n";
 
       // Price — handle variable products with price ranges
@@ -623,7 +669,7 @@ trait PN_CM_AI_Chat_Common {
         $max_price = $product->get_variation_price('max', true);
         if ($min_price) {
           if ($min_price !== $max_price) {
-            $block .= 'Price: ' . __('from', 'pn-customers-manager') . ' ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
+            $block .= 'Min. price: ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
           } else {
             $block .= 'Price: ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
           }
@@ -841,6 +887,7 @@ trait PN_CM_AI_Chat_Common {
     $lines[] = '- NEVER include [PRODUCT_IMAGES:ID] tags during Steps 1 or 2.';
     $lines[] = '- Recommend a maximum of 5-6 products per interaction.';
     $lines[] = '- Ask qualifying questions one at a time, not all at once.';
+    $lines[] = '- NEVER ask for the postal code during the recommendation flow (Steps 1-3). Postal code is ONLY relevant for shipping/delivery AFTER the customer has selected a product.';
     $lines[] = '=== END RECOMMENDATION PROTOCOL ===';
 
     return implode("\n", $lines);
@@ -1093,7 +1140,12 @@ trait PN_CM_AI_Chat_Common {
       return $openai_messages;
     }
 
-    $postal_code = self::find_recent_user_postal_code($openai_messages);
+    // Only inject the hint when the LAST user message contains a postal code.
+    // This prevents re-injecting shipping context when the customer is
+    // selecting a shipping option (e.g. "El envío") rather than asking a
+    // new shipping question. Using find_recent_user_postal_code (10 msgs back)
+    // caused GPT to loop on shipping info instead of advancing to the order.
+    $postal_code = self::find_postal_code_in_last_user_message($openai_messages);
     if (!$postal_code) {
       return $openai_messages;
     }
@@ -1656,6 +1708,71 @@ trait PN_CM_AI_Chat_Common {
    *
    * @return string 'en' or 'es'
    */
+
+  /* ================================================================
+   * TIME-GAP MARKERS
+   * ----------------------------------------------------------------
+   * When a significant time gap (>1 hour) exists between consecutive
+   * messages, inject a system message so the model does not blindly
+   * continue the previous conversation topic.
+   * ================================================================ */
+
+  /**
+   * Build the OpenAI messages array from the internal $messages list,
+   * injecting time-gap markers when there is a pause of more than 1 hour.
+   *
+   * @param array  $messages      Internal messages (role, content, timestamp).
+   * @param string $system_prompt System prompt to prepend (may be empty).
+   * @return array OpenAI-compatible messages array.
+   */
+  protected static function build_openai_messages_with_gap_markers($messages, $system_prompt = '') {
+    $openai_messages = [];
+
+    if (!empty($system_prompt)) {
+      $openai_messages[] = [
+        'role'    => 'system',
+        'content' => $system_prompt,
+      ];
+    }
+
+    $gap_threshold = 3600; // 1 hour in seconds
+    $prev_timestamp = null;
+
+    foreach ($messages as $msg) {
+      $curr_timestamp = !empty($msg['timestamp']) ? strtotime($msg['timestamp']) : null;
+
+      if ($prev_timestamp && $curr_timestamp && ($curr_timestamp - $prev_timestamp) > $gap_threshold) {
+        $hours = round(($curr_timestamp - $prev_timestamp) / 3600, 1);
+        $openai_messages[] = [
+          'role'    => 'system',
+          'content' => '[TIME GAP: ' . $hours . ' hours have passed since the last message. '
+            . 'The customer may be starting a new topic. Do NOT proactively continue the previous conversation thread '
+            . '(shipping, products, postal codes, orders, etc.). Respond naturally to what the customer says next. '
+            . 'If they send a greeting, greet them back and ask how you can help — do NOT reference previous topics.]',
+        ];
+      }
+
+      $prev_timestamp = $curr_timestamp;
+
+      $content = $msg['content'];
+
+      // Strip "[Se enviaron imágenes de: …]" markers from stored assistant
+      // messages so the model does not learn to hallucinate them instead of
+      // using the real [PRODUCT_IMAGES:ID] tags.
+      if ($msg['role'] === 'assistant') {
+        $content = preg_replace('/\s*\[Se\s+envi(?:[óo]|aron)\s+im[áa]gen(?:es)?\s*(?:de)?\s*:\s*[^\]]*\]/iu', '', $content);
+        $content = trim($content);
+      }
+
+      $openai_messages[] = [
+        'role'    => $msg['role'],
+        'content' => $content,
+      ];
+    }
+
+    return $openai_messages;
+  }
+
   private static function detect_conversation_language($messages) {
     $recent = array_slice($messages, -4);
     $text   = '';
@@ -1980,8 +2097,16 @@ trait PN_CM_AI_Chat_Common {
       return $text;
     }
 
+    // Skip enforcement when the AI is sending product images (recommendation protocol Step 3)
+    if (preg_match('/\[PRODUCT_IMAGES:\d+\]/', $text)) {
+      self::log('enforce_postal_code_rule — response contains [PRODUCT_IMAGES] tags (recommendation flow), skipping');
+      return $text;
+    }
+
     // Refined regex that avoids false positives
-    $shipping_keywords = '/(env[ií]o(?!\s+de\s+flores)|coste\s+de\s+env[ií]o|gastos\s+de\s+env[ií]o|entrega\s+a\s+domicilio|hacemos\s+env[ií]os|realizamos\s+env[ií]os|podemos\s+enviar|enviamos\s+a\b|entregamos\s+en|repartimos|shipping|delivery\s+cost|\d+[\.,]?\d*\s*€[^.]*env[ií]o|env[ií]o[^.]*\d+[\.,]?\d*\s*€)/iu';
+    // NOTE: bare "envío/envio" is NOT matched — it's too ambiguous (verb "I send" vs noun "shipping").
+    // Only match compound phrases clearly about shipping costs/delivery.
+    $shipping_keywords = '/(env[ií]o\s+(?:gratuito|gratis|express|urgente|est[áa]ndar|nacional|internacional|incluido|a\s+domicilio)|opciones?\s+de\s+env[ií]o|zona\s+de\s+env[ií]o|tarifas?\s+de\s+env[ií]o|precio\s+(?:del?\s+)?env[ií]o|coste\s+(?:del?\s+)?env[ií]o|gastos?\s+de\s+env[ií]o|entrega\s+a\s+domicilio|hacemos\s+env[ií]os|realizamos\s+env[ií]os|podemos\s+enviar|enviamos\s+a\b|entregamos\s+en|repartimos|shipping|delivery\s+cost|\d+[\.,]?\d*\s*€[^.]*env[ií]o|env[ií]o[^.]*\d+[\.,]?\d*\s*€)/iu';
     if (!preg_match($shipping_keywords, $text, $kw_match)) {
       self::log('enforce_postal_code_rule — no shipping keywords found in response, skipping');
       return $text;
@@ -2148,6 +2273,12 @@ trait PN_CM_AI_Chat_Common {
     $text = preg_replace('/!\[[^\]]*\]\([^)]+\)/', '', $text);
     $text = preg_replace('/^\s*https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg|bmp|tiff)\b\S*\s*$/mi', '', $text);
     $text = preg_replace('/:\s*https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg|bmp|tiff)\b\S*/i', '.', $text);
+
+    // Strip hallucinated image-delivery markers the model may copy from
+    // conversation history (e.g. "[Se envió imagen de: Product]").
+    $text = preg_replace('/\s*\[Se\s+envi[óo]\s+im[áa]gen(?:es)?\s*(?:de)?\s*:\s*[^\]]*\]/iu', '', $text);
+    $text = preg_replace('/\s*\[Se\s+enviaron\s+im[áa]gen(?:es)?\s*(?:de)?\s*:\s*[^\]]*\]/iu', '', $text);
+
     $text = preg_replace('/\n{3,}/', "\n\n", $text);
     $text = trim($text);
     if ($text !== $original) {
