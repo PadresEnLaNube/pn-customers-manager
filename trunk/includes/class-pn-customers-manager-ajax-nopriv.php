@@ -673,6 +673,12 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           update_post_meta($budget_id, 'pn_cm_budget_status', 'accepted');
           update_post_meta($budget_id, 'pn_cm_budget_accepted_at', current_time('mysql'));
 
+          // Store acceptor email if provided (non-logged-in users).
+          $acceptor_email = isset($_POST['acceptor_email']) ? sanitize_email(wp_unslash($_POST['acceptor_email'])) : '';
+          if (!empty($acceptor_email)) {
+            update_post_meta($budget_id, 'pn_cm_budget_accepted_by_email', $acceptor_email);
+          }
+
           // --- Send acceptance notification emails ---
           $this->pn_cm_budget_send_acceptance_email($budget_id);
 
@@ -820,18 +826,25 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
     if ( ! empty( $org_name ) ) {
       $html_body .= '<p><strong>' . esc_html__( 'Client', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $org_name ) . '</p>';
     }
+    $acceptor_email = get_post_meta( $budget_id, 'pn_cm_budget_accepted_by_email', true );
+    if ( ! empty( $acceptor_email ) ) {
+      $html_body .= '<p><strong>' . esc_html__( 'Accepted by', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $acceptor_email ) . '</p>';
+    }
     $html_body .= '<p><strong>' . esc_html__( 'Accepted on', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $accepted_at ) . '</p>';
     $html_body .= '<h3>' . esc_html__( 'Items detail', 'pn-customers-manager' ) . '</h3>';
     $html_body .= $items_html;
     $html_body .= $totals_html;
 
-    // Recipients: admin + client.
+    // Recipients: admin + client + acceptor.
     $recipients = array();
     if ( ! empty( $admin_email ) ) {
       $recipients[] = $admin_email;
     }
     if ( ! empty( $org_email ) && $org_email !== $admin_email ) {
       $recipients[] = $org_email;
+    }
+    if ( ! empty( $acceptor_email ) && ! in_array( $acceptor_email, $recipients, true ) ) {
+      $recipients[] = $acceptor_email;
     }
 
     if ( empty( $recipients ) ) {

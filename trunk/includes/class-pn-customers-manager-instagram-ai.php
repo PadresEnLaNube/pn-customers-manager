@@ -28,6 +28,7 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
   protected static function brand_color()                 { return '#C13584'; }
   protected static function email_type()                  { return 'pn_cm_instagram_order'; }
   protected static function log_channel()                 { return 'instagram-ai'; }
+  protected static function debug_log_option()             { return 'pn_customers_manager_instagram_debug_log'; }
   protected static function node_subtype()                { return 'instagram_ai'; }
   protected static function supports_native_images()      { return false; }
   protected static function get_identifier_field()        { return 'ig_user_id'; }
@@ -587,6 +588,10 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
           <?php esc_html_e('Close conversation', 'pn-customers-manager'); ?>
         </button>
       <?php endif; ?>
+      <button type="button" class="pn-cm-wa-action-btn" data-action="reset" data-conv-id="<?php echo esc_attr($conv->id); ?>">
+        <span class="material-icons-outlined" style="font-size:16px;vertical-align:middle;">restart_alt</span>
+        <?php esc_html_e('Reset', 'pn-customers-manager'); ?>
+      </button>
       <button type="button" class="pn-cm-wa-action-btn pn-cm-wa-btn-delete" data-action="delete" data-conv-id="<?php echo esc_attr($conv->id); ?>">
         <span class="material-icons-outlined" style="font-size:16px;vertical-align:middle;">delete</span>
         <?php esc_html_e('Delete', 'pn-customers-manager'); ?>

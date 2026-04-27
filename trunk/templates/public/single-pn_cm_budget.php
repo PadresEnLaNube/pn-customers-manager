@@ -103,18 +103,28 @@ wp_localize_script(
 		'currencyPosition' => $currency_position,
 		'taxRate'        => $budget_tax_rate,
 		'discountRate'   => $budget_discount_rate,
+		'isLoggedIn'     => is_user_logged_in(),
 		'i18n'           => array(
 			'confirmAccept' => __( 'Are you sure you want to accept this budget?', 'pn-customers-manager' ),
 			'confirmReject' => __( 'Are you sure you want to reject this budget?', 'pn-customers-manager' ),
 			'accepted'      => __( 'Budget accepted successfully.', 'pn-customers-manager' ),
 			'rejected'      => __( 'Budget rejected.', 'pn-customers-manager' ),
 			'error'         => __( 'An error occurred. Please try again.', 'pn-customers-manager' ),
+			'emailRequired' => __( 'Please enter your email address to accept this budget.', 'pn-customers-manager' ),
+			'emailInvalid'  => __( 'Please enter a valid email address.', 'pn-customers-manager' ),
 		),
 	)
 );
 
 // Admin inline editing scripts.
 if ( $is_admin ) {
+	// WP 6.7+ replaced underscore.js with a minimal compat shim missing methods
+	// required by wp.media(). Override with full library before scripts are printed.
+	add_action( 'wp_enqueue_scripts', function () {
+		wp_deregister_script( 'underscore' );
+		wp_register_script( 'underscore', PN_CUSTOMERS_MANAGER_URL . 'assets/js/vendor/underscore.min.js', array(), '1.13.7' );
+	}, 1 );
+
 	wp_enqueue_media();
 	wp_enqueue_script( 'jquery-ui-sortable' );
 	wp_enqueue_script(
@@ -199,8 +209,8 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 		wp_deregister_script( $handle );
 	}
 
-	// Also remove ALL theme and other plugin styles to prevent dark mode / layout conflicts.
-	// Only keep our explicit whitelist.
+	// Remove ALL theme and other plugin styles to prevent layout conflicts.
+	// Keep our whitelist + WP core styles needed by wp.media for admins.
 	$allowed_styles = array(
 		'pn-customers-manager-budget',
 		'material-icons',
@@ -208,11 +218,12 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 		'wph-material-icons-outlined',
 	);
 
-	// Allow wp.media styles for admin image uploads.
 	if ( $is_admin ) {
+		// Admins need WP core styles for wp.media modal.
 		$allowed_styles = array_merge( $allowed_styles, array(
-			'media-views', 'wp-mediaelement', 'mediaelement',
-			'imgareaselect', 'buttons', 'dashicons',
+			'dashicons', 'media-views', 'imgareaselect', 'buttons',
+			'editor-buttons', 'wp-auth-check', 'wp-mediaelement',
+			'pn-customers-manager-invoice',
 		) );
 	}
 
@@ -228,39 +239,23 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 	}
 
 	// Also remove ALL theme/other plugin scripts — only keep our whitelist.
-	$allowed_scripts = array(
-		'jquery',
-		'jquery-core',
-		'jquery-migrate',
-		'jquery-ui-core',
-		'jquery-ui-sortable',
-		'jquery-ui-mouse',
-		'jquery-ui-widget',
-		'pn-customers-manager-budget',
-		'pn-customers-manager-budget-admin',
-		'pn-customers-manager-popups',
-	);
-
-	// Allow wp.media scripts for admin image uploads.
-	if ( $is_admin ) {
-		$media_scripts = array(
-			'media-editor', 'media-audiovideo', 'media-views', 'media-models',
-			'media-grid', 'wp-mediaelement', 'mediaelement-core',
-			'mediaelement-migrate', 'wp-plupload', 'plupload',
-			'backbone', 'underscore', 'wp-backbone', 'wp-util', 'wp-api-request',
-			'wp-a11y', 'shortcode', 'wp-i18n', 'wp-hooks',
-			'imgareaselect', 'image-edit',
+	// Skip script filtering for admins: they need wp.media and other WP core scripts.
+	if ( ! $is_admin ) {
+		$allowed_scripts = array(
+			'jquery',
+			'jquery-core',
+			'jquery-migrate',
+			'pn-customers-manager-budget',
 		);
-		$allowed_scripts = array_merge( $allowed_scripts, $media_scripts );
-	}
 
-	global $wp_scripts;
-	if ( ! empty( $wp_scripts->queue ) ) {
-		$queued_scripts = array_values( $wp_scripts->queue );
-		foreach ( $queued_scripts as $handle ) {
-			if ( ! in_array( $handle, $allowed_scripts, true ) ) {
-				wp_dequeue_script( $handle );
-				wp_deregister_script( $handle );
+		global $wp_scripts;
+		if ( ! empty( $wp_scripts->queue ) ) {
+			$queued_scripts = array_values( $wp_scripts->queue );
+			foreach ( $queued_scripts as $handle ) {
+				if ( ! in_array( $handle, $allowed_scripts, true ) ) {
+					wp_dequeue_script( $handle );
+					wp_deregister_script( $handle );
+				}
 			}
 		}
 	}
@@ -295,7 +290,24 @@ foreach ( $items as $item ) {
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="robots" content="noindex, nofollow">
-	<title><?php echo esc_html( sprintf( __( 'Budget %s', 'pn-customers-manager' ), $budget_number ) ); ?></title>
+	<?php
+	$pn_cm_og_title = sprintf( __( 'Budget %s', 'pn-customers-manager' ), $budget_number );
+	if ( ! empty( $company_name ) ) {
+		$pn_cm_og_title .= ' — ' . $company_name;
+	}
+	$pn_cm_og_description = '';
+	if ( ! empty( $org_name ) ) {
+		$pn_cm_og_description .= $org_name . ' · ';
+	}
+	$pn_cm_og_description .= $format_currency( $budget_total );
+	?>
+	<title><?php echo esc_html( $pn_cm_og_title ); ?></title>
+	<meta property="og:title" content="<?php echo esc_attr( $pn_cm_og_title ); ?>" />
+	<meta property="og:description" content="<?php echo esc_attr( $pn_cm_og_description ); ?>" />
+	<meta property="og:type" content="website" />
+	<?php if ( ! empty( $company_logo ) ) : ?>
+		<meta property="og:image" content="<?php echo esc_url( $company_logo ); ?>" />
+	<?php endif; ?>
 	<?php
 	// Schema.org JSON-LD structured data.
 	$pn_cm_currency_map = array( '€' => 'EUR', '$' => 'USD', '£' => 'GBP', '¥' => 'JPY' );
@@ -400,24 +412,7 @@ foreach ( $items as $item ) {
 						<?php if ( null === $group['phase'] ) : ?>
 							<?php // Loose items (no phase parent). ?>
 							<?php foreach ( $group['items'] as $item ) : ?>
-								<?php if ( 'image' === $item['item_type'] ) : ?>
-									<div class="pn-cm-budget-item-row pn-cm-budget-item-image"
-										data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
-										data-item-type="image"
-										data-item-description="<?php echo esc_attr( $item['description'] ); ?>">
-										<?php if ( $is_admin ) : ?>
-											<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'pn-customers-manager' ); ?>">drag_indicator</i></span>
-										<?php endif; ?>
-										<div class="pn-cm-budget-item-content">
-											<img src="<?php echo esc_url( $item['description'] ); ?>" class="pn-cm-budget-image-preview" alt="" />
-											<?php if ( $is_admin ) : ?>
-												<span class="pn-cm-budget-col-actions">
-													<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
-												</span>
-											<?php endif; ?>
-										</div>
-									</div>
-								<?php else : ?>
+								<?php if ( 'image' === $item['item_type'] ) { continue; } ?>
 								<div class="pn-cm-budget-item-row <?php echo ! empty( $item['is_optional'] ) && empty( $item['is_selected'] ) ? 'pn-cm-budget-item-deselected' : ''; ?>"
 									data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
 									data-item-type="<?php echo esc_attr( $item['item_type'] ); ?>"
@@ -457,7 +452,6 @@ foreach ( $items as $item ) {
 										</div>
 									</div>
 								</div>
-								<?php endif; ?>
 							<?php endforeach; ?>
 						<?php else : ?>
 							<?php
@@ -505,24 +499,7 @@ foreach ( $items as $item ) {
 								</div>
 								<div class="pn-cm-budget-phase-items">
 									<?php foreach ( $phase_items as $item ) : ?>
-										<?php if ( 'image' === $item['item_type'] ) : ?>
-											<div class="pn-cm-budget-item-row pn-cm-budget-item-image"
-												data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
-												data-item-type="image"
-												data-item-description="<?php echo esc_attr( $item['description'] ); ?>">
-												<?php if ( $is_admin ) : ?>
-													<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'pn-customers-manager' ); ?>">drag_indicator</i></span>
-												<?php endif; ?>
-												<div class="pn-cm-budget-item-content">
-													<img src="<?php echo esc_url( $item['description'] ); ?>" class="pn-cm-budget-image-preview" alt="" />
-													<?php if ( $is_admin ) : ?>
-														<span class="pn-cm-budget-col-actions">
-															<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
-														</span>
-													<?php endif; ?>
-												</div>
-											</div>
-										<?php else : ?>
+										<?php if ( 'image' === $item['item_type'] ) { continue; } ?>
 										<div class="pn-cm-budget-item-row <?php echo ! empty( $item['is_optional'] ) && empty( $item['is_selected'] ) ? 'pn-cm-budget-item-deselected' : ''; ?>"
 											data-item-id="<?php echo esc_attr( $item['id'] ); ?>"
 											data-item-type="<?php echo esc_attr( $item['item_type'] ); ?>"
@@ -562,7 +539,6 @@ foreach ( $items as $item ) {
 												</div>
 											</div>
 										</div>
-										<?php endif; ?>
 									<?php endforeach; ?>
 								</div>
 							</div>
@@ -574,6 +550,55 @@ foreach ( $items as $item ) {
 					</div>
 				<?php endif; ?>
 			</div>
+
+			<!-- Images gallery -->
+			<?php
+			$gallery_images = [];
+			if ( ! empty( $groups ) ) {
+				foreach ( $groups as $gallery_group ) {
+					foreach ( $gallery_group['items'] as $gi ) {
+						if ( 'image' === $gi['item_type'] ) {
+							$gallery_images[] = $gi;
+						}
+					}
+				}
+			}
+			?>
+			<?php if ( ! empty( $gallery_images ) || $is_admin ) : ?>
+				<div class="pn-cm-budget-images-gallery" id="pn-cm-budget-images-gallery" data-budget-id="<?php echo esc_attr( $budget_id ); ?>">
+					<?php foreach ( $gallery_images as $gi ) : ?>
+						<div class="pn-cm-budget-item-row pn-cm-budget-item-image pn-cm-budget-gallery-item"
+							data-item-id="<?php echo esc_attr( $gi['id'] ); ?>"
+							data-item-type="image"
+							data-item-description="<?php echo esc_attr( $gi['description'] ); ?>">
+							<div class="pn-cm-budget-item-content">
+								<img src="<?php echo esc_url( $gi['description'] ); ?>" class="pn-cm-budget-image-preview" alt="" />
+								<?php if ( $is_admin ) : ?>
+									<span class="pn-cm-budget-col-actions">
+										<a href="#" class="pn-cm-budget-row-delete" title="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined">delete</i></a>
+									</span>
+								<?php endif; ?>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+
+			<!-- Footer image -->
+			<?php
+			$footer_image_id = get_post_meta( $budget_id, 'pn_cm_budget_footer_image', true );
+			if ( ! empty( $footer_image_id ) && is_numeric( $footer_image_id ) ) :
+				$footer_image_url = wp_get_attachment_url( intval( $footer_image_id ) );
+				if ( $footer_image_url ) :
+					?>
+					<div class="pn-cm-budget-footer-image">
+						<img src="<?php echo esc_url( $footer_image_url ); ?>" alt="<?php esc_attr_e( 'Budget image', 'pn-customers-manager' ); ?>" />
+					</div>
+					<?php
+				endif;
+			endif;
+			?>
+
 			<?php if ( $is_admin ) : ?>
 				<div class="pn-cm-budget-admin-buttons">
 					<a href="#" class="pn-cm-budget-btn pn-cm-budget-btn-secondary pn-customers-manager-budget-add-phase">
@@ -618,6 +643,18 @@ foreach ( $items as $item ) {
 
 		<!-- Actions (only when status = sent) -->
 		<?php if ( 'sent' === $budget_status ) : ?>
+			<?php if ( ! is_user_logged_in() ) : ?>
+				<div class="pn-cm-budget-email-prompt" id="pn-cm-budget-email-prompt" style="display:none;">
+					<label for="pn-cm-budget-acceptor-email"><?php esc_html_e( 'Your email address', 'pn-customers-manager' ); ?></label>
+					<div class="pn-cm-budget-email-prompt-row">
+						<input type="email" id="pn-cm-budget-acceptor-email" class="pn-cm-budget-email-input" placeholder="email@example.com" required />
+						<button type="button" id="pn-cm-budget-confirm-accept" class="pn-cm-budget-btn pn-cm-budget-btn-accept">
+							<i class="material-icons-outlined">check</i>
+							<?php esc_html_e( 'Confirm', 'pn-customers-manager' ); ?>
+						</button>
+					</div>
+				</div>
+			<?php endif; ?>
 			<div class="pn-cm-budget-actions">
 				<button type="button" id="pn-cm-budget-accept" class="pn-cm-budget-btn pn-cm-budget-btn-accept">
 					<i class="material-icons-outlined">check</i>
@@ -654,20 +691,6 @@ foreach ( $items as $item ) {
 			</div>
 		<?php endif; ?>
 
-		<!-- Footer image -->
-		<?php
-		$footer_image_id = get_post_meta( $budget_id, 'pn_cm_budget_footer_image', true );
-		if ( ! empty( $footer_image_id ) && is_numeric( $footer_image_id ) ) :
-			$footer_image_url = wp_get_attachment_url( intval( $footer_image_id ) );
-			if ( $footer_image_url ) :
-				?>
-				<div class="pn-cm-budget-footer-image">
-					<img src="<?php echo esc_url( $footer_image_url ); ?>" alt="<?php esc_attr_e( 'Budget image', 'pn-customers-manager' ); ?>" />
-				</div>
-				<?php
-			endif;
-		endif;
-		?>
 
 		<!-- Terms -->
 		<?php if ( ! empty( $terms ) ) : ?>
@@ -685,6 +708,20 @@ foreach ( $items as $item ) {
 				<i class="material-icons-outlined">picture_as_pdf</i>
 				<?php esc_html_e( 'Generate PDF', 'pn-customers-manager' ); ?>
 			</button>
+		</div>
+	</div>
+
+	<!-- Sticky totals bar -->
+	<div class="pn-cm-budget-sticky-totals" id="pn-cm-budget-sticky-totals">
+		<div class="pn-cm-budget-sticky-inner">
+			<div class="pn-cm-budget-sticky-item">
+				<span class="pn-cm-budget-sticky-label"><?php esc_html_e( 'Total w/o tax', 'pn-customers-manager' ); ?></span>
+				<span class="pn-cm-budget-sticky-value" id="pn-cm-budget-sticky-subtotal"><?php echo esc_html( $format_currency( $budget_subtotal ) ); ?></span>
+			</div>
+			<div class="pn-cm-budget-sticky-item pn-cm-budget-sticky-item-total">
+				<span class="pn-cm-budget-sticky-label"><?php esc_html_e( 'Total', 'pn-customers-manager' ); ?></span>
+				<span class="pn-cm-budget-sticky-value" id="pn-cm-budget-sticky-total"><?php echo esc_html( $format_currency( $budget_total ) ); ?></span>
+			</div>
 		</div>
 	</div>
 

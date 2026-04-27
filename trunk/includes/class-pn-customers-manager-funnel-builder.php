@@ -294,49 +294,31 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
     </div>
 
     <!-- WhatsApp Chat Popup -->
-    <div id="pn-cm-fb-wa-popup" class="pn-cm-fb-wa-popup" style="display:none;">
-      <div class="pn-cm-fb-wa-popup-overlay"></div>
-      <div class="pn-cm-fb-wa-popup-container">
-        <!-- Header -->
-        <div class="pn-cm-fb-wa-popup-header">
-          <button type="button" id="pn-cm-fb-wa-popup-back" class="pn-cm-fb-wa-popup-back" style="display:none;">
-            <span class="material-icons-outlined">arrow_back</span>
-          </button>
-          <span class="material-icons-outlined pn-cm-fb-wa-popup-icon">chat</span>
-          <span id="pn-cm-fb-wa-popup-title" class="pn-cm-fb-wa-popup-title"><?php esc_html_e('WhatsApp Conversations', 'pn-customers-manager'); ?></span>
-          <button type="button" id="pn-cm-fb-wa-popup-close" class="pn-cm-fb-wa-popup-close">
-            <span class="material-icons-outlined">close</span>
-          </button>
+    <div id="pn-cm-fb-wa-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft" data-pn-customers-manager-popup-disable-esc="true" data-pn-customers-manager-popup-disable-overlay-close="true">
+      <div class="pn-customers-manager-p-30 pn-cm-fb-conv-popup-inner">
+        <div class="pn-cm-fb-conv-popup-header pn-customers-manager-mb-20">
+          <button type="button" id="pn-cm-fb-wa-popup-back" class="pn-cm-fb-conv-popup-back" style="display:none;"><span class="material-icons-outlined">arrow_back</span></button>
+          <span class="material-icons-outlined pn-cm-fb-conv-popup-icon">chat</span>
+          <h3 id="pn-cm-fb-wa-popup-title" class="pn-customers-manager-mt-0 pn-customers-manager-mb-0"><?php esc_html_e('WhatsApp Conversations', 'pn-customers-manager'); ?></h3>
+          <button type="button" id="pn-cm-fb-wa-popup-close" class="pn-customers-manager-popup-close-wrapper"><i class="material-icons-outlined">close</i></button>
         </div>
-        <!-- Body -->
-        <div id="pn-cm-fb-wa-popup-body" class="pn-cm-fb-wa-popup-body">
-          <div class="pn-cm-fb-wa-popup-loading">
-            <span class="material-icons-outlined pn-cm-fb-wa-spin">sync</span>
-          </div>
+        <div id="pn-cm-fb-wa-popup-body" class="pn-cm-fb-conv-popup-body">
+          <div class="pn-customers-manager-loader-circle-wrapper"><div class="pn-customers-manager-text-align-center"><div class="pn-customers-manager-loader-circle"><div></div><div></div><div></div><div></div></div></div></div>
         </div>
       </div>
     </div>
 
     <!-- Instagram Chat Popup -->
-    <div id="pn-cm-fb-ig-popup" class="pn-cm-fb-ig-popup" style="display:none;">
-      <div class="pn-cm-fb-ig-popup-overlay"></div>
-      <div class="pn-cm-fb-ig-popup-container">
-        <!-- Header -->
-        <div class="pn-cm-fb-ig-popup-header">
-          <button type="button" id="pn-cm-fb-ig-popup-back" class="pn-cm-fb-ig-popup-back" style="display:none;">
-            <span class="material-icons-outlined">arrow_back</span>
-          </button>
-          <span class="material-icons-outlined pn-cm-fb-ig-popup-icon">photo_camera</span>
-          <span id="pn-cm-fb-ig-popup-title" class="pn-cm-fb-ig-popup-title"><?php esc_html_e('Instagram Conversations', 'pn-customers-manager'); ?></span>
-          <button type="button" id="pn-cm-fb-ig-popup-close" class="pn-cm-fb-ig-popup-close">
-            <span class="material-icons-outlined">close</span>
-          </button>
+    <div id="pn-cm-fb-ig-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft" data-pn-customers-manager-popup-disable-esc="true" data-pn-customers-manager-popup-disable-overlay-close="true">
+      <div class="pn-customers-manager-p-30 pn-cm-fb-conv-popup-inner">
+        <div class="pn-cm-fb-conv-popup-header pn-customers-manager-mb-20">
+          <button type="button" id="pn-cm-fb-ig-popup-back" class="pn-cm-fb-conv-popup-back" style="display:none;"><span class="material-icons-outlined">arrow_back</span></button>
+          <span class="material-icons-outlined pn-cm-fb-conv-popup-icon">photo_camera</span>
+          <h3 id="pn-cm-fb-ig-popup-title" class="pn-customers-manager-mt-0 pn-customers-manager-mb-0"><?php esc_html_e('Instagram Conversations', 'pn-customers-manager'); ?></h3>
+          <button type="button" id="pn-cm-fb-ig-popup-close" class="pn-customers-manager-popup-close-wrapper"><i class="material-icons-outlined">close</i></button>
         </div>
-        <!-- Body -->
-        <div id="pn-cm-fb-ig-popup-body" class="pn-cm-fb-ig-popup-body">
-          <div class="pn-cm-fb-ig-popup-loading">
-            <span class="material-icons-outlined pn-cm-fb-ig-spin">sync</span>
-          </div>
+        <div id="pn-cm-fb-ig-popup-body" class="pn-cm-fb-conv-popup-body">
+          <div class="pn-customers-manager-loader-circle-wrapper"><div class="pn-customers-manager-text-align-center"><div class="pn-customers-manager-loader-circle"><div></div><div></div><div></div><div></div></div></div></div>
         </div>
       </div>
     </div>
@@ -423,6 +405,11 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'settingsError'      => __('Error loading settings.', 'pn-customers-manager'),
         'igConversations'    => __('Instagram Conversations', 'pn-customers-manager'),
         'igNoConversations'  => __('No Instagram conversations yet.', 'pn-customers-manager'),
+        'close'              => __('Close', 'pn-customers-manager'),
+        'reset'              => __('Reset', 'pn-customers-manager'),
+        'deleteLabel'        => __('Delete', 'pn-customers-manager'),
+        'confirmDeleteConv'  => __('Delete this conversation?', 'pn-customers-manager'),
+        'confirmReset'       => __('Reset this conversation? All messages will be cleared.', 'pn-customers-manager'),
       ],
     ]);
   }

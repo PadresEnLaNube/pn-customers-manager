@@ -587,6 +587,15 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'html_content' => '<input type="button" id="pn-cm-whatsapp-receive-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Listen for messages', 'pn-customers-manager') . '" /><input type="button" id="pn-cm-whatsapp-receive-stop-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Stop', 'pn-customers-manager') . '" style="display:none;margin-left:6px;" /><span id="pn-cm-whatsapp-receive-result" class="pn-customers-manager-ml-10"></span>',
     ];
 
+    $pn_customers_manager_options['pn_customers_manager_whatsapp_debug_log'] = [
+      'id' => 'pn_customers_manager_whatsapp_debug_log',
+      'class' => 'pn-customers-manager-input',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Enable debug log', 'pn-customers-manager'),
+      'description' => __('When enabled, all WhatsApp AI activity is logged to <code>wp-content/uploads/pn-customers-manager-logs/whatsapp-ai.log</code>. Useful for debugging webhook and AI issues. <strong>Disable in production</strong> to avoid unnecessary disk usage.', 'pn-customers-manager'),
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_whatsapp_section_end'] = [
       'id' => 'pn_customers_manager_whatsapp_section_end',
       'section' => 'end',
@@ -662,6 +671,15 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'label' => __('Test message reception', 'pn-customers-manager'),
       'description' => __('Verifies that the webhook is correctly configured and your server can receive Instagram DMs.<br><strong>Instructions:</strong><br>1. Configure the <strong>Webhook URL</strong> and <strong>Verify Token</strong> in your Meta app.<br>2. Subscribe to the <strong>&laquo;messages&raquo;</strong> webhook field.<br>3. Click &laquo;Listen for messages&raquo;.<br>4. Send a DM to your Instagram account.<br>5. If everything is set up correctly, the message will appear here within seconds.', 'pn-customers-manager'),
       'html_content' => '<input type="button" id="pn-cm-instagram-receive-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Listen for messages', 'pn-customers-manager') . '" /><input type="button" id="pn-cm-instagram-receive-stop-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Stop', 'pn-customers-manager') . '" style="display:none;margin-left:6px;" /><span id="pn-cm-instagram-receive-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_instagram_debug_log'] = [
+      'id' => 'pn_customers_manager_instagram_debug_log',
+      'class' => 'pn-customers-manager-input',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Enable debug log', 'pn-customers-manager'),
+      'description' => __('When enabled, all Instagram AI activity is logged to <code>wp-content/uploads/pn-customers-manager-logs/instagram-ai.log</code>. Useful for debugging webhook and AI issues. <strong>Disable in production</strong> to avoid unnecessary disk usage.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_instagram_section_end'] = [

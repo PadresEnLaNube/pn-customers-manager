@@ -34,6 +34,9 @@ trait PN_CM_AI_Chat_Common {
   /** Log file name without extension, e.g. 'whatsapp-ai'. */
   abstract protected static function log_channel();
 
+  /** Option key for enabling debug log, e.g. 'pn_customers_manager_whatsapp_debug_log'. */
+  abstract protected static function debug_log_option();
+
   /** Funnel node subtype, e.g. 'whatsapp_ai'. */
   abstract protected static function node_subtype();
 
@@ -60,12 +63,13 @@ trait PN_CM_AI_Chat_Common {
    * ================================================================ */
 
   private static function log($message) {
-    if (!defined('WP_DEBUG') || !WP_DEBUG) {
+    $debug_option = static::debug_log_option();
+    if (empty(get_option($debug_option, ''))) {
       return;
     }
 
     $upload_dir = wp_upload_dir();
-    $log_dir    = $upload_dir['basedir'] . '/pn-cm-logs';
+    $log_dir    = $upload_dir['basedir'] . '/pn-customers-manager-logs';
 
     if (!file_exists($log_dir)) {
       wp_mkdir_p($log_dir);
@@ -329,14 +333,16 @@ trait PN_CM_AI_Chat_Common {
     // 3. Postal code requirement
     $require_postal = !empty($node_config[$prefix . 'require_postal_code']);
     if ($require_postal) {
-      $parts[] = "MANDATORY RULE — POSTAL CODE REQUIRED FOR SHIPPING:\n"
+      $parts[] = "MANDATORY RULE — POSTAL CODE FOR SHIPPING:\n"
         . "You CAN freely show product information, prices, images, and purchase links at any time — that is NOT affected by this rule.\n"
-        . "However, you are FORBIDDEN from giving any SHIPPING cost, DELIVERY estimate, or DELIVERY confirmation unless the customer has provided their POSTAL CODE.\n"
+        . "You CAN freely share delivery timeframes, shipping windows, estimated delivery days and general delivery information WITHOUT requiring a postal code. When the customer asks 'when does it arrive?' or 'how long does delivery take?', answer normally with the available delivery timeframes.\n"
+        . "However, you MUST ask for the postal code BEFORE confirming that delivery is possible to the customer's area or giving any specific shipping cost.\n"
+        . "The reason you give when asking for the postal code is to CONFIRM THAT YOU CAN DELIVER TO THEIR AREA. Example: \"Para confirmar que podemos realizar el envío a tu zona, ¿podrías facilitarme tu código postal?\". NEVER frame the question as being about calculating cost.\n"
         . "BEFORE asking the customer for a postal code, you MUST scan the customer's CURRENT message AND their previous messages for any 5-digit number that looks like a postal code (e.g. \"28080\", \"08001\", \"46015\"). If one is present — even embedded inside another question such as \"¿hacéis envíos al 28080?\" or \"mi CP es 28080\" — treat it as the customer's postal code and USE it directly to answer. Do NOT ask for it again when it has already been given.\n"
-        . "Only ask for the postal code when the customer is asking about shipping/delivery AND no postal code appears anywhere in the conversation. Example: \"Para poder indicarte si realizamos envíos a tu zona y el coste exacto, ¿podrías facilitarme tu código postal?\"\n"
-        . "TIMING: NEVER ask for the postal code while you are in the middle of the product recommendation flow (showing products, sharing photos, discussing preferences, or helping the customer choose). Complete the entire product selection process FIRST. Only ask for the postal code AFTER the customer has chosen a product and explicitly asks about shipping/delivery costs, or when you need to collect delivery information.\n"
+        . "TIMING: NEVER ask for the postal code while you are in the middle of the product recommendation flow (showing products, sharing photos, discussing preferences, or helping the customer choose). Complete the entire product selection process FIRST. Only ask for the postal code when transitioning to the order/shipping phase.\n"
+        . "When the customer says they want to buy, FIRST acknowledge their choice enthusiastically, THEN ask for the postal code to confirm delivery availability. Do NOT skip straight to asking for the postal code.\n"
         . "IMPORTANT: A postal code provided earlier for a DIFFERENT address does NOT count. If the customer later asks about shipping to a new place without giving a new postal code, ask again.\n"
-        . "Do NOT say \"we deliver to [location]\" or \"shipping costs X€\" without having the postal code first.";
+        . "Do NOT say \"shipping costs X€\" without having the postal code first. But you CAN say general delivery info like \"we deliver in 24-48h\" or \"free shipping on orders over X€\" without a postal code.";
     }
 
     // 4. Order acceptance protocol
@@ -1884,7 +1890,7 @@ trait PN_CM_AI_Chat_Common {
     }
 
     // Default: Spanish
-    $header = "¡Sí! Realizamos envíos al código postal {$postal_code}";
+    $header = "Realizamos envíos al código postal {$postal_code}";
     if (!$is_rest && $zone_name !== '') {
       $header .= " (zona: {$zone_name})";
     }
@@ -2103,10 +2109,10 @@ trait PN_CM_AI_Chat_Common {
       return $text;
     }
 
-    // Refined regex that avoids false positives
-    // NOTE: bare "envío/envio" is NOT matched — it's too ambiguous (verb "I send" vs noun "shipping").
-    // Only match compound phrases clearly about shipping costs/delivery.
-    $shipping_keywords = '/(env[ií]o\s+(?:gratuito|gratis|express|urgente|est[áa]ndar|nacional|internacional|incluido|a\s+domicilio)|opciones?\s+de\s+env[ií]o|zona\s+de\s+env[ií]o|tarifas?\s+de\s+env[ií]o|precio\s+(?:del?\s+)?env[ií]o|coste\s+(?:del?\s+)?env[ií]o|gastos?\s+de\s+env[ií]o|entrega\s+a\s+domicilio|hacemos\s+env[ií]os|realizamos\s+env[ií]os|podemos\s+enviar|enviamos\s+a\b|entregamos\s+en|repartimos|shipping|delivery\s+cost|\d+[\.,]?\d*\s*€[^.]*env[ií]o|env[ií]o[^.]*\d+[\.,]?\d*\s*€)/iu';
+    // Refined regex: only match phrases about shipping COST/PRICE.
+    // Delivery timeframes ("entrega en 24-48h", "llega en 2 días") are allowed
+    // without postal code — only price/cost triggers the override.
+    $shipping_keywords = '/(tarifas?\s+de\s+env[ií]o|precio\s+(?:del?\s+)?env[ií]o|coste\s+(?:del?\s+)?env[ií]o|gastos?\s+de\s+env[ií]o|shipping\s+cost|delivery\s+cost|\d+[\.,]?\d*\s*€[^.]*env[ií]o|env[ií]o[^.]*\d+[\.,]?\d*\s*€|cuesta\s+el\s+env[ií]o|vale\s+el\s+env[ií]o)/iu';
     if (!preg_match($shipping_keywords, $text, $kw_match)) {
       self::log('enforce_postal_code_rule — no shipping keywords found in response, skipping');
       return $text;
@@ -2149,22 +2155,26 @@ trait PN_CM_AI_Chat_Common {
       return $text;
     }
 
-    // No postal code — override response
+    // No postal code — override response.
+    // Keep sentences that don't mention shipping cost, then append the postal code question.
     self::log('enforce_postal_code_rule — OVERRIDING response (no postal code yet). Original: ' . mb_substr($text, 0, 200));
 
-    $first_sentence = '';
-    if (preg_match('/^(.+?[.!?])\s/u', $text, $m)) {
-      $candidate    = $m[1];
-      $has_price    = preg_match('/\d+[\.,]?\d*\s*€/u', $candidate);
-      $has_delivery = preg_match('/(?:podemos\s+enviar|enviamos|hacemos\s+env[ií]os?|realizamos\s+env[ií]os?|s[ií]\s*,?\s*(?:se\s+)?(?:puede|podemos|hacemos)|entregamos|repartimos|llegar[aá]|llegamos)/iu', $candidate);
-      if (!$has_price && !$has_delivery) {
-        $first_sentence = $candidate . "\n\n";
-      } else {
-        self::log('enforce_postal_code_rule — first sentence rejected (price=' . ($has_price ? 'YES' : 'NO') . ', delivery=' . ($has_delivery ? 'YES' : 'NO') . '): "' . $candidate . '"');
+    $safe_prefix = '';
+    // Try to preserve the beginning of the response up to the first shipping-cost mention.
+    $cost_pattern = '/(tarifas?\s+de\s+env[ií]o|precio\s+(?:del?\s+)?env[ií]o|coste\s+(?:del?\s+)?env[ií]o|gastos?\s+de\s+env[ií]o|\d+[\.,]?\d*\s*€[^.]*env[ií]o|env[ií]o[^.]*\d+[\.,]?\d*\s*€|cuesta\s+el\s+env[ií]o|vale\s+el\s+env[ií]o)/iu';
+    if (preg_match($cost_pattern, $text, $cm, PREG_OFFSET_CAPTURE)) {
+      $cut_pos = $cm[0][1];
+      // Walk back to the last sentence boundary before the match.
+      $before = mb_substr($text, 0, $cut_pos);
+      if (preg_match('/^(.+[.!?])\s+/us', $before, $bm)) {
+        $candidate = trim($bm[1]);
+        if (!empty($candidate)) {
+          $safe_prefix = $candidate . "\n\n";
+        }
       }
     }
 
-    return $first_sentence . 'Para poder indicarte el coste exacto de envío, ¿podrías facilitarme tu código postal?';
+    return $safe_prefix . 'Para confirmar que podemos realizar el envío a tu zona, ¿podrías facilitarme tu código postal?';
   }
 
   private static function validate_response_urls($text) {

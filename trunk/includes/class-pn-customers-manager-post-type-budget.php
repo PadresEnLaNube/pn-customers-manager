@@ -996,6 +996,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
                 }
               }
 
+              $pn_cm_budget_title = isset($key_value['pn_cm_budget_title']) ? $key_value['pn_cm_budget_title'] : '';
               $post_functions = new PN_CUSTOMERS_MANAGER_Functions_Post();
               $budget_id = $post_functions->pn_customers_manager_insert_post(esc_html($pn_cm_budget_title), '', '', sanitize_title(esc_html($pn_cm_budget_title)), 'pn_cm_budget', 'publish', get_current_user_id());
 
@@ -1024,6 +1025,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
               }
 
               $budget_id = $element_id;
+              $pn_cm_budget_title = isset($key_value['pn_cm_budget_title']) ? $key_value['pn_cm_budget_title'] : get_the_title($budget_id);
               wp_update_post(['ID' => $budget_id, 'post_title' => $pn_cm_budget_title]);
 
               if (!empty($key_value)) {

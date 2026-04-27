@@ -1275,14 +1275,12 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             wp_delete_post($pn_cm_budget_id, true);
 
             $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
-            echo wp_json_encode([
+            wp_send_json([
               'error_key' => '',
               'html' => $plugin_post_type_budget->pn_cm_budget_list(),
             ]);
-            exit;
           }
-          echo wp_json_encode(['error_key' => 'pn_cm_budget_remove_error', 'error_content' => esc_html(__('An error occurred while removing the Budget.', 'pn-customers-manager'))]);
-          exit;
+          wp_send_json(['error_key' => 'pn_cm_budget_remove_error', 'error_content' => esc_html(__('An error occurred while removing the Budget.', 'pn-customers-manager'))]);
           break;
 
         case 'pn_cm_budget_duplicate':
@@ -1329,14 +1327,12 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             }
 
             $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
-            echo wp_json_encode([
+            wp_send_json([
               'error_key' => '',
               'html' => $plugin_post_type_budget->pn_cm_budget_list(),
             ]);
-            exit;
           }
-          echo wp_json_encode(['error_key' => 'pn_cm_budget_duplicate_error']);
-          exit;
+          wp_send_json(['error_key' => 'pn_cm_budget_duplicate_error']);
           break;
 
         case 'pn_cm_budget_add_item':

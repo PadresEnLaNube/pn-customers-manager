@@ -28,6 +28,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
   protected static function brand_color()                 { return '#25D366'; }
   protected static function email_type()                  { return 'pn_cm_whatsapp_order'; }
   protected static function log_channel()                 { return 'whatsapp-ai'; }
+  protected static function debug_log_option()             { return 'pn_customers_manager_whatsapp_debug_log'; }
   protected static function node_subtype()                { return 'whatsapp_ai'; }
   protected static function supports_native_images()      { return true; }
   protected static function get_identifier_field()        { return 'phone_number'; }
@@ -52,18 +53,22 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     if ($include_images) {
       return "PRODUCT IMAGES RULES:\n"
         . "- Each product in the catalog has an Image tag like [PRODUCT_IMAGES:ID].\n"
-        . "- When you mention or recommend a specific product, ALWAYS include its Image tag in your response. The system will replace it with the actual photo sent as a native WhatsApp image.\n"
+        . "- When you mention or recommend a specific product, ALWAYS include its Image tag in your response. The system will send ONE main photo as a native WhatsApp image.\n"
         . "- Example: if recommending product ID 5052, write [PRODUCT_IMAGES:5052] somewhere in your message.\n"
         . "- You can include multiple Image tags if recommending several products.\n"
+        . "- If the customer asks to see MORE photos of a product whose main image was already sent, use [PRODUCT_MORE_IMAGES:ID] to send the remaining gallery photos.\n"
+        . "- NEVER use [PRODUCT_MORE_IMAGES:ID] unless the customer explicitly asks for more photos.\n"
         . "- NEVER invent image URLs. NEVER use markdown image syntax ![](). NEVER write URLs ending in .jpg/.png/.webp.\n"
-        . "- The ONLY way to show images is [PRODUCT_IMAGES:ID] with the exact ID from the catalog.";
+        . "- The ONLY way to show images is [PRODUCT_IMAGES:ID] or [PRODUCT_MORE_IMAGES:ID] with the exact ID from the catalog.";
     }
 
     return "PRODUCT IMAGES RULES:\n"
-      . "- The system automatically sends product images as WhatsApp photos when you mention a product URL.\n"
-      . "- If the customer asks to see a product image, you can also include [PRODUCT_IMAGES:ID] (replacing ID with the product's numeric ID) in your response. The system will send the actual photo.\n"
+      . "- The system automatically sends ONE product image as a WhatsApp photo when you mention a product URL.\n"
+      . "- If the customer asks to see a product image, you can also include [PRODUCT_IMAGES:ID] (replacing ID with the product's numeric ID) in your response. The system will send ONE main photo.\n"
+      . "- If the customer asks to see MORE photos of a product whose main image was already sent, use [PRODUCT_MORE_IMAGES:ID] to send the remaining gallery photos.\n"
+      . "- NEVER use [PRODUCT_MORE_IMAGES:ID] unless the customer explicitly asks for more photos.\n"
       . "- NEVER invent image URLs. NEVER use markdown image syntax ![](). NEVER write URLs ending in .jpg/.png/.webp.\n"
-      . "- The ONLY way to show images is via product URLs (automatic) or [PRODUCT_IMAGES:ID].";
+      . "- The ONLY way to show images is via product URLs (automatic), [PRODUCT_IMAGES:ID] or [PRODUCT_MORE_IMAGES:ID].";
   }
 
   /* ================================================================
@@ -346,17 +351,24 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
       // Collect product IDs whose images were already sent in this
       // conversation so we never send the same photo twice.
-      $already_sent_ids = [];
+      // Separate main-image sends from gallery sends.
+      $already_sent_ids      = [];
+      $already_sent_more_ids = [];
       foreach ($messages as $msg) {
         if (!empty($msg['images'])) {
           foreach ($msg['images'] as $img) {
             if (!empty($img['product_id'])) {
-              $already_sent_ids[] = (int) $img['product_id'];
+              $pid = (int) $img['product_id'];
+              $already_sent_ids[] = $pid;
+              if (!empty($img['type']) && $img['type'] === 'gallery') {
+                $already_sent_more_ids[] = $pid;
+              }
             }
           }
         }
       }
-      $already_sent_ids = array_unique($already_sent_ids);
+      $already_sent_ids      = array_unique($already_sent_ids);
+      $already_sent_more_ids = array_unique($already_sent_more_ids);
 
       // Auto-inject image tags for products mentioned by URL.
       // When the recommendation protocol is active the AI should control
@@ -391,6 +403,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       // Pass already-sent IDs so images are not re-sent within the
       // same conversation.
       $ai_response = self::extract_and_send_product_images($ai_response, $phone, $sent_images, $already_sent_ids);
+
+      // Extract and send additional gallery images when user asks for more.
+      $ai_response = self::extract_and_send_more_product_images($ai_response, $phone, $sent_images, $already_sent_more_ids);
     }
 
     // Add assistant message to history
@@ -701,7 +716,8 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
     $injected = 0;
     foreach ($product_ids_found as $product_id => $source) {
-      if (strpos($text, '[PRODUCT_IMAGES:' . $product_id . ']') !== false) {
+      if (strpos($text, '[PRODUCT_IMAGES:' . $product_id . ']') !== false
+        || strpos($text, '[PRODUCT_MORE_IMAGES:' . $product_id . ']') !== false) {
         continue;
       }
 
@@ -735,9 +751,11 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       foreach ($matches[1] as $product_id) {
         $product_id = (int) $product_id;
 
-        // Skip products whose images were already sent in this conversation.
+        // If main image was already sent, promote to [PRODUCT_MORE_IMAGES]
+        // so the gallery handler picks it up.
         if (in_array($product_id, $already_sent_ids, true)) {
-          self::log('extract_and_send_product_images — product ' . $product_id . ' already sent in conversation, skipping');
+          self::log('extract_and_send_product_images — product ' . $product_id . ' already sent, promoting to PRODUCT_MORE_IMAGES');
+          $text = str_replace('[PRODUCT_IMAGES:' . $product_id . ']', '[PRODUCT_MORE_IMAGES:' . $product_id . ']', $text);
           continue;
         }
 
@@ -749,39 +767,28 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         }
 
         $product_name = $product->get_name();
-        $image_urls   = [];
 
-        // Main image
+        // Send only the main (featured) image on first mention.
         $thumb_id = get_post_thumbnail_id($product_id);
-        if ($thumb_id) {
-          $main_url = wp_get_attachment_url($thumb_id);
-          if ($main_url) {
-            $image_urls[] = $main_url;
-          }
+        if (!$thumb_id) {
+          self::log('extract_and_send_product_images — product ' . $product_id . ' has no featured image, skipping');
+          continue;
         }
 
-        // Gallery images
-        $gallery_ids = $product->get_gallery_image_ids();
-        foreach ($gallery_ids as $gallery_id) {
-          if (count($image_urls) >= 3) {
-            break;
-          }
-          $gallery_url = wp_get_attachment_url($gallery_id);
-          if ($gallery_url) {
-            $image_urls[] = $gallery_url;
-          }
+        $main_url = wp_get_attachment_url($thumb_id);
+        if (!$main_url) {
+          continue;
         }
 
-        self::log('extract_and_send_product_images — product ' . $product_id . ' (' . $product_name . ') — ' . count($image_urls) . ' images');
+        self::log('extract_and_send_product_images — product ' . $product_id . ' (' . $product_name . ') — sending 1 main image');
 
-        foreach ($image_urls as $url) {
-          self::send_whatsapp_image($phone, $url, $product_name);
-          $sent_images[] = [
-            'url'          => $url,
-            'product_name' => $product_name,
-            'product_id'   => $product_id,
-          ];
-        }
+        self::send_whatsapp_image($phone, $main_url, $product_name);
+        $sent_images[] = [
+          'url'          => $main_url,
+          'product_name' => $product_name,
+          'product_id'   => $product_id,
+          'type'         => 'main',
+        ];
       }
 
       // Remove all tags from the text
@@ -790,6 +797,68 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     }
 
     return $text;
+  }
+
+  /**
+   * Extract [PRODUCT_MORE_IMAGES:id] tags from AI response, send gallery
+   * images via WhatsApp, and return the cleaned text.
+   *
+   * @param string $text              AI response text that may contain tags.
+   * @param string $phone             Recipient phone number.
+   * @param array  &$sent_images      Reference array to collect sent image data.
+   * @param array  $already_sent_more Already-sent gallery product IDs.
+   * @return string                   Text with tags removed.
+   */
+  private static function extract_and_send_more_product_images($text, $phone, &$sent_images = [], $already_sent_more = []) {
+    if (!preg_match_all('/\[PRODUCT_MORE_IMAGES:(\d+)\]/', $text, $matches)) {
+      return $text;
+    }
+
+    $unique_ids = array_unique($matches[1]);
+
+    foreach ($unique_ids as $product_id) {
+      $product_id = (int) $product_id;
+
+      if (in_array($product_id, $already_sent_more, true)) {
+        self::log('extract_and_send_more_product_images — product ' . $product_id . ' gallery already sent, skipping');
+        continue;
+      }
+
+      $product = wc_get_product($product_id);
+      if (!$product) {
+        self::log('extract_and_send_more_product_images — product ' . $product_id . ' not found');
+        continue;
+      }
+
+      $product_name = $product->get_name();
+      $gallery_ids  = $product->get_gallery_image_ids();
+
+      if (empty($gallery_ids)) {
+        self::log('extract_and_send_more_product_images — product ' . $product_id . ' has no gallery images');
+        continue;
+      }
+
+      $count = 0;
+      foreach ($gallery_ids as $gallery_id) {
+        $gallery_url = wp_get_attachment_url($gallery_id);
+        if (!$gallery_url) {
+          continue;
+        }
+        self::send_whatsapp_image($phone, $gallery_url, $product_name);
+        $sent_images[] = [
+          'url'          => $gallery_url,
+          'product_name' => $product_name,
+          'product_id'   => $product_id,
+          'type'         => 'gallery',
+        ];
+        $count++;
+      }
+
+      self::log('extract_and_send_more_product_images — product ' . $product_id . ' (' . $product_name . ') — sent ' . $count . ' gallery images');
+    }
+
+    $text = preg_replace('/\s*\[PRODUCT_MORE_IMAGES:\d+\]/', '', $text);
+    return trim($text);
   }
 
   /* ================================================================
@@ -825,7 +894,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     $funnel_id     = 0;
     $node_id       = '';
 
-    $wa_node = self::find_ai_node();
+    $wa_node     = self::find_ai_node();
+    $welcome_msg = '';
+
     if ($wa_node) {
       $funnel_id = $wa_node['funnel_id'];
       $node_id   = $wa_node['node_id'];
@@ -836,8 +907,24 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       if (!empty($wa_node['config']['wa_ai_model'])) {
         $ai_model = $wa_node['config']['wa_ai_model'];
       }
+      if (!empty($wa_node['config']['wa_welcome_message'])) {
+        $welcome_msg = $wa_node['config']['wa_welcome_message'];
+      }
 
       self::log('Auto-linked conversation to funnel=' . $funnel_id . ' node=' . $node_id);
+    }
+
+    // Send welcome message if configured.
+    $messages = [];
+    if (!empty($welcome_msg)) {
+      $welcome_msg = self::strip_html_to_plain_text($welcome_msg);
+      $messages[] = [
+        'role'      => 'assistant',
+        'content'   => $welcome_msg,
+        'timestamp' => current_time('mysql'),
+      ];
+      self::send_whatsapp_message($phone, $welcome_msg);
+      self::log('Welcome message sent to ' . $phone . ': ' . mb_substr($welcome_msg, 0, 100));
     }
 
     $wpdb->insert($table, [
@@ -845,7 +932,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       'contact_name'  => $contact_name,
       'funnel_id'     => $funnel_id,
       'node_id'       => $node_id,
-      'messages'      => '[]',
+      'messages'      => wp_json_encode($messages),
       'system_prompt' => $system_prompt,
       'ai_model'      => $ai_model,
       'status'        => 'active',
@@ -1166,6 +1253,10 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
           <?php esc_html_e('Close conversation', 'pn-customers-manager'); ?>
         </button>
       <?php endif; ?>
+      <button type="button" class="pn-cm-wa-action-btn" data-action="reset" data-conv-id="<?php echo esc_attr($conv->id); ?>">
+        <span class="material-icons-outlined" style="font-size:16px;vertical-align:middle;">restart_alt</span>
+        <?php esc_html_e('Reset', 'pn-customers-manager'); ?>
+      </button>
       <button type="button" class="pn-cm-wa-action-btn pn-cm-wa-btn-delete" data-action="delete" data-conv-id="<?php echo esc_attr($conv->id); ?>">
         <span class="material-icons-outlined" style="font-size:16px;vertical-align:middle;">delete</span>
         <?php esc_html_e('Delete', 'pn-customers-manager'); ?>

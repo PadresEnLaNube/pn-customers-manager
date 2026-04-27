@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Fired from activate() function.
  *
