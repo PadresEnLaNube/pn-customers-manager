@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PN Customers Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-23 00:24+0000\n"
+"POT-Creation-Date: 2026-04-27 21:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -25,7 +25,7 @@ msgid ""
 msgstr ""
 
 #. %d: number of invoices
-#: includes/class-pn-customers-manager-post-type-budget.php:1235
+#: includes/class-pn-customers-manager-post-type-budget.php:1277
 msgid "%d invoice"
 msgid_plural "%d invoices"
 msgstr[0] ""
@@ -55,8 +55,8 @@ msgid "%s is required."
 msgstr ""
 
 #. %s: Post type name
-#: includes/class-pn-customers-manager-settings.php:913
-#: includes/class-pn-customers-manager-settings.php:918
+#: includes/class-pn-customers-manager-settings.php:931
+#: includes/class-pn-customers-manager-settings.php:936
 #, php-format
 msgid "%s slug"
 msgstr ""
@@ -80,8 +80,8 @@ msgstr ""
 msgid "-- Select template --"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1020
-#: includes/class-pn-customers-manager-funnel-builder.php:1294
+#: includes/class-pn-customers-manager-funnel-builder.php:1007
+#: includes/class-pn-customers-manager-funnel-builder.php:1281
 msgid "-- Use global --"
 msgstr ""
 
@@ -121,7 +121,7 @@ msgstr ""
 msgid "7 days"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:627
+#: includes/class-pn-customers-manager-settings.php:636
 msgid ""
 "<strong>How to configure it:</strong><br>1. Create any secret string (e.g.: "
 "<code>my_ig_token_2024</code>) and type it here.<br>2. Save the settings.<br>"
@@ -138,7 +138,7 @@ msgid ""
 "GET request with this token to verify that the webhook is yours."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:638
+#: includes/class-pn-customers-manager-settings.php:647
 msgid ""
 "<strong>How to configure the webhook on Meta:</strong><br>1. Copy the URL "
 "shown above.<br>2. Go to <a href=\"https://developers.facebook.com/apps/\" "
@@ -177,7 +177,7 @@ msgid ""
 "expire and does not need renewal."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:618
+#: includes/class-pn-customers-manager-settings.php:627
 msgid ""
 "<strong>How to get it:</strong><br>1. Go to <a href=\"https://developers."
 "facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> &gt; your app "
@@ -185,7 +185,7 @@ msgid ""
 "(numeric ID) and paste it here."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:609
+#: includes/class-pn-customers-manager-settings.php:618
 msgid ""
 "<strong>How to get it:</strong><br>1. Go to <a href=\"https://developers."
 "facebook.com/apps/\" target=\"_blank\">Meta for Developers</a> &gt; your app "
@@ -216,30 +216,30 @@ msgid ""
 msgstr ""
 
 #. 1: site name, 2: platform name
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2589
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2612
 #, php-format
 msgid "[%1$s] New order via %2$s"
 msgstr ""
 
 #. 1: site name, 2: platform name
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2848
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2871
 #, php-format
 msgid "[%1$s] Special order request via %2$s"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2855
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2878
 msgid ""
 "A customer has made a request that requires special attention (B2B, bulk, "
 "custom products, special shipping, etc.)."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:704
+#: includes/class-pn-customers-manager-settings.php:722
 msgid ""
 "A Page Access Token with <code>pages_read_engagement</code> and <code>"
 "read_insights</code> permissions."
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:519
+#: templates/public/single-pn_cm_budget.php:672
 msgid "Accept budget"
 msgstr ""
 
@@ -247,37 +247,41 @@ msgstr ""
 msgid "Accept Invitation"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:895
+#: includes/class-pn-customers-manager-funnel-builder.php:882
 msgid "Accept orders via chat"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:112
-#: includes/class-pn-customers-manager-post-type-budget.php:1039
+#: includes/class-pn-customers-manager-post-type-budget.php:113
+#: includes/class-pn-customers-manager-post-type-budget.php:1081
 #: templates/public/single-pn_cm_budget.php:79
 msgid "Accepted"
 msgstr ""
 
 #. %s: date
-#: includes/class-pn-customers-manager-post-type-budget.php:1222
+#: includes/class-pn-customers-manager-post-type-budget.php:1264
 #, php-format
 msgid "Accepted %s"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:823
+#: includes/class-pn-customers-manager-ajax-nopriv.php:831
+msgid "Accepted by"
+msgstr ""
+
+#: includes/class-pn-customers-manager-ajax-nopriv.php:833
 msgid "Accepted on"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1434
-#: includes/class-pn-customers-manager-post-type-invoice.php:1290
+#: includes/class-pn-customers-manager-post-type-budget.php:1476
+#: includes/class-pn-customers-manager-post-type-invoice.php:1291
 #: includes/class-pn-customers-manager-post-type-funnel.php:687
 #: includes/class-pn-customers-manager-post-type-organization.php:1353
 msgid "Access Denied"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1057
-#: includes/class-pn-customers-manager-post-type-budget.php:1070
-#: includes/class-pn-customers-manager-post-type-invoice.php:944
-#: includes/class-pn-customers-manager-post-type-invoice.php:957
+#: includes/class-pn-customers-manager-post-type-budget.php:1099
+#: includes/class-pn-customers-manager-post-type-budget.php:1112
+#: includes/class-pn-customers-manager-post-type-invoice.php:945
+#: includes/class-pn-customers-manager-post-type-invoice.php:958
 #: includes/class-pn-customers-manager-post-type-funnel.php:445
 #: includes/class-pn-customers-manager-post-type-funnel.php:458
 #: includes/class-pn-customers-manager-post-type-organization.php:1029
@@ -303,41 +307,41 @@ msgstr ""
 msgid "Acercar"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:611
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1190
+#: includes/class-pn-customers-manager-instagram-ai.php:616
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1281
 msgid "Action not allowed."
 msgstr ""
 
 #: includes/class-pn-customers-manager-projections.php:834
-#: includes/class-pn-customers-manager-instagram-ai.php:674
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1254
+#: includes/class-pn-customers-manager-instagram-ai.php:679
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1345
 #: includes/class-pn-customers-manager-mail-stats.php:330
 msgid "Actions"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1296
-#: includes/class-pn-customers-manager-settings.php:1372
+#: includes/class-pn-customers-manager-settings.php:1314
+#: includes/class-pn-customers-manager-settings.php:1390
 msgid "Activate"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1368
+#: includes/class-pn-customers-manager-settings.php:1386
 msgid "Activating..."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:418
+#: includes/class-pn-customers-manager-funnel-builder.php:400
 #: includes/class-pn-customers-manager-shortcodes.php:335
 #: includes/class-pn-customers-manager-shortcodes.php:366
 #: includes/class-pn-customers-manager-shortcodes.php:393
-#: includes/class-pn-customers-manager-instagram-ai.php:544
-#: includes/class-pn-customers-manager-instagram-ai.php:651
-#: includes/class-pn-customers-manager-instagram-ai.php:695
-#: includes/class-pn-customers-manager-instagram-ai.php:763
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1123
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1231
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1275
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1348
-#: includes/class-pn-customers-manager-settings.php:1294
-#: includes/class-pn-customers-manager-settings.php:1371
+#: includes/class-pn-customers-manager-instagram-ai.php:545
+#: includes/class-pn-customers-manager-instagram-ai.php:656
+#: includes/class-pn-customers-manager-instagram-ai.php:700
+#: includes/class-pn-customers-manager-instagram-ai.php:768
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1210
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1322
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1366
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1439
+#: includes/class-pn-customers-manager-settings.php:1312
+#: includes/class-pn-customers-manager-settings.php:1389
 msgid "Active"
 msgstr ""
 
@@ -363,9 +367,9 @@ msgstr ""
 msgid "Add element"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:930
-#: includes/class-pn-customers-manager-funnel-builder.php:991
-#: includes/class-pn-customers-manager-funnel-builder.php:1265
+#: includes/class-pn-customers-manager-funnel-builder.php:917
+#: includes/class-pn-customers-manager-funnel-builder.php:978
+#: includes/class-pn-customers-manager-funnel-builder.php:1252
 msgid ""
 "Add email addresses for people who are not registered users on this site."
 msgstr ""
@@ -378,7 +382,9 @@ msgstr ""
 msgid "Add files"
 msgstr ""
 
+#: includes/class-pn-customers-manager-post-type-budget.php:713
 #: includes/class-pn-customers-manager-forms.php:340
+#: templates/public/single-pn_cm_budget.php:625
 msgid "Add image"
 msgstr ""
 
@@ -386,22 +392,22 @@ msgstr ""
 msgid "Add images"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:673
-#: includes/class-pn-customers-manager-post-type-budget.php:1767
-#: includes/class-pn-customers-manager-post-type-budget.php:1773
-#: includes/class-pn-customers-manager-post-type-invoice.php:610
-#: includes/class-pn-customers-manager-post-type-invoice.php:1554
-#: includes/class-pn-customers-manager-post-type-invoice.php:1561
-#: templates/public/single-pn_cm_budget.php:484
-#: templates/public/single-pn_cm_invoice.php:449
+#: includes/class-pn-customers-manager-post-type-budget.php:710
+#: includes/class-pn-customers-manager-post-type-budget.php:1809
+#: includes/class-pn-customers-manager-post-type-budget.php:1815
+#: includes/class-pn-customers-manager-post-type-invoice.php:611
+#: includes/class-pn-customers-manager-post-type-invoice.php:1555
+#: includes/class-pn-customers-manager-post-type-invoice.php:1562
+#: templates/public/single-pn_cm_budget.php:621
+#: templates/public/single-pn_cm_invoice.php:485
 msgid "Add item"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:242
-#: includes/class-pn-customers-manager-post-type-budget.php:243
-#: includes/class-pn-customers-manager-post-type-budget.php:1117
-#: includes/class-pn-customers-manager-post-type-budget.php:1354
-#: includes/class-pn-customers-manager-post-type-budget.php:1442
+#: includes/class-pn-customers-manager-post-type-budget.php:259
+#: includes/class-pn-customers-manager-post-type-budget.php:260
+#: includes/class-pn-customers-manager-post-type-budget.php:1159
+#: includes/class-pn-customers-manager-post-type-budget.php:1396
+#: includes/class-pn-customers-manager-post-type-budget.php:1484
 msgid "Add new Budget"
 msgstr ""
 
@@ -417,11 +423,11 @@ msgstr ""
 msgid "Add New Funnel category"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:235
 #: includes/class-pn-customers-manager-post-type-invoice.php:236
-#: includes/class-pn-customers-manager-post-type-invoice.php:994
-#: includes/class-pn-customers-manager-post-type-invoice.php:1219
-#: includes/class-pn-customers-manager-post-type-invoice.php:1298
+#: includes/class-pn-customers-manager-post-type-invoice.php:237
+#: includes/class-pn-customers-manager-post-type-invoice.php:995
+#: includes/class-pn-customers-manager-post-type-invoice.php:1220
+#: includes/class-pn-customers-manager-post-type-invoice.php:1299
 msgid "Add new Invoice"
 msgstr ""
 
@@ -433,14 +439,19 @@ msgstr ""
 msgid "Add new Organization"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:670
-#: includes/class-pn-customers-manager-post-type-invoice.php:607
-#: templates/public/single-pn_cm_budget.php:480
-#: templates/public/single-pn_cm_invoice.php:445
+#: includes/class-pn-customers-manager-post-type-budget.php:77
+#: includes/class-pn-customers-manager-post-type-invoice.php:72
+msgid "Add new organization"
+msgstr ""
+
+#: includes/class-pn-customers-manager-post-type-budget.php:707
+#: includes/class-pn-customers-manager-post-type-invoice.php:608
+#: templates/public/single-pn_cm_budget.php:617
+#: templates/public/single-pn_cm_invoice.php:481
 msgid "Add phase"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:582
+#: includes/class-pn-customers-manager-funnel-builder.php:569
 msgid "Add rel=nofollow"
 msgstr ""
 
@@ -452,13 +463,13 @@ msgstr ""
 msgid "Add videos"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:769
-#: includes/class-pn-customers-manager-funnel-builder.php:1117
+#: includes/class-pn-customers-manager-funnel-builder.php:756
+#: includes/class-pn-customers-manager-funnel-builder.php:1104
 msgid "Additional information the AI will use as reference to respond."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:753
-#: includes/class-pn-customers-manager-funnel-builder.php:1101
+#: includes/class-pn-customers-manager-funnel-builder.php:740
+#: includes/class-pn-customers-manager-funnel-builder.php:1088
 msgid "Additional shipping information"
 msgstr ""
 
@@ -467,22 +478,22 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:812
-#: includes/class-pn-customers-manager-funnel-builder.php:1160
+#: includes/class-pn-customers-manager-funnel-builder.php:799
+#: includes/class-pn-customers-manager-funnel-builder.php:1147
 msgid ""
 "Adds all variations with their attributes, prices and direct purchase links. "
 "Warning: this can significantly increase AI API call costs."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:842
-#: includes/class-pn-customers-manager-funnel-builder.php:1180
+#: includes/class-pn-customers-manager-funnel-builder.php:829
+#: includes/class-pn-customers-manager-funnel-builder.php:1167
 msgid ""
 "Adds product categories so the AI can classify and reason about product "
 "types."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:876
-#: includes/class-pn-customers-manager-funnel-builder.php:1213
+#: includes/class-pn-customers-manager-funnel-builder.php:863
+#: includes/class-pn-customers-manager-funnel-builder.php:1200
 msgid ""
 "Adds product tags so the AI can identify product features and "
 "characteristics."
@@ -496,16 +507,16 @@ msgstr ""
 msgid "After amount (100 €)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1018
-#: includes/class-pn-customers-manager-funnel-builder.php:1292
+#: includes/class-pn-customers-manager-funnel-builder.php:1005
+#: includes/class-pn-customers-manager-funnel-builder.php:1279
 msgid "AI Model"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:763
+#: includes/class-pn-customers-manager-settings.php:781
 msgid "Akismet"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:770
+#: includes/class-pn-customers-manager-settings.php:788
 msgid "Akismet status"
 msgstr ""
 
@@ -517,17 +528,17 @@ msgstr ""
 msgid "Alguien"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:634
+#: includes/class-pn-customers-manager-funnel-builder.php:621
 msgid "Alignment"
 msgstr ""
 
 #: includes/class-pn-customers-manager-shortcodes.php:363
-#: includes/class-pn-customers-manager-instagram-ai.php:647
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1227
+#: includes/class-pn-customers-manager-instagram-ai.php:652
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1318
 msgid "All"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:240
+#: includes/class-pn-customers-manager-post-type-budget.php:257
 msgid "All Budgets"
 msgstr ""
 
@@ -539,7 +550,7 @@ msgstr ""
 msgid "All Funnels"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:233
+#: includes/class-pn-customers-manager-post-type-invoice.php:234
 msgid "All Invoices"
 msgstr ""
 
@@ -556,11 +567,11 @@ msgstr ""
 msgid "All-time trend"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:934
+#: includes/class-pn-customers-manager-settings.php:952
 msgid "Allow search engine indexing on CRM pages"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:896
+#: includes/class-pn-customers-manager-funnel-builder.php:883
 msgid ""
 "Allow the AI to confirm orders during WhatsApp conversations and send an "
 "email notification."
@@ -570,36 +581,36 @@ msgstr ""
 msgid "Alta de organización"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:857
+#: includes/class-pn-customers-manager-settings.php:875
 msgid "Alternative Background Color"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:858
+#: includes/class-pn-customers-manager-settings.php:876
 msgid "Alternative background color (default: #232323)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:867
+#: includes/class-pn-customers-manager-settings.php:885
 msgid "Alternative Border Color"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:868
+#: includes/class-pn-customers-manager-settings.php:886
 msgid "Alternative border color (default: #232323)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:848
+#: includes/class-pn-customers-manager-settings.php:866
 msgid "Alternative color for text, backgrounds, and borders (default: #232323)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:847
+#: includes/class-pn-customers-manager-settings.php:865
 msgid "Alternative Main Color"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:744
-#: includes/class-pn-customers-manager-funnel-builder.php:1092
+#: includes/class-pn-customers-manager-funnel-builder.php:731
+#: includes/class-pn-customers-manager-funnel-builder.php:1079
 msgid "Always request postal code"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:257
+#: includes/class-pn-customers-manager-common.php:265
 msgid "An error has occurred. Please try again in a few minutes."
 msgstr ""
 
@@ -611,7 +622,7 @@ msgstr ""
 msgid "An error occurred while duplicating the Organization."
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax.php:1284
+#: includes/class-pn-customers-manager-ajax.php:1283
 msgid "An error occurred while removing the Budget."
 msgstr ""
 
@@ -619,7 +630,7 @@ msgstr ""
 msgid "An error occurred while removing the Funnel."
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax.php:1695
+#: includes/class-pn-customers-manager-ajax.php:1691
 msgid "An error occurred while removing the Invoice."
 msgstr ""
 
@@ -637,8 +648,8 @@ msgstr ""
 msgid "An error occurred while showing the Funnel."
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax.php:1652
-#: includes/class-pn-customers-manager-ajax.php:1666
+#: includes/class-pn-customers-manager-ajax.php:1648
+#: includes/class-pn-customers-manager-ajax.php:1662
 msgid "An error occurred while showing the Invoice."
 msgstr ""
 
@@ -647,21 +658,21 @@ msgstr ""
 msgid "An error occurred while showing the Organization."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1087
-#: includes/class-pn-customers-manager-post-type-invoice.php:973
+#: includes/class-pn-customers-manager-post-type-budget.php:1129
+#: includes/class-pn-customers-manager-post-type-invoice.php:974
 #: includes/admin/class-pn-customers-manager-admin.php:74
-#: includes/admin/class-pn-customers-manager-admin.php:93
-#: templates/public/single-pn_cm_budget.php:138
+#: includes/admin/class-pn-customers-manager-admin.php:95
+#: templates/public/single-pn_cm_budget.php:149
 #: templates/public/single-pn_cm_invoice.php:126
 msgid "An error occurred."
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:111
+#: templates/public/single-pn_cm_budget.php:112
 #: templates/public/single-pn_cm_invoice.php:100
 msgid "An error occurred. Please try again."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:307
+#: includes/class-pn-customers-manager-common.php:315
 #: includes/class-pn-customers-manager-ajax-nopriv.php:152
 msgid "An invitation has already been sent to this email."
 msgstr ""
@@ -684,15 +695,15 @@ msgstr ""
 msgid "API Configuration"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:544
+#: includes/class-pn-customers-manager-funnel-builder.php:531
 msgid "API Endpoint"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:413
+#: includes/class-pn-customers-manager-funnel-builder.php:395
 msgid "API not configured"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:589
+#: includes/class-pn-customers-manager-funnel-builder.php:576
 msgid "Appearance"
 msgstr ""
 
@@ -704,12 +715,12 @@ msgstr ""
 msgid "Application under review"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:771
+#: includes/class-pn-customers-manager-ajax-nopriv.php:777
 msgid "Approved"
 msgstr ""
 
 #: includes/class-pn-customers-manager-commercial.php:423
-#: includes/class-pn-customers-manager-common.php:322
+#: includes/class-pn-customers-manager-common.php:330
 msgid "Aprobado"
 msgstr ""
 
@@ -721,39 +732,39 @@ msgstr ""
 msgid "Aprobar"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:107
+#: templates/public/single-pn_cm_budget.php:108
 msgid "Are you sure you want to accept this budget?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1088
-#: includes/class-pn-customers-manager-post-type-invoice.php:974
+#: includes/class-pn-customers-manager-post-type-budget.php:1130
+#: includes/class-pn-customers-manager-post-type-invoice.php:975
 #: includes/admin/class-pn-customers-manager-admin.php:75
-#: includes/admin/class-pn-customers-manager-admin.php:94
-#: templates/public/single-pn_cm_budget.php:139
+#: includes/admin/class-pn-customers-manager-admin.php:96
+#: templates/public/single-pn_cm_budget.php:150
 #: templates/public/single-pn_cm_invoice.php:127
 msgid "Are you sure you want to delete this item?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1095
+#: includes/class-pn-customers-manager-post-type-budget.php:1137
 #: includes/admin/class-pn-customers-manager-admin.php:79
 msgid "Are you sure you want to generate an invoice from this budget?"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:108
+#: templates/public/single-pn_cm_budget.php:109
 msgid "Are you sure you want to reject this budget?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1089
+#: includes/class-pn-customers-manager-post-type-budget.php:1131
 #: includes/admin/class-pn-customers-manager-admin.php:76
 msgid "Are you sure you want to send this budget?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:327
+#: includes/class-pn-customers-manager-common.php:335
 msgid "Are you sure you want to send this campaign to the selected recipients?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:975
-#: includes/admin/class-pn-customers-manager-admin.php:95
+#: includes/class-pn-customers-manager-post-type-invoice.php:976
+#: includes/admin/class-pn-customers-manager-admin.php:97
 #: templates/public/single-pn_cm_invoice.php:128
 msgid "Are you sure you want to send this invoice?"
 msgstr ""
@@ -790,8 +801,8 @@ msgstr ""
 msgid "Atleast 8 Character"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:84
-#: includes/class-pn-customers-manager-post-type-invoice.php:79
+#: includes/class-pn-customers-manager-post-type-budget.php:85
+#: includes/class-pn-customers-manager-post-type-invoice.php:80
 msgid "Auto-generated"
 msgstr ""
 
@@ -809,7 +820,11 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:608
+#: templates/public/single-pn_cm_budget.php:355
+msgid "Back to budgets"
+msgstr ""
+
+#: includes/class-pn-customers-manager-funnel-builder.php:595
 msgid "Background color"
 msgstr ""
 
@@ -828,7 +843,7 @@ msgstr ""
 msgid "Basic organization data"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:722
+#: includes/class-pn-customers-manager-settings.php:740
 msgid ""
 "Bearer Token from your Twitter/X Developer App. Generate it at <a "
 "href=\"https://developer.twitter.com/en/portal/dashboard\" target=\"_blank\">"
@@ -839,8 +854,8 @@ msgstr ""
 msgid "Before amount (€100)"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:306
-#: templates/public/single-pn_cm_invoice.php:306
+#: templates/public/single-pn_cm_budget.php:386
+#: templates/public/single-pn_cm_invoice.php:342
 msgid "Bill to"
 msgstr ""
 
@@ -860,53 +875,57 @@ msgstr ""
 msgid "Blog / Article"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:784
-#: includes/class-pn-customers-manager-funnel-builder.php:1132
+#: includes/class-pn-customers-manager-funnel-builder.php:771
+#: includes/class-pn-customers-manager-funnel-builder.php:1119
 msgid "Blog posts"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:878
+#: includes/class-pn-customers-manager-settings.php:896
 msgid "Blue accent color (default: #6e6eff)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:877
+#: includes/class-pn-customers-manager-settings.php:895
 msgid "Blue Color"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:274
-#: templates/public/single-pn_cm_budget.php:298
+#: templates/public/single-pn_cm_budget.php:294
+#: templates/public/single-pn_cm_budget.php:378
 #, php-format
 msgid "Budget %s"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:819
+#: includes/class-pn-customers-manager-ajax-nopriv.php:825
 #, php-format
 msgid "Budget %s has been accepted"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:815
+#: includes/class-pn-customers-manager-ajax-nopriv.php:821
 msgid "Budget accepted"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:109
+#: templates/public/single-pn_cm_budget.php:110
 msgid "Budget accepted successfully."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:254
+#: includes/class-pn-customers-manager-post-type-budget.php:271
 msgid "Budget description"
 msgstr ""
 
 #: includes/class-pn-customers-manager-post-type-budget.php:69
-#: includes/class-pn-customers-manager-post-type-budget.php:281
+#: includes/class-pn-customers-manager-post-type-budget.php:298
 msgid "Budget details"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1092
+#: includes/class-pn-customers-manager-post-type-budget.php:1134
 msgid "Budget duplicated successfully."
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax.php:1554
+#: includes/class-pn-customers-manager-ajax.php:1550
 msgid "Budget ID is required."
+msgstr ""
+
+#: templates/public/single-pn_cm_budget.php:606
+msgid "Budget image"
 msgstr ""
 
 #: templates/public/single-pn_cm_budget.php:17
@@ -917,7 +936,7 @@ msgstr ""
 msgid "Budget Number"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:83
+#: includes/class-pn-customers-manager-post-type-budget.php:84
 msgid "Budget number"
 msgstr ""
 
@@ -925,15 +944,15 @@ msgstr ""
 msgid "Budget number prefix"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:110
+#: templates/public/single-pn_cm_budget.php:111
 msgid "Budget rejected."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1091
+#: includes/class-pn-customers-manager-post-type-budget.php:1133
 msgid "Budget removed successfully."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1090
+#: includes/class-pn-customers-manager-post-type-budget.php:1132
 #: includes/admin/class-pn-customers-manager-admin.php:77
 msgid "Budget sent successfully."
 msgstr ""
@@ -943,11 +962,11 @@ msgstr ""
 msgid "Budget title"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:238
-#: includes/class-pn-customers-manager-post-type-budget.php:253
+#: includes/class-pn-customers-manager-post-type-budget.php:255
+#: includes/class-pn-customers-manager-post-type-budget.php:270
 #: includes/class-pn-customers-manager-settings.php:59
-#: includes/class-pn-customers-manager-settings.php:1075
-#: includes/class-pn-customers-manager-settings.php:1076
+#: includes/class-pn-customers-manager-settings.php:1093
+#: includes/class-pn-customers-manager-settings.php:1094
 msgid "Budgets"
 msgstr ""
 
@@ -967,8 +986,8 @@ msgstr ""
 msgid "Business card phrases"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:761
-#: includes/class-pn-customers-manager-funnel-builder.php:1109
+#: includes/class-pn-customers-manager-funnel-builder.php:748
+#: includes/class-pn-customers-manager-funnel-builder.php:1096
 msgid "Business hours, weekdays, weekends, holidays, etc."
 msgstr ""
 
@@ -976,27 +995,27 @@ msgstr ""
 msgid "Button"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:689
+#: includes/class-pn-customers-manager-funnel-builder.php:676
 msgid "Button image"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:553
+#: includes/class-pn-customers-manager-funnel-builder.php:540
 msgid "Button settings"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:560
+#: includes/class-pn-customers-manager-funnel-builder.php:547
 msgid "Button text"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:935
+#: includes/class-pn-customers-manager-settings.php:953
 msgid ""
 "By default, CRM management pages include a noindex tag to prevent search "
 "engines from indexing them. Enable this option to remove those tags and "
 "allow indexing."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:886
-#: includes/class-pn-customers-manager-funnel-builder.php:1223
+#: includes/class-pn-customers-manager-funnel-builder.php:873
+#: includes/class-pn-customers-manager-funnel-builder.php:1210
 msgid ""
 "By default, the AI asks qualifying questions (budget, preferences) before "
 "recommending products. Check this to skip the guided flow and show products "
@@ -1012,7 +1031,7 @@ msgstr ""
 msgid "Call to action"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:328
+#: includes/class-pn-customers-manager-common.php:336
 msgid "Campaign sent successfully. Emails are being processed."
 msgstr ""
 
@@ -1030,8 +1049,8 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:108
-#: includes/class-pn-customers-manager-post-type-invoice.php:929
+#: includes/class-pn-customers-manager-post-type-invoice.php:109
+#: includes/class-pn-customers-manager-post-type-invoice.php:930
 #: templates/public/single-pn_cm_invoice.php:73
 msgid "Cancelled"
 msgstr ""
@@ -1040,7 +1059,7 @@ msgstr ""
 msgid "Cargo"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:637
+#: includes/class-pn-customers-manager-funnel-builder.php:624
 msgid "Center"
 msgstr ""
 
@@ -1105,14 +1124,14 @@ msgstr ""
 msgid "Clicks (%s)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:821
+#: includes/class-pn-customers-manager-ajax-nopriv.php:827
 msgid "Client"
 msgstr ""
 
 #: includes/class-pn-customers-manager-ajax.php:959
 #: includes/class-pn-customers-manager-activator.php:29
-#: includes/class-pn-customers-manager-settings.php:971
-#: includes/class-pn-customers-manager-settings.php:973
+#: includes/class-pn-customers-manager-settings.php:989
+#: includes/class-pn-customers-manager-settings.php:991
 msgid "Client - PN"
 msgstr ""
 
@@ -1120,11 +1139,12 @@ msgstr ""
 msgid "Client Notes"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:160
-#: includes/class-pn-customers-manager-post-type-invoice.php:155
+#: includes/class-pn-customers-manager-post-type-budget.php:161
+#: includes/class-pn-customers-manager-post-type-invoice.php:156
 msgid "Client notes"
 msgstr ""
 
+#: includes/class-pn-customers-manager-funnel-builder.php:408
 #: includes/class-pn-customers-manager-projections.php:872
 #: includes/class-pn-customers-manager-shortcodes.php:417
 msgid "Close"
@@ -1134,25 +1154,25 @@ msgstr ""
 msgid "Close & reload"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:587
-#: includes/class-pn-customers-manager-instagram-ai.php:807
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1166
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1392
+#: includes/class-pn-customers-manager-instagram-ai.php:588
+#: includes/class-pn-customers-manager-instagram-ai.php:812
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1253
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1483
 msgid "Close conversation"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:419
+#: includes/class-pn-customers-manager-funnel-builder.php:401
 #: includes/class-pn-customers-manager-shortcodes.php:334
 #: includes/class-pn-customers-manager-shortcodes.php:369
 #: includes/class-pn-customers-manager-shortcodes.php:393
-#: includes/class-pn-customers-manager-instagram-ai.php:544
-#: includes/class-pn-customers-manager-instagram-ai.php:655
-#: includes/class-pn-customers-manager-instagram-ai.php:695
-#: includes/class-pn-customers-manager-instagram-ai.php:763
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1123
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1235
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1275
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1348
+#: includes/class-pn-customers-manager-instagram-ai.php:545
+#: includes/class-pn-customers-manager-instagram-ai.php:660
+#: includes/class-pn-customers-manager-instagram-ai.php:700
+#: includes/class-pn-customers-manager-instagram-ai.php:768
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1210
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1326
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1366
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1439
 msgid "Closed"
 msgstr ""
 
@@ -1164,24 +1184,28 @@ msgstr ""
 msgid "Closed won"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:808
+#: templates/public/single-pn_cm_budget.php:493
+msgid "Collapse / Expand"
+msgstr ""
+
+#: includes/class-pn-customers-manager-settings.php:826
 msgid "Colors"
 msgstr ""
 
 #: includes/class-pn-customers-manager-ajax.php:960
 #: includes/class-pn-customers-manager-activator.php:30
-#: includes/class-pn-customers-manager.php:641
+#: includes/class-pn-customers-manager.php:674
 msgid "Comercial - PN"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:979
-#: includes/class-pn-customers-manager-settings.php:981
+#: includes/class-pn-customers-manager-settings.php:997
+#: includes/class-pn-customers-manager-settings.php:999
 msgid "Commercial Agent - PN"
 msgstr ""
 
 #: includes/class-pn-customers-manager-commercial.php:377
-#: includes/class-pn-customers-manager-settings.php:1102
-#: includes/class-pn-customers-manager-settings.php:1103
+#: includes/class-pn-customers-manager-settings.php:1120
+#: includes/class-pn-customers-manager-settings.php:1121
 msgid "Commercial Agents"
 msgstr ""
 
@@ -1213,8 +1237,8 @@ msgstr ""
 msgid "Company fiscal ID"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:726
-#: includes/class-pn-customers-manager-funnel-builder.php:1074
+#: includes/class-pn-customers-manager-funnel-builder.php:713
+#: includes/class-pn-customers-manager-funnel-builder.php:1061
 msgid "Company information"
 msgstr ""
 
@@ -1251,7 +1275,7 @@ msgstr ""
 msgid "Configure"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:414
+#: includes/class-pn-customers-manager-funnel-builder.php:396
 msgid "Configure API"
 msgstr ""
 
@@ -1268,7 +1292,7 @@ msgid ""
 "compare against manual projections."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:677
+#: includes/class-pn-customers-manager-settings.php:695
 msgid ""
 "Configure social media API credentials to collect analytics data for the "
 "Projections dashboard (followers, engagement, impressions).<br><br>These "
@@ -1279,6 +1303,10 @@ msgstr ""
 msgid ""
 "Configure the keys and credentials of external APIs used by the plugin. Each "
 "service has its own subsection with detailed instructions."
+msgstr ""
+
+#: templates/public/single-pn_cm_budget.php:664
+msgid "Confirm"
 msgstr ""
 
 #. %s: Facebook page name
@@ -1295,15 +1323,15 @@ msgstr ""
 msgid "Connected: @%s"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:295
+#: includes/class-pn-customers-manager-common.php:303
 msgid "Connection error"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:296
+#: includes/class-pn-customers-manager-common.php:304
 msgid "Connection error: Could not connect to server"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1327
+#: includes/class-pn-customers-manager-settings.php:1345
 msgid "Connection successful."
 msgstr ""
 
@@ -1323,8 +1351,8 @@ msgstr ""
 msgid "Content"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:768
-#: includes/class-pn-customers-manager-funnel-builder.php:1116
+#: includes/class-pn-customers-manager-funnel-builder.php:755
+#: includes/class-pn-customers-manager-funnel-builder.php:1103
 msgid ""
 "Content the AI will use to respond: business info, hours, policies, prices, "
 "etc."
@@ -1341,25 +1369,25 @@ msgid ""
 "= very creative and varied. Default: <code>0.7</code>."
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2646
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2865
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2669
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2888
 msgid "Conversation excerpt"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:748
-#: includes/class-pn-customers-manager-instagram-ai.php:972
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1333
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1624
+#: includes/class-pn-customers-manager-instagram-ai.php:753
+#: includes/class-pn-customers-manager-instagram-ai.php:977
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1424
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1715
 msgid "Conversation not found."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:895
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1532
+#: includes/class-pn-customers-manager-instagram-ai.php:900
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1623
 msgid ""
 "Conversations table does not exist. Deactivate and reactivate the plugin."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:410
+#: includes/class-pn-customers-manager-funnel-builder.php:392
 msgid "Conversion"
 msgstr ""
 
@@ -1367,19 +1395,19 @@ msgstr ""
 msgid "Conversion rate"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1225
+#: includes/class-pn-customers-manager-settings.php:1243
 msgid "Cookie consent and GDPR compliance."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:281
+#: includes/class-pn-customers-manager-common.php:289
 msgid "Copied"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax.php:1295
-#: includes/class-pn-customers-manager-ajax.php:1706
-#: includes/class-pn-customers-manager-funnel-builder.php:701
-#: includes/class-pn-customers-manager-post-type-budget.php:758
-#: includes/class-pn-customers-manager-post-type-invoice.php:689
+#: includes/class-pn-customers-manager-ajax.php:1293
+#: includes/class-pn-customers-manager-ajax.php:1702
+#: includes/class-pn-customers-manager-funnel-builder.php:688
+#: includes/class-pn-customers-manager-post-type-budget.php:798
+#: includes/class-pn-customers-manager-post-type-invoice.php:690
 #: includes/class-pn-customers-manager-referral.php:215
 msgid "Copy"
 msgstr ""
@@ -1392,17 +1420,17 @@ msgstr ""
 msgid "Correo electrónico"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2635
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2658
 msgid "Cost"
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1440
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1531
 msgid ""
 "Could not connect to OpenAI. Verify the API Key and that you have available "
 "credit."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:309
+#: includes/class-pn-customers-manager-common.php:317
 msgid "Could not create the user. Please try again."
 msgstr ""
 
@@ -1424,13 +1452,13 @@ msgstr ""
 msgid "Could not save the projection."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:859
+#: includes/class-pn-customers-manager-instagram-ai.php:864
 msgid ""
 "Could not send the message. Verify the Access Token, Page ID and that the "
 "IGSID is valid."
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1489
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1580
 msgid ""
 "Could not send the message. Verify the Access Token, Phone Number ID and "
 "that the destination number is valid."
@@ -1445,14 +1473,14 @@ msgstr ""
 msgid "Crear organización"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1145
-#: includes/class-pn-customers-manager-post-type-invoice.php:1019
+#: includes/class-pn-customers-manager-post-type-budget.php:1187
+#: includes/class-pn-customers-manager-post-type-invoice.php:1020
 #: includes/class-pn-customers-manager-post-type-funnel.php:513
 #: includes/class-pn-customers-manager-post-type-organization.php:1161
 msgid "Create an account"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1450
+#: includes/class-pn-customers-manager-post-type-budget.php:1492
 msgid "Create Budget"
 msgstr ""
 
@@ -1460,7 +1488,7 @@ msgstr ""
 msgid "Create Funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1306
+#: includes/class-pn-customers-manager-post-type-invoice.php:1307
 msgid "Create Invoice"
 msgstr ""
 
@@ -1477,10 +1505,10 @@ msgstr ""
 msgid "Create projection"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:553
-#: includes/class-pn-customers-manager-instagram-ai.php:771
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1132
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1356
+#: includes/class-pn-customers-manager-instagram-ai.php:554
+#: includes/class-pn-customers-manager-instagram-ai.php:776
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1219
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1447
 msgid "Created:"
 msgstr ""
 
@@ -1509,7 +1537,7 @@ msgstr ""
 msgid "Current stage"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:771
+#: includes/class-pn-customers-manager-settings.php:789
 msgid "Current status of the Akismet integration on this site."
 msgstr ""
 
@@ -1518,12 +1546,12 @@ msgid "Custom order redirect message"
 msgstr ""
 
 #: includes/class-pn-customers-manager-post-type-organization.php:509
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2597
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2857
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2620
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2880
 msgid "Customer"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:809
+#: includes/class-pn-customers-manager-settings.php:827
 msgid ""
 "Customize the colors used throughout the plugin by modifying the CSS root "
 "variables."
@@ -1535,21 +1563,21 @@ msgid "Daily"
 msgstr ""
 
 #: includes/class-pn-customers-manager-budget-csv.php:25
-#: includes/class-pn-customers-manager-post-type-budget.php:92
-#: includes/class-pn-customers-manager-instagram-ai.php:673
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1253
-#: includes/class-pn-customers-manager-post-type-invoice.php:87
+#: includes/class-pn-customers-manager-post-type-budget.php:93
+#: includes/class-pn-customers-manager-instagram-ai.php:678
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1344
+#: includes/class-pn-customers-manager-post-type-invoice.php:88
 #: includes/class-pn-customers-manager-mail-stats.php:328
 #: includes/class-pn-customers-manager-mail-stats.php:393
 #: includes/class-pn-customers-manager-referral.php:449
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2601
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2861
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2624
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2884
 #: includes/class-pn-customers-manager-email-campaigns.php:508
 msgid "Date"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:322
-#: templates/public/single-pn_cm_invoice.php:322
+#: templates/public/single-pn_cm_budget.php:402
+#: templates/public/single-pn_cm_invoice.php:358
 msgid "Date:"
 msgstr ""
 
@@ -1640,30 +1668,33 @@ msgid "Default validity (days)"
 msgstr ""
 
 #: includes/class-pn-customers-manager-funnel-builder.php:289
+#: includes/class-pn-customers-manager-funnel-builder.php:410
 #: includes/class-pn-customers-manager-projections.php:1008
 #: includes/class-pn-customers-manager-shortcodes.php:421
-#: includes/class-pn-customers-manager-instagram-ai.php:592
-#: includes/class-pn-customers-manager-instagram-ai.php:814
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1171
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1399
-#: templates/public/single-pn_cm_budget.php:373
-#: templates/public/single-pn_cm_budget.php:419
-#: templates/public/single-pn_cm_budget.php:453
-#: templates/public/single-pn_cm_invoice.php:362
-#: templates/public/single-pn_cm_invoice.php:395
-#: templates/public/single-pn_cm_invoice.php:418
+#: includes/class-pn-customers-manager-instagram-ai.php:597
+#: includes/class-pn-customers-manager-instagram-ai.php:819
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1262
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1490
+#: templates/public/single-pn_cm_budget.php:454
+#: templates/public/single-pn_cm_budget.php:506
+#: templates/public/single-pn_cm_budget.php:541
+#: templates/public/single-pn_cm_budget.php:589
+#: templates/public/single-pn_cm_invoice.php:398
+#: templates/public/single-pn_cm_invoice.php:431
+#: templates/public/single-pn_cm_invoice.php:454
 msgid "Delete"
 msgstr ""
 
+#: includes/class-pn-customers-manager-funnel-builder.php:411
 #: includes/class-pn-customers-manager-shortcodes.php:332
-#: includes/class-pn-customers-manager-instagram-ai.php:710
-#: includes/class-pn-customers-manager-instagram-ai.php:812
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1290
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1397
+#: includes/class-pn-customers-manager-instagram-ai.php:715
+#: includes/class-pn-customers-manager-instagram-ai.php:817
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1381
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1488
 msgid "Delete this conversation?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:408
+#: includes/class-pn-customers-manager-funnel-builder.php:390
 msgid "Delete this element?"
 msgstr ""
 
@@ -1683,7 +1714,7 @@ msgstr ""
 msgid "Descargar anverso"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:312
+#: includes/class-pn-customers-manager-common.php:320
 #: includes/class-pn-customers-manager-referral.php:269
 msgid "Descargar QR"
 msgstr ""
@@ -1704,22 +1735,22 @@ msgstr ""
 msgid "Descripción de la organización"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:597
-#: includes/class-pn-customers-manager-post-type-budget.php:1632
-#: includes/class-pn-customers-manager-post-type-budget.php:1727
-#: includes/class-pn-customers-manager-post-type-invoice.php:540
-#: includes/class-pn-customers-manager-post-type-invoice.php:1433
-#: includes/class-pn-customers-manager-post-type-invoice.php:1521
-#: includes/class-pn-customers-manager-ajax-nopriv.php:747
+#: includes/class-pn-customers-manager-post-type-budget.php:614
+#: includes/class-pn-customers-manager-post-type-budget.php:1674
+#: includes/class-pn-customers-manager-post-type-budget.php:1769
+#: includes/class-pn-customers-manager-post-type-invoice.php:541
+#: includes/class-pn-customers-manager-post-type-invoice.php:1434
+#: includes/class-pn-customers-manager-post-type-invoice.php:1522
+#: includes/class-pn-customers-manager-ajax-nopriv.php:753
 msgid "Description"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:567
+#: includes/class-pn-customers-manager-funnel-builder.php:554
 msgid "Destination URL"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:321
-#: templates/public/single-pn_cm_invoice.php:321
+#: templates/public/single-pn_cm_budget.php:401
+#: templates/public/single-pn_cm_invoice.php:357
 msgid "Details"
 msgstr ""
 
@@ -1731,28 +1762,28 @@ msgstr ""
 msgid "Dirección de facturación"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:821
-#: includes/class-pn-customers-manager-funnel-builder.php:1169
+#: includes/class-pn-customers-manager-funnel-builder.php:808
+#: includes/class-pn-customers-manager-funnel-builder.php:1156
 msgid "Direct add to cart links"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:885
-#: includes/class-pn-customers-manager-funnel-builder.php:1222
+#: includes/class-pn-customers-manager-funnel-builder.php:872
+#: includes/class-pn-customers-manager-funnel-builder.php:1209
 msgid "Disable guided recommendations"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:790
+#: includes/class-pn-customers-manager-settings.php:808
 msgid "Discard obvious spam silently"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:795
+#: includes/class-pn-customers-manager-ajax-nopriv.php:801
 msgid "Discount"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:709
-#: includes/class-pn-customers-manager-post-type-invoice.php:643
-#: templates/public/single-pn_cm_budget.php:498
-#: templates/public/single-pn_cm_invoice.php:463
+#: includes/class-pn-customers-manager-post-type-budget.php:749
+#: includes/class-pn-customers-manager-post-type-invoice.php:644
+#: templates/public/single-pn_cm_budget.php:639
+#: templates/public/single-pn_cm_invoice.php:499
 #, php-format
 msgid "Discount (%s%%)"
 msgstr ""
@@ -1761,8 +1792,8 @@ msgstr ""
 msgid "Discount Rate (%)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:133
-#: includes/class-pn-customers-manager-post-type-invoice.php:128
+#: includes/class-pn-customers-manager-post-type-budget.php:134
+#: includes/class-pn-customers-manager-post-type-invoice.php:129
 msgid "Discount rate (%)"
 msgstr ""
 
@@ -1775,10 +1806,10 @@ msgstr ""
 msgid "Download CSV template"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:110
-#: includes/class-pn-customers-manager-post-type-budget.php:1037
-#: includes/class-pn-customers-manager-post-type-invoice.php:105
-#: includes/class-pn-customers-manager-post-type-invoice.php:926
+#: includes/class-pn-customers-manager-post-type-budget.php:111
+#: includes/class-pn-customers-manager-post-type-budget.php:1079
+#: includes/class-pn-customers-manager-post-type-invoice.php:106
+#: includes/class-pn-customers-manager-post-type-invoice.php:927
 #: templates/public/single-pn_cm_budget.php:77
 #: templates/public/single-pn_cm_invoice.php:70
 msgid "Draft"
@@ -1788,15 +1819,21 @@ msgstr ""
 msgid "Drag & drop a CSV file here"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:95
+#: templates/public/single-pn_cm_budget.php:436
+#: templates/public/single-pn_cm_budget.php:491
+#: templates/public/single-pn_cm_budget.php:523
+msgid "Drag to reorder"
+msgstr ""
+
+#: includes/class-pn-customers-manager-post-type-invoice.php:96
 msgid "Due date"
 msgstr ""
 
-#: templates/public/single-pn_cm_invoice.php:323
+#: templates/public/single-pn_cm_invoice.php:359
 msgid "Due date:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1294
+#: includes/class-pn-customers-manager-post-type-budget.php:1336
 msgid "Duplicate Budget"
 msgstr ""
 
@@ -1804,7 +1841,7 @@ msgstr ""
 msgid "Duplicate Funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1171
+#: includes/class-pn-customers-manager-post-type-invoice.php:1172
 msgid "Duplicate Invoice"
 msgstr ""
 
@@ -1812,7 +1849,7 @@ msgstr ""
 msgid "Duplicate Organization"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:261
+#: includes/class-pn-customers-manager-common.php:269
 msgid "Duplicated successfully"
 msgstr ""
 
@@ -1820,13 +1857,13 @@ msgstr ""
 msgid "e.g. +1 555 123 4567"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:134
-#: includes/class-pn-customers-manager-post-type-invoice.php:129
+#: includes/class-pn-customers-manager-post-type-budget.php:135
+#: includes/class-pn-customers-manager-post-type-invoice.php:130
 msgid "e.g. 10"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:122
-#: includes/class-pn-customers-manager-post-type-invoice.php:117
+#: includes/class-pn-customers-manager-post-type-budget.php:123
+#: includes/class-pn-customers-manager-post-type-invoice.php:118
 msgid "e.g. 21"
 msgstr ""
 
@@ -1852,7 +1889,7 @@ msgstr ""
 msgid "e.g. San Francisco"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:654
+#: includes/class-pn-customers-manager-funnel-builder.php:641
 msgid "e.g. shopping_cart, arrow_forward. See fonts.google.com/icons"
 msgstr ""
 
@@ -1867,37 +1904,37 @@ msgid ""
 msgstr ""
 
 #: includes/class-pn-customers-manager-forms.php:653
-#: templates/public/single-pn_cm_budget.php:372
-#: templates/public/single-pn_cm_budget.php:418
-#: templates/public/single-pn_cm_budget.php:452
-#: templates/public/single-pn_cm_invoice.php:361
-#: templates/public/single-pn_cm_invoice.php:394
-#: templates/public/single-pn_cm_invoice.php:417
+#: templates/public/single-pn_cm_budget.php:453
+#: templates/public/single-pn_cm_budget.php:505
+#: templates/public/single-pn_cm_budget.php:540
+#: templates/public/single-pn_cm_invoice.php:397
+#: templates/public/single-pn_cm_invoice.php:430
+#: templates/public/single-pn_cm_invoice.php:453
 msgid "Edit"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:270
+#: includes/class-pn-customers-manager-common.php:278
 #: includes/class-pn-customers-manager-forms.php:378
 msgid "Edit audio"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:271
+#: includes/class-pn-customers-manager-common.php:279
 #: includes/class-pn-customers-manager-forms.php:378
 msgid "Edit audios"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:244
-#: includes/class-pn-customers-manager-post-type-budget.php:1282
-#: includes/class-pn-customers-manager-post-type-budget.php:1395
+#: includes/class-pn-customers-manager-post-type-budget.php:261
+#: includes/class-pn-customers-manager-post-type-budget.php:1324
+#: includes/class-pn-customers-manager-post-type-budget.php:1437
 msgid "Edit Budget"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:274
+#: includes/class-pn-customers-manager-common.php:282
 #: includes/class-pn-customers-manager-forms.php:399
 msgid "Edit file"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:275
+#: includes/class-pn-customers-manager-common.php:283
 #: includes/class-pn-customers-manager-forms.php:399
 msgid "Edit files"
 msgstr ""
@@ -1912,24 +1949,24 @@ msgstr ""
 msgid "Edit Funnel category"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:262
+#: includes/class-pn-customers-manager-common.php:270
 #: includes/class-pn-customers-manager-forms.php:336
 msgid "Edit image"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:263
+#: includes/class-pn-customers-manager-common.php:271
 #: includes/class-pn-customers-manager-forms.php:336
 msgid "Edit images"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:237
-#: includes/class-pn-customers-manager-post-type-invoice.php:1159
-#: includes/class-pn-customers-manager-post-type-invoice.php:1257
+#: includes/class-pn-customers-manager-post-type-invoice.php:238
+#: includes/class-pn-customers-manager-post-type-invoice.php:1160
+#: includes/class-pn-customers-manager-post-type-invoice.php:1258
 msgid "Edit Invoice"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1687
-#: includes/class-pn-customers-manager-post-type-invoice.php:1481
+#: includes/class-pn-customers-manager-post-type-budget.php:1729
+#: includes/class-pn-customers-manager-post-type-invoice.php:1482
 msgid "Edit item"
 msgstr ""
 
@@ -1939,22 +1976,22 @@ msgstr ""
 msgid "Edit Organization"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1687
+#: includes/class-pn-customers-manager-post-type-budget.php:1729
 msgid "Edit phase"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:266
+#: includes/class-pn-customers-manager-common.php:274
 #: includes/class-pn-customers-manager-forms.php:357
 msgid "Edit video"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:267
+#: includes/class-pn-customers-manager-common.php:275
 #: includes/class-pn-customers-manager-forms.php:357
 msgid "Edit videos"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1474
-#: includes/class-pn-customers-manager-post-type-invoice.php:1327
+#: includes/class-pn-customers-manager-post-type-budget.php:1516
+#: includes/class-pn-customers-manager-post-type-invoice.php:1328
 #: includes/class-pn-customers-manager-post-type-funnel.php:719
 #: includes/class-pn-customers-manager-post-type-organization.php:1385
 msgid "Editing"
@@ -2006,7 +2043,7 @@ msgstr ""
 msgid "Email de facturación"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1204
+#: includes/class-pn-customers-manager-settings.php:1222
 msgid "Email marketing and newsletter campaigns."
 msgstr ""
 
@@ -2055,8 +2092,13 @@ msgstr ""
 msgid "Empresa"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:781
+#: includes/class-pn-customers-manager-settings.php:799
 msgid "Enable Akismet for contact form"
+msgstr ""
+
+#: includes/class-pn-customers-manager-settings.php:595
+#: includes/class-pn-customers-manager-settings.php:681
+msgid "Enable debug log"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:123
@@ -2070,7 +2112,7 @@ msgid ""
 "disabled."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1274
+#: includes/class-pn-customers-manager-settings.php:1292
 msgid "Enhance your workflow with these companion plugins."
 msgstr ""
 
@@ -2081,16 +2123,16 @@ msgid ""
 "compare results."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:831
+#: includes/class-pn-customers-manager-instagram-ai.php:836
 msgid "Enter a test Instagram User ID (IGSID)."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1336
+#: includes/class-pn-customers-manager-settings.php:1354
 msgid "Enter a test Instagram User ID."
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1461
-#: includes/class-pn-customers-manager-settings.php:1329
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1552
+#: includes/class-pn-customers-manager-settings.php:1347
 msgid "Enter a test phone number."
 msgstr ""
 
@@ -2110,7 +2152,7 @@ msgstr ""
 msgid "Enviar mensaje"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1370
+#: includes/class-pn-customers-manager-settings.php:1388
 msgid "Error activating plugin."
 msgstr ""
 
@@ -2122,40 +2164,40 @@ msgstr ""
 msgid "Error deleting projection."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1366
+#: includes/class-pn-customers-manager-settings.php:1384
 msgid "Error exporting settings."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1048
-#: includes/class-pn-customers-manager-funnel-builder.php:1322
+#: includes/class-pn-customers-manager-funnel-builder.php:1035
+#: includes/class-pn-customers-manager-funnel-builder.php:1309
 msgid "Error fallback message"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1364
+#: includes/class-pn-customers-manager-settings.php:1382
 msgid "Error importing settings."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:294
+#: includes/class-pn-customers-manager-common.php:302
 msgid "Error in transcription"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1369
+#: includes/class-pn-customers-manager-settings.php:1387
 msgid "Error installing plugin."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:420
+#: includes/class-pn-customers-manager-funnel-builder.php:402
 msgid "Error loading conversations."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:423
+#: includes/class-pn-customers-manager-funnel-builder.php:405
 msgid "Error loading settings."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:300
+#: includes/class-pn-customers-manager-common.php:308
 msgid "Error processing audio"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:407
+#: includes/class-pn-customers-manager-funnel-builder.php:389
 msgid "Error saving funnel."
 msgstr ""
 
@@ -2163,19 +2205,19 @@ msgstr ""
 msgid "Error saving projection."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1338
+#: includes/class-pn-customers-manager-settings.php:1356
 msgid "Error sending Instagram message."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1331
+#: includes/class-pn-customers-manager-settings.php:1349
 msgid "Error sending message."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1328
+#: includes/class-pn-customers-manager-settings.php:1346
 msgid "Error:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:288
+#: includes/class-pn-customers-manager-common.php:296
 msgid "Error: Could not access microphone"
 msgstr ""
 
@@ -2248,7 +2290,7 @@ msgstr ""
 msgid "Excerpt"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:772
+#: includes/class-pn-customers-manager-ajax-nopriv.php:778
 msgid "Excluded"
 msgstr ""
 
@@ -2256,11 +2298,11 @@ msgstr ""
 msgid "Expected value"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1109
+#: includes/class-pn-customers-manager-post-type-budget.php:1151
 msgid "Export CSV"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1259
+#: includes/class-pn-customers-manager-settings.php:1277
 msgid "Export settings"
 msgstr ""
 
@@ -2268,20 +2310,20 @@ msgstr ""
 msgid "External emails"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:754
-#: includes/class-pn-customers-manager-funnel-builder.php:1102
+#: includes/class-pn-customers-manager-funnel-builder.php:741
+#: includes/class-pn-customers-manager-funnel-builder.php:1089
 msgid "Extra shipping details: delivery times, special conditions, etc."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:703
+#: includes/class-pn-customers-manager-settings.php:721
 msgid "Facebook Page Access Token"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:712
+#: includes/class-pn-customers-manager-settings.php:730
 msgid "Facebook Page ID"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax.php:1578
+#: includes/class-pn-customers-manager-ajax.php:1574
 msgid "Failed to create invoice."
 msgstr ""
 
@@ -2293,13 +2335,13 @@ msgstr ""
 msgid "Fecha solicitud"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:864
-#: includes/class-pn-customers-manager-funnel-builder.php:1201
+#: includes/class-pn-customers-manager-funnel-builder.php:851
+#: includes/class-pn-customers-manager-funnel-builder.php:1188
 msgid "Filter by categories"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1106
-#: includes/class-pn-customers-manager-post-type-invoice.php:990
+#: includes/class-pn-customers-manager-post-type-budget.php:1148
+#: includes/class-pn-customers-manager-post-type-invoice.php:991
 #: includes/class-pn-customers-manager-post-type-funnel.php:468
 #: includes/class-pn-customers-manager-post-type-organization.php:1058
 msgid "Filter..."
@@ -2313,17 +2355,27 @@ msgstr ""
 msgid "Fiscal identifier"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:640
-#: includes/class-pn-customers-manager-post-type-budget.php:1644
-#: includes/class-pn-customers-manager-post-type-budget.php:1716
-#: includes/class-pn-customers-manager-post-type-invoice.php:581
-#: includes/class-pn-customers-manager-post-type-invoice.php:1445
-#: includes/class-pn-customers-manager-post-type-invoice.php:1511
+#: includes/class-pn-customers-manager-post-type-budget.php:677
+#: includes/class-pn-customers-manager-post-type-budget.php:1686
+#: includes/class-pn-customers-manager-post-type-budget.php:1758
+#: includes/class-pn-customers-manager-post-type-invoice.php:582
+#: includes/class-pn-customers-manager-post-type-invoice.php:1446
+#: includes/class-pn-customers-manager-post-type-invoice.php:1512
 msgid "Fixed"
+msgstr ""
+
+#: templates/public/single-pn_cm_budget.php:459
+#: templates/public/single-pn_cm_budget.php:546
+msgid "Fixed price"
 msgstr ""
 
 #: includes/class-pn-customers-manager-funnel-builder.php:142
 msgid "Follow-up"
+msgstr ""
+
+#: includes/class-pn-customers-manager-post-type-budget.php:204
+#: includes/class-pn-customers-manager-post-type-budget.php:210
+msgid "Footer image"
 msgstr ""
 
 #: includes/class-pn-customers-manager-budget-csv.php:241
@@ -2340,8 +2392,8 @@ msgstr ""
 msgid "Formato"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:958
-#: includes/class-pn-customers-manager-funnel-builder.php:1232
+#: includes/class-pn-customers-manager-funnel-builder.php:945
+#: includes/class-pn-customers-manager-funnel-builder.php:1219
 msgid "Forward special orders by email"
 msgstr ""
 
@@ -2349,8 +2401,8 @@ msgstr ""
 msgid "Frases predefinidas"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2376
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2397
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2399
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2420
 msgid "Free"
 msgstr ""
 
@@ -2358,8 +2410,8 @@ msgstr ""
 msgid "Full company address shown in the budget header."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:670
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1250
+#: includes/class-pn-customers-manager-instagram-ai.php:675
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1341
 msgid "Funnel"
 msgstr ""
 
@@ -2369,8 +2421,8 @@ msgid "Funnel audio url"
 msgstr ""
 
 #: includes/class-pn-customers-manager-funnel-builder.php:56
-#: includes/class-pn-customers-manager-settings.php:1052
-#: includes/class-pn-customers-manager-settings.php:1053
+#: includes/class-pn-customers-manager-settings.php:1070
+#: includes/class-pn-customers-manager-settings.php:1071
 msgid "Funnel Builder"
 msgstr ""
 
@@ -2402,12 +2454,12 @@ msgstr ""
 msgid "Funnel multimedia content"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:448
-#: includes/class-pn-customers-manager-funnel-builder.php:500
+#: includes/class-pn-customers-manager-funnel-builder.php:435
+#: includes/class-pn-customers-manager-funnel-builder.php:487
 msgid "Funnel not found."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:406
+#: includes/class-pn-customers-manager-funnel-builder.php:388
 msgid "Funnel saved successfully."
 msgstr ""
 
@@ -2445,21 +2497,21 @@ msgstr ""
 msgid "Funnel video url"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:551
-#: includes/class-pn-customers-manager-instagram-ai.php:769
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1130
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1354
+#: includes/class-pn-customers-manager-instagram-ai.php:552
+#: includes/class-pn-customers-manager-instagram-ai.php:774
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1217
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1445
 msgid "Funnel:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1044
-#: includes/class-pn-customers-manager-settings.php:1045
+#: includes/class-pn-customers-manager-settings.php:1062
+#: includes/class-pn-customers-manager-settings.php:1063
 #: includes/class-pn-customers-manager-post-type-funnel.php:122
 #: includes/class-pn-customers-manager-post-type-funnel.php:138
 msgid "Funnels"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:902
+#: includes/class-pn-customers-manager-settings.php:920
 msgid "General plugin settings and configuration."
 msgstr ""
 
@@ -2471,21 +2523,21 @@ msgstr ""
 msgid "Generar tarjeta de visita"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1318
-#: includes/class-pn-customers-manager-post-type-budget.php:1396
+#: includes/class-pn-customers-manager-post-type-budget.php:1360
+#: includes/class-pn-customers-manager-post-type-budget.php:1438
 msgid "Generate Invoice"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:566
-#: templates/public/single-pn_cm_invoice.php:514
+#: templates/public/single-pn_cm_budget.php:720
+#: templates/public/single-pn_cm_invoice.php:550
 msgid "Generate PDF"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:887
+#: includes/class-pn-customers-manager-settings.php:905
 msgid "Grey Color"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:888
+#: includes/class-pn-customers-manager-settings.php:906
 msgid "Grey color for backgrounds (default: #f5f5f5)"
 msgstr ""
 
@@ -2493,7 +2545,7 @@ msgstr ""
 msgid "Ha ocurrido un error."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:315
+#: includes/class-pn-customers-manager-common.php:323
 #: includes/class-pn-customers-manager-contact-form.php:234
 msgid "Ha ocurrido un error. Inténtalo de nuevo."
 msgstr ""
@@ -2525,12 +2577,17 @@ msgstr ""
 msgid "Hourly"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:639
-#: includes/class-pn-customers-manager-post-type-budget.php:1643
-#: includes/class-pn-customers-manager-post-type-budget.php:1715
-#: includes/class-pn-customers-manager-post-type-invoice.php:580
-#: includes/class-pn-customers-manager-post-type-invoice.php:1444
-#: includes/class-pn-customers-manager-post-type-invoice.php:1510
+#: templates/public/single-pn_cm_budget.php:459
+#: templates/public/single-pn_cm_budget.php:546
+msgid "Hourly rate"
+msgstr ""
+
+#: includes/class-pn-customers-manager-post-type-budget.php:676
+#: includes/class-pn-customers-manager-post-type-budget.php:1685
+#: includes/class-pn-customers-manager-post-type-budget.php:1757
+#: includes/class-pn-customers-manager-post-type-invoice.php:581
+#: includes/class-pn-customers-manager-post-type-invoice.php:1445
+#: includes/class-pn-customers-manager-post-type-invoice.php:1511
 msgid "Hours"
 msgstr ""
 
@@ -2556,29 +2613,33 @@ msgstr ""
 msgid "https://www.linkedin.com/company/..."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:646
+#: includes/class-pn-customers-manager-funnel-builder.php:633
 msgid "Icon"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:662
+#: includes/class-pn-customers-manager-funnel-builder.php:649
 msgid "Icon position"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:791
+#: includes/class-pn-customers-manager-settings.php:809
 msgid ""
 "If Akismet returns <code>discard</code> (highest spam confidence), reject "
 "the submission without saving it to the database. If this option is disabled,"
 " the message is still stored but marked as spam."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:944
+#: includes/class-pn-customers-manager-settings.php:962
 msgid ""
 "If you activate this option the plugin will remove all options on "
 "deactivation. Please, be careful. This process cannot be undone."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:675
+#: includes/class-pn-customers-manager-funnel-builder.php:662
 msgid "Image"
+msgstr ""
+
+#: includes/class-pn-customers-manager-post-type-budget.php:211
+msgid "Image displayed at the end of the budget, before terms and conditions."
 msgstr ""
 
 #: includes/class-pn-customers-manager-referral.php:327
@@ -2594,7 +2655,7 @@ msgid "Import Budgets from CSV"
 msgstr ""
 
 #: includes/class-pn-customers-manager-budget-csv.php:622
-#: includes/class-pn-customers-manager-post-type-budget.php:1112
+#: includes/class-pn-customers-manager-post-type-budget.php:1154
 #: includes/class-pn-customers-manager-post-type-organization.php:1053
 #: includes/class-pn-customers-manager-post-type-organization.php:1054
 msgid "Import CSV"
@@ -2604,7 +2665,7 @@ msgstr ""
 msgid "Import Organizations from CSV"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1256
+#: includes/class-pn-customers-manager-settings.php:1274
 msgid "Import settings"
 msgstr ""
 
@@ -2616,42 +2677,42 @@ msgstr ""
 msgid "In progress"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:776
-#: includes/class-pn-customers-manager-funnel-builder.php:1124
+#: includes/class-pn-customers-manager-funnel-builder.php:763
+#: includes/class-pn-customers-manager-funnel-builder.php:1111
 msgid "Include automatic content"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:841
-#: includes/class-pn-customers-manager-funnel-builder.php:1179
+#: includes/class-pn-customers-manager-funnel-builder.php:828
+#: includes/class-pn-customers-manager-funnel-builder.php:1166
 msgid "Include product categories"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:875
-#: includes/class-pn-customers-manager-funnel-builder.php:1212
+#: includes/class-pn-customers-manager-funnel-builder.php:862
+#: includes/class-pn-customers-manager-funnel-builder.php:1199
 msgid "Include product tags"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:811
-#: includes/class-pn-customers-manager-funnel-builder.php:1159
+#: includes/class-pn-customers-manager-funnel-builder.php:798
+#: includes/class-pn-customers-manager-funnel-builder.php:1146
 msgid "Include product variations"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:774
+#: includes/class-pn-customers-manager-ajax-nopriv.php:780
 msgid "Included"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:803
-#: includes/class-pn-customers-manager-funnel-builder.php:1151
+#: includes/class-pn-customers-manager-funnel-builder.php:790
+#: includes/class-pn-customers-manager-funnel-builder.php:1138
 msgid "Includes product name, price and purchase link."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:793
-#: includes/class-pn-customers-manager-funnel-builder.php:1141
+#: includes/class-pn-customers-manager-funnel-builder.php:780
+#: includes/class-pn-customers-manager-funnel-builder.php:1128
 msgid "Includes titles and excerpts of published pages."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:785
-#: includes/class-pn-customers-manager-funnel-builder.php:1133
+#: includes/class-pn-customers-manager-funnel-builder.php:772
+#: includes/class-pn-customers-manager-funnel-builder.php:1120
 msgid "Includes titles and excerpts of published posts."
 msgstr ""
 
@@ -2668,44 +2729,44 @@ msgstr ""
 msgid "Industry"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:608
+#: includes/class-pn-customers-manager-settings.php:617
 msgid "Instagram Access Token"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:841
+#: includes/class-pn-customers-manager-instagram-ai.php:846
 msgid "Instagram Access Token has not been configured."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1060
+#: includes/class-pn-customers-manager-funnel-builder.php:1047
 #: includes/class-pn-customers-manager-shortcodes.php:279
-#: includes/class-pn-customers-manager-instagram-ai.php:641
-#: includes/class-pn-customers-manager-settings.php:599
-#: includes/class-pn-customers-manager-settings.php:1126
+#: includes/class-pn-customers-manager-instagram-ai.php:646
+#: includes/class-pn-customers-manager-settings.php:608
+#: includes/class-pn-customers-manager-settings.php:1144
 msgid "Instagram AI"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:694
+#: includes/class-pn-customers-manager-settings.php:712
 msgid "Instagram Business Account ID"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:330
-#: includes/class-pn-customers-manager-funnel-builder.php:424
+#: includes/class-pn-customers-manager-funnel-builder.php:317
+#: includes/class-pn-customers-manager-funnel-builder.php:406
 msgid "Instagram Conversations"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1340
+#: includes/class-pn-customers-manager-settings.php:1358
 msgid "Instagram DM received from"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:685
+#: includes/class-pn-customers-manager-settings.php:703
 msgid "Instagram Graph API Token"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1337
+#: includes/class-pn-customers-manager-settings.php:1355
 msgid "Instagram message sent successfully."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:600
+#: includes/class-pn-customers-manager-settings.php:609
 msgid ""
 "Instagram Messenger API (Meta) integration to automatically receive and "
 "respond to DMs with AI.<br><br><strong>Prerequisites:</strong><br>1. Create "
@@ -2717,31 +2778,31 @@ msgid ""
 "configure it there."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:617
+#: includes/class-pn-customers-manager-settings.php:626
 msgid "Instagram Page ID"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:848
+#: includes/class-pn-customers-manager-instagram-ai.php:853
 msgid "Instagram Page ID has not been configured."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:34
-#: includes/class-pn-customers-manager-instagram-ai.php:668
+#: includes/class-pn-customers-manager-instagram-ai.php:35
+#: includes/class-pn-customers-manager-instagram-ai.php:673
 msgid "Instagram User"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:550
-#: includes/class-pn-customers-manager-instagram-ai.php:768
+#: includes/class-pn-customers-manager-instagram-ai.php:551
+#: includes/class-pn-customers-manager-instagram-ai.php:773
 msgid "Instagram User:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:648
+#: includes/class-pn-customers-manager-settings.php:657
 msgid ""
 "Instagram-scoped User ID (IGSID) to send the test message to. You can find "
 "it in the webhook payload when someone sends you a DM."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1298
+#: includes/class-pn-customers-manager-settings.php:1316
 msgid "Install"
 msgstr ""
 
@@ -2749,11 +2810,11 @@ msgstr ""
 msgid "Install mailpn"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1367
+#: includes/class-pn-customers-manager-settings.php:1385
 msgid "Installing..."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:764
+#: includes/class-pn-customers-manager-settings.php:782
 msgid ""
 "Integration with the Akismet plugin to automatically detect bots and spam in "
 "the contact form.<br><br><strong>Prerequisites:</strong><br>1. Install and "
@@ -2768,8 +2829,8 @@ msgid "Internal Notes"
 msgstr ""
 
 #: includes/class-pn-customers-manager-csv-import.php:54
-#: includes/class-pn-customers-manager-post-type-budget.php:153
-#: includes/class-pn-customers-manager-post-type-invoice.php:148
+#: includes/class-pn-customers-manager-post-type-budget.php:154
+#: includes/class-pn-customers-manager-post-type-invoice.php:149
 msgid "Internal notes"
 msgstr ""
 
@@ -2777,7 +2838,7 @@ msgstr ""
 msgid "Interval of days between each reminder sent to pending referrals."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:313
+#: includes/class-pn-customers-manager-common.php:321
 msgid "Introduce tu correo electrónico."
 msgstr ""
 
@@ -2792,7 +2853,7 @@ msgstr ""
 msgid "Introduce un correo electrónico válido."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:468
+#: includes/class-pn-customers-manager-funnel-builder.php:455
 msgid "Invalid canvas data."
 msgstr ""
 
@@ -2805,7 +2866,7 @@ msgstr ""
 msgid "Invalid file type. Please upload a CSV file."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1365
+#: includes/class-pn-customers-manager-settings.php:1383
 msgid "Invalid JSON file."
 msgstr ""
 
@@ -2821,7 +2882,7 @@ msgstr ""
 #: includes/class-pn-customers-manager-ajax-nopriv.php:567
 #: includes/class-pn-customers-manager-ajax-nopriv.php:616
 #: includes/class-pn-customers-manager-ajax-nopriv.php:657
-#: includes/class-pn-customers-manager-ajax-nopriv.php:687
+#: includes/class-pn-customers-manager-ajax-nopriv.php:693
 msgid "Invalid request."
 msgstr ""
 
@@ -2833,11 +2894,11 @@ msgstr ""
 msgid "Invalid selection format."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:291
+#: includes/class-pn-customers-manager-common.php:299
 msgid "Invalid server response"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:290
+#: includes/class-pn-customers-manager-common.php:298
 msgid "Invalid server response format"
 msgstr ""
 
@@ -2848,7 +2909,7 @@ msgstr ""
 #: includes/class-pn-customers-manager-ajax-nopriv.php:574
 #: includes/class-pn-customers-manager-ajax-nopriv.php:623
 #: includes/class-pn-customers-manager-ajax-nopriv.php:663
-#: includes/class-pn-customers-manager-ajax-nopriv.php:693
+#: includes/class-pn-customers-manager-ajax-nopriv.php:699
 msgid "Invalid token."
 msgstr ""
 
@@ -2857,7 +2918,7 @@ msgstr ""
 msgid "Invalid user."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:303
+#: includes/class-pn-customers-manager-common.php:311
 msgid "Invitation sent successfully!"
 msgstr ""
 
@@ -2866,22 +2927,22 @@ msgid "Invite someone"
 msgstr ""
 
 #: templates/public/single-pn_cm_invoice.php:274
-#: templates/public/single-pn_cm_invoice.php:298
+#: templates/public/single-pn_cm_invoice.php:334
 #, php-format
 msgid "Invoice %s"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:247
+#: includes/class-pn-customers-manager-post-type-invoice.php:248
 msgid "Invoice description"
 msgstr ""
 
 #: includes/class-pn-customers-manager-post-type-invoice.php:64
-#: includes/class-pn-customers-manager-post-type-invoice.php:272
+#: includes/class-pn-customers-manager-post-type-invoice.php:273
 msgid "Invoice details"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:978
-#: includes/admin/class-pn-customers-manager-admin.php:98
+#: includes/class-pn-customers-manager-post-type-invoice.php:979
+#: includes/admin/class-pn-customers-manager-admin.php:100
 msgid "Invoice duplicated successfully."
 msgstr ""
 
@@ -2889,7 +2950,7 @@ msgstr ""
 msgid "Invoice duplicated."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1096
+#: includes/class-pn-customers-manager-post-type-budget.php:1138
 #: includes/admin/class-pn-customers-manager-admin.php:80
 msgid "Invoice generated successfully."
 msgstr ""
@@ -2898,7 +2959,7 @@ msgstr ""
 msgid "Invoice not found."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:78
+#: includes/class-pn-customers-manager-post-type-invoice.php:79
 msgid "Invoice number"
 msgstr ""
 
@@ -2906,8 +2967,8 @@ msgstr ""
 msgid "Invoice number prefix"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:977
-#: includes/admin/class-pn-customers-manager-admin.php:97
+#: includes/class-pn-customers-manager-post-type-invoice.php:978
+#: includes/admin/class-pn-customers-manager-admin.php:99
 msgid "Invoice removed successfully."
 msgstr ""
 
@@ -2915,8 +2976,8 @@ msgstr ""
 msgid "Invoice removed."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:976
-#: includes/admin/class-pn-customers-manager-admin.php:96
+#: includes/class-pn-customers-manager-post-type-invoice.php:977
+#: includes/admin/class-pn-customers-manager-admin.php:98
 #: templates/public/single-pn_cm_invoice.php:129
 msgid "Invoice sent successfully."
 msgstr ""
@@ -2941,10 +3002,10 @@ msgid ""
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:67
-#: includes/class-pn-customers-manager-settings.php:1086
-#: includes/class-pn-customers-manager-settings.php:1087
-#: includes/class-pn-customers-manager-post-type-invoice.php:231
-#: includes/class-pn-customers-manager-post-type-invoice.php:246
+#: includes/class-pn-customers-manager-settings.php:1104
+#: includes/class-pn-customers-manager-settings.php:1105
+#: includes/class-pn-customers-manager-post-type-invoice.php:232
+#: includes/class-pn-customers-manager-post-type-invoice.php:247
 msgid "Invoices"
 msgstr ""
 
@@ -2956,13 +3017,13 @@ msgstr ""
 msgid "Item not found or not optional."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1618
-#: includes/class-pn-customers-manager-post-type-invoice.php:1419
+#: includes/class-pn-customers-manager-post-type-budget.php:1660
+#: includes/class-pn-customers-manager-post-type-invoice.php:1420
 msgid "Item not found."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:177
-#: includes/class-pn-customers-manager-post-type-invoice.php:172
+#: includes/class-pn-customers-manager-post-type-budget.php:178
+#: includes/class-pn-customers-manager-post-type-invoice.php:173
 msgid "Items"
 msgstr ""
 
@@ -2970,12 +3031,12 @@ msgstr ""
 msgid "Items (JSON)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:824
+#: includes/class-pn-customers-manager-ajax-nopriv.php:834
 msgid "Items detail"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:767
-#: includes/class-pn-customers-manager-funnel-builder.php:1115
+#: includes/class-pn-customers-manager-funnel-builder.php:754
+#: includes/class-pn-customers-manager-funnel-builder.php:1102
 msgid "Knowledge base"
 msgstr ""
 
@@ -2983,7 +3044,7 @@ msgstr ""
 msgid "Landing Pages"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:626
+#: includes/class-pn-customers-manager-funnel-builder.php:613
 msgid "Large"
 msgstr ""
 
@@ -3024,8 +3085,8 @@ msgstr ""
 msgid "Last contact date"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:671
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1251
+#: includes/class-pn-customers-manager-instagram-ai.php:676
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1342
 msgid "Last message"
 msgstr ""
 
@@ -3051,8 +3112,8 @@ msgstr ""
 msgid "Lead source"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:636
-#: includes/class-pn-customers-manager-funnel-builder.php:664
+#: includes/class-pn-customers-manager-funnel-builder.php:623
+#: includes/class-pn-customers-manager-funnel-builder.php:651
 msgid "Left"
 msgstr ""
 
@@ -3070,8 +3131,8 @@ msgstr ""
 msgid "Lifecycle stage"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:171
-#: includes/class-pn-customers-manager-post-type-invoice.php:166
+#: includes/class-pn-customers-manager-post-type-budget.php:172
+#: includes/class-pn-customers-manager-post-type-invoice.php:167
 msgid "Line items"
 msgstr ""
 
@@ -3087,7 +3148,7 @@ msgstr ""
 msgid "Linked contacts"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1404
+#: includes/class-pn-customers-manager-post-type-budget.php:1446
 msgid "Linked Invoices"
 msgstr ""
 
@@ -3100,19 +3161,19 @@ msgid "LinkedIn profile"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:587
-#: includes/class-pn-customers-manager-settings.php:664
+#: includes/class-pn-customers-manager-settings.php:673
 msgid "Listen for messages"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1332
+#: includes/class-pn-customers-manager-settings.php:1350
 msgid "Listening"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1339
+#: includes/class-pn-customers-manager-settings.php:1357
 msgid "Listening for Instagram DMs"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1333
+#: includes/class-pn-customers-manager-settings.php:1351
 msgid "Listening stopped."
 msgstr ""
 
@@ -3120,15 +3181,15 @@ msgstr ""
 msgid "Live chat"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1050
-#: includes/class-pn-customers-manager-funnel-builder.php:1324
-#: includes/trait-pn-customers-manager-ai-chat-common.php:172
+#: includes/class-pn-customers-manager-funnel-builder.php:1037
+#: includes/class-pn-customers-manager-funnel-builder.php:1311
+#: includes/trait-pn-customers-manager-ai-chat-common.php:176
 msgid ""
 "Lo siento, en este momento no puedo responder. Por favor, inténtalo de nuevo "
 "más tarde."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:422
+#: includes/class-pn-customers-manager-funnel-builder.php:404
 msgid "Loading settings..."
 msgstr ""
 
@@ -3138,8 +3199,8 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1060
-#: includes/class-pn-customers-manager-post-type-invoice.php:947
+#: includes/class-pn-customers-manager-post-type-budget.php:1102
+#: includes/class-pn-customers-manager-post-type-invoice.php:948
 #: includes/class-pn-customers-manager-post-type-funnel.php:448
 #: includes/class-pn-customers-manager-post-type-organization.php:1032
 msgid "Log in"
@@ -3149,7 +3210,7 @@ msgstr ""
 msgid "Logo displayed in the budget header. Select from the media library."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:686
+#: includes/class-pn-customers-manager-settings.php:704
 msgid ""
 "Long-lived token with <code>instagram_basic</code> and <code>"
 "instagram_manage_insights</code> permissions. Generate it from <a "
@@ -3175,19 +3236,19 @@ msgid ""
 "email statistics."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:827
+#: includes/class-pn-customers-manager-settings.php:845
 msgid "Main Background Color"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:837
+#: includes/class-pn-customers-manager-settings.php:855
 msgid "Main Border Color"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:817
+#: includes/class-pn-customers-manager-settings.php:835
 msgid "Main Color"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:957
+#: includes/class-pn-customers-manager-settings.php:975
 msgid ""
 "Manage plugin user roles. You can assign or remove roles from registered "
 "users."
@@ -3220,7 +3281,7 @@ msgstr ""
 msgid "Marcar como spam"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:409
+#: includes/class-pn-customers-manager-funnel-builder.php:391
 msgid "Market"
 msgstr ""
 
@@ -3228,7 +3289,7 @@ msgstr ""
 msgid "Marketing qualified (MQL)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:653
+#: includes/class-pn-customers-manager-funnel-builder.php:640
 msgid "Material Icon name"
 msgstr ""
 
@@ -3242,7 +3303,7 @@ msgstr ""
 msgid "Maximum number of reminders per referral"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:625
+#: includes/class-pn-customers-manager-funnel-builder.php:612
 #: includes/class-pn-customers-manager-post-type-organization.php:536
 msgid "Medium"
 msgstr ""
@@ -3270,23 +3331,23 @@ msgstr ""
 msgid "Message / Motivation"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1335
+#: includes/class-pn-customers-manager-settings.php:1353
 msgid "Message received from"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1330
+#: includes/class-pn-customers-manager-settings.php:1348
 msgid "Message sent successfully."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1049
-#: includes/class-pn-customers-manager-funnel-builder.php:1323
+#: includes/class-pn-customers-manager-funnel-builder.php:1036
+#: includes/class-pn-customers-manager-funnel-builder.php:1310
 msgid ""
 "Message sent to the customer when the AI model cannot respond (API error, "
 "timeout, invalid key, etc.). Leave empty to use the default message."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1042
-#: includes/class-pn-customers-manager-funnel-builder.php:1316
+#: includes/class-pn-customers-manager-funnel-builder.php:1029
+#: includes/class-pn-customers-manager-funnel-builder.php:1303
 msgid "Message sent when starting the conversation..."
 msgstr ""
 
@@ -3297,12 +3358,12 @@ msgid ""
 "default message redirecting to phone or website contact methods."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1155
-#: includes/class-pn-customers-manager-settings.php:1156
+#: includes/class-pn-customers-manager-settings.php:1173
+#: includes/class-pn-customers-manager-settings.php:1174
 msgid "Messages"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:417
+#: includes/class-pn-customers-manager-funnel-builder.php:399
 msgid "messages"
 msgstr ""
 
@@ -3318,15 +3379,15 @@ msgstr ""
 msgid "Mini (833x333)"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:1035
+#: includes/trait-pn-customers-manager-ai-chat-common.php:1054
 msgid "minimum order"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:1041
+#: includes/trait-pn-customers-manager-ai-chat-common.php:1060
 msgid "minimum order + coupon"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:1044
+#: includes/trait-pn-customers-manager-ai-chat-common.php:1063
 msgid "minimum order or coupon"
 msgstr ""
 
@@ -3342,10 +3403,10 @@ msgstr ""
 msgid "Missing required fields."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:552
-#: includes/class-pn-customers-manager-instagram-ai.php:770
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1131
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1355
+#: includes/class-pn-customers-manager-instagram-ai.php:553
+#: includes/class-pn-customers-manager-instagram-ai.php:775
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1218
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1446
 msgid "Model:"
 msgstr ""
 
@@ -3362,13 +3423,13 @@ msgid "My Referrals"
 msgstr ""
 
 #: includes/class-pn-customers-manager-funnel-builder.php:259
-#: includes/class-pn-customers-manager-instagram-ai.php:669
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1249
+#: includes/class-pn-customers-manager-instagram-ai.php:674
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1340
 msgid "Name"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:727
-#: includes/class-pn-customers-manager-funnel-builder.php:1075
+#: includes/class-pn-customers-manager-funnel-builder.php:714
+#: includes/class-pn-customers-manager-funnel-builder.php:1062
 msgid "Name, description, address, contact details, etc."
 msgstr ""
 
@@ -3380,15 +3441,15 @@ msgstr ""
 msgid "New Funnel category"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2595
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2618
 #, php-format
 msgid "New order via %s"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1094
-#: includes/class-pn-customers-manager-post-type-invoice.php:980
-#: includes/admin/class-pn-customers-manager-admin.php:100
-#: templates/public/single-pn_cm_budget.php:141
+#: includes/class-pn-customers-manager-post-type-budget.php:1136
+#: includes/class-pn-customers-manager-post-type-invoice.php:981
+#: includes/admin/class-pn-customers-manager-admin.php:102
+#: templates/public/single-pn_cm_budget.php:152
 #: templates/public/single-pn_cm_invoice.php:133
 msgid "New phase"
 msgstr ""
@@ -3410,15 +3471,15 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:289
+#: includes/class-pn-customers-manager-common.php:297
 msgid "No audio to transcribe"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:247
+#: includes/class-pn-customers-manager-post-type-budget.php:264
 msgid "No Budget found"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:248
+#: includes/class-pn-customers-manager-post-type-budget.php:265
 msgid "No Budget found in Trash"
 msgstr ""
 
@@ -3430,10 +3491,10 @@ msgstr ""
 msgid "No contacts linked yet."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:416
+#: includes/class-pn-customers-manager-funnel-builder.php:398
 #: includes/class-pn-customers-manager-shortcodes.php:376
-#: includes/class-pn-customers-manager-instagram-ai.php:662
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1242
+#: includes/class-pn-customers-manager-instagram-ai.php:667
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1333
 msgid "No conversations yet."
 msgstr ""
 
@@ -3478,8 +3539,8 @@ msgstr ""
 msgid "No file uploaded."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:439
-#: includes/class-pn-customers-manager-funnel-builder.php:491
+#: includes/class-pn-customers-manager-funnel-builder.php:426
+#: includes/class-pn-customers-manager-funnel-builder.php:478
 msgid "No funnel ID provided."
 msgstr ""
 
@@ -3495,23 +3556,23 @@ msgstr ""
 msgid "No images uploaded"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:425
+#: includes/class-pn-customers-manager-funnel-builder.php:407
 msgid "No Instagram conversations yet."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:240
+#: includes/class-pn-customers-manager-post-type-invoice.php:241
 msgid "No Invoice found"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:241
+#: includes/class-pn-customers-manager-post-type-invoice.php:242
 msgid "No Invoice found in Trash"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:472
+#: templates/public/single-pn_cm_budget.php:560
 msgid "No items in this budget."
 msgstr ""
 
-#: templates/public/single-pn_cm_invoice.php:437
+#: templates/public/single-pn_cm_invoice.php:473
 msgid "No items in this invoice."
 msgstr ""
 
@@ -3524,10 +3585,10 @@ msgstr ""
 msgid "No manual projections for this metric yet."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:559
-#: includes/class-pn-customers-manager-instagram-ai.php:778
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1138
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1363
+#: includes/class-pn-customers-manager-instagram-ai.php:560
+#: includes/class-pn-customers-manager-instagram-ai.php:783
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1225
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1454
 msgid "No messages in this conversation."
 msgstr ""
 
@@ -3555,7 +3616,7 @@ msgstr ""
 msgid "No se pudo enviar el mensaje. Inténtalo de nuevo más tarde."
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2642
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2665
 msgid "No shipping methods available for this postal code."
 msgstr ""
 
@@ -3593,15 +3654,15 @@ msgstr ""
 msgid "No tienes permiso."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:743
+#: includes/class-pn-customers-manager-post-type-budget.php:783
 msgid "No token generated yet. Save the budget to generate one."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:674
+#: includes/class-pn-customers-manager-post-type-invoice.php:675
 msgid "No token generated yet. Save the invoice to generate one."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:293
+#: includes/class-pn-customers-manager-common.php:301
 msgid "No transcription received from server"
 msgstr ""
 
@@ -3679,10 +3740,10 @@ msgstr ""
 msgid "Notas internas"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:537
+#: includes/class-pn-customers-manager-funnel-builder.php:524
 #: includes/class-pn-customers-manager-projections.php:833
-#: includes/class-pn-customers-manager-post-type-budget.php:147
-#: includes/class-pn-customers-manager-post-type-invoice.php:142
+#: includes/class-pn-customers-manager-post-type-budget.php:148
+#: includes/class-pn-customers-manager-post-type-invoice.php:143
 msgid "Notes"
 msgstr ""
 
@@ -3690,16 +3751,16 @@ msgstr ""
 msgid "Notes (optional)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:154
-#: includes/class-pn-customers-manager-post-type-invoice.php:149
+#: includes/class-pn-customers-manager-post-type-budget.php:155
+#: includes/class-pn-customers-manager-post-type-invoice.php:150
 msgid "Notes visible only to administrators."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:161
+#: includes/class-pn-customers-manager-post-type-budget.php:162
 msgid "Notes visible to the client on the public budget."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:156
+#: includes/class-pn-customers-manager-post-type-invoice.php:157
 msgid "Notes visible to the client on the public invoice."
 msgstr ""
 
@@ -3736,7 +3797,7 @@ msgstr ""
 msgid "Open Budgets in Dashboard"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:575
+#: includes/class-pn-customers-manager-funnel-builder.php:562
 msgid "Open in new tab"
 msgstr ""
 
@@ -3770,7 +3831,7 @@ msgstr ""
 msgid "OpenAI API Key"
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1423
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1514
 msgid "OpenAI API Key has not been configured."
 msgstr ""
 
@@ -3781,8 +3842,8 @@ msgstr ""
 msgid "Opened"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:760
-#: includes/class-pn-customers-manager-funnel-builder.php:1108
+#: includes/class-pn-customers-manager-funnel-builder.php:747
+#: includes/class-pn-customers-manager-funnel-builder.php:1095
 msgid "Opening hours"
 msgstr ""
 
@@ -3790,12 +3851,12 @@ msgstr ""
 msgid "Opportunity"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:602
+#: includes/class-pn-customers-manager-post-type-budget.php:619
 msgid "Optional"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1675
-#: includes/class-pn-customers-manager-post-type-budget.php:1757
+#: includes/class-pn-customers-manager-post-type-budget.php:1717
+#: includes/class-pn-customers-manager-post-type-budget.php:1799
 msgid "Optional item"
 msgstr ""
 
@@ -3812,15 +3873,15 @@ msgstr ""
 msgid "Order form"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:929
+#: includes/class-pn-customers-manager-funnel-builder.php:916
 msgid "Order notification recipients (external emails)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:919
+#: includes/class-pn-customers-manager-funnel-builder.php:906
 msgid "Order notification recipients (platform users)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:278
+#: includes/class-pn-customers-manager-common.php:286
 msgid "Ordered element"
 msgstr ""
 
@@ -3856,8 +3917,8 @@ msgid "Organization title"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:50
-#: includes/class-pn-customers-manager-settings.php:1064
-#: includes/class-pn-customers-manager-settings.php:1065
+#: includes/class-pn-customers-manager-settings.php:1082
+#: includes/class-pn-customers-manager-settings.php:1083
 #: includes/class-pn-customers-manager-post-type-organization.php:706
 #: includes/class-pn-customers-manager-post-type-organization.php:722
 msgid "Organizations"
@@ -3876,12 +3937,12 @@ msgstr ""
 msgid "Outbound prospecting"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:599
+#: includes/class-pn-customers-manager-funnel-builder.php:586
 msgid "Outline"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:720
-#: includes/class-pn-customers-manager-funnel-builder.php:1068
+#: includes/class-pn-customers-manager-funnel-builder.php:707
+#: includes/class-pn-customers-manager-funnel-builder.php:1055
 msgid "Override the global prompt for this node..."
 msgstr ""
 
@@ -3910,13 +3971,13 @@ msgstr ""
 msgid "Pages"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:107
-#: includes/class-pn-customers-manager-post-type-invoice.php:928
+#: includes/class-pn-customers-manager-post-type-invoice.php:108
+#: includes/class-pn-customers-manager-post-type-invoice.php:929
 #: templates/public/single-pn_cm_invoice.php:72
 msgid "Paid"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1093
+#: includes/class-pn-customers-manager-post-type-invoice.php:1094
 #, php-format
 msgid "Paid %s"
 msgstr ""
@@ -3926,7 +3987,7 @@ msgid "Paid campaigns"
 msgstr ""
 
 #. %s: date and time when the invoice was paid
-#: templates/public/single-pn_cm_invoice.php:487
+#: templates/public/single-pn_cm_invoice.php:523
 #, php-format
 msgid "Paid on %s."
 msgstr ""
@@ -3935,7 +3996,7 @@ msgstr ""
 msgid "Para:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:239
+#: includes/class-pn-customers-manager-post-type-budget.php:256
 msgid "Parent Budget"
 msgstr ""
 
@@ -3951,7 +4012,7 @@ msgstr ""
 msgid "Parent Funnel category:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:232
+#: includes/class-pn-customers-manager-post-type-invoice.php:233
 msgid "Parent Invoice"
 msgstr ""
 
@@ -3996,7 +4057,7 @@ msgstr ""
 msgid "Permission denied."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:297
+#: includes/class-pn-customers-manager-common.php:305
 msgid "Permission error: Security verification failed"
 msgstr ""
 
@@ -4004,13 +4065,13 @@ msgstr ""
 msgid "Personaliza tu mensaje:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1512
+#: includes/class-pn-customers-manager-post-type-invoice.php:1513
 msgid "Phase"
 msgstr ""
 
 #: includes/class-pn-customers-manager-csv-import.php:30
-#: includes/class-pn-customers-manager-whatsapp-ai.php:34
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1248
+#: includes/class-pn-customers-manager-whatsapp-ai.php:35
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1339
 msgid "Phone"
 msgstr ""
 
@@ -4018,7 +4079,7 @@ msgstr ""
 msgid "Phone Number ID"
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1478
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1569
 msgid "Phone Number ID has not been configured."
 msgstr ""
 
@@ -4028,8 +4089,8 @@ msgid ""
 "the + sign (e.g.: <code>34612345678</code> for Spain)."
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1129
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1353
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1216
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1444
 msgid "Phone:"
 msgstr ""
 
@@ -4046,15 +4107,15 @@ msgstr ""
 msgid "Play audio"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:258
+#: includes/class-pn-customers-manager-common.php:266
 msgid "Please create a new user or login to save the information."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1093
-#: includes/class-pn-customers-manager-post-type-invoice.php:979
+#: includes/class-pn-customers-manager-post-type-budget.php:1135
+#: includes/class-pn-customers-manager-post-type-invoice.php:980
 #: includes/admin/class-pn-customers-manager-admin.php:78
-#: includes/admin/class-pn-customers-manager-admin.php:99
-#: templates/public/single-pn_cm_budget.php:140
+#: includes/admin/class-pn-customers-manager-admin.php:101
+#: templates/public/single-pn_cm_budget.php:151
 #: templates/public/single-pn_cm_invoice.php:132
 msgid "Please enter a description."
 msgstr ""
@@ -4064,7 +4125,8 @@ msgid "Please enter a valid date."
 msgstr ""
 
 #: includes/class-pn-customers-manager-validation.php:65
-#: includes/class-pn-customers-manager-common.php:305
+#: includes/class-pn-customers-manager-common.php:313
+#: templates/public/single-pn_cm_budget.php:114
 msgid "Please enter a valid email address."
 msgstr ""
 
@@ -4078,6 +4140,10 @@ msgstr ""
 
 #: includes/class-pn-customers-manager-validation.php:74
 msgid "Please enter a valid URL."
+msgstr ""
+
+#: templates/public/single-pn_cm_budget.php:113
+msgid "Please enter your email address to accept this budget."
 msgstr ""
 
 #: includes/class-pn-customers-manager-commercial.php:219
@@ -4105,19 +4171,19 @@ msgstr ""
 msgid "Please select valid options."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:757
+#: includes/class-pn-customers-manager-settings.php:775
 msgid "Plugin Akismet activo y configurado."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:755
+#: includes/class-pn-customers-manager-settings.php:773
 msgid "Plugin Akismet activo, pero sin clave de API configurada."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:753
+#: includes/class-pn-customers-manager-settings.php:771
 msgid "Plugin Akismet no instalado o no activo."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1179
+#: includes/class-pn-customers-manager-settings.php:1197
 msgid "Plugin main Banner"
 msgstr ""
 
@@ -4125,18 +4191,18 @@ msgstr ""
 #: includes/class-pn-customers-manager-ajax.php:958
 #: includes/class-pn-customers-manager-forms.php:687
 #: includes/class-pn-customers-manager-activator.php:28
-#: includes/class-pn-customers-manager-settings.php:963
-#: includes/class-pn-customers-manager-settings.php:965
-#: includes/class-pn-customers-manager-settings.php:1023
-#: includes/class-pn-customers-manager-settings.php:1024
+#: includes/class-pn-customers-manager-settings.php:981
+#: includes/class-pn-customers-manager-settings.php:983
+#: includes/class-pn-customers-manager-settings.php:1041
+#: includes/class-pn-customers-manager-settings.php:1042
 msgid "PN Customers Manager"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1180
+#: includes/class-pn-customers-manager-settings.php:1198
 msgid "PN Customers Manager Settings"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:319
+#: includes/class-pn-customers-manager-common.php:327
 #: includes/class-pn-customers-manager-contact-form.php:230
 #: includes/class-pn-customers-manager-ajax-nopriv.php:189
 msgid "Por favor, completa todos los campos obligatorios."
@@ -4146,7 +4212,7 @@ msgstr ""
 msgid "Possible churn"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:236
+#: includes/class-pn-customers-manager-post-type-budget.php:253
 msgctxt "Post Type general name"
 msgid "Budget"
 msgstr ""
@@ -4156,7 +4222,7 @@ msgctxt "Post Type general name"
 msgid "Funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:229
+#: includes/class-pn-customers-manager-post-type-invoice.php:230
 msgctxt "Post Type general name"
 msgid "Invoice"
 msgstr ""
@@ -4166,7 +4232,7 @@ msgctxt "Post Type general name"
 msgid "Organization"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:237
+#: includes/class-pn-customers-manager-post-type-budget.php:254
 msgctxt "Post Type singular name"
 msgid "Budget"
 msgstr ""
@@ -4176,7 +4242,7 @@ msgctxt "Post Type singular name"
 msgid "Funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:230
+#: includes/class-pn-customers-manager-post-type-invoice.php:231
 msgctxt "Post Type singular name"
 msgid "Invoice"
 msgstr ""
@@ -4188,11 +4254,11 @@ msgstr ""
 
 #: includes/class-pn-customers-manager-csv-import.php:38
 #: includes/class-pn-customers-manager-post-type-organization.php:461
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2623
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2646
 msgid "Postal code"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:1007
+#: includes/trait-pn-customers-manager-ai-chat-common.php:1026
 msgid "Postal codes"
 msgstr ""
 
@@ -4213,19 +4279,19 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2610
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2633
 msgid "Price"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:828
+#: includes/class-pn-customers-manager-settings.php:846
 msgid "Primary background color (default: #0000aa)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:838
+#: includes/class-pn-customers-manager-settings.php:856
 msgid "Primary border color (default: #0000aa)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:818
+#: includes/class-pn-customers-manager-settings.php:836
 msgid ""
 "Primary color used for text, backgrounds, and borders (default: #0000aa)"
 msgstr ""
@@ -4252,18 +4318,18 @@ msgstr ""
 msgid "Processing…"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2609
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2632
 msgid "Product"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:822
-#: includes/class-pn-customers-manager-funnel-builder.php:1170
+#: includes/class-pn-customers-manager-funnel-builder.php:809
+#: includes/class-pn-customers-manager-funnel-builder.php:1157
 msgid ""
 "Product links will add the product to the cart directly. If disabled, links "
 "will point to the product page."
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2606
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2629
 msgid "Products mentioned"
 msgstr ""
 
@@ -4290,8 +4356,8 @@ msgstr ""
 
 #: includes/class-pn-customers-manager-projections.php:713
 #: includes/class-pn-customers-manager-settings.php:81
-#: includes/class-pn-customers-manager-settings.php:1138
-#: includes/class-pn-customers-manager-settings.php:1139
+#: includes/class-pn-customers-manager-settings.php:1156
+#: includes/class-pn-customers-manager-settings.php:1157
 msgid "Projections"
 msgstr ""
 
@@ -4307,8 +4373,8 @@ msgstr ""
 msgid "Próximo paso acordado"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:203
-#: includes/class-pn-customers-manager-post-type-invoice.php:198
+#: includes/class-pn-customers-manager-post-type-budget.php:220
+#: includes/class-pn-customers-manager-post-type-invoice.php:199
 msgid "Public link"
 msgstr ""
 
@@ -4316,8 +4382,8 @@ msgstr ""
 msgid "Public sector"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:209
-#: includes/class-pn-customers-manager-post-type-invoice.php:204
+#: includes/class-pn-customers-manager-post-type-budget.php:226
+#: includes/class-pn-customers-manager-post-type-invoice.php:205
 msgid "Public URL"
 msgstr ""
 
@@ -4338,9 +4404,9 @@ msgstr ""
 msgid "QR code logo"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:599
-#: includes/class-pn-customers-manager-post-type-invoice.php:542
-#: includes/class-pn-customers-manager-ajax-nopriv.php:748
+#: includes/class-pn-customers-manager-post-type-budget.php:616
+#: includes/class-pn-customers-manager-post-type-invoice.php:543
+#: includes/class-pn-customers-manager-ajax-nopriv.php:754
 msgid "Qty"
 msgstr ""
 
@@ -4348,10 +4414,10 @@ msgstr ""
 msgid "Qualification"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1653
-#: includes/class-pn-customers-manager-post-type-budget.php:1735
-#: includes/class-pn-customers-manager-post-type-invoice.php:1454
-#: includes/class-pn-customers-manager-post-type-invoice.php:1529
+#: includes/class-pn-customers-manager-post-type-budget.php:1695
+#: includes/class-pn-customers-manager-post-type-budget.php:1777
+#: includes/class-pn-customers-manager-post-type-invoice.php:1455
+#: includes/class-pn-customers-manager-post-type-invoice.php:1530
 msgid "Quantity"
 msgstr ""
 
@@ -4359,13 +4425,13 @@ msgstr ""
 msgid "Queued"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:284
+#: includes/class-pn-customers-manager-common.php:292
 #: includes/class-pn-customers-manager-forms.php:498
 msgid "Ready to record"
 msgstr ""
 
 #: includes/class-pn-customers-manager-commercial.php:424
-#: includes/class-pn-customers-manager-common.php:323
+#: includes/class-pn-customers-manager-common.php:331
 msgid "Rechazado"
 msgstr ""
 
@@ -4377,27 +4443,27 @@ msgstr ""
 msgid "Rechazar"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1287
+#: includes/class-pn-customers-manager-settings.php:1305
 msgid "Recommended"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1273
+#: includes/class-pn-customers-manager-settings.php:1291
 msgid "Recommended Plugins"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1249
+#: includes/class-pn-customers-manager-settings.php:1267
 msgid "Recommended plugins"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:287
+#: includes/class-pn-customers-manager-common.php:295
 msgid "Recording completed. Ready to transcribe."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:286
+#: includes/class-pn-customers-manager-common.php:294
 msgid "Recording stopped. Ready to play or transcribe."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:285
+#: includes/class-pn-customers-manager-common.php:293
 msgid "Recording..."
 msgstr ""
 
@@ -4410,7 +4476,7 @@ msgstr ""
 msgid "Referral code is invalid."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:304
+#: includes/class-pn-customers-manager-common.php:312
 msgid "Referral link copied to clipboard!"
 msgstr ""
 
@@ -4446,14 +4512,14 @@ msgstr ""
 msgid "Registro completado! Revisa tu email para activar tu cuenta."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:113
-#: includes/class-pn-customers-manager-post-type-budget.php:1040
+#: includes/class-pn-customers-manager-post-type-budget.php:114
+#: includes/class-pn-customers-manager-post-type-budget.php:1082
 #: templates/public/single-pn_cm_budget.php:80
 msgid "Rejected"
 msgstr ""
 
 #. %s: date
-#: includes/class-pn-customers-manager-post-type-budget.php:1228
+#: includes/class-pn-customers-manager-post-type-budget.php:1270
 #, php-format
 msgid "Rejected %s"
 msgstr ""
@@ -4476,7 +4542,7 @@ msgstr ""
 msgid "Remove %s Role"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1330
+#: includes/class-pn-customers-manager-post-type-budget.php:1372
 msgid "Remove Budget"
 msgstr ""
 
@@ -4489,7 +4555,7 @@ msgstr ""
 msgid "Remove Funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1195
+#: includes/class-pn-customers-manager-post-type-invoice.php:1196
 msgid "Remove Invoice"
 msgstr ""
 
@@ -4497,11 +4563,11 @@ msgstr ""
 msgid "Remove Organization"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:943
+#: includes/class-pn-customers-manager-settings.php:961
 msgid "Remove plugin options on deactivation"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:260
+#: includes/class-pn-customers-manager-common.php:268
 msgid "Removed successfully"
 msgstr ""
 
@@ -4510,8 +4576,18 @@ msgstr ""
 msgid "Required field"
 msgstr ""
 
+#: includes/class-pn-customers-manager-funnel-builder.php:409
+#: includes/class-pn-customers-manager-instagram-ai.php:593
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1258
+msgid "Reset"
+msgstr ""
+
 #: includes/class-pn-customers-manager-shortcodes.php:413
 msgid "Reset (clear history)"
+msgstr ""
+
+#: includes/class-pn-customers-manager-funnel-builder.php:412
+msgid "Reset this conversation? All messages will be cleared."
 msgstr ""
 
 #: includes/class-pn-customers-manager-shortcodes.php:333
@@ -4536,8 +4612,8 @@ msgstr ""
 msgid "Reverso"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:638
-#: includes/class-pn-customers-manager-funnel-builder.php:665
+#: includes/class-pn-customers-manager-funnel-builder.php:625
+#: includes/class-pn-customers-manager-funnel-builder.php:652
 msgid "Right"
 msgstr ""
 
@@ -4572,12 +4648,12 @@ msgid "Sales qualified (SQL)"
 msgstr ""
 
 #: includes/class-pn-customers-manager-funnel-builder.php:69
-#: includes/class-pn-customers-manager-funnel-builder.php:1370
-#: includes/class-pn-customers-manager-post-type-budget.php:1693
+#: includes/class-pn-customers-manager-funnel-builder.php:1357
+#: includes/class-pn-customers-manager-post-type-budget.php:1735
 msgid "Save"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1483
+#: includes/class-pn-customers-manager-post-type-budget.php:1525
 msgid "Save Budget"
 msgstr ""
 
@@ -4585,16 +4661,16 @@ msgstr ""
 msgid "Save Funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1336
+#: includes/class-pn-customers-manager-post-type-invoice.php:1337
 msgid "Save Invoice"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1489
+#: includes/class-pn-customers-manager-post-type-invoice.php:1490
 msgid "Save item"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1191
-#: includes/class-pn-customers-manager-settings.php:1263
+#: includes/class-pn-customers-manager-settings.php:1209
+#: includes/class-pn-customers-manager-settings.php:1281
 msgid "Save options"
 msgstr ""
 
@@ -4606,27 +4682,27 @@ msgstr ""
 msgid "Save projection"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:585
+#: includes/class-pn-customers-manager-post-type-budget.php:602
 msgid "Save the budget first to add items."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:737
+#: includes/class-pn-customers-manager-post-type-budget.php:777
 msgid "Save the budget first to generate a public link."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:689
+#: includes/class-pn-customers-manager-post-type-budget.php:729
 msgid "Save the budget first to see totals."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:528
+#: includes/class-pn-customers-manager-post-type-invoice.php:529
 msgid "Save the invoice first to add items."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:668
+#: includes/class-pn-customers-manager-post-type-invoice.php:669
 msgid "Save the invoice first to generate a public link."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:623
+#: includes/class-pn-customers-manager-post-type-invoice.php:624
 msgid "Save the invoice first to see totals."
 msgstr ""
 
@@ -4634,7 +4710,7 @@ msgstr ""
 msgid "Save the organization to start adding contacts."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:259
+#: includes/class-pn-customers-manager-common.php:267
 msgid "Saved successfully"
 msgstr ""
 
@@ -4642,8 +4718,8 @@ msgstr ""
 msgid "Saving projection..."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:246
-#: includes/class-pn-customers-manager-post-type-budget.php:1107
+#: includes/class-pn-customers-manager-post-type-budget.php:263
+#: includes/class-pn-customers-manager-post-type-budget.php:1149
 msgid "Search Budgets"
 msgstr ""
 
@@ -4656,8 +4732,8 @@ msgstr ""
 msgid "Search Funnels"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:239
-#: includes/class-pn-customers-manager-post-type-invoice.php:991
+#: includes/class-pn-customers-manager-post-type-invoice.php:240
+#: includes/class-pn-customers-manager-post-type-invoice.php:992
 msgid "Search Invoices"
 msgstr ""
 
@@ -4671,8 +4747,8 @@ msgid "Security check failed for role assignment."
 msgstr ""
 
 #: includes/class-pn-customers-manager-ajax.php:34
-#: includes/class-pn-customers-manager-post-type-budget.php:317
-#: includes/class-pn-customers-manager-post-type-invoice.php:302
+#: includes/class-pn-customers-manager-post-type-budget.php:334
+#: includes/class-pn-customers-manager-post-type-invoice.php:303
 #: includes/class-pn-customers-manager-ajax-nopriv.php:33
 #: includes/class-pn-customers-manager-post-type-funnel.php:230
 #: includes/class-pn-customers-manager-post-type-organization.php:814
@@ -4680,8 +4756,8 @@ msgid "Security check failed: Invalid nonce."
 msgstr ""
 
 #: includes/class-pn-customers-manager-ajax.php:25
-#: includes/class-pn-customers-manager-post-type-budget.php:308
-#: includes/class-pn-customers-manager-post-type-invoice.php:294
+#: includes/class-pn-customers-manager-post-type-budget.php:325
+#: includes/class-pn-customers-manager-post-type-invoice.php:295
 #: includes/class-pn-customers-manager-ajax-nopriv.php:24
 #: includes/class-pn-customers-manager-post-type-funnel.php:221
 #: includes/class-pn-customers-manager-post-type-organization.php:805
@@ -4706,7 +4782,7 @@ msgstr ""
 msgid "Select a funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:411
+#: includes/class-pn-customers-manager-funnel-builder.php:393
 msgid "Select a funnel first."
 msgstr ""
 
@@ -4778,45 +4854,47 @@ msgstr ""
 msgid "Select an organization"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:329
+#: includes/class-pn-customers-manager-common.php:337
 #: includes/class-pn-customers-manager-email-campaigns.php:584
 msgid "Select at least one user or enter an email."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:326
+#: includes/class-pn-customers-manager-common.php:334
 msgid "Select at least one user."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:272
+#: includes/class-pn-customers-manager-common.php:280
 msgid "Select audio"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:273
+#: includes/class-pn-customers-manager-common.php:281
 msgid "Select audios"
 msgstr ""
 
 #: includes/class-pn-customers-manager-budget-csv.php:185
-#: includes/class-pn-customers-manager-common.php:276
+#: includes/class-pn-customers-manager-common.php:284
 msgid "Select file"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:277
+#: includes/class-pn-customers-manager-common.php:285
 msgid "Select files"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:264
+#: includes/class-pn-customers-manager-common.php:272
+#: includes/admin/class-pn-customers-manager-admin.php:81
+#: templates/public/single-pn_cm_budget.php:153
 msgid "Select image"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:265
+#: includes/class-pn-customers-manager-common.php:273
 msgid "Select images"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:279
+#: includes/class-pn-customers-manager-common.php:287
 msgid "Select option"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:280
+#: includes/class-pn-customers-manager-common.php:288
 msgid "Select options"
 msgstr ""
 
@@ -4824,14 +4902,14 @@ msgstr ""
 msgid "Select other team members involved with the account."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:920
+#: includes/class-pn-customers-manager-funnel-builder.php:907
 msgid ""
 "Select platform users who will receive order notifications by email. Leave "
 "empty to use only external emails or the site admin email."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:981
-#: includes/class-pn-customers-manager-funnel-builder.php:1255
+#: includes/class-pn-customers-manager-funnel-builder.php:968
+#: includes/class-pn-customers-manager-funnel-builder.php:1242
 msgid ""
 "Select platform users who will receive special order notifications by email. "
 "Leave empty to use only external emails or the site admin email."
@@ -4845,16 +4923,16 @@ msgstr ""
 msgid "Select users"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:268
+#: includes/class-pn-customers-manager-common.php:276
 msgid "Select video"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:269
+#: includes/class-pn-customers-manager-common.php:277
 msgid "Select videos"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:865
-#: includes/class-pn-customers-manager-funnel-builder.php:1202
+#: includes/class-pn-customers-manager-funnel-builder.php:852
+#: includes/class-pn-customers-manager-funnel-builder.php:1189
 msgid ""
 "Select which product categories to include. Leave empty to include all "
 "categories."
@@ -4868,7 +4946,7 @@ msgstr ""
 msgid "Send application"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1306
+#: includes/class-pn-customers-manager-post-type-budget.php:1348
 msgid "Send Budget"
 msgstr ""
 
@@ -4886,24 +4964,24 @@ msgstr ""
 msgid "Send invitation"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1183
+#: includes/class-pn-customers-manager-post-type-invoice.php:1184
 msgid "Send Invoice"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:948
+#: includes/class-pn-customers-manager-funnel-builder.php:935
 msgid "Send payment link on order confirmation"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:831
+#: includes/class-pn-customers-manager-funnel-builder.php:818
 msgid "Send product images"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:579
-#: includes/class-pn-customers-manager-settings.php:656
+#: includes/class-pn-customers-manager-settings.php:665
 msgid "Send test message"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:655
+#: includes/class-pn-customers-manager-settings.php:664
 msgid ""
 "Sends a test message to the IGSID above to verify that the Access Token and "
 "Page ID are correct. <strong>Save settings before testing.</strong>"
@@ -4921,10 +4999,10 @@ msgid ""
 "work correctly. It will use the model and temperature configured above."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:111
-#: includes/class-pn-customers-manager-post-type-budget.php:1038
-#: includes/class-pn-customers-manager-post-type-invoice.php:106
-#: includes/class-pn-customers-manager-post-type-invoice.php:927
+#: includes/class-pn-customers-manager-post-type-budget.php:112
+#: includes/class-pn-customers-manager-post-type-budget.php:1080
+#: includes/class-pn-customers-manager-post-type-invoice.php:107
+#: includes/class-pn-customers-manager-post-type-invoice.php:928
 #: includes/class-pn-customers-manager-mail-stats.php:739
 #: includes/class-pn-customers-manager-email-campaigns.php:306
 #: templates/public/single-pn_cm_budget.php:78
@@ -4940,36 +5018,36 @@ msgstr ""
 msgid "Separa las etiquetas con comas."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:298
+#: includes/class-pn-customers-manager-common.php:306
 msgid "Server error: Internal server problem"
 msgstr ""
 
 #: includes/class-pn-customers-manager-funnel-builder.php:265
-#: includes/class-pn-customers-manager-funnel-builder.php:351
-#: includes/class-pn-customers-manager-funnel-builder.php:421
-#: includes/class-pn-customers-manager-settings.php:1033
-#: includes/class-pn-customers-manager-settings.php:1034
-#: includes/class-pn-customers-manager-settings.php:1433
+#: includes/class-pn-customers-manager-funnel-builder.php:333
+#: includes/class-pn-customers-manager-funnel-builder.php:403
+#: includes/class-pn-customers-manager-settings.php:1051
+#: includes/class-pn-customers-manager-settings.php:1052
+#: includes/class-pn-customers-manager-settings.php:1451
 msgid "Settings"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1363
+#: includes/class-pn-customers-manager-settings.php:1381
 msgid "Settings imported successfully. Reloading..."
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2621
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2644
 msgid "Shipping information"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2634
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2657
 msgid "Shipping method"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2626
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2649
 msgid "Shipping zone"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:698
+#: includes/class-pn-customers-manager-funnel-builder.php:685
 msgid "Shortcode"
 msgstr ""
 
@@ -4985,7 +5063,7 @@ msgstr ""
 msgid "Shows the list of top referrers in the referral panel."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:622
+#: includes/class-pn-customers-manager-funnel-builder.php:609
 msgid "Size"
 msgstr ""
 
@@ -5001,7 +5079,7 @@ msgid ""
 "invoice</strong>/token). Save and flush permalinks after changing."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:624
+#: includes/class-pn-customers-manager-funnel-builder.php:611
 msgid "Small"
 msgstr ""
 
@@ -5017,7 +5095,7 @@ msgstr ""
 msgid "Social Media"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:676
+#: includes/class-pn-customers-manager-settings.php:694
 msgid "Social Media APIs"
 msgstr ""
 
@@ -5029,7 +5107,7 @@ msgstr ""
 msgid "Solicitud de Agente Comercial"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:598
+#: includes/class-pn-customers-manager-funnel-builder.php:585
 msgid "Solid"
 msgstr ""
 
@@ -5041,7 +5119,7 @@ msgstr ""
 msgid "Source"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1268
+#: includes/class-pn-customers-manager-post-type-invoice.php:1269
 msgid "Source Budget"
 msgstr ""
 
@@ -5053,17 +5131,17 @@ msgstr ""
 msgid "Special Character (!@#$%^&*)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:990
-#: includes/class-pn-customers-manager-funnel-builder.php:1264
+#: includes/class-pn-customers-manager-funnel-builder.php:977
+#: includes/class-pn-customers-manager-funnel-builder.php:1251
 msgid "Special order recipients (external emails)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:980
-#: includes/class-pn-customers-manager-funnel-builder.php:1254
+#: includes/class-pn-customers-manager-funnel-builder.php:967
+#: includes/class-pn-customers-manager-funnel-builder.php:1241
 msgid "Special order recipients (platform users)"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2854
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2877
 #, php-format
 msgid "Special order request via %s"
 msgstr ""
@@ -5080,8 +5158,8 @@ msgstr ""
 msgid "Startup"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1167
-#: includes/class-pn-customers-manager-settings.php:1168
+#: includes/class-pn-customers-manager-settings.php:1185
+#: includes/class-pn-customers-manager-settings.php:1186
 #: includes/class-pn-customers-manager-mail-stats.php:500
 #: includes/class-pn-customers-manager-mail-stats.php:541
 msgid "Statistics"
@@ -5092,18 +5170,18 @@ msgstr ""
 #: includes/class-pn-customers-manager-csv-import.php:165
 #: includes/class-pn-customers-manager-csv-import.php:215
 #: includes/class-pn-customers-manager-csv-import.php:398
-#: includes/class-pn-customers-manager-post-type-budget.php:107
-#: includes/class-pn-customers-manager-instagram-ai.php:672
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1252
-#: includes/class-pn-customers-manager-post-type-invoice.php:102
-#: includes/class-pn-customers-manager-ajax-nopriv.php:751
+#: includes/class-pn-customers-manager-post-type-budget.php:108
+#: includes/class-pn-customers-manager-instagram-ai.php:677
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1343
+#: includes/class-pn-customers-manager-post-type-invoice.php:103
+#: includes/class-pn-customers-manager-ajax-nopriv.php:757
 #: includes/class-pn-customers-manager-mail-stats.php:329
 #: includes/class-pn-customers-manager-referral.php:448
 msgid "Status"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:587
-#: includes/class-pn-customers-manager-settings.php:664
+#: includes/class-pn-customers-manager-settings.php:673
 msgid "Stop"
 msgstr ""
 
@@ -5123,7 +5201,7 @@ msgstr ""
 msgid "Street, number, suite…"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:596
+#: includes/class-pn-customers-manager-funnel-builder.php:583
 msgid "Style"
 msgstr ""
 
@@ -5131,25 +5209,25 @@ msgstr ""
 msgid "Subject"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:704
-#: includes/class-pn-customers-manager-post-type-invoice.php:638
-#: includes/class-pn-customers-manager-ajax-nopriv.php:792
-#: templates/public/single-pn_cm_budget.php:493
-#: templates/public/single-pn_cm_invoice.php:458
+#: includes/class-pn-customers-manager-post-type-budget.php:744
+#: includes/class-pn-customers-manager-post-type-invoice.php:639
+#: includes/class-pn-customers-manager-ajax-nopriv.php:798
+#: templates/public/single-pn_cm_budget.php:634
+#: templates/public/single-pn_cm_invoice.php:494
 msgid "Subtotal"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:193
-#: includes/class-pn-customers-manager-post-type-invoice.php:188
+#: includes/class-pn-customers-manager-post-type-budget.php:194
+#: includes/class-pn-customers-manager-post-type-invoice.php:189
 msgid "Summary"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:901
+#: includes/class-pn-customers-manager-settings.php:919
 msgid "System"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:719
-#: includes/class-pn-customers-manager-funnel-builder.php:1067
+#: includes/class-pn-customers-manager-funnel-builder.php:706
+#: includes/class-pn-customers-manager-funnel-builder.php:1054
 msgid "System prompt"
 msgstr ""
 
@@ -5162,18 +5240,18 @@ msgstr ""
 msgid "Target date"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1218
+#: includes/class-pn-customers-manager-settings.php:1236
 msgid "Task and project management."
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:799
+#: includes/class-pn-customers-manager-ajax-nopriv.php:805
 msgid "Tax"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:715
-#: includes/class-pn-customers-manager-post-type-invoice.php:649
-#: templates/public/single-pn_cm_budget.php:504
-#: templates/public/single-pn_cm_invoice.php:469
+#: includes/class-pn-customers-manager-post-type-budget.php:755
+#: includes/class-pn-customers-manager-post-type-invoice.php:650
+#: templates/public/single-pn_cm_budget.php:645
+#: templates/public/single-pn_cm_invoice.php:505
 #, php-format
 msgid "Tax (%s%%)"
 msgstr ""
@@ -5194,8 +5272,8 @@ msgstr ""
 msgid "Tax Rate (%)"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:121
-#: includes/class-pn-customers-manager-post-type-invoice.php:116
+#: includes/class-pn-customers-manager-post-type-budget.php:122
+#: includes/class-pn-customers-manager-post-type-invoice.php:117
 msgid "Tax rate (%)"
 msgstr ""
 
@@ -5233,36 +5311,36 @@ msgstr ""
 msgid "Teléfono de facturación"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1031
-#: includes/class-pn-customers-manager-funnel-builder.php:1305
+#: includes/class-pn-customers-manager-funnel-builder.php:1018
+#: includes/class-pn-customers-manager-funnel-builder.php:1292
 msgid "Temperature"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:336
-#: templates/public/single-pn_cm_budget.php:555
-#: templates/public/single-pn_cm_invoice.php:503
+#: templates/public/single-pn_cm_budget.php:709
+#: templates/public/single-pn_cm_invoice.php:539
 msgid "Terms and conditions"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:739
+#: includes/class-pn-customers-manager-settings.php:757
 msgid "Test connections"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:654
+#: includes/class-pn-customers-manager-settings.php:663
 msgid "Test Instagram send"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:647
+#: includes/class-pn-customers-manager-settings.php:656
 msgid "Test Instagram User ID"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:585
-#: includes/class-pn-customers-manager-settings.php:662
+#: includes/class-pn-customers-manager-settings.php:671
 msgid "Test message reception"
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:876
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1507
+#: includes/class-pn-customers-manager-instagram-ai.php:881
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1598
 msgid "Test message sent successfully."
 msgstr ""
 
@@ -5278,7 +5356,7 @@ msgstr ""
 msgid "Test phone"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:737
+#: includes/class-pn-customers-manager-settings.php:755
 msgid "Test social media connections"
 msgstr ""
 
@@ -5287,17 +5365,17 @@ msgid "Test WhatsApp send"
 msgstr ""
 
 #: includes/class-pn-customers-manager-projections.php:1009
-#: includes/class-pn-customers-manager-settings.php:1326
+#: includes/class-pn-customers-manager-settings.php:1344
 msgid "Testing..."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:738
+#: includes/class-pn-customers-manager-settings.php:756
 msgid ""
 "Tests the connection to all configured social media APIs. <strong>Save "
 "settings before testing.</strong>"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:615
+#: includes/class-pn-customers-manager-funnel-builder.php:602
 msgid "Text color"
 msgstr ""
 
@@ -5319,8 +5397,8 @@ msgstr ""
 msgid "Thank you"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:745
-#: includes/class-pn-customers-manager-funnel-builder.php:1093
+#: includes/class-pn-customers-manager-funnel-builder.php:732
+#: includes/class-pn-customers-manager-funnel-builder.php:1080
 msgid ""
 "The AI will always ask for the postal code before quoting a shipping cost."
 msgstr ""
@@ -5362,17 +5440,17 @@ msgid ""
 "automatically."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:713
+#: includes/class-pn-customers-manager-settings.php:731
 msgid "The numeric ID of your Facebook Page. Found in Page Settings > About."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:695
+#: includes/class-pn-customers-manager-settings.php:713
 msgid ""
 "The numeric Instagram Business or Creator account ID. Found in the Graph API "
 "Explorer or your Meta app dashboard."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:731
+#: includes/class-pn-customers-manager-settings.php:749
 msgid ""
 "The numeric user ID of your Twitter/X account. You can find it using the <a "
 "href=\"https://tweeterid.com/\" target=\"_blank\">TweeterID</a> tool."
@@ -5392,23 +5470,23 @@ msgstr ""
 msgid "This budget cannot be modified."
 msgstr ""
 
-#: includes/class-pn-customers-manager-ajax-nopriv.php:699
+#: includes/class-pn-customers-manager-ajax-nopriv.php:705
 msgid "This budget cannot be rejected."
 msgstr ""
 
 #. %s: date and time when the budget was accepted
-#: templates/public/single-pn_cm_budget.php:530
+#: templates/public/single-pn_cm_budget.php:683
 #, php-format
 msgid "This budget was accepted on %s."
 msgstr ""
 
 #. %s: date and time when the budget was rejected
-#: templates/public/single-pn_cm_budget.php:544
+#: templates/public/single-pn_cm_budget.php:697
 #, php-format
 msgid "This budget was rejected on %s."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:306
+#: includes/class-pn-customers-manager-common.php:314
 #: includes/class-pn-customers-manager-ajax-nopriv.php:151
 msgid "This email is already registered."
 msgstr ""
@@ -5417,35 +5495,35 @@ msgstr ""
 msgid "This field"
 msgstr ""
 
-#: templates/public/single-pn_cm_invoice.php:496
+#: templates/public/single-pn_cm_invoice.php:532
 msgid "This invoice has been cancelled."
 msgstr ""
 
-#: includes/class-pn-customers-manager-instagram-ai.php:852
+#: includes/class-pn-customers-manager-instagram-ai.php:857
 msgid ""
 "This is a test message from PN Customers Manager. If you receive it, the "
 "Instagram integration is working correctly."
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1482
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1573
 msgid ""
 "This is a test message from PN Customers Manager. If you receive it, the "
 "WhatsApp integration is working correctly."
 msgstr ""
 
 #. %1$s: Post type name, %2$s: Archive URL, %3$s: Archive URL, %4$s: Single post URL
-#: includes/class-pn-customers-manager-settings.php:923
+#: includes/class-pn-customers-manager-settings.php:941
 #, php-format
 msgid ""
 "This option sets the slug of the %1$s archive page, and the %1$s pages. By "
 "default they will be:"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1362
+#: includes/class-pn-customers-manager-settings.php:1380
 msgid "This will overwrite your current settings. Continue?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1334
+#: includes/class-pn-customers-manager-settings.php:1352
 msgid "Timeout. No messages received."
 msgstr ""
 
@@ -5473,20 +5551,25 @@ msgstr ""
 msgid "Top Referrers"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:601
-#: includes/class-pn-customers-manager-post-type-budget.php:720
-#: includes/class-pn-customers-manager-post-type-invoice.php:544
-#: includes/class-pn-customers-manager-post-type-invoice.php:654
-#: includes/class-pn-customers-manager-ajax-nopriv.php:750
-#: includes/class-pn-customers-manager-ajax-nopriv.php:802
+#: includes/class-pn-customers-manager-post-type-budget.php:618
+#: includes/class-pn-customers-manager-post-type-budget.php:760
+#: includes/class-pn-customers-manager-post-type-invoice.php:545
+#: includes/class-pn-customers-manager-post-type-invoice.php:655
+#: includes/class-pn-customers-manager-ajax-nopriv.php:756
+#: includes/class-pn-customers-manager-ajax-nopriv.php:808
 #: includes/class-pn-customers-manager-referral.php:433
-#: templates/public/single-pn_cm_budget.php:509
-#: templates/public/single-pn_cm_invoice.php:474
+#: templates/public/single-pn_cm_budget.php:650
+#: templates/public/single-pn_cm_budget.php:733
+#: templates/public/single-pn_cm_invoice.php:510
 msgid "Total"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:187
-#: includes/class-pn-customers-manager-post-type-invoice.php:182
+#: templates/public/single-pn_cm_budget.php:729
+msgid "Total w/o tax"
+msgstr ""
+
+#: includes/class-pn-customers-manager-post-type-budget.php:188
+#: includes/class-pn-customers-manager-post-type-invoice.php:183
 msgid "Totals"
 msgstr ""
 
@@ -5507,11 +5590,11 @@ msgstr ""
 msgid "Transcribed text will appear here..."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:292
+#: includes/class-pn-customers-manager-common.php:300
 msgid "Transcription completed"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:600
+#: includes/class-pn-customers-manager-funnel-builder.php:587
 msgid "Transparent"
 msgstr ""
 
@@ -5527,7 +5610,7 @@ msgstr ""
 msgid "Tu nombre"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:318
+#: includes/class-pn-customers-manager-common.php:326
 msgid "Tu solicitud ha sido enviada correctamente. Te notificaremos pronto."
 msgstr ""
 
@@ -5540,20 +5623,20 @@ msgstr ""
 msgid "Twice daily"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:730
+#: includes/class-pn-customers-manager-settings.php:748
 msgid "Twitter/X Account ID"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:721
+#: includes/class-pn-customers-manager-settings.php:739
 msgid "Twitter/X Bearer Token"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:598
-#: includes/class-pn-customers-manager-post-type-budget.php:1640
-#: includes/class-pn-customers-manager-post-type-budget.php:1712
-#: includes/class-pn-customers-manager-post-type-invoice.php:541
-#: includes/class-pn-customers-manager-post-type-invoice.php:1441
-#: includes/class-pn-customers-manager-post-type-invoice.php:1507
+#: includes/class-pn-customers-manager-post-type-budget.php:615
+#: includes/class-pn-customers-manager-post-type-budget.php:1682
+#: includes/class-pn-customers-manager-post-type-budget.php:1754
+#: includes/class-pn-customers-manager-post-type-invoice.php:542
+#: includes/class-pn-customers-manager-post-type-invoice.php:1442
+#: includes/class-pn-customers-manager-post-type-invoice.php:1508
 msgid "Type"
 msgstr ""
 
@@ -5561,25 +5644,25 @@ msgstr ""
 msgid "Título de la organización"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:600
-#: includes/class-pn-customers-manager-post-type-budget.php:1664
-#: includes/class-pn-customers-manager-post-type-budget.php:1746
-#: includes/class-pn-customers-manager-post-type-invoice.php:543
-#: includes/class-pn-customers-manager-post-type-invoice.php:1464
-#: includes/class-pn-customers-manager-post-type-invoice.php:1539
-#: includes/class-pn-customers-manager-ajax-nopriv.php:749
+#: includes/class-pn-customers-manager-post-type-budget.php:617
+#: includes/class-pn-customers-manager-post-type-budget.php:1706
+#: includes/class-pn-customers-manager-post-type-budget.php:1788
+#: includes/class-pn-customers-manager-post-type-invoice.php:544
+#: includes/class-pn-customers-manager-post-type-invoice.php:1465
+#: includes/class-pn-customers-manager-post-type-invoice.php:1540
+#: includes/class-pn-customers-manager-ajax-nopriv.php:755
 msgid "Unit price"
 msgstr ""
 
 #: includes/class-pn-customers-manager-referral.php:476
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2581
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2582
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2840
-#: includes/trait-pn-customers-manager-ai-chat-common.php:2841
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2604
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2605
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2863
+#: includes/trait-pn-customers-manager-ai-chat-common.php:2864
 msgid "Unknown"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:299
+#: includes/class-pn-customers-manager-common.php:307
 msgid "Unknown error"
 msgstr ""
 
@@ -5591,7 +5674,7 @@ msgstr ""
 msgid "Up to €250k"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:245
+#: includes/class-pn-customers-manager-post-type-budget.php:262
 msgid "Update Budget"
 msgstr ""
 
@@ -5603,7 +5686,7 @@ msgstr ""
 msgid "Update Funnel category"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:238
+#: includes/class-pn-customers-manager-post-type-invoice.php:239
 msgid "Update Invoice"
 msgstr ""
 
@@ -5623,12 +5706,17 @@ msgid ""
 "\"post_title\" column."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:682
+#: includes/admin/class-pn-customers-manager-admin.php:82
+#: templates/public/single-pn_cm_budget.php:154
+msgid "Use image"
+msgstr ""
+
+#: includes/class-pn-customers-manager-funnel-builder.php:669
 msgid "Use image instead of text"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:735
-#: includes/class-pn-customers-manager-funnel-builder.php:1083
+#: includes/class-pn-customers-manager-funnel-builder.php:722
+#: includes/class-pn-customers-manager-funnel-builder.php:1070
 msgid "Use WooCommerce shipping zones"
 msgstr ""
 
@@ -5640,11 +5728,11 @@ msgstr ""
 msgid "User creation failed. Try again."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:1211
+#: includes/class-pn-customers-manager-settings.php:1229
 msgid "User management and registration forms."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:956
+#: includes/class-pn-customers-manager-settings.php:974
 msgid "User Roles"
 msgstr ""
 
@@ -5659,7 +5747,7 @@ msgstr ""
 msgid "Users with %s Role"
 msgstr ""
 
-#: includes/trait-pn-customers-manager-ai-chat-common.php:1038
+#: includes/trait-pn-customers-manager-ai-chat-common.php:1057
 msgid "valid coupon"
 msgstr ""
 
@@ -5667,11 +5755,11 @@ msgstr ""
 msgid "Valid Until"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:100
+#: includes/class-pn-customers-manager-post-type-budget.php:101
 msgid "Valid until"
 msgstr ""
 
-#: templates/public/single-pn_cm_budget.php:323
+#: templates/public/single-pn_cm_budget.php:403
 msgid "Valid until:"
 msgstr ""
 
@@ -5679,7 +5767,7 @@ msgstr ""
 msgid "Ver mensaje"
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:663
+#: includes/class-pn-customers-manager-settings.php:672
 msgid ""
 "Verifies that the webhook is correctly configured and your server can "
 "receive Instagram DMs.<br><strong>Instructions:</strong><br>1. Configure the "
@@ -5705,7 +5793,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:548
-#: includes/class-pn-customers-manager-settings.php:626
+#: includes/class-pn-customers-manager-settings.php:635
 msgid "Verify Token"
 msgstr ""
 
@@ -5718,8 +5806,8 @@ msgstr ""
 msgid "View"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:241
-#: includes/class-pn-customers-manager-post-type-budget.php:1270
+#: includes/class-pn-customers-manager-post-type-budget.php:258
+#: includes/class-pn-customers-manager-post-type-budget.php:1312
 msgid "View Budget"
 msgstr ""
 
@@ -5733,8 +5821,8 @@ msgstr ""
 msgid "View Funnel"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:234
-#: includes/class-pn-customers-manager-post-type-invoice.php:1147
+#: includes/class-pn-customers-manager-post-type-invoice.php:235
+#: includes/class-pn-customers-manager-post-type-invoice.php:1148
 msgid "View Invoice"
 msgstr ""
 
@@ -5743,12 +5831,12 @@ msgstr ""
 msgid "View Organization"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1257
-#: includes/class-pn-customers-manager-post-type-invoice.php:1120
+#: includes/class-pn-customers-manager-post-type-budget.php:1299
+#: includes/class-pn-customers-manager-post-type-invoice.php:1121
 msgid "View Page"
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1134
+#: includes/class-pn-customers-manager-post-type-invoice.php:1135
 msgid "View Source Budget"
 msgstr ""
 
@@ -5757,7 +5845,7 @@ msgid "Web"
 msgstr ""
 
 #: includes/class-pn-customers-manager-settings.php:559
-#: includes/class-pn-customers-manager-settings.php:637
+#: includes/class-pn-customers-manager-settings.php:646
 msgid "Webhook URL"
 msgstr ""
 
@@ -5770,8 +5858,8 @@ msgstr ""
 msgid "Website / SEO"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:792
-#: includes/class-pn-customers-manager-funnel-builder.php:1140
+#: includes/class-pn-customers-manager-funnel-builder.php:779
+#: includes/class-pn-customers-manager-funnel-builder.php:1127
 msgid "Website pages"
 msgstr ""
 
@@ -5780,8 +5868,8 @@ msgstr ""
 msgid "Weekly"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:1041
-#: includes/class-pn-customers-manager-funnel-builder.php:1315
+#: includes/class-pn-customers-manager-funnel-builder.php:1028
+#: includes/class-pn-customers-manager-funnel-builder.php:1302
 msgid "Welcome message"
 msgstr ""
 
@@ -5789,15 +5877,15 @@ msgstr ""
 msgid "WhatsApp Access Token"
 msgstr ""
 
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1471
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1562
 msgid "WhatsApp Access Token has not been configured."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:712
+#: includes/class-pn-customers-manager-funnel-builder.php:699
 #: includes/class-pn-customers-manager-shortcodes.php:260
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1221
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1312
 #: includes/class-pn-customers-manager-settings.php:521
-#: includes/class-pn-customers-manager-settings.php:1114
+#: includes/class-pn-customers-manager-settings.php:1132
 msgid "WhatsApp AI"
 msgstr ""
 
@@ -5811,17 +5899,17 @@ msgid ""
 "product.<br>3. Configure a phone number in the WhatsApp section of your app."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:306
-#: includes/class-pn-customers-manager-funnel-builder.php:415
+#: includes/class-pn-customers-manager-funnel-builder.php:302
+#: includes/class-pn-customers-manager-funnel-builder.php:397
 msgid "WhatsApp Conversations"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:832
+#: includes/class-pn-customers-manager-funnel-builder.php:819
 msgid "When a customer asks about a product, send its photos via WhatsApp."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:736
-#: includes/class-pn-customers-manager-funnel-builder.php:1084
+#: includes/class-pn-customers-manager-funnel-builder.php:723
+#: includes/class-pn-customers-manager-funnel-builder.php:1071
 msgid ""
 "When a customer asks about shipping and provides a postal code, the plugin "
 "bypasses the AI model and uses WooCommerce's own shipping functions to match "
@@ -5832,22 +5920,38 @@ msgid ""
 "context for any other shipping-related questions."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:949
+#: includes/class-pn-customers-manager-funnel-builder.php:936
 msgid ""
 "When an order is confirmed via chat, append a WooCommerce cart link that "
 "automatically adds the chosen products so the customer can pay. Requires "
 "WooCommerce."
 msgstr ""
 
-#: includes/class-pn-customers-manager-settings.php:782
+#: includes/class-pn-customers-manager-settings.php:682
+msgid ""
+"When enabled, all Instagram AI activity is logged to <code>wp-"
+"content/uploads/pn-customers-manager-logs/instagram-ai.log</code>. Useful "
+"for debugging webhook and AI issues. <strong>Disable in production</strong> "
+"to avoid unnecessary disk usage."
+msgstr ""
+
+#: includes/class-pn-customers-manager-settings.php:596
+msgid ""
+"When enabled, all WhatsApp AI activity is logged to <code>wp-"
+"content/uploads/pn-customers-manager-logs/whatsapp-ai.log</code>. Useful for "
+"debugging webhook and AI issues. <strong>Disable in production</strong> to "
+"avoid unnecessary disk usage."
+msgstr ""
+
+#: includes/class-pn-customers-manager-settings.php:800
 msgid ""
 "When enabled, every contact form submission will be checked against the "
 "Akismet API. Suspected bots will still be stored but automatically flagged "
 "as spam and excluded from notification emails."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:959
-#: includes/class-pn-customers-manager-funnel-builder.php:1233
+#: includes/class-pn-customers-manager-funnel-builder.php:946
+#: includes/class-pn-customers-manager-funnel-builder.php:1220
 msgid ""
 "When the AI detects a request that cannot be fulfilled with a simple "
 "purchase link (B2B, bulk, custom products, special shipping), it will "
@@ -5864,8 +5968,8 @@ msgstr ""
 msgid "Won"
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:802
-#: includes/class-pn-customers-manager-funnel-builder.php:1150
+#: includes/class-pn-customers-manager-funnel-builder.php:789
+#: includes/class-pn-customers-manager-funnel-builder.php:1137
 msgid "WooCommerce products"
 msgstr ""
 
@@ -5891,16 +5995,20 @@ msgstr ""
 
 # ── WhatsApp AI ──
 #: includes/class-pn-customers-manager-funnel-builder.php:24
-#: includes/class-pn-customers-manager-instagram-ai.php:603
-#: includes/class-pn-customers-manager-whatsapp-ai.php:1182
+#: includes/class-pn-customers-manager-instagram-ai.php:608
+#: includes/class-pn-customers-manager-whatsapp-ai.php:1273
 msgid "You do not have permission to access this page."
 msgstr ""
 
+#: includes/class-pn-customers-manager.php:473
+msgid "You do not have permission to access this resource."
+msgstr ""
+
 #: includes/class-pn-customers-manager-ajax.php:46
-#: includes/class-pn-customers-manager-post-type-budget.php:1058
-#: includes/class-pn-customers-manager-post-type-budget.php:1071
-#: includes/class-pn-customers-manager-post-type-invoice.php:945
-#: includes/class-pn-customers-manager-post-type-invoice.php:958
+#: includes/class-pn-customers-manager-post-type-budget.php:1100
+#: includes/class-pn-customers-manager-post-type-budget.php:1113
+#: includes/class-pn-customers-manager-post-type-invoice.php:946
+#: includes/class-pn-customers-manager-post-type-invoice.php:959
 #: includes/class-pn-customers-manager-post-type-funnel.php:446
 #: includes/class-pn-customers-manager-post-type-funnel.php:459
 #: includes/class-pn-customers-manager-post-type-organization.php:1030
@@ -5912,7 +6020,7 @@ msgstr ""
 msgid "You do not have permission to create pages."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:456
+#: includes/class-pn-customers-manager-funnel-builder.php:443
 msgid "You do not have permission to edit this funnel."
 msgstr ""
 
@@ -5939,9 +6047,9 @@ msgstr ""
 #: includes/class-pn-customers-manager-ajax.php:1078
 #: includes/class-pn-customers-manager-ajax.php:1085
 #: includes/class-pn-customers-manager-ajax.php:1093
-#: includes/class-pn-customers-manager-ajax.php:1388
-#: includes/class-pn-customers-manager-ajax.php:1529
-#: includes/class-pn-customers-manager-ajax.php:1791
+#: includes/class-pn-customers-manager-ajax.php:1384
+#: includes/class-pn-customers-manager-ajax.php:1525
+#: includes/class-pn-customers-manager-ajax.php:1787
 msgid "You do not have permission."
 msgstr ""
 
@@ -5949,28 +6057,28 @@ msgstr ""
 msgid "You have already sent an application previously."
 msgstr ""
 
-#: includes/class-pn-customers-manager-funnel-builder.php:412
+#: includes/class-pn-customers-manager-funnel-builder.php:394
 msgid "You have unsaved changes. Do you want to continue?"
 msgstr ""
 
 #: includes/class-pn-customers-manager-ajax.php:149
 #: includes/class-pn-customers-manager-ajax.php:382
 #: includes/class-pn-customers-manager-ajax.php:1261
-#: includes/class-pn-customers-manager-ajax.php:1672
+#: includes/class-pn-customers-manager-ajax.php:1668
 #: includes/class-pn-customers-manager-post-type-funnel.php:687
 #: includes/class-pn-customers-manager-post-type-organization.php:1353
 msgid "You must be logged in to create a new asset."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1434
+#: includes/class-pn-customers-manager-post-type-budget.php:1476
 msgid "You must be logged in to create a new budget."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-invoice.php:1290
+#: includes/class-pn-customers-manager-post-type-invoice.php:1291
 msgid "You must be logged in to create a new invoice."
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:308
+#: includes/class-pn-customers-manager-common.php:316
 msgid "You must be logged in to send referrals."
 msgstr ""
 
@@ -5979,15 +6087,15 @@ msgstr ""
 msgid "You must be logged in to send your application."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1144
-#: includes/class-pn-customers-manager-post-type-invoice.php:1018
+#: includes/class-pn-customers-manager-post-type-budget.php:1186
+#: includes/class-pn-customers-manager-post-type-invoice.php:1019
 #: includes/class-pn-customers-manager-post-type-funnel.php:512
 #: includes/class-pn-customers-manager-post-type-organization.php:1160
 msgid "You must be registered on the platform to access this tool."
 msgstr ""
 
-#: includes/class-pn-customers-manager-post-type-budget.php:1143
-#: includes/class-pn-customers-manager-post-type-invoice.php:1017
+#: includes/class-pn-customers-manager-post-type-budget.php:1185
+#: includes/class-pn-customers-manager-post-type-invoice.php:1018
 #: includes/class-pn-customers-manager-post-type-funnel.php:511
 #: includes/class-pn-customers-manager-post-type-organization.php:1159
 msgid "You need an account"
@@ -6009,6 +6117,10 @@ msgstr ""
 msgid "Your company name as it will appear in the budget header."
 msgstr ""
 
+#: templates/public/single-pn_cm_budget.php:659
+msgid "Your email address"
+msgstr ""
+
 #: includes/class-pn-customers-manager-funnel-builder.php:236
 msgid "Zoom in"
 msgstr ""
@@ -6017,7 +6129,7 @@ msgstr ""
 msgid "Zoom out"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:314
+#: includes/class-pn-customers-manager-common.php:322
 msgid "¡Registro completado! Revisa tu email para activar tu cuenta."
 msgstr ""
 
@@ -6029,11 +6141,11 @@ msgstr ""
 msgid "¿Marcar este mensaje como spam?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:320
+#: includes/class-pn-customers-manager-common.php:328
 msgid "¿Seguro que quieres aprobar a este agente comercial?"
 msgstr ""
 
-#: includes/class-pn-customers-manager-common.php:321
+#: includes/class-pn-customers-manager-common.php:329
 msgid "¿Seguro que quieres rechazar a este agente comercial?"
 msgstr ""
 

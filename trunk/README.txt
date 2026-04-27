@@ -35,7 +35,27 @@ Whether you run an online store, a service-based business, an agency, or a membe
 
 * **Blog & Page Context**: Inject your WordPress posts and pages into the AI's knowledge base so it can reference your content and share links with customers.
 
-* **Conversation Management Dashboard**: View, search, close, delete, and reset all WhatsApp and Instagram conversations from your admin panel. Full chat history with timestamps and role indicators.
+* **Conversation Management Dashboard**: View, search, close, delete, and reset all WhatsApp and Instagram conversations from your admin panel and from the funnel builder. Full chat history with timestamps and role indicators.
+
+* **Debug Logging**: Enable or disable debug logging independently for WhatsApp AI and Instagram AI from the settings page. Logs are saved to `wp-content/uploads/pn-customers-manager-logs/`.
+
+= Budgets & Invoices =
+
+* **Budget Management**: Create professional proposals and quotations with customizable items, phases, tax rates, and discount rates. Budgets support multiple item types (hours, fixed, phase, image), optional items that customers can toggle on/off, and image galleries for visual references.
+
+* **Invoice Management**: Generate invoices linked to organizations with automatic invoice numbering, due dates, status tracking (Draft, Sent, Paid, Cancelled), and payment date recording.
+
+* **Public Sharing via Token**: Share budgets and invoices with customers through secure token-based URLs — no WordPress login required. Clean, standalone templates with company branding, schema.org structured data, and Open Graph meta tags.
+
+* **Customer Acceptance Workflow**: Customers can accept or reject budgets directly from the public view. Non-registered users can provide their email address to confirm acceptance. Acceptance/rejection is timestamped.
+
+* **Optional Items & Phases**: Organize budget items into collapsible phases. Mark individual items or entire phases as optional — customers see a live-updating total as they toggle items on/off with a sticky price bar.
+
+* **PDF Generation**: Generate professional PDF documents from both budgets and invoices directly from the public or admin view.
+
+* **Inline Editing**: Admins can edit budget and invoice items, reorder with drag-and-drop, add new items, and manage status directly from the public-facing template without returning to the admin panel.
+
+* **CSV Import/Export**: Bulk import and export budgets via CSV files. Includes a downloadable template with sample data, a multi-step import wizard with preview, and automatic organization name resolution.
 
 = Core CRM Features =
 
@@ -252,6 +272,17 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 
 == Changelog ==
+
+= 1.1.45 =
+
+* **Budgets**: Full budget/proposal system with item management, phases, optional items, tax and discount rates, public token-based sharing, customer acceptance workflow, inline editing, PDF generation, and CSV import/export.
+* **Invoices**: Invoice management system with automatic numbering, due dates, payment tracking, status lifecycle (Draft → Sent → Paid/Cancelled), public token-based sharing, inline editing, and PDF generation.
+* **Data Migration**: Safe one-time migration tool for budget items from legacy database table to post meta storage.
+* **WhatsApp AI – Duplicate Gallery Fix**: Fixed a bug where gallery photos were sent twice when requesting additional product images.
+* **WhatsApp AI – Improved Postal Code Response**: Removed overly effusive greeting from shipping zone postal code confirmations.
+* **Dashboard Conversation Popups**: WhatsApp and Instagram conversation popups in the funnel builder now use the plugin's standard popup system with close, reset, and delete actions.
+* **Debug Log Settings**: Independent settings to enable/disable debug logging for WhatsApp AI and Instagram AI. Logs are saved to `wp-content/uploads/pn-customers-manager-logs/` only when enabled.
+* **CRM Manager Role**: Added CRM Manager user role with access to messages, statistics, projections, conversations, and commercial agents without full admin privileges.
 
 = 1.0.0 =
 

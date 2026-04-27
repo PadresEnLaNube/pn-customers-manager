@@ -345,6 +345,17 @@ foreach ( $items as $item ) {
 </head>
 <body class="pn-customers-manager-budget-public">
 	<div class="pn-cm-budget-wrapper">
+		<?php if ( $is_admin ) :
+			$budget_list_page_id = get_option( 'pn_customers_manager_page_budget_list', 0 );
+			$budget_list_url     = ! empty( $budget_list_page_id ) ? get_permalink( $budget_list_page_id ) : '';
+			if ( ! empty( $budget_list_url ) ) :
+		?>
+			<a href="<?php echo esc_url( $budget_list_url ); ?>" class="pn-cm-budget-back-link">
+				<i class="material-icons-outlined">arrow_back</i>
+				<?php esc_html_e( 'Back to budgets', 'pn-customers-manager' ); ?>
+			</a>
+		<?php endif; endif; ?>
+
 		<!-- Header -->
 		<header class="pn-cm-budget-header">
 			<div class="pn-cm-budget-header-company">

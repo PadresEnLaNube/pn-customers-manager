@@ -74,6 +74,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         'input' => 'select',
         'label' => esc_html__('Organization', 'pn-customers-manager'),
         'options' => self::get_organization_options(),
+        'description' => '<a href="' . esc_url(admin_url('post-new.php?post_type=pn_cm_organization')) . '" target="_blank">' . esc_html__('Add new organization', 'pn-customers-manager') . '</a>',
       ];
       $pn_customers_manager_fields_meta['pn_cm_budget_number'] = [
         'id' => 'pn_cm_budget_number',
