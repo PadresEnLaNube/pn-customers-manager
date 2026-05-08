@@ -1038,12 +1038,13 @@ class PN_CUSTOMERS_MANAGER_Settings {
     }
 
     add_menu_page(
-      esc_html__('PN Customers Manager', 'pn-customers-manager'), 
-      esc_html__('PN Customers Manager', 'pn-customers-manager'), 
-      $menu_cap, 
-      'pn_customers_manager_options', 
-      [$this, 'pn_customers_manager_options'], 
-      esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/pn-customers-manager-menu-icon.svg'),
+      esc_html__('PN Customers Manager', 'pn-customers-manager'),
+      esc_html__('PN Customers Manager', 'pn-customers-manager'),
+      $menu_cap,
+      'pn_customers_manager_options',
+      [$this, 'pn_customers_manager_options'],
+      PN_CUSTOMERS_MANAGER_URL . 'assets/media/pn-customers-manager-menu-icon.svg',
+      100
     );
 		
     add_submenu_page(
@@ -1055,20 +1056,12 @@ class PN_CUSTOMERS_MANAGER_Settings {
       [$this, 'pn_customers_manager_options'], 
     );
 
-    // Add Funnels submenu (only if user has the capability)
+    // Add Funnels menu (Funnel Builder visual canvas)
     if (current_user_can('edit_pn_cm_funnel')) {
       add_submenu_page(
         'pn_customers_manager_options',
         esc_html__('Funnels', 'pn-customers-manager'),
         esc_html__('Funnels', 'pn-customers-manager'),
-        'edit_pn_cm_funnel',
-        'edit.php?post_type=pn_cm_funnel'
-      );
-
-      add_submenu_page(
-        'pn_customers_manager_options',
-        esc_html__('Funnel Builder', 'pn-customers-manager'),
-        esc_html__('Funnel Builder', 'pn-customers-manager'),
         'edit_pn_cm_funnel',
         'pn_customers_manager_funnel_builder',
         ['PN_CUSTOMERS_MANAGER_Funnel_Builder', 'render_page']
@@ -1128,7 +1121,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
     // WhatsApp AI — hidden page (accessible via direct URL or shortcode, not shown in menu)
     if (current_user_can('pn_cm_manage_crm')) {
       add_submenu_page(
-        null,
+        '',
         esc_html__('WhatsApp AI', 'pn-customers-manager'),
         '',
         'pn_cm_manage_crm',
@@ -1140,7 +1133,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
     // Instagram AI — hidden page (accessible via direct URL or shortcode, not shown in menu)
     if (current_user_can('pn_cm_manage_crm')) {
       add_submenu_page(
-        null,
+        '',
         esc_html__('Instagram AI', 'pn-customers-manager'),
         '',
         'pn_cm_manage_crm',

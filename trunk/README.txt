@@ -4,7 +4,7 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 6.9.1
-Stable tag: 1.1.45
+Stable tag: 1.1.55
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, contact forms, email campaigns, and WooCommerce integration for WordPress.
@@ -273,7 +273,7 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 == Changelog ==
 
-= 1.1.45 =
+= 1.1.55 =
 
 * **Budgets**: Full budget/proposal system with item management, phases, optional items, tax and discount rates, public token-based sharing, customer acceptance workflow, inline editing, PDF generation, and CSV import/export.
 * **Invoices**: Invoice management system with automatic numbering, due dates, payment tracking, status lifecycle (Draft → Sent → Paid/Cancelled), public token-based sharing, inline editing, and PDF generation.

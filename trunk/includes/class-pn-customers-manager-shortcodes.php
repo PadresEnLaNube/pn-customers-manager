@@ -406,7 +406,13 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
                       <?php echo esc_html($funnel_title); ?>
                     </span>
                   <?php endif; ?>
-                  <span class="pn-cm-conv-card-date"><?php echo esc_html(wp_date(get_option('date_format') . ' ' . get_option('time_format'), strtotime($conv->updated_at))); ?></span>
+                  <span class="pn-cm-conv-card-date">
+                    <?php
+                      // Convert UTC database time to local WordPress timezone
+                      $local_time = get_date_from_gmt($conv->updated_at);
+                      echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($local_time)));
+                    ?>
+                  </span>
                 </div>
               </div>
               <div class="pn-cm-conv-card-actions">

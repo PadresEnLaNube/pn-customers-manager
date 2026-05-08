@@ -268,6 +268,37 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       'timestamp' => current_time('mysql'),
     ];
 
+    // Skip AI processing if this is just a greeting and welcome message already sent
+    $user_message_count = 0;
+    $has_assistant_message = false;
+    foreach ($messages as $msg) {
+      if (isset($msg['role']) && $msg['role'] === 'user') {
+        $user_message_count++;
+      }
+      if (isset($msg['role']) && $msg['role'] === 'assistant') {
+        $has_assistant_message = true;
+      }
+    }
+
+    // If this is the first user message, it's just a simple greeting, and welcome was already sent
+    if ($user_message_count === 1 && $has_assistant_message) {
+      $normalized_text = mb_strtolower(trim($text));
+      $simple_greetings = ['hola', 'holi', 'hi', 'hello', 'hey', 'buenos días', 'buenas tardes', 'buenas noches', 'buenos dias', 'buenas', 'saludos'];
+
+      if (in_array($normalized_text, $simple_greetings, true)) {
+        // Just a greeting - welcome message already sent, so don't respond again
+        global $wpdb;
+        $table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
+        $wpdb->update($table, [
+          'messages'   => wp_json_encode($messages),
+          'updated_at' => current_time('mysql'),
+        ], ['id' => $conversation->id]);
+
+        self::log('Skipping AI response — simple greeting detected and welcome message already sent');
+        return;
+      }
+    }
+
     // Read node config once
     $node_config = self::get_node_config($conversation);
     if (empty($node_config)) {
@@ -1236,10 +1267,22 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
                 </div>
               <?php endif; ?>
               <?php if (!empty($msg['content'])): ?>
-                <div class="pn-cm-wa-msg-content"><?php echo nl2br(esc_html($msg['content'])); ?></div>
+                <div class="pn-cm-wa-msg-content">
+                  <?php
+                    // Escape HTML but convert URLs to clickable links
+                    $content = esc_html($msg['content']);
+                    $content = make_clickable($content);
+                    echo nl2br($content);
+                  ?>
+                </div>
               <?php endif; ?>
               <div class="pn-cm-wa-msg-time">
-                <?php echo isset($msg['timestamp']) ? esc_html(wp_date(get_option('time_format'), strtotime($msg['timestamp']))) : ''; ?>
+                <?php
+                  if (isset($msg['timestamp'])) {
+                    $local_time = get_date_from_gmt($msg['timestamp']);
+                    echo esc_html(date_i18n(get_option('time_format'), strtotime($local_time)));
+                  }
+                ?>
               </div>
             </div>
           </div>
@@ -1468,7 +1511,12 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
                   <div class="pn-cm-wa-msg-content"><?php echo nl2br(esc_html($msg['content'])); ?></div>
                 <?php endif; ?>
                 <div class="pn-cm-wa-msg-time">
-                  <?php echo isset($msg['timestamp']) ? esc_html(wp_date(get_option('time_format'), strtotime($msg['timestamp']))) : ''; ?>
+                  <?php
+                    if (isset($msg['timestamp'])) {
+                      $local_time = get_date_from_gmt($msg['timestamp']);
+                      echo esc_html(date_i18n(get_option('time_format'), strtotime($local_time)));
+                    }
+                  ?>
                 </div>
               </div>
             </div>

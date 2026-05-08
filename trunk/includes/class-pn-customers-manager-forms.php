@@ -742,9 +742,6 @@ class PN_CUSTOMERS_MANAGER_Forms {
                 </option>
               <?php endforeach; ?>
             </select>
-            <p class="pn-customers-manager-font-size-small pn-customers-manager-color-gray pn-customers-manager-mt-5">
-              <?php esc_html_e('Hold Ctrl (Windows) or Cmd (Mac) to select multiple users. Users with âœ“ already have this role.', 'pn-customers-manager'); ?>
-            </p>
           </div>
 
           <div class="pn-customers-manager-role-actions pn-customers-manager-mb-20">

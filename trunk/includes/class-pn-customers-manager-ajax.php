@@ -211,6 +211,12 @@ class PN_CUSTOMERS_MANAGER_Ajax {
         case 'pn_cm_funnel_builder_load':
           PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_load_canvas($pn_cm_funnel_id);
           break;
+        case 'pn_cm_funnel_builder_create':
+          PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_create_funnel();
+          break;
+        case 'pn_cm_funnel_builder_delete':
+          PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_delete_funnel();
+          break;
         case 'pn_cm_openai_test':
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('No tienes permiso.', 'pn-customers-manager')]);

@@ -355,19 +355,70 @@ trait PN_CM_AI_Chat_Common {
 
     // Build the complex/special order instruction depending on whether special order forwarding is enabled.
     if ($enable_special_orders) {
+      $shop_page_url = get_permalink(wc_get_page_id('shop')) ?: home_url('/tienda/');
       $complex_order_block = "SPECIAL ORDER FORWARDING (for requests that CANNOT be fulfilled with a simple purchase link):\n"
-        . "When the customer's request is complex (bulk/wholesale orders, B2B proposals, custom products, orders that require a formal quote), do NOT redirect them away. Instead, follow this flow:\n"
-        . "  1. Collect ALL relevant details from the customer naturally in conversation: what they need, quantities, any special requirements, their name, contact email or phone, and delivery preferences.\n"
-        . "  2. Once you have enough details, present a clear summary of their request and ask them to confirm that the details are correct.\n"
-        . "  3. ONLY after the customer explicitly confirms (e.g. \"sí\", \"correcto\", \"adelante\"), include the hidden tag [PEDIDO_ESPECIAL] at the END of your response message. The system will automatically strip this tag before the customer sees it and will forward the full conversation by email to the sales team.\n"
-        . "  4. In the SAME message where you include [PEDIDO_ESPECIAL], tell the customer that their request has been forwarded to the team and someone will contact them shortly.\n"
+        . "When the customer's request is complex or asks for something that is NOT in the catalog (bulk/wholesale orders, budget requests, quotes, B2B proposals, custom products, products not listed, orders that require a formal quote or price estimate, services like gardening/landscaping/event planning), follow this flow:\n"
+        . "\n"
+        . "WHEN TO ACTIVATE SPECIAL ORDER FLOW:\n"
+        . "You MUST activate this flow when the customer requests:\n"
+        . "  • A budget or quote (\"quiero un presupuesto\", \"necesito una cotización\", \"cuánto costaría\")\n"
+        . "  • A service not in the catalog (gardening, landscaping, event decoration, corporate services)\n"
+        . "  • A product or variation that does NOT exist in your catalog (e.g. \"blue peonies\" when you only have pink)\n"
+        . "  • Bulk/wholesale orders, B2B proposals, or custom arrangements\n"
+        . "  • ANY personalized/custom product with specific quantities or characteristics not listed in the catalog (e.g. \"15 sunflowers\", \"custom bouquet with roses and lilies\", \"arrangement with specific flowers\")\n"
+        . "\n"
+        . "OFFERING ALTERNATIVES:\n"
+        . "When a customer requests a specific product that does NOT exist in the catalog but you have similar alternatives:\n"
+        . "  1. Show the available alternatives from the catalog with their details\n"
+        . "  2. ALWAYS include this message: \"Si no es exactamente lo que buscas, dímelo y aviso al equipo de tienda para que puedan atenderte directamente.\"\n"
+        . "  3. This lets customers know they can get exactly what they want even if it's not in the catalog\n"
+        . "  Example: Customer asks for yellow peonies (not in catalog), you show pink peonies and add: \"Si no es exactamente lo que buscas, dímelo y aviso al equipo de tienda para que puedan atenderte directamente.\"\n"
+        . "\n"
+        . "CRITICAL — PRICE ESTIMATES:\n"
+        . "If you have provided a price estimate for a custom product and the customer accepts it (\"sí por favor\", \"adelante\", \"perfecto\", \"si, esa\"), you MUST activate the special order flow. Do NOT just give them a generic store link. The customer has already agreed to the custom order — now collect their information to forward it to the team.\n"
+        . "\n"
+        . "Do NOT just redirect them to call or give a generic store link. Use this special order forwarding flow to collect their information first.\n"
+        . "\n"
+        . "  1. First, provide the link to the online store: " . $shop_page_url . "\n"
+        . "     Explain that they can browse the full catalog there, and that if what they need is different from what's shown, you can forward their request to the store team.\n"
+        . "     Example: \"Puedes ver nuestro catálogo completo aquí: [link]. Si lo que necesitas es diferente a lo que aparece, puedo trasladar tu solicitud a nuestro equipo de tienda.\"\n"
+        . "\n"
+        . "  2. ENTER SPECIAL ORDER MODE:\n"
+        . "     Once you've offered to forward the request, if the customer responds with ANY acceptance signal (\"vale\", \"ok\", \"sí\", \"adelante\", \"perfecto\") OR continues insisting on the unavailable product (repeats the request, says \"I want the blue ones\", etc.), you MUST IMMEDIATELY enter special order collection mode.\n"
+        . "\n"
+        . "     CRITICAL — NO LOOPING: Do NOT ask \"what are you looking for?\" again. Do NOT offer catalog alternatives. Do NOT say \"we don't have it\" again. You already know what they want — they told you. They've accepted your offer to forward the request. Now collect their information:\n"
+        . "\n"
+        . "     a) Collect basic information: their name and contact (email or phone).
+        Example: \"Perfecto. Para trasladar tu solicitud de peonías azules al equipo, ¿podrías darme tu nombre y un teléfono o email de contacto?\"\n"
+        . "\n"
+        . "     b) IMPORTANT — FOR EVENTS: If the request is for an event (wedding, party, corporate event, celebration), ALSO collect event details to help the team provide an accurate quote:\n"
+        . "        • Event date (approximate if not confirmed)\n"
+        . "        • Number of guests/attendees\n"
+        . "        • Event location or city\n"
+        . "        • Type of service needed (centerpieces, bridal bouquet, ceremony decoration, full venue decoration, etc.)\n"
+        . "        • Approximate budget if they have one\n"
+        . "        Ask for these details naturally in conversation, not as a numbered list.\n"
+        . "        Example: \"Para poder darte un presupuesto más ajustado, ¿podrías darme algunos detalles? ¿Para qué fecha sería, cuántos invitados aproximadamente, y qué tipo de decoración floral necesitas?\"\n"
+        . "\n"
+        . "     c) Once you have name, contact, and event details (if applicable), present a brief summary and ask them to confirm.\n"
+        . "        Example: \"Perfecto, [Name]. He anotado tu solicitud de [what they want] para [event details if applicable] y tu contacto [contact]. ¿Es correcto?\"\n"
+        . "\n"
+        . "     d) ONLY after the customer explicitly confirms the summary (e.g. \"sí\", \"correcto\", \"adelante\"), include the hidden tag [PEDIDO_ESPECIAL] at the END of your response message.\n"
+        . "\n"
+        . "     e) In the SAME message where you include [PEDIDO_ESPECIAL], tell the customer that their request has been forwarded to the store team and someone will contact them shortly.\n"
+        . "        Example: \"Tu solicitud ha sido trasladada a nuestro equipo de tienda. Te contactarán en breve para gestionar tu pedido. [PEDIDO_ESPECIAL]\"\n"
+        . "\n"
         . "CRITICAL RULES:\n"
-        . "- You MUST include [PEDIDO_ESPECIAL] exactly ONCE after the customer confirms. Do NOT forget this tag — without it the email will NOT be sent.\n"
-        . "- NEVER include [PEDIDO_ESPECIAL] without the customer's explicit confirmation.\n"
-        . "- Place the tag at the very end of your message, after all visible text.\n";
+        . "- When a customer insists on a product NOT in your catalog, ALWAYS provide the store link and offer to forward their request. DO NOT just say \"we don't have it\" and leave them without options.\n"
+        . "- Once you offer to forward the request and the customer accepts (even with just \"vale\" or \"ok\"), IMMEDIATELY collect information. Do NOT loop back to asking what they need or offering alternatives.\n"
+        . "- ALWAYS provide the store link first before collecting details.\n"
+        . "- You MUST include [PEDIDO_ESPECIAL] exactly ONCE after the customer confirms the summary. Do NOT forget this tag — without it the email will NOT be sent.\n"
+        . "- NEVER include [PEDIDO_ESPECIAL] without the customer's explicit confirmation of the summary.\n"
+        . "- Place the tag at the very end of your message, after all visible text.\n"
+        . "- If the customer finds what they need in the catalog link, help them with the regular purchase process instead.\n";
     } else {
       $complex_order_block = "COMPLEX ORDER REDIRECT:\n"
-        . "If the customer's request CANNOT be fulfilled with a simple purchase link (e.g. bulk/wholesale orders, B2B proposals, custom products, orders that require a formal quote), do NOT attempt to process the order through this chat. Instead, " . $order_redirect_instruction . ".\n";
+        . "If the customer's request CANNOT be fulfilled with a simple purchase link (e.g. budget requests, quotes, bulk/wholesale orders, B2B proposals, custom products, orders that require a formal quote or price estimate), do NOT attempt to process the order through this chat. Instead, " . $order_redirect_instruction . ".\n";
     }
 
     if ($enable_chat_orders) {
@@ -413,7 +464,14 @@ trait PN_CM_AI_Chat_Common {
       $order_policy = "ORDER POLICY:\n"
         . "You CANNOT process or manage full orders through this chat (no delivery details collection, no order summaries, no confirmation flows).\n"
         . "However, when a customer expresses interest in a product or confirms they want it, you MUST ALWAYS provide the product link (Buy link or Product link from the catalog) so they can purchase directly through the platform. For example: \"You can buy it directly here: [URL]\". This is your PRIMARY way to help customers complete a purchase.\n"
-        . "If the customer needs additional assistance beyond the purchase link (e.g. custom orders, special requests, complex delivery questions), " . $order_redirect_instruction . ".\n"
+        . "If the customer needs additional assistance beyond the purchase link (e.g. budget requests, quotes, price estimates, custom orders, special requests, complex delivery questions), " . $order_redirect_instruction . ".\n"
+        . "\n"
+        . "ALTERNATIVE PAYMENT METHODS AND PHONE ORDERS:\n"
+        . "When a customer asks about paying with alternative payment methods (such as Bizum, bank transfer, cash on delivery, etc.) or wants to complete the purchase process by phone instead of through the website, you must explain the following:\n"
+        . "  • Through this channel, purchases can ONLY be completed via the website link where they must provide contact details, delivery address, and credit/debit card information for payment.\n"
+        . "  • For alternative payment methods or special arrangements, inform them that you will forward their request to the store team who will contact them as soon as they are available.\n"
+        . "Example response: \"Por este canal solo puedes completar la compra a través del enlace a la web, donde deberás ingresar tus datos de contacto, dirección de entrega y número de tarjeta para el pago. Si prefieres otra forma de pago, puedo trasladar tu solicitud a nuestro equipo de tienda para que te contacten en cuanto estén disponibles.\"\n"
+        . "\n"
         . "NEVER include the tag [PEDIDO_CONFIRMADO] or [PEDIDO_CONFIRMADO:...] in your responses.";
       if ($enable_special_orders) {
         $order_policy .= "\n\n" . $complex_order_block;
@@ -558,6 +616,21 @@ trait PN_CM_AI_Chat_Common {
           $parts[] = "PRODUCT CATALOG (use this data to answer questions about products, prices, availability; {$link_instruction}{$image_instruction}):\n" . $woo_context;
         }
 
+        // Strict catalog usage rules
+        $parts[] = "CRITICAL — CATALOG ACCURACY RULES:\n"
+          . "- ONLY mention products that appear EXACTLY in the PRODUCT CATALOG above with their exact IDs, names, and prices.\n"
+          . "- NEVER invent, assume, or hallucinate product names, IDs, prices, or availability.\n"
+          . "- NEVER modify product names (e.g., if catalog says \"Ramo de rosas rojas\", do NOT say \"Ramo colorido con rosas\").\n"
+          . "- When using [PRODUCT_IMAGES:ID], the ID MUST match exactly the ID shown in the PRODUCT CATALOG for that product name.\n"
+          . "- If a customer asks for a product type and you find matches, list them with their EXACT names and IDs from the catalog.\n"
+          . "- If a customer asks for a specific product (#2, #5, \"the second one\", etc.), use the EXACT ID of that product from your list.\n"
+          . "- EXAMPLE OF CORRECT BEHAVIOR:\n"
+          . "  Catalog shows: \"Product: Ramo de rosas rojas, ID: 123, Price: 50€\"\n"
+          . "  Customer asks: \"show me the roses\"\n"
+          . "  ✓ CORRECT: \"Ramo de rosas rojas - 50€\" with [PRODUCT_IMAGES:123]\n"
+          . "  ❌ WRONG: \"Ramo colorido con rosas - 50€\" with [PRODUCT_IMAGES:456]\n"
+          . "- Double-check that the product ID in [PRODUCT_IMAGES:ID] matches the product name you just mentioned.\n";
+
         $image_rules = static::get_image_rules($include_woo_images);
         if (!empty($image_rules)) {
           if ($enable_recommendations) {
@@ -605,6 +678,14 @@ trait PN_CM_AI_Chat_Common {
 
     // 10. Mandatory style rules
     $parts[] = "MANDATORY STYLE RULES (override everything above):\n"
+      . "- NO DUPLICATE GREETINGS: If you have already sent a message in this conversation (check the history), do NOT greet the customer again.\n"
+      . "  • When responding to customer questions, NEVER start with: \"Hola\", \"Bienvenido\", \"Welcome\", \"¿En qué puedo ayudarte?\", \"¿Cómo puedo ayudarte?\", \"How can I help?\", \"¿En qué te puedo ayudar?\".\n"
+      . "  • Simply answer their question directly without any greeting prefix.\n"
+      . "  • EXAMPLES:\n"
+      . "    Customer: \"quiero un ramo\"\n"
+      . "    ❌ WRONG: \"¡Hola! Claro, ¿qué tipo de ramo buscas?\"\n"
+      . "    ✓ CORRECT: \"Claro, ¿qué tipo de ramo buscas?\"\n"
+      . "  • IMPORTANT: If the customer asks a real question (not just a greeting), ANSWER IT. Only skip responding if they ONLY said a simple greeting like \"hola\" with nothing else.\n"
       . "- NEVER end your messages with filler phrases. Forbidden examples: "
       . "\"¡Estoy aquí para ayudarte!\", \"No dudes en preguntar\", "
       . "\"Si necesitas más información\", \"Si tienes alguna otra pregunta\", "
@@ -2773,12 +2854,20 @@ trait PN_CM_AI_Chat_Common {
     // Resolve notification recipients.
     $recipients = [];
 
+    // Debug logging
+    self::log('detect_and_notify_special_order — Checking recipients configuration');
+    self::log('detect_and_notify_special_order — prefix=' . $prefix);
+    self::log('detect_and_notify_special_order — special_orders_users key=' . $prefix . 'special_orders_users');
+    self::log('detect_and_notify_special_order — special_orders_users value=' . var_export($node_config[$prefix . 'special_orders_users'] ?? null, true));
+    self::log('detect_and_notify_special_order — special_orders_external_emails value=' . var_export($node_config[$prefix . 'special_orders_external_emails'] ?? null, true));
+
     // 1) Platform user IDs → emails
     if (!empty($node_config[$prefix . 'special_orders_users'])) {
       $user_ids = $node_config[$prefix . 'special_orders_users'];
       if (!is_array($user_ids)) {
         $user_ids = [$user_ids];
       }
+      self::log('detect_and_notify_special_order — Processing ' . count($user_ids) . ' user IDs');
       foreach ($user_ids as $uid) {
         $uid = (int) $uid;
         if ($uid <= 0) {
@@ -2789,9 +2878,12 @@ trait PN_CM_AI_Chat_Common {
           $maybe = sanitize_email($user->user_email);
           if (!empty($maybe)) {
             $recipients[] = $maybe;
+            self::log('detect_and_notify_special_order — Added user email: ' . $maybe);
           }
         }
       }
+    } else {
+      self::log('detect_and_notify_special_order — NO platform users configured');
     }
 
     // 2) External emails (html_multi rows)
@@ -2800,6 +2892,7 @@ trait PN_CM_AI_Chat_Common {
       if (!is_array($external)) {
         $external = [$external];
       }
+      self::log('detect_and_notify_special_order — Processing ' . count($external) . ' external emails');
       foreach ($external as $ext_email) {
         if (!is_string($ext_email)) {
           continue;
@@ -2811,8 +2904,11 @@ trait PN_CM_AI_Chat_Common {
         $maybe = sanitize_email($ext_email);
         if (!empty($maybe)) {
           $recipients[] = $maybe;
+          self::log('detect_and_notify_special_order — Added external email: ' . $maybe);
         }
       }
+    } else {
+      self::log('detect_and_notify_special_order — NO external emails configured');
     }
 
     // Deduplicate (case-insensitive)
@@ -2866,6 +2962,32 @@ trait PN_CM_AI_Chat_Common {
     $order_date    = current_time('d/m/Y H:i');
     $site_name     = get_bloginfo('name');
 
+    // Extract customer email from messages (if provided)
+    $customer_email = '';
+    foreach ($messages as $msg) {
+      if ($msg['role'] === 'user' && !empty($msg['content'])) {
+        if (preg_match('/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/', $msg['content'], $matches)) {
+          $customer_email = $matches[0];
+          break;
+        }
+      }
+    }
+
+    // Extract customer phone from messages (if provided and different from identifier)
+    $customer_phone = '';
+    foreach ($messages as $msg) {
+      if ($msg['role'] === 'user' && !empty($msg['content'])) {
+        if (preg_match('/\b(?:\+?\d{1,3}[\s-]?)?\(?\d{2,4}\)?[\s.-]?\d{2,4}[\s.-]?\d{2,4}\b/', $msg['content'], $matches)) {
+          $potential_phone = $matches[0];
+          // Only use if it's different from the customer_id (which might be the WhatsApp number)
+          if ($potential_phone !== $customer_id) {
+            $customer_phone = $potential_phone;
+            break;
+          }
+        }
+      }
+    }
+
     $subject = sprintf(
       /* translators: 1: site name, 2: platform name */
       __('[%1$s] Special order request via %2$s', 'pn-customers-manager'),
@@ -2881,6 +3003,14 @@ trait PN_CM_AI_Chat_Common {
     $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($customer_name) . '</td></tr>';
     $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html($id_label) . '</td>';
     $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($customer_id) . '</td></tr>';
+    if (!empty($customer_email)) {
+      $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Email', 'pn-customers-manager') . '</td>';
+      $html .= '<td style="padding:8px;border-bottom:1px solid #eee;"><a href="mailto:' . esc_attr($customer_email) . '">' . esc_html($customer_email) . '</a></td></tr>';
+    }
+    if (!empty($customer_phone)) {
+      $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Phone', 'pn-customers-manager') . '</td>';
+      $html .= '<td style="padding:8px;border-bottom:1px solid #eee;"><a href="tel:' . esc_attr($customer_phone) . '">' . esc_html($customer_phone) . '</a></td></tr>';
+    }
     $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Date', 'pn-customers-manager') . '</td>';
     $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($order_date) . '</td></tr>';
     $html .= '</table>';

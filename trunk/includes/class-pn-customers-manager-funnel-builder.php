@@ -53,7 +53,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       <div class="pn-cm-fb-topbar">
         <div class="pn-cm-fb-topbar-left">
           <span class="material-icons-outlined pn-cm-fb-topbar-icon">account_tree</span>
-          <span class="pn-cm-fb-topbar-title"><?php esc_html_e('Funnel Builder', 'pn-customers-manager'); ?></span>
+          <span class="pn-cm-fb-topbar-title"><?php esc_html_e('Funnels', 'pn-customers-manager'); ?></span>
           <select id="pn-cm-fb-funnel-select" class="pn-cm-fb-select">
             <option value=""><?php esc_html_e('-- Select funnel --', 'pn-customers-manager'); ?></option>
             <?php foreach ($funnels as $f): ?>
@@ -62,8 +62,27 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
               </option>
             <?php endforeach; ?>
           </select>
+          <input
+            type="text"
+            id="pn-cm-fb-new-funnel-name"
+            class="pn-cm-fb-input-new-funnel"
+            placeholder="<?php esc_attr_e('Funnel name', 'pn-customers-manager'); ?>"
+            style="margin-left: 8px;"
+          />
+          <button
+            type="button"
+            id="pn-cm-fb-btn-create"
+            class="pn-cm-fb-btn pn-cm-fb-btn-transparent"
+          >
+            <span class="material-icons-outlined" style="font-size: 18px;">add</span>
+            <?php esc_html_e('Create', 'pn-customers-manager'); ?>
+          </button>
         </div>
         <div class="pn-cm-fb-topbar-right">
+          <button type="button" id="pn-cm-fb-btn-delete" class="pn-cm-fb-btn pn-cm-fb-btn-transparent" <?php echo !$funnel ? 'disabled' : ''; ?>>
+            <span class="material-icons-outlined">delete_outline</span>
+            <?php esc_html_e('Delete', 'pn-customers-manager'); ?>
+          </button>
           <button type="button" id="pn-cm-fb-btn-save" class="pn-cm-fb-btn pn-cm-fb-btn-primary" <?php echo !$funnel ? 'disabled' : ''; ?>>
             <span class="material-icons-outlined">save</span>
             <?php esc_html_e('Save', 'pn-customers-manager'); ?>
@@ -410,6 +429,11 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'deleteLabel'        => __('Delete', 'pn-customers-manager'),
         'confirmDeleteConv'  => __('Delete this conversation?', 'pn-customers-manager'),
         'confirmReset'       => __('Reset this conversation? All messages will be cleared.', 'pn-customers-manager'),
+        'funnelNameRequired' => __('Funnel name is required.', 'pn-customers-manager'),
+        'createError'        => __('Error creating funnel.', 'pn-customers-manager'),
+        'deleteFunnelConfirm'=> __('Are you sure you want to delete this funnel? This action cannot be undone.', 'pn-customers-manager'),
+        'deleteError'        => __('Error deleting funnel.', 'pn-customers-manager'),
+        'deleteSuccess'      => __('Funnel deleted successfully.', 'pn-customers-manager'),
       ],
     ]);
   }
@@ -495,6 +519,102 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       'error_key'   => '',
       'canvas_data' => $canvas_data ?: '',
       'title'       => $funnel->post_title,
+    ]);
+    exit;
+  }
+
+  /**
+   * AJAX: Create new funnel.
+   */
+  public static function ajax_create_funnel() {
+    if (!current_user_can('edit_pn_cm_funnel')) {
+      echo wp_json_encode([
+        'error_key'     => 'no_permission',
+        'error_content' => esc_html__('You do not have permission to create funnels.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    $funnel_name = isset($_POST['funnel_name']) ? sanitize_text_field(wp_unslash($_POST['funnel_name'])) : '';
+
+    if (empty($funnel_name)) {
+      echo wp_json_encode([
+        'error_key'     => 'missing_name',
+        'error_content' => esc_html__('Funnel name is required.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    // Create the funnel post
+    $funnel_id = wp_insert_post([
+      'post_type'   => 'pn_cm_funnel',
+      'post_title'  => $funnel_name,
+      'post_status' => 'publish',
+    ]);
+
+    if (is_wp_error($funnel_id)) {
+      echo wp_json_encode([
+        'error_key'     => 'creation_failed',
+        'error_content' => esc_html__('Failed to create funnel.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    echo wp_json_encode([
+      'error_key'  => '',
+      'success'    => true,
+      'funnel_id'  => $funnel_id,
+      'funnel_url' => admin_url('admin.php?page=pn_customers_manager_funnel_builder&funnel_id=' . $funnel_id),
+    ]);
+    exit;
+  }
+
+  /**
+   * AJAX: Delete funnel.
+   */
+  public static function ajax_delete_funnel() {
+    if (!current_user_can('delete_pn_cm_funnel')) {
+      echo wp_json_encode([
+        'error_key'     => 'no_permission',
+        'error_content' => esc_html__('You do not have permission to delete funnels.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    $funnel_id = isset($_POST['funnel_id']) ? intval($_POST['funnel_id']) : 0;
+
+    if (!$funnel_id) {
+      echo wp_json_encode([
+        'error_key'     => 'missing_id',
+        'error_content' => esc_html__('Funnel ID is required.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    // Verify the funnel exists and is the correct post type
+    $funnel = get_post($funnel_id);
+    if (!$funnel || $funnel->post_type !== 'pn_cm_funnel') {
+      echo wp_json_encode([
+        'error_key'     => 'invalid_funnel',
+        'error_content' => esc_html__('Invalid funnel.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    // Delete the funnel
+    $result = wp_delete_post($funnel_id, true);
+
+    if (!$result) {
+      echo wp_json_encode([
+        'error_key'     => 'deletion_failed',
+        'error_content' => esc_html__('Failed to delete funnel.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    echo wp_json_encode([
+      'error_key' => '',
+      'success'   => true,
     ]);
     exit;
   }
