@@ -161,6 +161,27 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Invoice {
         'id' => 'pn_cm_invoice_section_notes_end',
         'section' => 'end',
       ];
+      $pn_customers_manager_fields_meta['pn_cm_invoice_section_recurring_start'] = [
+        'id' => 'pn_cm_invoice_section_recurring_start',
+        'section' => 'start',
+        'label' => esc_html__('Recurring invoice', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_invoice_recurring'] = [
+        'id' => 'pn_cm_invoice_recurring',
+        'class' => 'pn-customers-manager-checkbox',
+        'input' => 'checkbox',
+        'label' => esc_html__('Enable annual recurring billing', 'pn-customers-manager'),
+        'description' => esc_html__('When enabled, a new invoice will be automatically generated every year with the same items and amounts. An email notification will be sent to the administrator.', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_invoice_last_recurring_date'] = [
+        'id' => 'pn_cm_invoice_last_recurring_date',
+        'input' => 'input',
+        'type' => 'hidden',
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_invoice_section_recurring_end'] = [
+        'id' => 'pn_cm_invoice_section_recurring_end',
+        'section' => 'end',
+      ];
       $pn_customers_manager_fields_meta['pn_cm_invoice_section_items_start'] = [
         'id' => 'pn_cm_invoice_section_items_start',
         'section' => 'start',
@@ -1565,5 +1586,175 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Invoice {
     </div>
     <?php
     return ob_get_clean();
+  }
+
+  /**
+   * Process recurring invoices cron job.
+   * This function is called daily to check if any recurring invoices need to be renewed.
+   */
+  public static function process_recurring_invoices() {
+    // Get all published invoices
+    $args = [
+      'post_type' => 'pn_cm_invoice',
+      'post_status' => 'publish',
+      'numberposts' => -1,
+      'fields' => 'ids',
+      'meta_query' => [
+        [
+          'key' => 'pn_cm_invoice_recurring',
+          'value' => '1',
+          'compare' => '='
+        ]
+      ]
+    ];
+
+    $invoice_ids = get_posts($args);
+
+    if (empty($invoice_ids)) {
+      return;
+    }
+
+    $renewed_invoices = [];
+    $today = current_time('Y-m-d');
+
+    foreach ($invoice_ids as $invoice_id) {
+      $last_recurring_date = get_post_meta($invoice_id, 'pn_cm_invoice_last_recurring_date', true);
+
+      // If no last recurring date, use the invoice creation date
+      if (empty($last_recurring_date)) {
+        $invoice_date = get_post_meta($invoice_id, 'pn_cm_invoice_date', true);
+        $last_recurring_date = !empty($invoice_date) ? $invoice_date : get_the_date('Y-m-d', $invoice_id);
+      }
+
+      // Check if one year has passed
+      $next_renewal_date = gmdate('Y-m-d', strtotime($last_recurring_date . ' +1 year'));
+
+      if ($today >= $next_renewal_date) {
+        // Create new invoice
+        $new_invoice_id = self::duplicate_invoice_for_recurring($invoice_id);
+
+        if ($new_invoice_id) {
+          // Update last recurring date in original invoice
+          update_post_meta($invoice_id, 'pn_cm_invoice_last_recurring_date', $today);
+
+          $renewed_invoices[] = [
+            'original_id' => $invoice_id,
+            'new_id' => $new_invoice_id,
+            'original_number' => get_post_meta($invoice_id, 'pn_cm_invoice_number', true),
+            'new_number' => get_post_meta($new_invoice_id, 'pn_cm_invoice_number', true),
+            'organization_id' => get_post_meta($new_invoice_id, 'pn_cm_invoice_organization_id', true),
+          ];
+        }
+      }
+    }
+
+    // Send notification email if any invoices were renewed
+    if (!empty($renewed_invoices)) {
+      self::send_recurring_invoice_notification($renewed_invoices);
+    }
+  }
+
+  /**
+   * Duplicate an invoice for recurring billing.
+   *
+   * @param int $invoice_id Original invoice ID
+   * @return int|false New invoice ID or false on failure
+   */
+  private static function duplicate_invoice_for_recurring($invoice_id) {
+    $original_post = get_post($invoice_id);
+    if (!$original_post) {
+      return false;
+    }
+
+    // Create new invoice post
+    $new_post_data = [
+      'post_title' => $original_post->post_title,
+      'post_type' => 'pn_cm_invoice',
+      'post_status' => 'publish',
+    ];
+
+    $new_invoice_id = wp_insert_post($new_post_data);
+    if (is_wp_error($new_invoice_id)) {
+      return false;
+    }
+
+    // Copy all meta fields except specific ones
+    $exclude_meta = ['pn_cm_invoice_number', 'pn_cm_invoice_token', 'pn_cm_invoice_date',
+                     'pn_cm_invoice_due_date', 'pn_cm_invoice_paid_at', 'pn_cm_invoice_last_recurring_date'];
+
+    $meta_keys = get_post_meta($invoice_id);
+    foreach ($meta_keys as $key => $values) {
+      if (in_array($key, $exclude_meta)) {
+        continue;
+      }
+
+      foreach ($values as $value) {
+        add_post_meta($new_invoice_id, $key, maybe_unserialize($value));
+      }
+    }
+
+    // Generate new invoice number and token
+    $new_number = self::pn_cm_invoice_generate_number();
+    $new_token = self::pn_cm_invoice_generate_token();
+
+    update_post_meta($new_invoice_id, 'pn_cm_invoice_number', $new_number);
+    update_post_meta($new_invoice_id, 'pn_cm_invoice_token', $new_token);
+
+    // Set new dates
+    $today = current_time('Y-m-d');
+    $default_due_days = (int) get_option('pn_customers_manager_invoice_default_due_days', 30);
+    $due_date = gmdate('Y-m-d', strtotime($today . ' +' . $default_due_days . ' days'));
+
+    update_post_meta($new_invoice_id, 'pn_cm_invoice_date', $today);
+    update_post_meta($new_invoice_id, 'pn_cm_invoice_due_date', $due_date);
+
+    // Set status to draft for review
+    update_post_meta($new_invoice_id, 'pn_cm_invoice_status', 'draft');
+
+    // Initialize last_recurring_date for the new invoice
+    update_post_meta($new_invoice_id, 'pn_cm_invoice_last_recurring_date', $today);
+
+    return $new_invoice_id;
+  }
+
+  /**
+   * Send email notification to administrator about renewed invoices.
+   *
+   * @param array $renewed_invoices Array of renewed invoice data
+   */
+  private static function send_recurring_invoice_notification($renewed_invoices) {
+    $admin_email = get_option('admin_email');
+    $site_name = get_bloginfo('name');
+
+    $subject = sprintf(__('[%s] Recurring Invoices Automatically Generated', 'pn-customers-manager'), $site_name);
+
+    $message = sprintf(__('Hello,%s%s', 'pn-customers-manager'), "\n\n",
+                       sprintf(__('The following recurring invoices have been automatically generated on %s:', 'pn-customers-manager'),
+                               current_time(get_option('date_format')))) . "\n\n";
+
+    foreach ($renewed_invoices as $invoice) {
+      $org_name = !empty($invoice['organization_id']) ? get_the_title($invoice['organization_id']) : __('No organization', 'pn-customers-manager');
+      $invoice_url = admin_url('post.php?post=' . $invoice['new_id'] . '&action=edit');
+
+      $message .= sprintf("- %s → %s (%s)\n   %s: %s\n   %s\n\n",
+        $invoice['original_number'],
+        $invoice['new_number'],
+        $org_name,
+        __('Status', 'pn-customers-manager'),
+        __('Draft (pending review)', 'pn-customers-manager'),
+        $invoice_url
+      );
+    }
+
+    $message .= "\n" . sprintf(__('Total invoices generated: %d', 'pn-customers-manager'), count($renewed_invoices)) . "\n\n";
+    $message .= sprintf(__('You can review and modify these invoices in the WordPress admin panel before sending them to clients.', 'pn-customers-manager')) . "\n\n";
+    $message .= __('This is an automated message from the PN Customers Manager plugin.', 'pn-customers-manager');
+
+    // Try to use MAILPN if available, otherwise use wp_mail
+    if (class_exists('MAILPN') && method_exists('MAILPN', 'send')) {
+      MAILPN::send($admin_email, $subject, $message);
+    } else {
+      wp_mail($admin_email, $subject, $message);
+    }
   }
 }

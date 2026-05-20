@@ -678,14 +678,20 @@ trait PN_CM_AI_Chat_Common {
 
     // 10. Mandatory style rules
     $parts[] = "MANDATORY STYLE RULES (override everything above):\n"
-      . "- NO DUPLICATE GREETINGS: If you have already sent a message in this conversation (check the history), do NOT greet the customer again.\n"
-      . "  • When responding to customer questions, NEVER start with: \"Hola\", \"Bienvenido\", \"Welcome\", \"¿En qué puedo ayudarte?\", \"¿Cómo puedo ayudarte?\", \"How can I help?\", \"¿En qué te puedo ayudar?\".\n"
-      . "  • Simply answer their question directly without any greeting prefix.\n"
+      . "- NO DUPLICATE GREETINGS: The customer has already received a welcome message at the start of this conversation. NEVER greet them again.\n"
+      . "  • STRICTLY FORBIDDEN: Do NOT start responses with \"Hola\", \"Buenos días\", \"Buenas tardes\", \"Buenas noches\", \"Bienvenido\", \"Welcome\", \"Hi\", \"Hello\", \"Hey\", or ANY greeting phrase.\n"
+      . "  • STRICTLY FORBIDDEN: Do NOT use phrases like \"¿En qué puedo ayudarte?\", \"¿Cómo puedo ayudarte?\", \"How can I help?\", \"¿En qué te puedo ayudar?\" at the start or end of your messages.\n"
+      . "  • Simply answer their question DIRECTLY. Start with the actual information they need.\n"
       . "  • EXAMPLES:\n"
       . "    Customer: \"quiero un ramo\"\n"
       . "    ❌ WRONG: \"¡Hola! Claro, ¿qué tipo de ramo buscas?\"\n"
+      . "    ❌ WRONG: \"¡Buenos días! ¿En qué puedo ayudarte?\"\n"
       . "    ✓ CORRECT: \"Claro, ¿qué tipo de ramo buscas?\"\n"
-      . "  • IMPORTANT: If the customer asks a real question (not just a greeting), ANSWER IT. Only skip responding if they ONLY said a simple greeting like \"hola\" with nothing else.\n"
+      . "    \n"
+      . "    Customer: \"Quiero pedir algo\"\n"
+      . "    ❌ WRONG: \"¡Buenos días! ¿En qué puedo ayudarte hoy?\"\n"
+      . "    ✓ CORRECT: \"Perfecto. ¿Qué te gustaría pedir?\"\n"
+      . "  • This rule applies to EVERY message after the welcome message, no exceptions.\n"
       . "- NEVER end your messages with filler phrases. Forbidden examples: "
       . "\"¡Estoy aquí para ayudarte!\", \"No dudes en preguntar\", "
       . "\"Si necesitas más información\", \"Si tienes alguna otra pregunta\", "
@@ -1822,6 +1828,13 @@ trait PN_CM_AI_Chat_Common {
       ];
     }
 
+    // Apply memory limit if configured
+    $memory_limit = (int) get_option('pn_customers_manager_whatsapp_memory_limit', 0);
+    if ($memory_limit > 0 && count($messages) > $memory_limit) {
+      $messages = array_slice($messages, -$memory_limit);
+      self::log('build_openai_messages_with_gap_markers — applied memory limit: keeping last ' . $memory_limit . ' messages');
+    }
+
     $gap_threshold = 3600; // 1 hour in seconds
     $prev_timestamp = null;
 
@@ -2155,6 +2168,88 @@ trait PN_CM_AI_Chat_Common {
     return $text;
   }
 
+  /**
+   * Remove duplicate greeting phrases from AI responses when there are
+   * already messages in the conversation history.
+   */
+  private static function remove_duplicate_greetings($text, $messages) {
+    // Only apply this filter if there's already at least one assistant message in history
+    $has_assistant_message = false;
+    foreach ($messages as $msg) {
+      if (($msg['role'] ?? '') === 'assistant') {
+        $has_assistant_message = true;
+        break;
+      }
+    }
+
+    if (!$has_assistant_message) {
+      return $text;
+    }
+
+    // List of greeting patterns to remove from the start of the response
+    $greeting_patterns = [
+      '/^¡?Hola!?\s*/iu',
+      '/^¡?Buenos días!?\s*/iu',
+      '/^¡?Buenas tardes!?\s*/iu',
+      '/^¡?Buenas noches!?\s*/iu',
+      '/^¡?Buenas!?\s*/iu',
+      '/^¡?Hi!?\s*/iu',
+      '/^¡?Hello!?\s*/iu',
+      '/^¡?Hey!?\s*/iu',
+      '/^¡?Bienvenido\/a!?\s*/iu',
+      '/^¡?Welcome!?\s*/iu',
+    ];
+
+    // Also remove standalone "how can I help" phrases that appear after greetings are stripped
+    $help_patterns = [
+      '/^¿En qué puedo ayudarte\??\s*/iu',
+      '/^¿Cómo puedo ayudarte\??\s*/iu',
+      '/^¿En qué te puedo ayudar\??\s*/iu',
+      '/^¿Cómo te puedo ayudar\??\s*/iu',
+      '/^How can I help\??\s*/iu',
+      '/^How may I help\??\s*/iu',
+      '/^¿En qué puedo ayudarte hoy\??\s*/iu',
+    ];
+
+    $original = $text;
+
+    // Remove greeting patterns (may need multiple passes if there are multiple greetings)
+    $max_iterations = 3;
+    $iteration = 0;
+    do {
+      $changed = false;
+      foreach ($greeting_patterns as $pattern) {
+        $new_text = preg_replace($pattern, '', $text);
+        if ($new_text !== $text) {
+          $text = $new_text;
+          $changed = true;
+        }
+      }
+      foreach ($help_patterns as $pattern) {
+        $new_text = preg_replace($pattern, '', $text);
+        if ($new_text !== $text) {
+          $text = $new_text;
+          $changed = true;
+        }
+      }
+      $iteration++;
+    } while ($changed && $iteration < $max_iterations);
+
+    $text = trim($text);
+
+    if ($text !== $original) {
+      self::log('remove_duplicate_greetings — stripped greeting. Original: "' . mb_substr($original, 0, 100) . '" → New: "' . mb_substr($text, 0, 100) . '"');
+    }
+
+    // Safety: if we stripped everything, return the original
+    if (empty($text)) {
+      self::log('remove_duplicate_greetings — WARNING: all text was stripped, returning original');
+      return $original;
+    }
+
+    return $text;
+  }
+
   private static function enforce_postal_code_rule($text, $messages, $require_postal, $conversation = null) {
     self::log('enforce_postal_code_rule — called, require_postal=' . ($require_postal ? 'YES' : 'NO'));
 
@@ -2199,6 +2294,25 @@ trait PN_CM_AI_Chat_Common {
       return $text;
     }
     self::log('enforce_postal_code_rule — shipping keyword matched: "' . $kw_match[0] . '"');
+
+    // NEW: Check if the customer actually asked about shipping.
+    // Only enforce postal code if the customer explicitly mentioned shipping in recent messages.
+    // This prevents the bot from being too pushy when shipping is mentioned tangentially.
+    $user_asked_about_shipping = false;
+    $user_shipping_keywords = '/(env[ií](?:o|ar|áis|ais)|entreg(?:a|ar|áis|ais)|reparto|mandar|shipping|delivery|deliver|send)/iu';
+    $recent_user_messages = array_slice($messages, -5); // Check last 5 messages
+    foreach ($recent_user_messages as $msg) {
+      if (($msg['role'] ?? '') === 'user' && preg_match($user_shipping_keywords, $msg['content'] ?? '')) {
+        $user_asked_about_shipping = true;
+        self::log('enforce_postal_code_rule — user asked about shipping: "' . mb_substr($msg['content'], 0, 100) . '"');
+        break;
+      }
+    }
+
+    if (!$user_asked_about_shipping) {
+      self::log('enforce_postal_code_rule — user did NOT ask about shipping, skipping postal code enforcement');
+      return $text;
+    }
 
     // Check recent user messages for a postal code (Spanish: 5 digits starting with 0-5)
     // Walk backwards — detect stale CPs from new shipping inquiries
@@ -2255,7 +2369,18 @@ trait PN_CM_AI_Chat_Common {
       }
     }
 
-    return $safe_prefix . 'Para confirmar que podemos realizar el envío a tu zona, ¿podrías facilitarme tu código postal?';
+    // Use varied postal code questions for a more natural conversation
+    $postal_code_questions = [
+      'Para confirmar que podemos realizar el envío a tu zona, ¿podrías facilitarme tu código postal?',
+      '¿Me podrías indicar tu código postal para verificar la disponibilidad de envío?',
+      'Para asegurarme de que llegamos a tu zona, ¿cuál es tu código postal?',
+      '¿Podrías darme tu código postal? Así confirmo que realizamos entregas en tu área.',
+      'Necesito tu código postal para comprobar que podemos enviarte el pedido.',
+      'Para verificar el servicio de envío a tu zona, ¿me facilitas tu código postal?',
+    ];
+
+    $random_question = $postal_code_questions[array_rand($postal_code_questions)];
+    return $safe_prefix . $random_question;
   }
 
   private static function validate_response_urls($text) {

@@ -91,6 +91,10 @@ class PN_CUSTOMERS_MANAGER_Common
 			wp_enqueue_style($this->plugin_name . '-email-campaigns', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-email-campaigns.css', [], $this->version, 'all');
 		}
 
+		if (!wp_style_is($this->plugin_name . '-marketing', 'enqueued')) {
+			wp_enqueue_style($this->plugin_name . '-marketing', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-marketing.css', [], $this->version, 'all');
+		}
+
 		wp_enqueue_style($this->plugin_name, PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager.css', [], $this->version, 'all');
 
 		// Enqueue dynamic CSS for color customization

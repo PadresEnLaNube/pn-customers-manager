@@ -2646,3 +2646,60 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   vertical-align: middle;
 }
 /* END BUTTON SHORTCODE */
+
+/* Flexbox utility classes */
+.pn-customers-manager-flex-1 {
+  flex: 1;
+}
+
+.pn-customers-manager-gap-10 {
+  gap: 10px;
+}
+
+.pn-customers-manager-align-items-center {
+  align-items: center;
+}
+
+/* Page Manager Styles */
+.pn-customers-manager-page-manager-info {
+  padding: 10px 0;
+}
+
+.pn-customers-manager-page-manager-status {
+  min-width: 0;
+}
+
+.pn-customers-manager-page-manager-status strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pn-customers-manager-page-manager-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #e8e8e8;
+  border-radius: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pn-customers-manager-page-manager-actions {
+  flex-shrink: 0;
+}
+
+.pn-customers-manager-page-manager-actions .pn-customers-manager-btn {
+  margin: 0;
+  border: none;
+  padding: 5px;
+}
+
+.pn-customers-manager-page-manager-create-form {
+  width: 100%;
+}
+
+.pn-customers-manager-page-manager-create-form .pn-customers-manager-btn {
+  margin-top: 0;
+}

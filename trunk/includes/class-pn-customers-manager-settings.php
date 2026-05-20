@@ -27,6 +27,16 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'block'     => null,
       'label'     => 'Invoices',
     ],
+    'pn_customers_manager_marketing_offer_page' => [
+      'shortcode' => 'pn-customers-manager-genuine-offer',
+      'block'     => 'pn-customers-manager/genuine-offer',
+      'label'     => 'Business Offer',
+    ],
+    'pn_customers_manager_marketing_sales_presentation_page' => [
+      'shortcode' => 'pn-customers-manager-sales-presentation',
+      'block'     => 'pn-customers-manager/sales-presentation',
+      'label'     => 'Sales Presentation',
+    ],
   ];
 
   public static function pn_customers_manager_get_managed_pages() {
@@ -43,6 +53,19 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'label' => __('Pages', 'pn-customers-manager'),
       'description' => __('Page assignments for the CRM.', 'pn-customers-manager'),
     ];
+
+    // Page manager alerts (only show missing pages in this section)
+    ob_start();
+    PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages());
+    $page_alerts_html = ob_get_clean();
+
+    if (!empty($page_alerts_html)) {
+      $pn_customers_manager_options['pn_customers_manager_page_alerts'] = [
+        'id' => 'pn_customers_manager_page_alerts',
+        'input' => 'html',
+        'html_content' => $page_alerts_html,
+      ];
+    }
 
     $pn_customers_manager_options['pn_customers_manager_commercial_crm_page'] = [
       'id' => 'pn_customers_manager_commercial_crm_page',
@@ -67,6 +90,24 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'label' => __('Invoices', 'pn-customers-manager'),
       'shortcode' => 'pn-customers-manager-invoice-list',
       'page_option' => 'pn_customers_manager_page_invoice_list',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_marketing_offer_page'] = [
+      'id' => 'pn_customers_manager_marketing_offer_page',
+      'input' => 'page_manager',
+      'label' => __('Business Offer Page', 'pn-customers-manager'),
+      'description' => __('Page displaying your business offer based on the configured data.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-genuine-offer',
+      'page_option' => 'pn_customers_manager_marketing_offer_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_marketing_sales_presentation_page'] = [
+      'id' => 'pn_customers_manager_marketing_sales_presentation_page',
+      'input' => 'page_manager',
+      'label' => __('Sales Presentation Page', 'pn-customers-manager'),
+      'description' => __('Page displaying your sales presentation based on the configured data.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-sales-presentation',
+      'page_option' => 'pn_customers_manager_marketing_sales_presentation_page',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_commercial_section_end'] = [
@@ -105,6 +146,10 @@ class PN_CUSTOMERS_MANAGER_Settings {
     // Email Campaigns section
     $email_campaigns_options = PN_CUSTOMERS_MANAGER_Email_Campaigns::get_settings_section();
     $pn_customers_manager_options = array_merge($pn_customers_manager_options, $email_campaigns_options);
+
+    // Marketing section
+    $marketing_options = PN_CUSTOMERS_MANAGER_Marketing::get_settings_section();
+    $pn_customers_manager_options = array_merge($pn_customers_manager_options, $marketing_options);
 
     // Referral section
     $pn_customers_manager_options['pn_customers_manager_referral_section_start'] = [
@@ -499,6 +544,17 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'value' => '0.7',
       'label' => __('Default temperature', 'pn-customers-manager'),
       'description' => __('Controls the creativity of AI responses. <strong>0</strong> = deterministic and precise. <strong>1</strong> = balanced (recommended). <strong>2</strong> = very creative and varied. Default: <code>0.7</code>.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_whatsapp_memory_limit'] = [
+      'id' => 'pn_customers_manager_whatsapp_memory_limit',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '0',
+      'label' => __('Conversation memory limit', 'pn-customers-manager'),
+      'description' => __('Maximum number of recent messages to send to the AI model as context. <strong>0</strong> = unlimited (sends all conversation history). <strong>20-50</strong> = recommended for balancing context and cost. Higher values = more context but higher API costs. Default: <code>0</code> (unlimited).', 'pn-customers-manager'),
+      'placeholder' => '0',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_openai_test'] = [
@@ -1004,6 +1060,87 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
+    // WooCommerce section (only visible if WooCommerce is active)
+    if (class_exists('WooCommerce')) {
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_section_start'] = [
+        'id' => 'pn_customers_manager_woocommerce_section_start',
+        'section' => 'start',
+        'label' => __('WooCommerce Integration', 'pn-customers-manager'),
+        'description' => __('Configure WooCommerce features including Calendar Booking Products calendar system for managing campament reservations with capacity control and member pricing.', 'pn-customers-manager'),
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'value' => 'on',
+        'label' => __('Enable WooCommerce Calendar Booking Products', 'pn-customers-manager'),
+        'description' => __('Enables the Calendar Booking Products system with interactive calendar, capacity management, and member pricing for WooCommerce products.', 'pn-customers-manager'),
+      ];
+
+      // QR Tickets
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_qr_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_qr_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'value' => 'on',
+        'label' => __('Enable QR Tickets', 'pn-customers-manager'),
+        'description' => __('Allows products to generate unique QR codes as tickets for physical delivery validation. Administrators can scan QR codes to mark orders as processed.', 'pn-customers-manager'),
+      ];
+
+      // Accounting Summary
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_accounting_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'parent' => 'this',
+        'label' => __('Enable Monthly Accounting Summary', 'pn-customers-manager'),
+        'description' => __('Sends an automated monthly accounting summary email with revenue, orders, and product statistics on the 1st of each month.', 'pn-customers-manager'),
+      ];
+
+      // Get all users for multi-select
+      $all_users = get_users(['orderby' => 'display_name', 'order' => 'ASC']);
+      $selected_recipients = get_option('pn_customers_manager_woocommerce_accounting_recipients', []);
+      if (!is_array($selected_recipients)) $selected_recipients = [];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_recipients'] = [
+        'id' => 'pn_customers_manager_woocommerce_accounting_recipients',
+        'input' => 'html',
+        'label' => __('Email Recipients', 'pn-customers-manager'),
+        'description' => __('Select users who will receive the monthly accounting summary email. Hold Ctrl/Cmd to select multiple.', 'pn-customers-manager'),
+        'parent' => 'pn_customers_manager_woocommerce_accounting_enabled',
+        'parent_option' => 'on',
+        'html_content' => '<select name="pn_customers_manager_woocommerce_accounting_recipients[]" multiple style="width:100%;min-height:150px;" class="pn-customers-manager-select">' .
+          implode('', array_map(function($user) use ($selected_recipients) {
+            $selected = in_array($user->ID, $selected_recipients) ? 'selected' : '';
+            $display = $user->display_name . ' (' . $user->user_email . ')';
+            return '<option value="' . esc_attr($user->ID) . '" ' . $selected . '>' . esc_html($display) . '</option>';
+          }, $all_users)) .
+          '</select>',
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_test'] = [
+        'id' => 'pn_customers_manager_woocommerce_accounting_test',
+        'input' => 'html',
+        'label' => __('Test Summary Email', 'pn-customers-manager'),
+        'description' => __('Send a test accounting summary to yourself for the last month. Make sure to save settings first.', 'pn-customers-manager'),
+        'parent' => 'pn_customers_manager_woocommerce_accounting_enabled',
+        'parent_option' => 'on',
+        'html_content' => '<button type="button" id="pn-cm-accounting-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent">
+            ' . __('Send Test Email', 'pn-customers-manager') . '
+          </button>
+          <div id="pn-cm-accounting-test-result" style="margin-top: 10px;"></div>',
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_section_end'] = [
+        'id' => 'pn_customers_manager_woocommerce_section_end',
+        'section' => 'end',
+      ];
+    }
+
     $pn_customers_manager_options['pn_customers_manager_nonce'] = [
       'id' => 'pn_customers_manager_nonce',
       'input' => 'input',
@@ -1189,7 +1326,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
 	    <div class="pn-customers-manager-options pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mt-50 pn-customers-manager-mb-50">
         <img src="<?php echo esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/banner-1544x500.png'); ?>" alt="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" title="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" class="pn-customers-manager-width-100-percent pn-customers-manager-border-radius-20 pn-customers-manager-mb-30">
         <h1 class="pn-customers-manager-mb-30"><?php esc_html_e('PN Customers Manager Settings', 'pn-customers-manager'); ?></h1>
-        <?php PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages()); ?>
+        <?php // Page alerts are now shown only in the Pages section ?>
         <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30 pn-customers-manager-settings-pb-80">
           <form action="" method="post" id="pn-customers-manager-form-setting" class="pn-customers-manager-form pn-customers-manager-p-30">
           <?php

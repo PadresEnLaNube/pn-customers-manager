@@ -13,7 +13,7 @@
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
  * Description:       Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
- * Version:           1.1.55
+ * Version:           1.1.105
  * Requires at least: 3.0
  * Requires PHP:      7.2
  * Author:            Padres en la Nube
@@ -34,7 +34,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.1.55');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.1.105');
 define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.7');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
@@ -94,10 +94,12 @@ $pn_customers_manager_kses = [
 	'div' => [
 		'id' => [],
 		'class' => [],
+		'style' => [],
 		'data-pn-customers-manager-popup-disable-esc' => [],
 		'data-pn-customers-manager-popup-disable-overlay-close' => [],
 		'data-pn_cm_organization_alt-id' => [],
 		'data-pn_cm_budget-id' => [],
+		'data-product-id' => [],
 	],
 	'section' => ['id' => [], 'class' => []],
 	'article' => ['id' => [], 'class' => []],
@@ -106,20 +108,20 @@ $pn_customers_manager_kses = [
 	'header' => ['id' => [], 'class' => []],
 	'main' => ['id' => [], 'class' => []],
 	'nav' => ['id' => [], 'class' => []],
-	'p' => ['id' => [], 'class' => []],
-	'span' => ['id' => [], 'class' => []],
-	'small' => ['id' => [], 'class' => []],
+	'p' => ['id' => [], 'class' => [], 'style' => []],
+	'span' => ['id' => [], 'class' => [], 'style' => []],
+	'small' => ['id' => [], 'class' => [], 'style' => []],
 	'em' => [],
 	'strong' => [],
 	'br' => [],
 
 	// Headings
-	'h1' => ['id' => [], 'class' => []],
-	'h2' => ['id' => [], 'class' => []],
-	'h3' => ['id' => [], 'class' => []],
-	'h4' => ['id' => [], 'class' => []],
-	'h5' => ['id' => [], 'class' => []],
-	'h6' => ['id' => [], 'class' => []],
+	'h1' => ['id' => [], 'class' => [], 'style' => []],
+	'h2' => ['id' => [], 'class' => [], 'style' => []],
+	'h3' => ['id' => [], 'class' => [], 'style' => []],
+	'h4' => ['id' => [], 'class' => [], 'style' => []],
+	'h5' => ['id' => [], 'class' => [], 'style' => []],
+	'h6' => ['id' => [], 'class' => [], 'style' => []],
 
 	// Lists
 	'ul' => ['id' => [], 'class' => []],
@@ -149,6 +151,16 @@ $pn_customers_manager_kses = [
 		'src' => [],
 		'alt' => [],
 		'title' => [],
+	],
+	'video' => [
+		'id' => [],
+		'class' => [],
+		'style' => [],
+		'width' => [],
+		'height' => [],
+		'autoplay' => [],
+		'playsinline' => [],
+		'muted' => [],
 	],
 	'i' => [
 		'id' => [],
@@ -225,6 +237,16 @@ $pn_customers_manager_kses = [
 		'class' => [],
 		'for' => [],
 	],
+	'button' => [
+		'name' => [],
+		'id' => [],
+		'class' => [],
+		'type' => [],
+		'value' => [],
+		'disabled' => [],
+		'data-pn-customers-manager-ajax-type' => [],
+		'data-page-id' => [],
+	],
 
 	// Table elements
 	'table' => ['id' => [], 'class' => []],
@@ -269,6 +291,11 @@ function pn_customers_manager_activation_hook()
 
 	// Schedule projections snapshot cron
 	pn_customers_manager_reschedule_projections_cron();
+
+	// Schedule recurring invoices cron
+	if (!wp_next_scheduled('pn_cm_recurring_invoices_cron')) {
+		wp_schedule_event(time(), 'daily', 'pn_cm_recurring_invoices_cron');
+	}
 }
 
 /**
@@ -303,6 +330,7 @@ function pn_customers_manager_deactivation_cleanup()
 	delete_option('pn_customers_manager_redirecting');
 	wp_clear_scheduled_hook('pn_cm_referral_reminders_cron');
 	wp_clear_scheduled_hook('pn_cm_projections_snapshot_cron');
+	wp_clear_scheduled_hook('pn_cm_recurring_invoices_cron');
 }
 register_deactivation_hook(__FILE__, 'pn_customers_manager_deactivation_cleanup');
 

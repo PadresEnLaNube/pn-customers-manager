@@ -642,23 +642,23 @@ class PN_CUSTOMERS_MANAGER_Forms {
         ?>
         <div class="pn-customers-manager-page-manager-wrapper" data-page-option="<?php echo esc_attr($page_option); ?>" data-shortcode="<?php echo esc_attr($shortcode_name); ?>">
           <?php if ($page_exists): ?>
-            <div class="pn-customers-manager-page-manager-info">
-              <div class="pn-customers-manager-page-manager-status pn-customers-manager-mb-10">
-                <i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-color-green">check</i>
-                <strong><?php echo esc_html($page->post_title); ?></strong>
-                <span class="pn-customers-manager-page-manager-badge pn-customers-manager-ml-10"><?php echo esc_html(ucfirst($page->post_status)); ?></span>
+            <div class="pn-customers-manager-page-manager-info pn-customers-manager-display-flex pn-customers-manager-align-items-center">
+              <div class="pn-customers-manager-page-manager-status pn-customers-manager-display-flex pn-customers-manager-align-items-center pn-customers-manager-flex-1">
+                <i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-color-green pn-customers-manager-mr-10">check</i>
+                <strong class="pn-customers-manager-mr-10"><?php echo esc_html($page->post_title); ?></strong>
+                <span class="pn-customers-manager-page-manager-badge"><?php echo esc_html(ucfirst($page->post_status)); ?></span>
               </div>
-              <div class="pn-customers-manager-page-manager-actions">
-                <a href="<?php echo esc_url(get_permalink($page_id)); ?>" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-mr-20"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">visibility</i> <?php esc_html_e('View', 'pn-customers-manager'); ?></a>
-                <a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-mr-20"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">edit</i> <?php esc_html_e('Edit', 'pn-customers-manager'); ?></a>
-                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-page-manager-unlink-btn"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">link_off</i> <?php esc_html_e('Unlink', 'pn-customers-manager'); ?></button>
+              <div class="pn-customers-manager-page-manager-actions pn-customers-manager-display-flex pn-customers-manager-gap-10">
+                <a href="<?php echo esc_url(get_permalink($page_id)); ?>" target="_blank" class="pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('View page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">visibility</i></a>
+                <a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" target="_blank" class="pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('Edit page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">edit</i></a>
+                <a href="#" class="pn-customers-manager-page-manager-unlink-btn pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('Unlink page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">link_off</i></a>
               </div>
             </div>
           <?php else: ?>
             <div class="pn-customers-manager-page-manager-create">
-              <div class="pn-customers-manager-page-manager-create-form">
-                <input type="text" class="pn-customers-manager-input pn-customers-manager-page-manager-title-input pn-customers-manager-width-100-percent pn-customers-manager-mb-10" placeholder="<?php esc_attr_e('Page title', 'pn-customers-manager'); ?>" value="<?php echo esc_attr(isset($pn_customers_manager_input['label']) ? $pn_customers_manager_input['label'] : ''); ?>">
-                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-customers-manager-page-manager-create-btn"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">add_circle</i> <?php esc_html_e('Create page', 'pn-customers-manager'); ?></button>
+              <div class="pn-customers-manager-page-manager-create-form pn-customers-manager-display-flex pn-customers-manager-gap-10">
+                <input type="text" class="pn-customers-manager-input pn-customers-manager-page-manager-title-input pn-customers-manager-flex-1" placeholder="<?php esc_attr_e('Page title', 'pn-customers-manager'); ?>" value="<?php echo esc_attr(isset($pn_customers_manager_input['label']) ? $pn_customers_manager_input['label'] : ''); ?>">
+                <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-transparent pn-customers-manager-page-manager-create-btn"><?php esc_html_e('Create page', 'pn-customers-manager'); ?></button>
               </div>
             </div>
           <?php endif; ?>

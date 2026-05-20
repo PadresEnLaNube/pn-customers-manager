@@ -52,7 +52,7 @@ class PN_CUSTOMERS_MANAGER {
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.1.55';
+			$this->pn_customers_manager_version = '1.1.105';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -75,11 +75,15 @@ class PN_CUSTOMERS_MANAGER {
 		self::pn_customers_manager_define_referral_hooks();
 		self::pn_customers_manager_define_commercial_hooks();
 		self::pn_customers_manager_define_email_campaigns_hooks();
+		self::pn_customers_manager_define_marketing_hooks();
+		self::pn_customers_manager_define_offer_page_generator_hooks();
 		self::pn_customers_manager_define_csv_import_hooks();
 		self::pn_customers_manager_define_budget_csv_hooks();
 		self::pn_customers_manager_define_whatsapp_ai_hooks();
 		self::pn_customers_manager_define_instagram_ai_hooks();
 		self::pn_customers_manager_define_projections_hooks();
+		self::pn_customers_manager_define_recurring_invoices_hooks();
+		self::pn_customers_manager_define_woocommerce_hooks();
 	}
 			
 	/**
@@ -178,6 +182,12 @@ class PN_CUSTOMERS_MANAGER {
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-functions-attachment.php';
 
 		/**
+		 * The class managing marketing offers and AI-powered page generation.
+		 * Must be loaded before Settings because Settings uses Marketing::get_settings_section()
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-marketing.php';
+
+		/**
 		 * The class defining settings.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-settings.php';
@@ -264,9 +274,19 @@ class PN_CUSTOMERS_MANAGER {
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-funnel-builder.php';
 
 		/**
-		 * Shared AI chat trait (must be loaded before WhatsApp/Instagram classes).
+		 * Shared AI chat trait (must be loaded before WhatsApp/Instagram/Offer Generator classes).
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/trait-pn-customers-manager-ai-chat-common.php';
+
+		/**
+		 * The class providing AI-powered offer page generation.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-ai-offer-generator.php';
+
+		/**
+		 * The class providing AI-powered offer page generation with marketing data.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-offer-page-generator.php';
 
 		/**
 		 * The class providing WhatsApp AI integration.
@@ -302,6 +322,11 @@ class PN_CUSTOMERS_MANAGER {
 		 * One-time migration: budget items from custom table to post meta.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-migration.php';
+
+		/**
+		 * The class managing WooCommerce integration.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce.php';
 
 		$this->pn_customers_manager_loader = new PN_CUSTOMERS_MANAGER_Loader();
 	}
@@ -703,6 +728,97 @@ class PN_CUSTOMERS_MANAGER {
 	}
 
 	/**
+	 * Register hooks for marketing offers and AI-powered page generation.
+	 */
+	private function pn_customers_manager_define_marketing_hooks() {
+		// Shortcodes for static pages
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode(
+			'pn-customers-manager-genuine-offer',
+			'PN_CUSTOMERS_MANAGER_Marketing',
+			'render_genuine_offer_shortcode'
+		);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode(
+			'pn-customers-manager-sales-presentation',
+			'PN_CUSTOMERS_MANAGER_Marketing',
+			'render_sales_presentation_shortcode'
+		);
+
+		// Gutenberg blocks
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'init',
+			'PN_CUSTOMERS_MANAGER_Marketing',
+			'register_blocks'
+		);
+
+		// AI Offer Generator shortcode and AJAX
+		$plugin_ai_offer_gen = new PN_CUSTOMERS_MANAGER_AI_Offer_Generator();
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode(
+			'pn-customers-manager-ai-offer-generator',
+			$plugin_ai_offer_gen,
+			'render_generator_form'
+		);
+
+		// AJAX handler for generating offers
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'wp_ajax_pn_cm_generate_offer',
+			$plugin_ai_offer_gen,
+			'handle_generate_offer_ajax'
+		);
+
+		// Enqueue assets for offer generator
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'wp_enqueue_scripts',
+			'PN_CUSTOMERS_MANAGER_AI_Offer_Generator',
+			'enqueue_assets'
+		);
+
+		// Add noindex to marketing pages
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter(
+			'wp_robots',
+			'PN_CUSTOMERS_MANAGER_Marketing',
+			'add_noindex_to_marketing_pages'
+		);
+
+		// Frontend AJAX handlers for offer data editing
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'wp_ajax_pn_cm_frontend_save_offer_data',
+			'PN_CUSTOMERS_MANAGER_Marketing',
+			'handle_frontend_save_offer_data'
+		);
+
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'wp_ajax_pn_cm_frontend_delete_offer_page',
+			'PN_CUSTOMERS_MANAGER_Marketing',
+			'handle_frontend_delete_offer_page'
+		);
+	}
+
+	/**
+	 * Register hooks for Offer Page Generator.
+	 */
+	private function pn_customers_manager_define_offer_page_generator_hooks() {
+		// Register admin menu pages
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'admin_menu',
+			'PN_CUSTOMERS_MANAGER_Offer_Page_Generator',
+			'register_admin_pages'
+		);
+
+		// AJAX handlers
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'wp_ajax_pn_cm_generate_offer_page',
+			'PN_CUSTOMERS_MANAGER_Offer_Page_Generator',
+			'handle_generate_offer_page'
+		);
+
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
+			'wp_ajax_pn_cm_delete_offer_page',
+			'PN_CUSTOMERS_MANAGER_Offer_Page_Generator',
+			'handle_delete_offer_page'
+		);
+	}
+
+	/**
 	 * Register hooks for CSV import on Organizations.
 	 */
 	private function pn_customers_manager_define_csv_import_hooks() {
@@ -743,6 +859,26 @@ class PN_CUSTOMERS_MANAGER {
 	 */
 	private function pn_customers_manager_define_projections_hooks() {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_projections_snapshot_cron', 'PN_CUSTOMERS_MANAGER_Projections', 'collect_snapshot');
+	}
+
+	/**
+	 * Register hooks for recurring invoices.
+	 */
+	private function pn_customers_manager_define_recurring_invoices_hooks() {
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_recurring_invoices_cron', 'PN_CUSTOMERS_MANAGER_Post_Type_Invoice', 'process_recurring_invoices');
+	}
+
+	/**
+	 * Register WooCommerce integration hooks.
+	 *
+	 * @since    1.1.75
+	 * @access   private
+	 */
+	private function pn_customers_manager_define_woocommerce_hooks() {
+		// Only initialize if WooCommerce is active
+		if (class_exists('WooCommerce')) {
+			PN_CUSTOMERS_MANAGER_WooCommerce::instance();
+		}
 	}
 
 	/**

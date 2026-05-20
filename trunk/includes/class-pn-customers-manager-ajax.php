@@ -1893,6 +1893,57 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           }
           wp_send_json(['error_key' => 'pn_cm_invoice_send_error']);
           break;
+        case 'migrate_calendar_booking':
+          if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('You do not have permission to run migrations.', 'pn-customers-manager')]);
+            exit;
+          }
+          require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce-migration.php';
+          $result = PN_CUSTOMERS_MANAGER_WooCommerce_Migration::migrate_calendar_booking_data();
+          wp_send_json_success($result);
+          break;
+        case 'test_accounting_email':
+          if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('You do not have permission to test emails.', 'pn-customers-manager')]);
+            exit;
+          }
+          require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce-accounting.php';
+          $result = PN_CUSTOMERS_MANAGER_WooCommerce_Accounting::instance()->test_send();
+          if ($result['success']) {
+            wp_send_json_success($result);
+          } else {
+            wp_send_json_error($result);
+          }
+          break;
+        case 'pn_cm_woo_qr_view':
+          if (!current_user_can('manage_woocommerce')) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_woo_qr_view_error',
+              'error_content' => esc_html(__('You do not have permission to view QR codes.', 'pn-customers-manager')),
+            ]);
+            exit;
+          }
+          $qr_code = !empty($_POST['qr_code']) ? sanitize_text_field(wp_unslash($_POST['qr_code'])) : '';
+          if (empty($qr_code)) {
+            echo wp_json_encode([
+              'error_key' => 'pn_cm_woo_qr_view_error',
+              'error_content' => esc_html(__('QR code is required.', 'pn-customers-manager')),
+            ]);
+            exit;
+          }
+          require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce-qr.php';
+          $qr_instance = PN_CUSTOMERS_MANAGER_WooCommerce_QR::instance();
+          // Use reflection to call private method
+          $reflection = new ReflectionClass($qr_instance);
+          $method = $reflection->getMethod('qr_view');
+          $method->setAccessible(true);
+          $html = $method->invoke($qr_instance, $qr_code);
+          echo wp_json_encode([
+            'error_key' => '',
+            'html' => $html,
+          ]);
+          exit;
+          break;
       }
 
       echo wp_json_encode([

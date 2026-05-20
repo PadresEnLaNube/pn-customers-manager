@@ -294,6 +294,18 @@
         pn_cm_budget_id = pn_customers_manager_btn.closest('[data-pn_cm_budget-id]').attr('data-pn_cm_budget-id') || '';
       }
 
+      // Get invoice ID
+      var pn_cm_invoice_id = pn_customers_manager_btn.attr('data-pn_cm_invoice-id') || '';
+      if (!pn_cm_invoice_id) {
+        pn_cm_invoice_id = pn_customers_manager_btn.closest('[data-pn_cm_invoice-id]').attr('data-pn_cm_invoice-id') || '';
+      }
+
+      // Get QR code
+      var qr_code = pn_customers_manager_btn.attr('data-qr-code') || '';
+      if (!qr_code) {
+        qr_code = pn_customers_manager_btn.closest('[data-qr-code]').attr('data-qr-code') || '';
+      }
+
       // Debug log (can be removed later)
       if (pn_customers_manager_ajax_type === 'pn_cm_organization_edit' && !pn_cm_organization_id) {
         console.warn('pn-customers-manager AJAX - Organization ID not found for edit action. Button attributes:', {
@@ -304,7 +316,7 @@
         });
       }
       var pn_customers_manager_popup_id = pn_customers_manager_btn.attr('data-pn-customers-manager-popup-id');
-      
+
       if (!pn_customers_manager_popup_id) {
         console.error('pn-customers-manager AJAX - Popup ID not found in data attribute');
         return;
@@ -329,9 +341,9 @@
             pn_cm_funnel_id: pn_cm_funnel_id ? pn_cm_funnel_id : '',
             pn_cm_organization_id: pn_cm_organization_id ? pn_cm_organization_id : '',
             pn_cm_budget_id: pn_cm_budget_id ? pn_cm_budget_id : '',
+            pn_cm_invoice_id: pn_cm_invoice_id ? pn_cm_invoice_id : '',
+            qr_code: qr_code ? qr_code : '',
           };
-
-          // Log the data being sent
 
           $.ajax({
             url: ajax_url,

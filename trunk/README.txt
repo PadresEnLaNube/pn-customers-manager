@@ -4,7 +4,7 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 6.9.1
-Stable tag: 1.1.55
+Stable tag: 1.1.104
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, contact forms, email campaigns, and WooCommerce integration for WordPress.
@@ -38,6 +38,35 @@ Whether you run an online store, a service-based business, an agency, or a membe
 * **Conversation Management Dashboard**: View, search, close, delete, and reset all WhatsApp and Instagram conversations from your admin panel and from the funnel builder. Full chat history with timestamps and role indicators.
 
 * **Debug Logging**: Enable or disable debug logging independently for WhatsApp AI and Instagram AI from the settings page. Logs are saved to `wp-content/uploads/pn-customers-manager-logs/`.
+
+= WooCommerce QR Tickets =
+
+* **QR Code Generation**: Generate unique QR codes for WooCommerce products that can be used as tickets for physical delivery validation, event entry, or item collection.
+
+* **Product Settings**: Enable QR tickets per product with customizable prefix and customer instructions. Settings available in WooCommerce product data tabs.
+
+* **Order Integration**: QR codes are automatically generated when orders are completed and stored as order item metadata.
+
+* **Customer Display**: Customers who purchased products with QR codes enabled can view their QR codes on product pages (when logged in), order confirmation emails, and My Account order details page.
+
+* **Admin Management Panel**: Complete QR tickets management system with:
+  * Interactive table with customer info, products breakdown, and status
+  * Clickable rows - tap anywhere on a row to view full QR details
+  * Real-time filters by product and status (Pending/Processed)
+  * Native popup system for consistent UI experience
+  * Detailed modal view with full QR code image and order information
+  * QR code scanner using device camera with intelligent camera selection
+  * Smart camera detection prioritizes rear camera on mobile devices
+  * Camera switching button when multiple cameras are available
+  * One-click actions to mark as processed, mark as pending, or delete
+  * Confirmation dialogs for all destructive actions
+  * Responsive design with scroll and mobile-optimized layout
+
+* **Shortcode Support**: Use `[pn_qr_manager product_id="123"]` to display the QR management panel on any page (admin only).
+
+* **Status Tracking**: Track QR codes as processed or pending with timestamps, user attribution, and processing history.
+
+* **Mobile Optimized**: Responsive design with stacked filters on mobile, icon-only status badges on tablets, and optimized table layout for small screens.
 
 = Budgets & Invoices =
 
@@ -143,6 +172,7 @@ A powerful form system that supports multiple field types:
 * `[pn-customers-manager-button]` — Customizable buttons (solid/outline/transparent, size, color, icon, image) with Gutenberg block support
 * `[pn-customers-manager-whatsapp-ai]` — WhatsApp conversations front-end panel (admin only)
 * `[pn-customers-manager-instagram-ai]` — Instagram conversations front-end panel (admin only)
+* `[pn_qr_manager]` — QR tickets management panel with built-in camera scanner, clickable table rows, and native popup integration (admin only, optional product_id parameter)
 
 = Settings & Configuration =
 
@@ -273,7 +303,7 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 == Changelog ==
 
-= 1.1.55 =
+= 1.1.104 =
 
 * **Budgets**: Full budget/proposal system with item management, phases, optional items, tax and discount rates, public token-based sharing, customer acceptance workflow, inline editing, PDF generation, and CSV import/export.
 * **Invoices**: Invoice management system with automatic numbering, due dates, payment tracking, status lifecycle (Draft → Sent → Paid/Cancelled), public token-based sharing, inline editing, and PDF generation.
@@ -283,6 +313,12 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 * **Dashboard Conversation Popups**: WhatsApp and Instagram conversation popups in the funnel builder now use the plugin's standard popup system with close, reset, and delete actions.
 * **Debug Log Settings**: Independent settings to enable/disable debug logging for WhatsApp AI and Instagram AI. Logs are saved to `wp-content/uploads/pn-customers-manager-logs/` only when enabled.
 * **CRM Manager Role**: Added CRM Manager user role with access to messages, statistics, projections, conversations, and commercial agents without full admin privileges.
+* **WooCommerce QR Tickets**: Complete QR code ticketing system for WooCommerce products with unique code generation, customizable prefixes, and customer instructions. QR codes are automatically generated on order completion and displayed to customers on product pages (when logged in), in order completion emails, and in My Account order details.
+* **QR Admin Management Panel**: Comprehensive admin panel for QR ticket management with compact table view, product and status filters, click-to-view detailed popup with QR image and order information, and action buttons to process, mark as pending, or delete tickets. Includes real-time status tracking with visual indicators (processed/pending). Entire table rows are clickable for improved usability.
+* **QR Scanner**: Built-in QR code scanner using device camera for quick ticket validation with intelligent camera selection. Automatically prioritizes rear camera on mobile devices and provides camera switching button when multiple cameras are available. Detects already-processed codes and provides confirmation dialogs for all status changes.
+* **QR Popup System**: Both scanner and detail view popups use the plugin's native popup system for consistent UI/UX across all plugin features. Includes proper overlay handling, ESC key support, and callback hooks.
+* **QR Shortcode**: New `[pn_qr_manager]` shortcode to display the QR management panel on any page (admin only). Supports optional `product_id` parameter to filter by specific product. All required scripts and styles are automatically enqueued.
+* **QR Mobile Optimization**: Fully responsive QR interface with stacked filters on mobile, icon-only status badges on tablets and phones, and optimized table layout. Admin panel includes scrollable container with max-height for long ticket lists.
 
 = 1.0.0 =
 

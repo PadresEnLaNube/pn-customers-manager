@@ -46,7 +46,13 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       . "NEVER use Markdown link syntax like [text](url).\n"
       . "CRITICAL: ALWAYS copy URLs exactly as they appear in the product catalog or reference data. "
       . "NEVER correct, fix, modify or rewrite any part of a URL, even if it appears to contain a typo. "
-      . "The URLs are machine-generated and any modification will break them.";
+      . "The URLs are machine-generated and any modification will break them.\n\n"
+      . "RESPONSE STYLE — NATURAL AND COHESIVE COMMUNICATION:\n"
+      . "- When the customer asks multiple questions or brings up several related topics, provide ONE unified, natural response that addresses everything together in a logical flow.\n"
+      . "- DO NOT respond to each point separately with disconnected answers. Instead, weave all information together into a coherent, conversational response.\n"
+      . "- Think of your response as a natural conversation — group related information, provide context, and create smooth transitions between topics.\n"
+      . "- Example: If a customer asks about product features, shipping, and price all at once, integrate all that information in a single well-structured message rather than giving three separate mini-answers.\n"
+      . "- Prioritize clarity and natural flow over rigid point-by-point responses. Your goal is to sound helpful and conversational, not robotic.";
   }
 
   protected static function get_image_rules($include_images) {
@@ -361,6 +367,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     } else {
       // Strip system prompt fragments the model may have leaked
       $ai_response = self::sanitize_system_prompt_leak($ai_response);
+
+      // Remove duplicate greetings if this is not the first message
+      $ai_response = self::remove_duplicate_greetings($ai_response, $messages);
 
       // Enforce postal code rule
       $ai_response = self::enforce_postal_code_rule($ai_response, $messages, $require_postal, $conversation);
