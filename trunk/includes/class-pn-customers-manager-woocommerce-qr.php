@@ -52,6 +52,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		add_action('wp_ajax_pn_cm_woo_qr_delete', [$this, 'ajax_delete_qr']);
 		add_action('wp_ajax_pn_cm_woo_qr_get_orders', [$this, 'ajax_get_orders']);
 		add_action('wp_ajax_pn_cm_woo_qr_view', [$this, 'ajax_qr_view']);
+		add_action('wp_ajax_pn_cm_woo_qr_get_variations', [$this, 'ajax_get_variations']);
+		add_action('wp_ajax_pn_cm_woo_qr_bulk_process', [$this, 'ajax_bulk_process']);
+		add_action('wp_ajax_pn_cm_woo_qr_bulk_pending', [$this, 'ajax_bulk_pending']);
+		add_action('wp_ajax_pn_cm_woo_qr_bulk_delete', [$this, 'ajax_bulk_delete']);
 
 		// Enqueue scripts
 		add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_scripts']);
@@ -295,11 +299,17 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						<?php endforeach; ?>
 					</select>
 
+					<select id="pn-cm-qr-filter-variation" class="pn-cm-qr-filter" style="display: none;">
+						<option value=""><?php _e('All Variations', 'pn-customers-manager'); ?></option>
+					</select>
+
 					<select id="pn-cm-qr-filter-status" class="pn-cm-qr-filter">
 						<option value=""><?php _e('All Status', 'pn-customers-manager'); ?></option>
 						<option value="pending"><?php _e('Pending', 'pn-customers-manager'); ?></option>
 						<option value="processed"><?php _e('Processed', 'pn-customers-manager'); ?></option>
 					</select>
+
+					<input type="text" id="pn-cm-qr-filter-search" class="pn-cm-qr-filter pn-cm-qr-search-input" placeholder="<?php _e('Search by customer, order, QR code...', 'pn-customers-manager'); ?>">
 				</div>
 
 				<div class="pn-cm-qr-actions-btns">
@@ -309,8 +319,17 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				</div>
 			</div>
 
-			<div id="pn-cm-qr-orders-list" data-product-id="<?php echo esc_attr($product_id); ?>">
-				<?php echo $this->get_orders_html($product_id); ?>
+			<div id="pn-cm-qr-orders-wrapper" style="position: relative;">
+				<div id="pn-cm-qr-orders-list" data-product-id="<?php echo esc_attr($product_id); ?>" data-variation-id="">
+					<?php echo $this->get_orders_html($product_id); ?>
+				</div>
+				<div class="pn-cm-qr-loader pn-customers-manager-display-none">
+					<div class="pn-customers-manager-loader-circle-wrapper">
+						<div class="pn-customers-manager-text-align-center">
+							<div class="pn-customers-manager-loader-circle"><div></div><div></div><div></div><div></div></div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -337,8 +356,23 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 	/**
 	 * Get orders HTML for admin panel
 	 */
-	private function get_orders_html($product_id = null, $status = '') {
-		$orders_data = $this->get_product_orders($product_id, $status);
+	private function get_orders_html($product_id = null, $status = '', $variation_id = null, $search = '') {
+		$orders_data = $this->get_product_orders($product_id, $status, $variation_id, $search);
+
+		// Calculate stats from filtered data
+		$stats = [
+			'total' => count($orders_data),
+			'processed' => 0,
+			'pending' => 0,
+		];
+
+		foreach ($orders_data as $data) {
+			if ($data['processed']) {
+				$stats['processed']++;
+			} else {
+				$stats['pending']++;
+			}
+		}
 
 		if (empty($orders_data)) {
 			return '<p class="pn-cm-qr-no-orders">' . __('No QR tickets generated yet', 'pn-customers-manager') . '</p>';
@@ -346,10 +380,63 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		ob_start();
 		?>
+		<!-- QR Statistics -->
+		<div class="pn-cm-qr-stats">
+			<div class="pn-cm-qr-stat-card pn-cm-qr-stat-total">
+				<div class="pn-cm-qr-stat-icon">
+					<i class="material-icons-outlined">qr_code_2</i>
+				</div>
+				<div class="pn-cm-qr-stat-info">
+					<div class="pn-cm-qr-stat-label"><?php _e('Total QR Codes', 'pn-customers-manager'); ?></div>
+					<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['total']); ?></div>
+				</div>
+			</div>
+			<div class="pn-cm-qr-stat-card pn-cm-qr-stat-pending">
+				<div class="pn-cm-qr-stat-icon">
+					<i class="material-icons-outlined">schedule</i>
+				</div>
+				<div class="pn-cm-qr-stat-info">
+					<div class="pn-cm-qr-stat-label"><?php _e('Pending', 'pn-customers-manager'); ?></div>
+					<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['pending']); ?></div>
+				</div>
+			</div>
+			<div class="pn-cm-qr-stat-card pn-cm-qr-stat-processed">
+				<div class="pn-cm-qr-stat-icon">
+					<i class="material-icons-outlined">check_circle</i>
+				</div>
+				<div class="pn-cm-qr-stat-info">
+					<div class="pn-cm-qr-stat-label"><?php _e('Processed', 'pn-customers-manager'); ?></div>
+					<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['processed']); ?></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Bulk Actions Bar -->
+		<div class="pn-cm-qr-bulk-actions" style="display: none;">
+			<span class="pn-cm-qr-bulk-selected">0 <?php _e('selected', 'pn-customers-manager'); ?></span>
+			<div class="pn-cm-qr-bulk-buttons">
+				<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-success" id="pn-cm-qr-bulk-process">
+					<i class="material-icons-outlined">check_circle</i>
+					<?php _e('Mark as Processed', 'pn-customers-manager'); ?>
+				</button>
+				<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-warning" id="pn-cm-qr-bulk-pending">
+					<i class="material-icons-outlined">schedule</i>
+					<?php _e('Mark as Pending', 'pn-customers-manager'); ?>
+				</button>
+				<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-danger" id="pn-cm-qr-bulk-delete">
+					<i class="material-icons-outlined">delete</i>
+					<?php _e('Delete', 'pn-customers-manager'); ?>
+				</button>
+			</div>
+		</div>
+
 		<div class="pn-cm-qr-orders-wrapper">
 		<table class="pn-cm-qr-orders-table">
 			<thead>
 				<tr>
+					<th style="width: 40px;">
+						<input type="checkbox" id="pn-cm-qr-select-all" class="pn-cm-qr-checkbox">
+					</th>
 					<th><?php _e('Customer', 'pn-customers-manager'); ?></th>
 					<th><?php _e('Products', 'pn-customers-manager'); ?></th>
 					<th><?php _e('Status', 'pn-customers-manager'); ?></th>
@@ -358,6 +445,9 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			<tbody>
 				<?php foreach ($orders_data as $data): ?>
 					<tr class="pn-cm-qr-row <?php echo $data['processed'] ? 'processed' : 'pending'; ?>" style="position: relative;">
+						<td style="position: relative; z-index: 2;" onclick="event.stopPropagation();">
+							<input type="checkbox" class="pn-cm-qr-checkbox pn-cm-qr-item-checkbox" value="<?php echo esc_attr($data['code']); ?>" data-item-id="<?php echo esc_attr($data['item_id']); ?>">
+						</td>
 						<td style="position: relative;">
 							<a href="#"
 								class="pn-customers-manager-popup-open-ajax pn-cm-qr-row-link"
@@ -371,12 +461,15 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						</td>
 						<td>
 							<div class="pn-cm-qr-products">
-								<?php foreach ($data['order_items'] as $item): ?>
-									<div class="pn-cm-qr-product-item">
-										<span class="pn-cm-qr-product-name"><?php echo esc_html($item['name']); ?></span>
-										<span class="pn-cm-qr-product-qty">x<?php echo esc_html($item['quantity']); ?></span>
-									</div>
-								<?php endforeach; ?>
+								<div class="pn-cm-qr-product-item">
+									<span class="pn-cm-qr-product-name">
+										<?php echo esc_html($data['product_name']); ?>
+										<?php if ($data['variation_text']): ?>
+											<span class="pn-cm-qr-variation"><?php echo esc_html($data['variation_text']); ?></span>
+										<?php endif; ?>
+									</span>
+									<span class="pn-cm-qr-product-qty">x<?php echo esc_html($data['quantity']); ?></span>
+								</div>
 							</div>
 						</td>
 						<td>
@@ -404,7 +497,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 	/**
 	 * Get all orders for a product with QR data
 	 */
-	private function get_product_orders($product_id = null, $status = '') {
+	private function get_product_orders($product_id = null, $status = '', $variation_id = null, $search = '') {
 		global $wpdb;
 
 		// Build query with optional filters
@@ -417,6 +510,12 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			$prepare_values[] = $product_id;
 		}
 
+		// Filter by variation if specified
+		if ($variation_id) {
+			$where_clauses[] = 'oim_variation.meta_value = %d';
+			$prepare_values[] = $variation_id;
+		}
+
 		// Filter by status if specified
 		if ($status === 'processed') {
 			$where_clauses[] = "oim_processed.meta_value = 'yes'";
@@ -426,16 +525,21 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		$where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
 
+		// Add search filter (will be added after main query to include post data)
+		$search_term = $search ? '%' . $wpdb->esc_like($search) . '%' : '';
+
 		$query = "
 			SELECT
 				oi.order_item_id,
 				oi.order_id,
+				oi.order_item_name,
 				oim_qr.meta_value as qr_code,
 				oim_processed.meta_value as processed,
 				oim_date.meta_value as processed_date,
 				oim_by.meta_value as processed_by,
 				oim_qty.meta_value as quantity,
-				oim_product.meta_value as product_id
+				oim_product.meta_value as product_id,
+				oim_variation.meta_value as variation_id
 			FROM {$wpdb->prefix}woocommerce_order_items oi
 			INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_product
 				ON oi.order_item_id = oim_product.order_item_id
@@ -443,6 +547,9 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_qr
 				ON oi.order_item_id = oim_qr.order_item_id
 				AND oim_qr.meta_key = '_pn_cm_woo_qr_code'
+			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_variation
+				ON oi.order_item_id = oim_variation.order_item_id
+				AND oim_variation.meta_key = '_variation_id'
 			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_processed
 				ON oi.order_item_id = oim_processed.order_item_id
 				AND oim_processed.meta_key = '_pn_cm_woo_qr_processed'
@@ -470,13 +577,71 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			$order = wc_get_order($row->order_id);
 			if (!$order) continue;
 
-			// Get all items in order for product breakdown
-			$order_items = [];
-			foreach ($order->get_items() as $item) {
-				$order_items[] = [
-					'name' => $item->get_name(),
-					'quantity' => $item->get_quantity(),
-				];
+			// Get the specific order item
+			$order_item = $order->get_item($row->order_item_id);
+			if (!$order_item) continue;
+
+			// Get product information
+			$product_id = $row->variation_id ? $row->variation_id : $row->product_id;
+			$product = wc_get_product($product_id);
+
+			$product_name = $order_item->get_name();
+			$variation_text = '';
+
+			// If it's a variation, validate it exists and get the variation attributes
+			if ($row->variation_id && $product && $product->is_type('variation')) {
+				// Verify the variation is published and exists
+				if ($product->get_status() === 'publish') {
+					$attributes = $product->get_variation_attributes();
+					$variation_parts = [];
+					foreach ($attributes as $key => $value) {
+						$attribute_name = str_replace('attribute_', '', $key);
+						$term = get_term_by('slug', $value, $attribute_name);
+						$display_value = $term ? $term->name : $value;
+						if ($display_value) {
+							$variation_parts[] = $display_value;
+						}
+					}
+					if (!empty($variation_parts)) {
+						$variation_text = ' (' . implode(', ', $variation_parts) . ')';
+					}
+				} else {
+					// Variation no longer exists or is not published - show generic message
+					$variation_text = ' (' . __('Variation no longer available', 'pn-customers-manager') . ')';
+				}
+			}
+
+			$customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+			$order_number = $order->get_order_number();
+
+			// Apply search filter if specified
+			if ($search_term) {
+				$search_match = false;
+
+				// Search in customer name
+				if (stripos($customer_name, $search) !== false) {
+					$search_match = true;
+				}
+
+				// Search in QR code
+				if (stripos($row->qr_code, $search) !== false) {
+					$search_match = true;
+				}
+
+				// Search in order number/ID
+				if (stripos($order_number, $search) !== false || stripos($row->order_id, $search) !== false) {
+					$search_match = true;
+				}
+
+				// Search in product name
+				if (stripos($product_name, $search) !== false) {
+					$search_match = true;
+				}
+
+				// Skip if no match found
+				if (!$search_match) {
+					continue;
+				}
 			}
 
 			$orders_data[] = [
@@ -487,13 +652,72 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				'processed_date' => $row->processed_date,
 				'processed_by' => $row->processed_by,
 				'quantity' => $row->quantity ?: 1,
-				'customer' => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
-				'order_items' => $order_items,
+				'customer' => $customer_name,
+				'product_name' => $product_name,
+				'variation_text' => $variation_text,
+				'product_id' => $row->product_id,
+				'variation_id' => $row->variation_id,
 				'order_date' => $order->get_date_created()->date('Y-m-d H:i'),
 			];
 		}
 
 		return $orders_data;
+	}
+
+	/**
+	 * Get QR statistics
+	 */
+	private function get_qr_stats($product_id = null, $variation_id = null) {
+		global $wpdb;
+
+		// Build query with optional product filter
+		$where_clauses = [];
+		$prepare_values = [];
+
+		if ($product_id) {
+			$where_clauses[] = 'oim_product.meta_value = %d';
+			$prepare_values[] = $product_id;
+		}
+
+		if ($variation_id) {
+			$where_clauses[] = 'oim_variation.meta_value = %d';
+			$prepare_values[] = $variation_id;
+		}
+
+		$where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
+
+		$query = "
+			SELECT
+				COUNT(*) as total,
+				SUM(CASE WHEN oim_processed.meta_value = 'yes' THEN 1 ELSE 0 END) as processed,
+				SUM(CASE WHEN oim_processed.meta_value IS NULL OR oim_processed.meta_value != 'yes' THEN 1 ELSE 0 END) as pending
+			FROM {$wpdb->prefix}woocommerce_order_items oi
+			INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_product
+				ON oi.order_item_id = oim_product.order_item_id
+				AND oim_product.meta_key = '_product_id'
+			INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_qr
+				ON oi.order_item_id = oim_qr.order_item_id
+				AND oim_qr.meta_key = '_pn_cm_woo_qr_code'
+			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_variation
+				ON oi.order_item_id = oim_variation.order_item_id
+				AND oim_variation.meta_key = '_variation_id'
+			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_processed
+				ON oi.order_item_id = oim_processed.order_item_id
+				AND oim_processed.meta_key = '_pn_cm_woo_qr_processed'
+			{$where_sql}
+		";
+
+		if (!empty($prepare_values)) {
+			$result = $wpdb->get_row($wpdb->prepare($query, ...$prepare_values));
+		} else {
+			$result = $wpdb->get_row($query);
+		}
+
+		return [
+			'total' => (int) $result->total,
+			'processed' => (int) $result->processed,
+			'pending' => (int) $result->pending,
+		];
 	}
 
 	/**
@@ -799,10 +1023,208 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		$product_id = isset($_POST['product_id']) && $_POST['product_id'] !== '' ? intval($_POST['product_id']) : null;
 		$status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+		$variation_id = isset($_POST['variation_id']) && $_POST['variation_id'] !== '' ? intval($_POST['variation_id']) : null;
+		$search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
 
-		$html = $this->get_orders_html($product_id, $status);
+		$html = $this->get_orders_html($product_id, $status, $variation_id, $search);
 
 		wp_send_json_success(['html' => $html]);
+	}
+
+	/**
+	 * AJAX: Get product variations
+	 */
+	public function ajax_get_variations() {
+		check_ajax_referer('pn_cm_woo_qr_nonce', 'nonce');
+
+		if (!current_user_can('manage_woocommerce')) {
+			wp_send_json_error(['message' => __('Permission denied', 'pn-customers-manager')]);
+		}
+
+		$product_id = isset($_POST['product_id']) && $_POST['product_id'] !== '' ? intval($_POST['product_id']) : null;
+
+		if (!$product_id) {
+			wp_send_json_error(['message' => __('Product ID is required', 'pn-customers-manager')]);
+		}
+
+		$product = wc_get_product($product_id);
+
+		if (!$product) {
+			wp_send_json_error(['message' => __('Product not found', 'pn-customers-manager')]);
+		}
+
+		$variations = [];
+
+		// Check if product is variable
+		if ($product->is_type('variable')) {
+			$variable_product = wc_get_product($product_id);
+			$available_variations = $variable_product->get_available_variations();
+
+			foreach ($available_variations as $variation_data) {
+				$variation_id = $variation_data['variation_id'];
+				$variation = wc_get_product($variation_id);
+
+				// Only include variations that are published and currently available
+				if ($variation && $variation->get_status() === 'publish') {
+					// Get variation attributes formatted nicely
+					$attributes = $variation->get_variation_attributes();
+					$variation_parts = [];
+					foreach ($attributes as $key => $value) {
+						$attribute_name = str_replace('attribute_', '', $key);
+						$term = get_term_by('slug', $value, $attribute_name);
+						$display_value = $term ? $term->name : $value;
+						if ($display_value) {
+							$variation_parts[] = $display_value;
+						}
+					}
+
+					if (!empty($variation_parts)) {
+						$variations[] = [
+							'id' => $variation_id,
+							'name' => implode(', ', $variation_parts),
+						];
+					}
+				}
+			}
+		}
+
+		wp_send_json_success(['variations' => $variations]);
+	}
+
+	/**
+	 * AJAX: Bulk process QR codes
+	 */
+	public function ajax_bulk_process() {
+		check_ajax_referer('pn_cm_woo_qr_nonce', 'nonce');
+
+		if (!current_user_can('manage_woocommerce')) {
+			wp_send_json_error(['message' => __('Permission denied', 'pn-customers-manager')]);
+		}
+
+		$qr_codes = isset($_POST['qr_codes']) ? $_POST['qr_codes'] : [];
+
+		if (empty($qr_codes) || !is_array($qr_codes)) {
+			wp_send_json_error(['message' => __('No QR codes provided', 'pn-customers-manager')]);
+		}
+
+		global $wpdb;
+		$processed = 0;
+		$current_user = wp_get_current_user();
+		$user_name = $current_user->display_name;
+
+		foreach ($qr_codes as $qr_code) {
+			$qr_code = sanitize_text_field($qr_code);
+
+			// Find the order item with this QR code
+			$item_id = $wpdb->get_var($wpdb->prepare("
+				SELECT order_item_id
+				FROM {$wpdb->prefix}woocommerce_order_itemmeta
+				WHERE meta_key = '_pn_cm_woo_qr_code'
+				AND meta_value = %s
+			", $qr_code));
+
+			if ($item_id) {
+				wc_update_order_item_meta($item_id, '_pn_cm_woo_qr_processed', 'yes');
+				wc_update_order_item_meta($item_id, '_pn_cm_woo_qr_processed_date', current_time('mysql'));
+				wc_update_order_item_meta($item_id, '_pn_cm_woo_qr_processed_by', $user_name);
+				$processed++;
+			}
+		}
+
+		wp_send_json_success([
+			'message' => sprintf(__('%d QR codes marked as processed', 'pn-customers-manager'), $processed),
+			'count' => $processed
+		]);
+	}
+
+	/**
+	 * AJAX: Bulk mark QR codes as pending
+	 */
+	public function ajax_bulk_pending() {
+		check_ajax_referer('pn_cm_woo_qr_nonce', 'nonce');
+
+		if (!current_user_can('manage_woocommerce')) {
+			wp_send_json_error(['message' => __('Permission denied', 'pn-customers-manager')]);
+		}
+
+		$qr_codes = isset($_POST['qr_codes']) ? $_POST['qr_codes'] : [];
+
+		if (empty($qr_codes) || !is_array($qr_codes)) {
+			wp_send_json_error(['message' => __('No QR codes provided', 'pn-customers-manager')]);
+		}
+
+		global $wpdb;
+		$processed = 0;
+
+		foreach ($qr_codes as $qr_code) {
+			$qr_code = sanitize_text_field($qr_code);
+
+			// Find the order item with this QR code
+			$item_id = $wpdb->get_var($wpdb->prepare("
+				SELECT order_item_id
+				FROM {$wpdb->prefix}woocommerce_order_itemmeta
+				WHERE meta_key = '_pn_cm_woo_qr_code'
+				AND meta_value = %s
+			", $qr_code));
+
+			if ($item_id) {
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_processed');
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_processed_date');
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_processed_by');
+				$processed++;
+			}
+		}
+
+		wp_send_json_success([
+			'message' => sprintf(__('%d QR codes marked as pending', 'pn-customers-manager'), $processed),
+			'count' => $processed
+		]);
+	}
+
+	/**
+	 * AJAX: Bulk delete QR codes
+	 */
+	public function ajax_bulk_delete() {
+		check_ajax_referer('pn_cm_woo_qr_nonce', 'nonce');
+
+		if (!current_user_can('manage_woocommerce')) {
+			wp_send_json_error(['message' => __('Permission denied', 'pn-customers-manager')]);
+		}
+
+		$qr_codes = isset($_POST['qr_codes']) ? $_POST['qr_codes'] : [];
+
+		if (empty($qr_codes) || !is_array($qr_codes)) {
+			wp_send_json_error(['message' => __('No QR codes provided', 'pn-customers-manager')]);
+		}
+
+		global $wpdb;
+		$deleted = 0;
+
+		foreach ($qr_codes as $qr_code) {
+			$qr_code = sanitize_text_field($qr_code);
+
+			// Find the order item with this QR code
+			$item_id = $wpdb->get_var($wpdb->prepare("
+				SELECT order_item_id
+				FROM {$wpdb->prefix}woocommerce_order_itemmeta
+				WHERE meta_key = '_pn_cm_woo_qr_code'
+				AND meta_value = %s
+			", $qr_code));
+
+			if ($item_id) {
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_code');
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_processed');
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_processed_date');
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_processed_by');
+				wc_delete_order_item_meta($item_id, '_pn_cm_woo_qr_enabled');
+				$deleted++;
+			}
+		}
+
+		wp_send_json_success([
+			'message' => sprintf(__('%d QR codes deleted', 'pn-customers-manager'), $deleted),
+			'count' => $deleted
+		]);
 	}
 
 	/**
@@ -837,12 +1259,14 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			SELECT
 				oi.order_item_id,
 				oi.order_id,
+				oi.order_item_name,
 				oim_qr.meta_value as qr_code,
 				oim_processed.meta_value as processed,
 				oim_date.meta_value as processed_date,
 				oim_by.meta_value as processed_by,
 				oim_qty.meta_value as quantity,
-				oim_product.meta_value as product_id
+				oim_product.meta_value as product_id,
+				oim_variation.meta_value as variation_id
 			FROM {$wpdb->prefix}woocommerce_order_items oi
 			INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_qr
 				ON oi.order_item_id = oim_qr.order_item_id
@@ -863,6 +1287,9 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_product
 				ON oi.order_item_id = oim_product.order_item_id
 				AND oim_product.meta_key = '_product_id'
+			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_variation
+				ON oi.order_item_id = oim_variation.order_item_id
+				AND oim_variation.meta_key = '_variation_id'
 		", $qr_code));
 
 		if (!$item_data) {
@@ -878,13 +1305,40 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		$customer = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
 		$order_date = $order->get_date_created()->date('Y-m-d H:i');
 
-		// Get all items in order
-		$order_items = [];
-		foreach ($order->get_items() as $item) {
-			$order_items[] = [
-				'name' => $item->get_name(),
-				'quantity' => $item->get_quantity(),
-			];
+		// Get the specific order item
+		$order_item = $order->get_item($item_data->order_item_id);
+		if (!$order_item) {
+			return '<p>' . __('Order item not found', 'pn-customers-manager') . '</p>';
+		}
+
+		// Get product information
+		$product_id = $item_data->variation_id ? $item_data->variation_id : $item_data->product_id;
+		$product = wc_get_product($product_id);
+
+		$product_name = $order_item->get_name();
+		$variation_text = '';
+
+		// If it's a variation, validate it exists and get the variation attributes
+		if ($item_data->variation_id && $product && $product->is_type('variation')) {
+			// Verify the variation is published and exists
+			if ($product->get_status() === 'publish') {
+				$attributes = $product->get_variation_attributes();
+				$variation_parts = [];
+				foreach ($attributes as $key => $value) {
+					$attribute_name = str_replace('attribute_', '', $key);
+					$term = get_term_by('slug', $value, $attribute_name);
+					$display_value = $term ? $term->name : $value;
+					if ($display_value) {
+						$variation_parts[] = $display_value;
+					}
+				}
+				if (!empty($variation_parts)) {
+					$variation_text = ' (' . implode(', ', $variation_parts) . ')';
+				}
+			} else {
+				// Variation no longer exists or is not published - show generic message
+				$variation_text = ' (' . __('Variation no longer available', 'pn-customers-manager') . ')';
+			}
 		}
 
 		ob_start();
@@ -907,14 +1361,15 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					<p><strong><?php _e('Customer', 'pn-customers-manager'); ?>:</strong> <?php echo esc_html($customer); ?></p>
 					<p><strong><?php _e('Date', 'pn-customers-manager'); ?>:</strong> <?php echo esc_html($order_date); ?></p>
 
-					<p><strong><?php _e('Products', 'pn-customers-manager'); ?>:</strong></p>
+					<p><strong><?php _e('Product', 'pn-customers-manager'); ?>:</strong></p>
 					<ul class="pn-cm-qr-products-list" style="margin: 10px 0; padding-left: 20px;">
-						<?php foreach ($order_items as $item): ?>
-							<li style="margin: 5px 0; color: #333;">
-								<?php echo esc_html($item['name']); ?>
-								<span class="pn-cm-qr-qty" style="color: #6c757d; font-weight: 600; margin-left: 5px;">x<?php echo esc_html($item['quantity']); ?></span>
-							</li>
-						<?php endforeach; ?>
+						<li style="margin: 5px 0; color: #333;">
+							<?php echo esc_html($product_name); ?>
+							<?php if ($variation_text): ?>
+								<span class="pn-cm-qr-variation" style="color: #6c757d; font-size: 12px; font-style: italic;"><?php echo esc_html($variation_text); ?></span>
+							<?php endif; ?>
+							<span class="pn-cm-qr-qty" style="color: #6c757d; font-weight: 600; margin-left: 5px;">x<?php echo esc_html($item_data->quantity ?: 1); ?></span>
+						</li>
 					</ul>
 
 					<?php if ($processed): ?>
@@ -1053,6 +1508,11 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				'confirmProcess' => __('Are you sure you want to mark this QR code as processed?', 'pn-customers-manager'),
 				'confirmPending' => __('Are you sure you want to mark this QR code as pending?', 'pn-customers-manager'),
 				'confirmDelete' => __('Are you sure you want to delete this QR code? This action cannot be undone.', 'pn-customers-manager'),
+				'selected' => __('selected', 'pn-customers-manager'),
+				'selectedPlural' => __('selected', 'pn-customers-manager'),
+				'confirmBulkProcess' => __('Are you sure you want to mark %d QR codes as processed?', 'pn-customers-manager'),
+				'confirmBulkPending' => __('Are you sure you want to mark %d QR codes as pending?', 'pn-customers-manager'),
+				'confirmBulkDelete' => __('Are you sure you want to delete %d QR codes? This action cannot be undone.', 'pn-customers-manager'),
 			],
 		]);
 
@@ -1086,11 +1546,17 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						<?php endforeach; ?>
 					</select>
 
+					<select id="pn-cm-qr-filter-variation" class="pn-cm-qr-filter" style="display: none;">
+						<option value=""><?php _e('All Variations', 'pn-customers-manager'); ?></option>
+					</select>
+
 					<select id="pn-cm-qr-filter-status" class="pn-cm-qr-filter">
 						<option value=""><?php _e('All Status', 'pn-customers-manager'); ?></option>
 						<option value="pending"><?php _e('Pending', 'pn-customers-manager'); ?></option>
 						<option value="processed"><?php _e('Processed', 'pn-customers-manager'); ?></option>
 					</select>
+
+					<input type="text" id="pn-cm-qr-filter-search" class="pn-cm-qr-filter pn-cm-qr-search-input" placeholder="<?php _e('Search by customer, order, QR code...', 'pn-customers-manager'); ?>">
 				</div>
 
 				<div class="pn-cm-qr-actions-btns">
@@ -1100,8 +1566,17 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				</div>
 			</div>
 
-			<div id="pn-cm-qr-orders-list" data-product-id="<?php echo esc_attr($product_id); ?>">
-				<?php echo $this->get_orders_html($product_id); ?>
+			<div id="pn-cm-qr-orders-wrapper" style="position: relative;">
+				<div id="pn-cm-qr-orders-list" data-product-id="<?php echo esc_attr($product_id); ?>" data-variation-id="">
+					<?php echo $this->get_orders_html($product_id); ?>
+				</div>
+				<div class="pn-cm-qr-loader pn-customers-manager-display-none">
+					<div class="pn-customers-manager-loader-circle-wrapper">
+						<div class="pn-customers-manager-text-align-center">
+							<div class="pn-customers-manager-loader-circle"><div></div><div></div><div></div><div></div></div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -1318,6 +1793,11 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				'confirmProcess' => __('Are you sure you want to mark this QR code as processed?', 'pn-customers-manager'),
 				'confirmPending' => __('Are you sure you want to mark this QR code as pending?', 'pn-customers-manager'),
 				'confirmDelete' => __('Are you sure you want to delete this QR code? This action cannot be undone.', 'pn-customers-manager'),
+				'selected' => __('selected', 'pn-customers-manager'),
+				'selectedPlural' => __('selected', 'pn-customers-manager'),
+				'confirmBulkProcess' => __('Are you sure you want to mark %d QR codes as processed?', 'pn-customers-manager'),
+				'confirmBulkPending' => __('Are you sure you want to mark %d QR codes as pending?', 'pn-customers-manager'),
+				'confirmBulkDelete' => __('Are you sure you want to delete %d QR codes? This action cannot be undone.', 'pn-customers-manager'),
 			],
 		]);
 	}
