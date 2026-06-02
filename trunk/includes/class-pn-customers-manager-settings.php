@@ -1069,12 +1069,30 @@ class PN_CUSTOMERS_MANAGER_Settings {
         'description' => __('Configure WooCommerce features including Calendar Booking Products calendar system for managing campament reservations with capacity control and member pricing.', 'pn-customers-manager'),
       ];
 
+      // Checkout Custom Fields
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_checkout_fields_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_checkout_fields_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'label' => __('Enable Checkout Custom Fields', 'pn-customers-manager'),
+        'description' => __('Allows adding custom fields to checkout page per product. Fields can be configured in the product edit page under "Checkout Fields" tab.', 'pn-customers-manager'),
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_csv_export_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_csv_export_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'label' => __('Enable CSV Export for Product Orders', 'pn-customers-manager'),
+        'description' => __('Allows administrators to export orders with custom field data to CSV from product pages and product edit screen. Includes column selection and data preview.', 'pn-customers-manager'),
+      ];
+
       $pn_customers_manager_options['pn_customers_manager_woocommerce_enabled'] = [
         'id' => 'pn_customers_manager_woocommerce_enabled',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
         'type' => 'checkbox',
-        'value' => 'on',
         'label' => __('Enable WooCommerce Calendar Booking Products', 'pn-customers-manager'),
         'description' => __('Enables the Calendar Booking Products system with interactive calendar, capacity management, and member pricing for WooCommerce products.', 'pn-customers-manager'),
       ];
@@ -1085,7 +1103,6 @@ class PN_CUSTOMERS_MANAGER_Settings {
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
         'type' => 'checkbox',
-        'value' => 'on',
         'label' => __('Enable QR Tickets', 'pn-customers-manager'),
         'description' => __('Allows products to generate unique QR codes as tickets for physical delivery validation. Administrators can scan QR codes to mark orders as processed.', 'pn-customers-manager'),
       ];

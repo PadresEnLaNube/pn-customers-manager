@@ -5,7 +5,7 @@
  * Allows adding custom fields to checkout page per product
  *
  * @link       padresenlanube.com/
- * @since      1.1.118
+ * @since      1.1.140
  * @package    PN_CUSTOMERS_MANAGER
  * @subpackage PN_CUSTOMERS_MANAGER/includes
  * @author     Padres en la Nube
@@ -46,16 +46,29 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 		add_action('woocommerce_checkout_process', [$this, 'validate_checkout_fields']);
 		add_action('woocommerce_checkout_create_order_line_item', [$this, 'save_checkout_field_data'], 10, 4);
 
-		// Mostrar en pedidos
+		// Mostrar en pedidos (frontend - My Account)
 		add_action('woocommerce_order_item_meta_end', [$this, 'display_order_item_meta'], 10, 4);
-		add_filter('woocommerce_order_item_display_meta_key', [$this, 'format_meta_key'], 10, 3);
-		add_filter('woocommerce_order_item_display_meta_value', [$this, 'format_meta_value'], 10, 3);
+
+		// Mostrar en pedidos (admin - Order edit page y quick view)
+		add_action('woocommerce_after_order_itemmeta', [$this, 'display_order_item_meta_admin'], 10, 3);
+
+		// Ocultar de la visualización por defecto de WooCommerce
+		add_filter('woocommerce_order_item_get_formatted_meta_data', [$this, 'hide_custom_fields_from_display'], 10, 2);
 
 		// Mostrar en emails
 		add_action('woocommerce_email_after_order_table', [$this, 'display_in_email'], 10, 4);
 
-		// AJAX para gestión de campos
+		// Ensure cart is cleared after successful checkout
+		add_action('woocommerce_thankyou', [$this, 'ensure_cart_is_cleared'], 10, 1);
+
+		// CSV Export functionality
+		add_action('woocommerce_after_single_product_summary', [$this, 'render_csv_export_button_frontend'], 15);
+		add_action('woocommerce_product_options_general_product_data', [$this, 'render_csv_export_button_admin']);
+
+		// AJAX para gestión de campos y CSV export
 		add_action('wp_ajax_pn_cm_checkout_fields_get_field_types', [$this, 'ajax_get_field_types']);
+		add_action('wp_ajax_pn_cm_get_csv_preview', [$this, 'ajax_get_csv_preview']);
+		add_action('wp_ajax_pn_cm_export_csv', [$this, 'ajax_export_csv']);
 	}
 
 	/* ───────────────────────────────────────────
@@ -882,7 +895,12 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 
 				// Handle html_multi with custom rendering
 				if ($field['type'] === 'html_multi') {
-					$this->render_html_multi_field($field, $field_id, $product_id, $checkout);
+					// Get saved data from cart item if exists
+					$saved_data = [];
+					if (isset($cart_item['pn_cm_product_fields'][$field['name']])) {
+						$saved_data = $cart_item['pn_cm_product_fields'][$field['name']];
+					}
+					$this->render_html_multi_field($field, $field_id, $product_id, $checkout, $saved_data);
 					continue;
 				}
 
@@ -964,7 +982,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 	/**
 	 * Render html_multi field type
 	 */
-	private function render_html_multi_field($field, $field_id, $product_id, $checkout)
+	private function render_html_multi_field($field, $field_id, $product_id, $checkout, $saved_data = [])
 	{
 		if (empty($field['html_multi_fields'])) {
 			return;
@@ -972,6 +990,9 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 
 		$required_class = $field['required'] ? 'validate-required' : '';
 		$required_label = $field['required'] ? ' <abbr class="required" title="required">*</abbr>' : '';
+
+		// If there's saved data, render groups for each saved entry
+		$groups_to_render = !empty($saved_data) && is_array($saved_data) ? count($saved_data) : 1;
 
 		?>
 		<div class="form-row form-row-wide <?php echo esc_attr($required_class); ?> pn-cm-html-multi-wrapper" data-field-id="<?php echo esc_attr($field_id); ?>">
@@ -982,35 +1003,42 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 			<?php endif; ?>
 
 			<div class="pn-cm-html-multi-groups-container">
-				<!-- Initial group -->
-				<div class="pn-cm-html-multi-group" data-index="0">
-					<div class="pn-cm-html-multi-fields">
-						<?php foreach ($field['html_multi_fields'] as $hmf_index => $hmf): ?>
-							<?php
-							$sub_field_id = $field_id . '_' . $hmf_index . '_0';
-							$sub_field_name = $field_id . '[0][' . $hmf_index . ']';
+				<?php for ($group_index = 0; $group_index < $groups_to_render; $group_index++): ?>
+					<div class="pn-cm-html-multi-group" data-index="<?php echo $group_index; ?>">
+						<div class="pn-cm-html-multi-fields">
+							<?php foreach ($field['html_multi_fields'] as $hmf_index => $hmf): ?>
+								<?php
+								$sub_field_id = $field_id . '_' . $hmf_index . '_' . $group_index;
+								$sub_field_name = $field_id . '[' . $group_index . '][' . $hmf_index . ']';
 
-							$sub_args = [
-								'type'        => $hmf['type'],
-								'label'       => $hmf['label'],
-								'placeholder' => '',
-								'required'    => !empty($hmf['required']),
-								'class'       => ['pn-cm-html-multi-field'],
-								'input_class' => ['pn-customers-manager-input'],
-								'label_class' => ['pn-cm-html-multi-field-label'],
-							];
-							?>
-							<div class="pn-cm-html-multi-field-wrapper">
-								<?php woocommerce_form_field($sub_field_name, $sub_args, ''); ?>
-							</div>
-						<?php endforeach; ?>
+								// Get saved value for this field if exists
+								$saved_value = '';
+								if (isset($saved_data[$group_index][$hmf_index])) {
+									$saved_value = $saved_data[$group_index][$hmf_index];
+								}
+
+								$sub_args = [
+									'type'        => $hmf['type'],
+									'label'       => $hmf['label'],
+									'placeholder' => '',
+									'required'    => !empty($hmf['required']),
+									'class'       => ['pn-cm-html-multi-field'],
+									'input_class' => ['pn-customers-manager-input'],
+									'label_class' => ['pn-cm-html-multi-field-label'],
+								];
+								?>
+								<div class="pn-cm-html-multi-field-wrapper">
+									<?php woocommerce_form_field($sub_field_name, $sub_args, $saved_value); ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
+						<div class="pn-cm-html-multi-actions">
+							<a href="#" class="pn-cm-remove-html-multi-group pn-customers-manager-tooltip" style="<?php echo $groups_to_render === 1 ? 'display: none;' : ''; ?>" title="<?php esc_attr_e('Remove element', 'pn-customers-manager'); ?>">
+								<i class="material-icons-outlined pn-customers-manager-cursor-pointer">remove</i>
+							</a>
+						</div>
 					</div>
-					<div class="pn-cm-html-multi-actions">
-						<a href="#" class="pn-cm-remove-html-multi-group pn-customers-manager-tooltip" style="display: none;" title="<?php esc_attr_e('Remove element', 'pn-customers-manager'); ?>">
-							<i class="material-icons-outlined pn-customers-manager-cursor-pointer">remove</i>
-						</a>
-					</div>
-				</div>
+				<?php endfor; ?>
 			</div>
 
 			<div style="text-align: right; margin-top: 10px;">
@@ -1346,14 +1374,54 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 			);
 		}
 
+		// Enqueue popups CSS for CSV export
+		if (!wp_style_is('pn-customers-manager-popups', 'enqueued')) {
+			wp_enqueue_style(
+				'pn-customers-manager-popups',
+				PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-popups.css',
+				[],
+				PN_CUSTOMERS_MANAGER_VERSION
+			);
+		}
+
+		// Enqueue popups JS for CSV export
+		if (!wp_script_is('pn-customers-manager-popups', 'enqueued')) {
+			wp_enqueue_script(
+				'pn-customers-manager-popups',
+				PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js',
+				['jquery'],
+				PN_CUSTOMERS_MANAGER_VERSION,
+				true
+			);
+		}
+
 		// Enqueue checkout fields frontend JS
 		wp_enqueue_script(
 			'pn-cm-checkout-fields-frontend',
 			PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-cm-checkout-fields-frontend.js',
-			['jquery'],
+			['jquery', 'pn-customers-manager-popups'],
 			PN_CUSTOMERS_MANAGER_VERSION,
 			true
 		);
+
+		// Localize script with ajax URL, debug info, and translatable strings
+		wp_localize_script('pn-cm-checkout-fields-frontend', 'pnCmCheckoutFields', [
+			'ajax_url' => admin_url('admin-ajax.php'),
+			'debug' => defined('WP_DEBUG') && WP_DEBUG,
+			'i18n' => [
+				'export_orders_csv' => __('Export Orders to CSV', 'pn-customers-manager'),
+				'loading_preview' => __('Loading preview...', 'pn-customers-manager'),
+				'select_columns' => __('Select Columns to Export', 'pn-customers-manager'),
+				'data_preview' => __('Data Preview', 'pn-customers-manager'),
+				'cancel' => __('Cancel', 'pn-customers-manager'),
+				'download_csv' => __('Download CSV', 'pn-customers-manager'),
+				'no_orders_found' => __('No orders found for this product.', 'pn-customers-manager'),
+				'showing_of_total' => __('Showing %1$s of %2$s total orders', 'pn-customers-manager'),
+				'select_one_column' => __('Please select at least one column', 'pn-customers-manager'),
+				'error_loading' => __('Error loading preview. Check console for details.', 'pn-customers-manager'),
+				'error_loading_simple' => __('Error loading preview', 'pn-customers-manager'),
+			],
+		]);
 	}
 
 	/* ───────────────────────────────────────────
@@ -1384,11 +1452,19 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 						if ($plain_text) {
 							echo "\n" . $label . ':';
 							foreach ($value as $group_index => $group_data) {
-								echo "\n  Group " . ($group_index + 1) . ':';
+								echo "\n  " . sprintf(__('Group %d', 'pn-customers-manager'), $group_index + 1) . ':';
 								if (is_array($group_data) && !empty($config['html_multi_fields'])) {
 									foreach ($config['html_multi_fields'] as $hmf_index => $hmf) {
-										if (isset($group_data[$hmf_index])) {
-											echo "\n    " . $hmf['label'] . ': ' . $group_data[$hmf_index];
+										$display_value = isset($group_data[$hmf_index]) ? $group_data[$hmf_index] : '';
+
+										// Format checkbox values
+										if (isset($hmf['type']) && $hmf['type'] === 'checkbox') {
+											$display_value = ($display_value == '1' || $display_value === 'yes') ? __('Yes', 'pn-customers-manager') : __('No', 'pn-customers-manager');
+										}
+
+										// Only show if field has a label
+										if (!empty($hmf['label'])) {
+											echo "\n    " . $hmf['label'] . ': ' . $display_value;
 										}
 									}
 								}
@@ -1403,8 +1479,16 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 								echo '<ul>';
 								if (is_array($group_data) && !empty($config['html_multi_fields'])) {
 									foreach ($config['html_multi_fields'] as $hmf_index => $hmf) {
-										if (isset($group_data[$hmf_index])) {
-											echo '<li><strong>' . esc_html($hmf['label']) . ':</strong> ' . esc_html($group_data[$hmf_index]) . '</li>';
+										$display_value = isset($group_data[$hmf_index]) ? $group_data[$hmf_index] : '';
+
+										// Format checkbox values
+										if (isset($hmf['type']) && $hmf['type'] === 'checkbox') {
+											$display_value = ($display_value == '1' || $display_value === 'yes') ? __('Yes', 'pn-customers-manager') : __('No', 'pn-customers-manager');
+										}
+
+										// Only show if field has a label
+										if (!empty($hmf['label'])) {
+											echo '<li><strong>' . esc_html($hmf['label']) . ':</strong> ' . esc_html($display_value) . '</li>';
 										}
 									}
 								}
@@ -1431,32 +1515,82 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 	}
 
 	/**
-	 * Format meta key for display
+	 * Display custom fields in admin order item meta (order edit page & quick view)
 	 */
-	public function format_meta_key($display_key, $meta, $item)
+	public function display_order_item_meta_admin($item_id, $item, $product)
 	{
-		if (strpos($display_key, '_pn_cm_checkout_field_') === 0 && strpos($display_key, '_config_') === false) {
-			$field_name = str_replace('_pn_cm_checkout_field_', '', $display_key);
-			$config = $item->get_meta('_pn_cm_checkout_field_config_' . $field_name, true);
+		$meta_data = $item->get_meta_data();
 
-			if ($config && isset($config['label'])) {
-				return $config['label'];
+		foreach ($meta_data as $meta) {
+			$key = $meta->key;
+
+			// Only show our custom fields
+			if (strpos($key, '_pn_cm_checkout_field_') === 0 && strpos($key, '_config_') === false) {
+				$field_name = str_replace('_pn_cm_checkout_field_', '', $key);
+				$config = $item->get_meta('_pn_cm_checkout_field_config_' . $field_name, true);
+
+				if ($config && isset($config['label'])) {
+					$label = $config['label'];
+					$value = $meta->value;
+
+					// Handle html_multi fields (array values)
+					if ($config['type'] === 'html_multi' && is_array($value)) {
+						echo '<div class="pn-cm-checkout-field-display pn-cm-html-multi-display" style="margin-top: 10px;">';
+						echo '<strong>' . esc_html($label) . ':</strong>';
+						echo '<div class="pn-cm-html-multi-groups">';
+						foreach ($value as $group_index => $group_data) {
+							echo '<div class="pn-cm-html-multi-group-display" style="margin-left: 15px;">';
+							echo '<strong>' . sprintf(__('Group %d', 'pn-customers-manager'), $group_index + 1) . ':</strong>';
+							echo '<ul style="margin: 5px 0;">';
+							if (is_array($group_data) && !empty($config['html_multi_fields'])) {
+								foreach ($config['html_multi_fields'] as $hmf_index => $hmf) {
+									$display_value = isset($group_data[$hmf_index]) ? $group_data[$hmf_index] : '';
+
+									// Format checkbox values
+									if (isset($hmf['type']) && $hmf['type'] === 'checkbox') {
+										$display_value = ($display_value == '1' || $display_value === 'yes') ? __('Yes', 'pn-customers-manager') : __('No', 'pn-customers-manager');
+									}
+
+									// Only show if field has a label
+									if (!empty($hmf['label'])) {
+										echo '<li><strong>' . esc_html($hmf['label']) . ':</strong> ' . esc_html($display_value) . '</li>';
+									}
+								}
+							}
+							echo '</ul>';
+							echo '</div>';
+						}
+						echo '</div>';
+						echo '</div>';
+					} else {
+						// Regular fields
+						echo '<div class="pn-cm-checkout-field-display" style="margin-top: 5px;">';
+						echo '<strong>' . esc_html($label) . ':</strong> ';
+						echo esc_html($value);
+						echo '</div>';
+					}
+				}
 			}
 		}
-
-		return $display_key;
 	}
 
 	/**
-	 * Format meta value for display
+	 * Hide custom fields from WooCommerce's default formatted meta display
+	 * Our display_order_item_meta() function will handle showing them properly
 	 */
-	public function format_meta_value($display_value, $meta, $item)
+	public function hide_custom_fields_from_display($formatted_meta, $item)
 	{
-		if (strpos($meta->key, '_pn_cm_checkout_field_') === 0 && strpos($meta->key, '_config_') === false) {
-			return esc_html($display_value);
+		// Filter out our custom checkout fields from the formatted meta
+		$filtered_meta = [];
+
+		foreach ($formatted_meta as $meta_id => $meta) {
+			// Skip our custom fields (both data and config)
+			if (strpos($meta->key, '_pn_cm_checkout_field_') === false) {
+				$filtered_meta[$meta_id] = $meta;
+			}
 		}
 
-		return $display_value;
+		return $filtered_meta;
 	}
 
 	/**
@@ -1524,10 +1658,58 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 						$label = $config['label'];
 						$value = $meta->value;
 
-						if ($plain_text) {
-							echo "  " . $label . ': ' . $value . "\n";
+						// Handle html_multi fields (array values)
+						if ($config['type'] === 'html_multi' && is_array($value)) {
+							if ($plain_text) {
+								echo "  " . $label . ":\n";
+								foreach ($value as $group_index => $group_data) {
+									echo "    " . sprintf(__('Group %d', 'pn-customers-manager'), $group_index + 1) . ":\n";
+									if (is_array($group_data) && !empty($config['html_multi_fields'])) {
+										foreach ($config['html_multi_fields'] as $hmf_index => $hmf) {
+											$display_value = isset($group_data[$hmf_index]) ? $group_data[$hmf_index] : '';
+
+											// Format checkbox values
+											if (isset($hmf['type']) && $hmf['type'] === 'checkbox') {
+												$display_value = ($display_value == '1' || $display_value === 'yes') ? __('Yes', 'pn-customers-manager') : __('No', 'pn-customers-manager');
+											}
+
+											// Only show if field has a label
+											if (!empty($hmf['label'])) {
+												echo "      • " . $hmf['label'] . ': ' . $display_value . "\n";
+											}
+										}
+									}
+								}
+							} else {
+								echo '<li><strong>' . esc_html($label) . ':</strong><ul style="margin-top: 5px;">';
+								foreach ($value as $group_index => $group_data) {
+									echo '<li style="margin-bottom: 10px;"><strong>' . sprintf(__('Group %d', 'pn-customers-manager'), $group_index + 1) . ':</strong><ul>';
+									if (is_array($group_data) && !empty($config['html_multi_fields'])) {
+										foreach ($config['html_multi_fields'] as $hmf_index => $hmf) {
+											$display_value = isset($group_data[$hmf_index]) ? $group_data[$hmf_index] : '';
+
+											// Format checkbox values
+											if (isset($hmf['type']) && $hmf['type'] === 'checkbox') {
+												$display_value = ($display_value == '1' || $display_value === 'yes') ? __('Yes', 'pn-customers-manager') : __('No', 'pn-customers-manager');
+											}
+
+											// Only show if field has a label
+											if (!empty($hmf['label'])) {
+												echo '<li>' . esc_html($hmf['label']) . ': ' . esc_html($display_value) . '</li>';
+											}
+										}
+									}
+									echo '</ul></li>';
+								}
+								echo '</ul></li>';
+							}
 						} else {
-							echo '<li><strong>' . esc_html($label) . ':</strong> ' . esc_html($value) . '</li>';
+							// Regular fields
+							if ($plain_text) {
+								echo "  " . $label . ': ' . $value . "\n";
+							} else {
+								echo '<li><strong>' . esc_html($label) . ':</strong> ' . esc_html($value) . '</li>';
+							}
 						}
 					}
 				}
@@ -1543,6 +1725,253 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 		if (!$plain_text) {
 			echo '</div>';
 		}
+	}
+
+	/**
+	 * Ensure cart is cleared after successful checkout
+	 *
+	 * This fixes an issue where the cart doesn't clear properly after checkout
+	 */
+	public function ensure_cart_is_cleared($order_id)
+	{
+		if (!$order_id) {
+			return;
+		}
+
+		$order = wc_get_order($order_id);
+		if (!$order) {
+			return;
+		}
+
+		// Only clear cart if order has been paid or is processing
+		$valid_statuses = ['processing', 'completed', 'on-hold'];
+		if (in_array($order->get_status(), $valid_statuses)) {
+			// Clear the cart
+			if (WC()->cart) {
+				WC()->cart->empty_cart();
+			}
+		}
+	}
+
+	/* ───────────────────────────────────────────
+	 *  CSV Export Functionality
+	 * ─────────────────────────────────────────── */
+
+	/**
+	 * Render CSV export button on product page (frontend)
+	 */
+	public function render_csv_export_button_frontend()
+	{
+		// Check if feature is enabled
+		$csv_enabled = get_option('pn_customers_manager_woocommerce_csv_export_enabled', 'off');
+		if ($csv_enabled !== 'on') {
+			return;
+		}
+
+		// Check if user is admin
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+
+		global $post;
+		$product_id = $post->ID;
+
+		?>
+		<input type="hidden" id="pn-cm-csv-nonce-<?php echo esc_attr($product_id); ?>" value="<?php echo wp_create_nonce('pn-cm-csv-export'); ?>" />
+		<div class="pn-cm-csv-export-frontend" style="margin: 20px 0; padding: 20px; background: #f9f9f9; border: 1px solid #e1e1e1; border-radius: 4px;">
+			<button type="button" class="button button-primary pn-cm-open-csv-popup" data-product-id="<?php echo esc_attr($product_id); ?>">
+				<?php _e('Export Orders to CSV', 'pn-customers-manager'); ?>
+			</button>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render CSV export button in product edit screen (admin)
+	 */
+	public function render_csv_export_button_admin()
+	{
+		// Check if feature is enabled
+		$csv_enabled = get_option('pn_customers_manager_woocommerce_csv_export_enabled', 'off');
+		if ($csv_enabled !== 'on') {
+			return;
+		}
+
+		global $post;
+		$product_id = $post->ID;
+
+		?>
+		<input type="hidden" id="pn-cm-csv-nonce-<?php echo esc_attr($product_id); ?>" value="<?php echo wp_create_nonce('pn-cm-csv-export'); ?>" />
+		<div class="options_group pn-cm-csv-export-admin">
+			<p class="form-field">
+				<label><?php _e('Export Orders Data', 'pn-customers-manager'); ?></label>
+				<button type="button" class="button button-secondary pn-cm-open-csv-popup" data-product-id="<?php echo esc_attr($product_id); ?>">
+					<?php _e('Export to CSV', 'pn-customers-manager'); ?>
+				</button>
+				<span class="description"><?php _e('Export all orders with custom field data for this product', 'pn-customers-manager'); ?></span>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Get orders data for CSV export
+	 */
+	private function get_orders_data_for_csv($product_id)
+	{
+		$orders = wc_get_orders([
+			'limit' => -1,
+			'status' => ['completed', 'processing', 'on-hold'],
+		]);
+
+		$data = [];
+		$fields_config = get_post_meta($product_id, '_pn_cm_woo_checkout_fields', true);
+
+		foreach ($orders as $order) {
+			foreach ($order->get_items() as $item) {
+				if ($item->get_product_id() == $product_id || $item->get_variation_id() == $product_id) {
+					$row = [
+						'order_id' => $order->get_id(),
+						'order_date' => $order->get_date_created()->format('Y-m-d H:i:s'),
+						'order_status' => $order->get_status(),
+						'customer_name' => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+						'customer_email' => $order->get_billing_email(),
+						'customer_phone' => $order->get_billing_phone(),
+						'product_name' => $item->get_name(),
+						'quantity' => $item->get_quantity(),
+						'subtotal' => $item->get_subtotal(),
+						'total' => $item->get_total(),
+					];
+
+					// Add custom fields data
+					if (is_array($fields_config)) {
+						foreach ($fields_config as $field) {
+							$meta_key = '_pn_cm_checkout_field_' . $field['name'];
+							$value = $item->get_meta($meta_key, true);
+
+							if ($field['type'] === 'html_multi' && is_array($value)) {
+								// Format html_multi as readable text
+								$formatted = '';
+								foreach ($value as $group_index => $group_data) {
+									$formatted .= sprintf(__('Group %d', 'pn-customers-manager'), $group_index + 1) . ': ';
+									$group_values = [];
+									if (is_array($group_data) && !empty($field['html_multi_fields'])) {
+										foreach ($field['html_multi_fields'] as $hmf_index => $hmf) {
+											if (isset($group_data[$hmf_index])) {
+												$group_values[] = $hmf['label'] . ': ' . $group_data[$hmf_index];
+											}
+										}
+									}
+									$formatted .= implode(', ', $group_values) . ' | ';
+								}
+								$value = rtrim($formatted, ' | ');
+							}
+
+							$row[$field['name']] = is_array($value) ? implode(', ', $value) : $value;
+						}
+					}
+
+					$data[] = $row;
+				}
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * AJAX: Get CSV preview
+	 */
+	public function ajax_get_csv_preview()
+	{
+		check_ajax_referer('pn-cm-csv-export', 'nonce');
+
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => __('Permission denied', 'pn-customers-manager')]);
+		}
+
+		$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+		if (!$product_id) {
+			wp_send_json_error(['message' => __('Invalid product ID', 'pn-customers-manager')]);
+		}
+
+		$data = $this->get_orders_data_for_csv($product_id);
+
+		// Get column headers
+		$columns = [];
+		if (!empty($data)) {
+			$columns = array_keys($data[0]);
+		}
+
+		// Get preview (first 5 rows)
+		$preview = array_slice($data, 0, 5);
+
+		wp_send_json_success([
+			'columns' => $columns,
+			'preview' => $preview,
+			'total_rows' => count($data),
+		]);
+	}
+
+	/**
+	 * AJAX: Export CSV
+	 */
+	public function ajax_export_csv()
+	{
+		check_ajax_referer('pn-cm-csv-export', 'nonce');
+
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => __('Permission denied', 'pn-customers-manager')]);
+		}
+
+		$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+		if (!$product_id) {
+			wp_send_json_error(['message' => __('Invalid product ID', 'pn-customers-manager')]);
+		}
+
+		$selected_columns = isset($_POST['columns']) ? $_POST['columns'] : [];
+		if (empty($selected_columns)) {
+			wp_send_json_error(['message' => __('No columns selected', 'pn-customers-manager')]);
+		}
+
+		$data = $this->get_orders_data_for_csv($product_id);
+
+		// Filter data to only include selected columns
+		$filtered_data = [];
+		foreach ($data as $row) {
+			$filtered_row = [];
+			foreach ($selected_columns as $column) {
+				$filtered_row[$column] = isset($row[$column]) ? $row[$column] : '';
+			}
+			$filtered_data[] = $filtered_row;
+		}
+
+		// Generate CSV
+		$product = wc_get_product($product_id);
+		$filename = 'orders_' . sanitize_file_name($product->get_slug()) . '_' . date('Y-m-d_H-i-s') . '.csv';
+
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Pragma: no-cache');
+		header('Expires: 0');
+
+		$output = fopen('php://output', 'w');
+
+		// Add BOM for Excel UTF-8 compatibility
+		fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+		// Write headers
+		if (!empty($filtered_data)) {
+			fputcsv($output, array_keys($filtered_data[0]));
+
+			// Write data
+			foreach ($filtered_data as $row) {
+				fputcsv($output, $row);
+			}
+		}
+
+		fclose($output);
+		exit;
 	}
 
 	/* ───────────────────────────────────────────

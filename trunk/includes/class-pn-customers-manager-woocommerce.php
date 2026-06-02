@@ -57,6 +57,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce {
 		// Initialize iCal download handler
 		new PN_CUSTOMERS_MANAGER_WooCommerce_iCal_Download();
 
+		// Load Checkout Custom Fields
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce-checkout-fields.php';
+		PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields::instance();
+
 		// Load WooCommerce Accounting Summary
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce-accounting.php';
 		PN_CUSTOMERS_MANAGER_WooCommerce_Accounting::instance();

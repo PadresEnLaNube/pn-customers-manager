@@ -3,8 +3,8 @@ Contributors: felixmartinez, hamlet237
 Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
-Tested up to: 6.9.1
-Stable tag: 1.1.105
+Tested up to: 7.0
+Stable tag: 1.1.140
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, contact forms, email campaigns, and WooCommerce integration for WordPress.
@@ -38,6 +38,33 @@ Whether you run an online store, a service-based business, an agency, or a membe
 * **Conversation Management Dashboard**: View, search, close, delete, and reset all WhatsApp and Instagram conversations from your admin panel and from the funnel builder. Full chat history with timestamps and role indicators.
 
 * **Debug Logging**: Enable or disable debug logging independently for WhatsApp AI and Instagram AI from the settings page. Logs are saved to `wp-content/uploads/pn-customers-manager-logs/`.
+
+= WooCommerce Checkout Custom Fields =
+
+* **Product-Specific Fields**: Add custom fields to the checkout page for specific products. Configure different fields for different products based on what information you need to collect.
+
+* **Visual Field Builder**: Intuitive drag-and-drop interface in product edit screen to create, reorder, and configure custom fields. Located in a new "Campos de Checkout" tab before the Calendar tab.
+
+* **Multiple Field Types**: Support for text, textarea, email, phone, number, date, select (dropdown), radio buttons, checkboxes, and file uploads.
+
+* **Field Configuration**: Each field can be configured with:
+  * Label and internal name (ID)
+  * Placeholder text
+  * Options for select/radio/checkbox fields
+  * Description/help text
+  * Required/optional status
+
+* **Automatic Display**: Fields automatically appear at checkout when customers purchase products with custom fields enabled.
+
+* **Validation**: Built-in validation for required fields and email format. Integrates seamlessly with WooCommerce checkout validation.
+
+* **Order Storage**: Customer responses are saved to order item metadata and visible in:
+  * Admin order details page
+  * Customer order view (My Account)
+  * Order confirmation emails
+  * Order item meta display
+
+* **Email Integration**: Custom field data is included in order notification emails with proper formatting and labels.
 
 = WooCommerce QR Tickets =
 
@@ -302,6 +329,13 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 
 == Changelog ==
+
+= 1.1.113 =
+
+* **WooCommerce Checkout Custom Fields**: New product feature that allows adding custom fields to the checkout page per product. Configure fields with a visual interface in the product edit screen, supporting text, textarea, email, phone, number, date, select, radio, checkbox, and file upload field types. Fields are displayed at checkout, validated, and saved to order item metadata. Customer responses are visible in order details (admin and customer views) and included in order notification emails.
+* **Checkout Fields Admin Interface**: Intuitive drag-and-drop field manager in WooCommerce product data tabs (before Calendar tab). Add, remove, and reorder fields with collapsible rows. Configure field type, label, internal name, placeholder, options (for select/radio/checkbox), description, and required status for each field.
+* **Dynamic Field Rendering**: Fields automatically appear in checkout when customers add products with custom fields enabled. Supports all standard form validation and integrates seamlessly with WooCommerce checkout flow.
+* **Order Integration**: Field data is stored in order item meta and displayed in order details pages, admin order view, customer order view, and order emails with proper formatting and labels.
 
 = 1.1.105 =
 
