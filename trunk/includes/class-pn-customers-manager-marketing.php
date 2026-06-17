@@ -48,14 +48,6 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 	public static function get_settings_section() {
 		$options = [];
 
-		// Section start
-		$options['pn_customers_manager_marketing_section_start'] = [
-			'id'          => 'pn_customers_manager_marketing_section_start',
-			'section'     => 'start',
-			'label'       => __('Marketing', 'pn-customers-manager'),
-			'description' => __('Configure your business information to generate AI-powered marketing offers and sales presentations.', 'pn-customers-manager'),
-		];
-
 		// Business Information subsection
 		$options['pn_customers_manager_marketing_business_subsection_start'] = [
 			'id'      => 'pn_customers_manager_marketing_business_subsection_start',
@@ -444,12 +436,6 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 
 		$options['pn_customers_manager_marketing_cta_subsection_end'] = [
 			'id'      => 'pn_customers_manager_marketing_cta_subsection_end',
-			'section' => 'end',
-		];
-
-		// Section end
-		$options['pn_customers_manager_marketing_section_end'] = [
-			'id'      => 'pn_customers_manager_marketing_section_end',
 			'section' => 'end',
 		];
 

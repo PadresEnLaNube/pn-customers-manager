@@ -281,6 +281,232 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
   }
 
   /**
+   * Shortcode: Brand style guide.
+   *
+   * Usage: [pn-customers-manager-style-guide]
+   *
+   * @param array $atts
+   * @return string
+   */
+  public function pn_customers_manager_style_guide($atts = []) {
+    // Get color settings
+    $color_main = get_option('pn_customers_manager_color_main', '#0000aa');
+    $color_main_alt = get_option('pn_customers_manager_color_main_alt', '#232323');
+    $color_secondary = get_option('pn_customers_manager_color_secondary', '#00aa00');
+    $color_secondary_alt = get_option('pn_customers_manager_color_secondary_alt', '#008800');
+    $color_tertiary = get_option('pn_customers_manager_color_tertiary', '#aa0000');
+    $color_tertiary_alt = get_option('pn_customers_manager_color_tertiary_alt', '#880000');
+
+    // Get button classes
+    $btn_primary_class = get_option('pn_customers_manager_btn_primary_class', 'pn-customers-manager-btn');
+    $btn_secondary_class = get_option('pn_customers_manager_btn_secondary_class', 'pn-customers-manager-btn');
+    $btn_transparent_class = get_option('pn_customers_manager_btn_transparent_class', 'pn-customers-manager-btn pn-customers-manager-btn-transparent');
+    $btn_mini_class = get_option('pn_customers_manager_btn_mini_class', 'pn-customers-manager-btn-mini');
+
+    // Get logo IDs
+    $primary_logo_id = intval(get_option('pn_customers_manager_brand_logo_primary', 0));
+    $dark_logo_id = intval(get_option('pn_customers_manager_brand_logo_dark', 0));
+    $monochrome_logo_id = intval(get_option('pn_customers_manager_brand_logo_monochrome', 0));
+    $secondary_logo_id = intval(get_option('pn_customers_manager_brand_logo_secondary', 0));
+
+    // Build all logos array - only add logos that have been uploaded
+    $all_logos = [];
+
+    if ($primary_logo_id) {
+      $all_logos[] = [
+        'id' => $primary_logo_id,
+        'label' => __('Primary Logo', 'pn-customers-manager'),
+        'description' => __('Use on light backgrounds', 'pn-customers-manager'),
+        'background' => '#f5f5f5',
+        'text_color' => $color_main,
+      ];
+    }
+
+    if ($dark_logo_id) {
+      $all_logos[] = [
+        'id' => $dark_logo_id,
+        'label' => __('Logo for Dark Backgrounds', 'pn-customers-manager'),
+        'description' => __('Use on dark backgrounds', 'pn-customers-manager'),
+        'background' => $color_main_alt,
+        'text_color' => '#ffffff',
+      ];
+    }
+
+    if ($monochrome_logo_id) {
+      $all_logos[] = [
+        'id' => $monochrome_logo_id,
+        'label' => __('Monochrome Logo', 'pn-customers-manager'),
+        'description' => __('For documents and print materials', 'pn-customers-manager'),
+        'background' => '#ffffff',
+        'text_color' => $color_main,
+      ];
+    }
+
+    if ($secondary_logo_id) {
+      $all_logos[] = [
+        'id' => $secondary_logo_id,
+        'label' => __('Secondary Logo', 'pn-customers-manager'),
+        'description' => __('Alternative variation', 'pn-customers-manager'),
+        'background' => '#f9f9f9',
+        'text_color' => $color_main_alt,
+      ];
+    }
+
+    // Enqueue style guide CSS
+    wp_enqueue_style(
+      'pn-customers-manager-style-guide',
+      plugin_dir_url(dirname(__FILE__)) . 'assets/css/pn-customers-manager-style-guide.css',
+      [],
+      filemtime(plugin_dir_path(dirname(__FILE__)) . 'assets/css/pn-customers-manager-style-guide.css')
+    );
+
+    // Add custom CSS for dynamic colors
+    $custom_css = "
+      .pn-sg-header { background: linear-gradient(135deg, {$color_main} 0%, {$color_main_alt} 100%); }
+      .pn-sg-section-title { color: {$color_main}; }
+      .pn-sg-typography-container h1,
+      .pn-sg-typography-container h2,
+      .pn-sg-typography-container h3,
+      .pn-sg-typography-container h4 { color: {$color_main_alt}; }
+      .pn-sg-button-group h3 { color: {$color_main_alt}; }
+      .pn-sg-usage-examples { border-left-color: {$color_main}; }
+      .pn-sg-usage-examples h4 { color: {$color_main_alt}; }
+      .pn-sg-spacing-box { background: {$color_main}; }
+    ";
+    wp_add_inline_style('pn-customers-manager-style-guide', $custom_css);
+
+    ob_start();
+    ?>
+
+    <!-- BRAND STYLE GUIDE -->
+    <div class="pn-sg-wrapper">
+
+    <!-- Header Section -->
+    <div class="pn-sg-header">
+      <h1><?php echo esc_html__('Brand Style Guide', 'pn-customers-manager'); ?></h1>
+      <p><?php echo esc_html__('Visual elements and brand identity', 'pn-customers-manager'); ?></p>
+    </div>
+
+    <?php if (!empty($all_logos)): ?>
+    <!-- Logos Section -->
+    <h2 class="pn-sg-section-title"><?php echo esc_html__('Brand Logos', 'pn-customers-manager'); ?></h2>
+
+    <div class="pn-sg-logos-grid">
+      <?php foreach ($all_logos as $logo): ?>
+        <div class="pn-sg-logo-card" style="background: <?php echo esc_attr($logo['background']); ?>;">
+          <h3 style="color: <?php echo esc_attr($logo['text_color']); ?>;"><?php echo esc_html($logo['label']); ?></h3>
+          <div class="pn-sg-logo-container">
+            <?php echo wp_get_attachment_image($logo['id'], 'medium'); ?>
+          </div>
+          <?php if (!empty($logo['description'])): ?>
+            <p class="<?php echo ($logo['background'] === $color_main_alt) ? 'pn-sg-light-text' : 'pn-sg-dark-text'; ?>"><?php echo esc_html($logo['description']); ?></p>
+          <?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Color Palette Section -->
+    <h2 class="pn-sg-section-title"><?php echo esc_html__('Color Palette', 'pn-customers-manager'); ?></h2>
+
+    <div class="pn-sg-colors-grid">
+      <?php
+      $colors = [
+        ['name' => __('Primary', 'pn-customers-manager'), 'value' => $color_main],
+        ['name' => __('Primary Dark', 'pn-customers-manager'), 'value' => $color_main_alt],
+        ['name' => __('Secondary', 'pn-customers-manager'), 'value' => $color_secondary],
+        ['name' => __('Secondary Dark', 'pn-customers-manager'), 'value' => $color_secondary_alt],
+        ['name' => __('Tertiary', 'pn-customers-manager'), 'value' => $color_tertiary],
+        ['name' => __('Tertiary Dark', 'pn-customers-manager'), 'value' => $color_tertiary_alt],
+      ];
+
+      foreach ($colors as $color):
+      ?>
+        <div class="pn-sg-color-card" style="background: <?php echo esc_attr($color['value']); ?>;">
+          <p class="pn-sg-color-name"><?php echo esc_html($color['name']); ?></p>
+          <p class="pn-sg-color-value"><?php echo esc_html(strtoupper($color['value'])); ?></p>
+        </div>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- Typography Section -->
+    <h2 class="pn-sg-section-title"><?php echo esc_html__('Typography', 'pn-customers-manager'); ?></h2>
+
+    <div class="pn-sg-typography-container">
+      <h1><?php echo esc_html__('Heading 1 - 2.5rem', 'pn-customers-manager'); ?></h1>
+      <h2><?php echo esc_html__('Heading 2 - 2rem', 'pn-customers-manager'); ?></h2>
+      <h3><?php echo esc_html__('Heading 3 - 1.5rem', 'pn-customers-manager'); ?></h3>
+      <h4><?php echo esc_html__('Heading 4 - 1.25rem', 'pn-customers-manager'); ?></h4>
+      <p><?php echo esc_html__('Body text - This is regular paragraph text at 1rem with a line height of 1.6 for optimal readability. Use this for all body content, descriptions, and general text.', 'pn-customers-manager'); ?></p>
+    </div>
+
+    <!-- Buttons Section -->
+    <h2 class="pn-sg-section-title"><?php echo esc_html__('Buttons', 'pn-customers-manager'); ?></h2>
+
+    <div class="pn-sg-buttons-container">
+      <div class="pn-sg-button-group">
+        <h3><?php echo esc_html__('Solid Buttons', 'pn-customers-manager'); ?></h3>
+        <p>
+          <strong><?php echo esc_html__('Primary:', 'pn-customers-manager'); ?></strong> <code><?php echo esc_html($btn_primary_class); ?></code><br>
+          <strong><?php echo esc_html__('Secondary:', 'pn-customers-manager'); ?></strong> <code><?php echo esc_html($btn_secondary_class); ?></code>
+        </p>
+        <div class="pn-sg-button-examples">
+          <a href="#" class="<?php echo esc_attr($btn_primary_class); ?>"><?php echo esc_html__('Primary Button', 'pn-customers-manager'); ?></a>
+          <a href="#" class="<?php echo esc_attr($btn_secondary_class); ?>"><?php echo esc_html__('Secondary Button', 'pn-customers-manager'); ?></a>
+          <a href="#" class="<?php echo esc_attr($btn_primary_class); ?> <?php echo esc_attr($btn_mini_class); ?>"><?php echo esc_html__('Primary Mini', 'pn-customers-manager'); ?></a>
+        </div>
+      </div>
+
+      <div class="pn-sg-button-group">
+        <h3><?php echo esc_html__('Transparent/Outline Buttons', 'pn-customers-manager'); ?></h3>
+        <p>
+          <strong><?php echo esc_html__('Classes:', 'pn-customers-manager'); ?></strong> <code><?php echo esc_html($btn_transparent_class); ?></code>
+        </p>
+        <div class="pn-sg-button-examples">
+          <a href="#" class="<?php echo esc_attr($btn_transparent_class); ?>"><?php echo esc_html__('Outline Button', 'pn-customers-manager'); ?></a>
+          <a href="#" class="<?php echo esc_attr($btn_transparent_class); ?> <?php echo esc_attr($btn_mini_class); ?>"><?php echo esc_html__('Outline Mini', 'pn-customers-manager'); ?></a>
+        </div>
+      </div>
+
+      <div class="pn-sg-usage-examples">
+        <h4><?php echo esc_html__('Usage Examples', 'pn-customers-manager'); ?></h4>
+        <pre><code>&lt;a href="#" class="<?php echo esc_html($btn_primary_class); ?>"&gt;<?php echo esc_html__('Button', 'pn-customers-manager'); ?>&lt;/a&gt;
+
+&lt;a href="#" class="<?php echo esc_html($btn_transparent_class); ?>"&gt;<?php echo esc_html__('Outline', 'pn-customers-manager'); ?>&lt;/a&gt;
+
+&lt;a href="#" class="<?php echo esc_html($btn_primary_class); ?> <?php echo esc_html($btn_mini_class); ?>"&gt;<?php echo esc_html__('Mini', 'pn-customers-manager'); ?>&lt;/a&gt;</code></pre>
+      </div>
+    </div>
+
+    <!-- Spacing Section -->
+    <h2 class="pn-sg-section-title"><?php echo esc_html__('Spacing Guidelines', 'pn-customers-manager'); ?></h2>
+
+    <div class="pn-sg-spacing-container">
+      <div class="pn-sg-spacing-item">
+        <div class="pn-sg-spacing-box pn-sg-small"></div>
+        <span class="pn-sg-spacing-label"><?php echo esc_html__('Small spacing: 8px', 'pn-customers-manager'); ?></span>
+      </div>
+      <div class="pn-sg-spacing-item">
+        <div class="pn-sg-spacing-box pn-sg-medium"></div>
+        <span class="pn-sg-spacing-label"><?php echo esc_html__('Medium spacing: 16px', 'pn-customers-manager'); ?></span>
+      </div>
+      <div class="pn-sg-spacing-item">
+        <div class="pn-sg-spacing-box pn-sg-large"></div>
+        <span class="pn-sg-spacing-label"><?php echo esc_html__('Large spacing: 24px', 'pn-customers-manager'); ?></span>
+      </div>
+      <div class="pn-sg-spacing-item">
+        <div class="pn-sg-spacing-box pn-sg-xlarge"></div>
+        <span class="pn-sg-spacing-label"><?php echo esc_html__('Extra large spacing: 40px', 'pn-customers-manager'); ?></span>
+      </div>
+    </div>
+
+    </div><!-- .pn-sg-wrapper -->
+
+    <?php
+    return ob_get_clean();
+  }
+
+  /**
    * Enqueue front-end assets for conversation shortcodes.
    */
   private static function enqueue_conversations_front_assets() {

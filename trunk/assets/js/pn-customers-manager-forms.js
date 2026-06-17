@@ -114,12 +114,14 @@
       $(this).siblings('.pn-customers-manager-input-stars').find('.pn-customers-manager-input-star').slice(0, $(this).val()).text('star');
     });
 
+    // Register event listener unconditionally (delegated events work for dynamic content)
+    $(document).on('change', '.pn-customers-manager-field[data-pn-customers-manager-parent]', function(e) {
+      cm_pn_form_update();
+    });
+
+    // Call form update on document ready if fields exist
     if ($('.pn-customers-manager-field[data-pn-customers-manager-parent]').length) {
       cm_pn_form_update();
-
-      $(document).on('change', '.pn-customers-manager-field[data-pn-customers-manager-parent]', function(e) {
-        cm_pn_form_update();
-      });
     }
 
     if ($('.pn-customers-manager-html-multi-group').length) {

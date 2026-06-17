@@ -1039,6 +1039,16 @@ textarea{
 .pn-customers-manager-main-message a{
   color:#8ab4f8
 }
+.pn-customers-manager-main-message.pn-customers-manager-success{
+  background-color:#28a745;
+}
+.pn-customers-manager-main-message.pn-customers-manager-error{
+  background-color:#dc3545;
+}
+.pn-customers-manager-main-message.pn-customers-manager-warning{
+  background-color:#ffc107;
+  color:#212529;
+}
 #pn-customers-manager-bar-wrapper{
   position:absolute;
   top:0;

@@ -5,7 +5,7 @@
  * Allows adding custom fields to checkout page per product
  *
  * @link       padresenlanube.com/
- * @since      1.1.140
+ * @since      1.1.150
  * @package    PN_CUSTOMERS_MANAGER
  * @subpackage PN_CUSTOMERS_MANAGER/includes
  * @author     Padres en la Nube
@@ -1843,7 +1843,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 						'total' => $item->get_total(),
 					];
 
-					// Add custom fields data
+					// Add custom fields data (configured fields)
 					if (is_array($fields_config)) {
 						foreach ($fields_config as $field) {
 							$meta_key = '_pn_cm_checkout_field_' . $field['name'];
@@ -1868,6 +1868,66 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 							}
 
 							$row[$field['name']] = is_array($value) ? implode(', ', $value) : $value;
+						}
+					}
+
+					// Add ALL item metadata (including calendar dates, Yith fields, and any other plugin data)
+					$all_metadata = $item->get_meta_data();
+					foreach ($all_metadata as $meta) {
+						$meta_key = $meta->key;
+						$meta_value = $meta->value;
+
+						// Skip internal WooCommerce metadata and already processed fields
+						if (strpos($meta_key, '_') === 0 && strpos($meta_key, '_pn_cm_checkout_field_') !== 0) {
+							// Include only specific internal metadata that is useful
+							$allowed_internal = [
+								'_pn_cm_woo_calendar_dates',
+								'_pn_cm_woo_calendar_weeks',
+								'_pn_cm_woo_qr_code',
+								'_yith_', // Include Yith metadata
+								'_wc_', // Include WC metadata
+							];
+
+							$is_allowed = false;
+							foreach ($allowed_internal as $prefix) {
+								if (strpos($meta_key, $prefix) === 0) {
+									$is_allowed = true;
+									break;
+								}
+							}
+
+							if (!$is_allowed) {
+								continue;
+							}
+						}
+
+						// Format the metadata key for CSV column
+						$column_name = str_replace('_', ' ', $meta_key);
+						$column_name = ucwords(trim($column_name));
+
+						// Format the value
+						if (is_array($meta_value)) {
+							// Special handling for calendar dates
+							if ($meta_key === '_pn_cm_woo_calendar_dates') {
+								$formatted_value = implode(', ', $meta_value);
+							}
+							// Special handling for calendar weeks
+							elseif ($meta_key === '_pn_cm_woo_calendar_weeks') {
+								$formatted_value = implode(', ', $meta_value);
+							}
+							// General array handling
+							else {
+								$formatted_value = wp_json_encode($meta_value, JSON_UNESCAPED_UNICODE);
+							}
+						} elseif (is_object($meta_value)) {
+							$formatted_value = wp_json_encode($meta_value, JSON_UNESCAPED_UNICODE);
+						} else {
+							$formatted_value = $meta_value;
+						}
+
+						// Add to row if not already present (avoid duplicates)
+						if (!isset($row[$column_name])) {
+							$row[$column_name] = $formatted_value;
 						}
 					}
 

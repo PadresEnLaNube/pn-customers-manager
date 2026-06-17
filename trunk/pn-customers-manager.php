@@ -13,7 +13,7 @@
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
  * Description:       Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
- * Version:           1.1.140
+ * Version:           1.1.150
  * Requires at least: 3.0
  * Tested up to:      7.0
  * Requires PHP:      7.2
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.1.140');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.1.150');
 define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.7');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
@@ -302,8 +302,17 @@ function pn_customers_manager_activation_hook()
 /**
  * (Re)schedule the projections snapshot cron with the configured frequency.
  * Reads the `pn_customers_manager_projection_frequency` option and applies it.
+ * If projections are disabled, clears the scheduled cron.
  */
 function pn_customers_manager_reschedule_projections_cron() {
+	$projections_enabled = get_option('pn_customers_manager_projections_enabled', 'off');
+
+	// If projections are disabled, clear the cron and return
+	if ($projections_enabled !== 'on') {
+		wp_clear_scheduled_hook('pn_cm_projections_snapshot_cron');
+		return;
+	}
+
 	$frequency = get_option('pn_customers_manager_projection_frequency', 'daily');
 	$valid = ['hourly', 'twicedaily', 'daily', 'weekly'];
 	if (!in_array($frequency, $valid, true)) {

@@ -46,116 +46,40 @@ class PN_CUSTOMERS_MANAGER_Settings {
   public function pn_customers_manager_get_options() {
     $pn_customers_manager_options = [];
 
-    // Pages section
-    $pn_customers_manager_options['pn_customers_manager_commercial_section_start'] = [
-      'id' => 'pn_customers_manager_commercial_section_start',
+    // ── Marketing section (parent) ──
+    $pn_customers_manager_options['pn_customers_manager_marketing_parent_section_start'] = [
+      'id' => 'pn_customers_manager_marketing_parent_section_start',
       'section' => 'start',
-      'label' => __('Pages', 'pn-customers-manager'),
-      'description' => __('Page assignments for the CRM.', 'pn-customers-manager'),
+      'label' => __('Marketing', 'pn-customers-manager'),
+      'description' => __('Configure marketing tools, business information, email campaigns, referrals, and projections.', 'pn-customers-manager'),
     ];
 
-    // Page manager alerts (only show missing pages in this section)
-    ob_start();
-    PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages());
-    $page_alerts_html = ob_get_clean();
-
-    if (!empty($page_alerts_html)) {
-      $pn_customers_manager_options['pn_customers_manager_page_alerts'] = [
-        'id' => 'pn_customers_manager_page_alerts',
-        'input' => 'html',
-        'html_content' => $page_alerts_html,
-      ];
-    }
-
-    $pn_customers_manager_options['pn_customers_manager_commercial_crm_page'] = [
-      'id' => 'pn_customers_manager_commercial_crm_page',
-      'input' => 'page_manager',
-      'label' => __('Organizations', 'pn-customers-manager'),
-      'description' => __('Page that approved commercial agents will access to manage organizations.', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-organization-list',
-      'page_option' => 'pn_customers_manager_commercial_crm_page',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_page_budget_list'] = [
-      'id' => 'pn_customers_manager_page_budget_list',
-      'input' => 'page_manager',
-      'label' => __('Budgets', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-budget-list',
-      'page_option' => 'pn_customers_manager_page_budget_list',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_page_invoice_list'] = [
-      'id' => 'pn_customers_manager_page_invoice_list',
-      'input' => 'page_manager',
-      'label' => __('Invoices', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-invoice-list',
-      'page_option' => 'pn_customers_manager_page_invoice_list',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_marketing_offer_page'] = [
-      'id' => 'pn_customers_manager_marketing_offer_page',
-      'input' => 'page_manager',
-      'label' => __('Business Offer Page', 'pn-customers-manager'),
-      'description' => __('Page displaying your business offer based on the configured data.', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-genuine-offer',
-      'page_option' => 'pn_customers_manager_marketing_offer_page',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_marketing_sales_presentation_page'] = [
-      'id' => 'pn_customers_manager_marketing_sales_presentation_page',
-      'input' => 'page_manager',
-      'label' => __('Sales Presentation Page', 'pn-customers-manager'),
-      'description' => __('Page displaying your sales presentation based on the configured data.', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-sales-presentation',
-      'page_option' => 'pn_customers_manager_marketing_sales_presentation_page',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_commercial_section_end'] = [
-      'id' => 'pn_customers_manager_commercial_section_end',
-      'section' => 'end',
-    ];
-
-    // Projections section
-    $pn_customers_manager_options['pn_customers_manager_projections_section_start'] = [
-      'id' => 'pn_customers_manager_projections_section_start',
+    // Marketing subsection 1: Información de la empresa
+    $pn_customers_manager_options['pn_customers_manager_marketing_info_subsection_start'] = [
+      'id' => 'pn_customers_manager_marketing_info_subsection_start',
       'section' => 'start',
-      'label' => __('Projections', 'pn-customers-manager'),
-      'description' => __('Configure how often the system collects automatic snapshots of your business metrics. These snapshots build the historical evolution chart that you can compare against manual projections.', 'pn-customers-manager'),
+      'label' => __('Información de la empresa', 'pn-customers-manager'),
+      'description' => __('Business information, target audience, and marketing configuration.', 'pn-customers-manager'),
     ];
 
-    $pn_customers_manager_options['pn_customers_manager_projection_frequency'] = [
-      'id' => 'pn_customers_manager_projection_frequency',
-      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
-      'input' => 'select',
-      'options' => [
-        'hourly'     => __('Hourly', 'pn-customers-manager'),
-        'twicedaily' => __('Twice daily', 'pn-customers-manager'),
-        'daily'      => __('Daily', 'pn-customers-manager'),
-        'weekly'     => __('Weekly', 'pn-customers-manager'),
-      ],
-      'value' => 'daily',
-      'label' => __('Snapshot frequency', 'pn-customers-manager'),
-      'description' => __('How often the cron collects a new snapshot of all metrics. Changing this value reschedules the cron automatically.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_projections_section_end'] = [
-      'id' => 'pn_customers_manager_projections_section_end',
-      'section' => 'end',
-    ];
-
-    // Email Campaigns section
-    $email_campaigns_options = PN_CUSTOMERS_MANAGER_Email_Campaigns::get_settings_section();
-    $pn_customers_manager_options = array_merge($pn_customers_manager_options, $email_campaigns_options);
-
-    // Marketing section
+    // Marketing section content (from Marketing class)
     $marketing_options = PN_CUSTOMERS_MANAGER_Marketing::get_settings_section();
     $pn_customers_manager_options = array_merge($pn_customers_manager_options, $marketing_options);
 
-    // Referral section
+    $pn_customers_manager_options['pn_customers_manager_marketing_info_subsection_end'] = [
+      'id' => 'pn_customers_manager_marketing_info_subsection_end',
+      'section' => 'end',
+    ];
+
+    // Marketing subsection 2: Campañas de correo electrónico (from Email_Campaigns class)
+    $email_campaigns_options = PN_CUSTOMERS_MANAGER_Email_Campaigns::get_settings_section();
+    $pn_customers_manager_options = array_merge($pn_customers_manager_options, $email_campaigns_options);
+
+    // Marketing subsection 3: Referidos
     $pn_customers_manager_options['pn_customers_manager_referral_section_start'] = [
       'id' => 'pn_customers_manager_referral_section_start',
       'section' => 'start',
-      'label' => __('Referrals', 'pn-customers-manager'),
+      'label' => __('Referidos', 'pn-customers-manager'),
       'description' => __('Referral system and QR code configuration.', 'pn-customers-manager'),
     ];
 
@@ -244,9 +168,161 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
-    // ── Budgets & Invoices section ──
-    $pn_customers_manager_options['pn_customers_manager_budget_section_start'] = [
-      'id' => 'pn_customers_manager_budget_section_start',
+    // Marketing subsection 4: Proyecciones
+    $pn_customers_manager_options['pn_customers_manager_projections_section_start'] = [
+      'id' => 'pn_customers_manager_projections_section_start',
+      'section' => 'start',
+      'label' => __('Proyecciones', 'pn-customers-manager'),
+      'description' => __('Configure how often the system collects automatic snapshots of your business metrics. These snapshots build the historical evolution chart that you can compare against manual projections.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_projections_enabled'] = [
+      'id' => 'pn_customers_manager_projections_enabled',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'parent' => 'this',
+      'label' => __('Enable projections system', 'pn-customers-manager'),
+      'description' => __('Enables the projections system with automatic snapshots and menu item. Administrators will always see the projections panel even if this option is disabled.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_projection_frequency'] = [
+      'id' => 'pn_customers_manager_projection_frequency',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'parent' => 'pn_customers_manager_projections_enabled',
+      'parent_option' => 'on',
+      'options' => [
+        'hourly'     => __('Hourly', 'pn-customers-manager'),
+        'twicedaily' => __('Twice daily', 'pn-customers-manager'),
+        'daily'      => __('Daily', 'pn-customers-manager'),
+        'weekly'     => __('Weekly', 'pn-customers-manager'),
+      ],
+      'value' => 'daily',
+      'label' => __('Snapshot frequency', 'pn-customers-manager'),
+      'description' => __('How often the cron collects a new snapshot of all metrics. Changing this value reschedules the cron automatically.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_projections_section_end'] = [
+      'id' => 'pn_customers_manager_projections_section_end',
+      'section' => 'end',
+    ];
+
+    // Marketing subsection 5: WooCommerce Integration (conditional - only visible if WooCommerce is active)
+    if (class_exists('WooCommerce')) {
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_section_start'] = [
+        'id' => 'pn_customers_manager_woocommerce_section_start',
+        'section' => 'start',
+        'label' => __('WooCommerce Integration', 'pn-customers-manager'),
+        'description' => __('Configure WooCommerce features including Calendar Booking Products calendar system for managing campament reservations with capacity control and member pricing.', 'pn-customers-manager'),
+      ];
+
+      // Checkout Custom Fields
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_checkout_fields_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_checkout_fields_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'label' => __('Enable Checkout Custom Fields', 'pn-customers-manager'),
+        'description' => __('Allows adding custom fields to checkout page per product. Fields can be configured in the product edit page under "Checkout Fields" tab.', 'pn-customers-manager'),
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_csv_export_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_csv_export_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'label' => __('Enable CSV Export for Product Orders', 'pn-customers-manager'),
+        'description' => __('Allows administrators to export orders with custom field data to CSV from product pages and product edit screen. Includes column selection and data preview.', 'pn-customers-manager'),
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'label' => __('Enable WooCommerce Calendar Booking Products', 'pn-customers-manager'),
+        'description' => __('Enables the Calendar Booking Products system with interactive calendar, capacity management, and member pricing for WooCommerce products.', 'pn-customers-manager'),
+      ];
+
+      // QR Tickets
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_qr_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_qr_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'label' => __('Enable QR Tickets', 'pn-customers-manager'),
+        'description' => __('Allows products to generate unique QR codes as tickets for physical delivery validation. Administrators can scan QR codes to mark orders as processed.', 'pn-customers-manager'),
+      ];
+
+      // Accounting Summary
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_accounting_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'parent' => 'this',
+        'label' => __('Enable Monthly Accounting Summary', 'pn-customers-manager'),
+        'description' => __('Sends an automated monthly accounting summary email with revenue, orders, and product statistics on the 1st of each month.', 'pn-customers-manager'),
+      ];
+
+      // Get all users for multi-select
+      $all_users = get_users(['orderby' => 'display_name', 'order' => 'ASC']);
+      $selected_recipients = get_option('pn_customers_manager_woocommerce_accounting_recipients', []);
+      if (!is_array($selected_recipients)) $selected_recipients = [];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_recipients'] = [
+        'id' => 'pn_customers_manager_woocommerce_accounting_recipients',
+        'input' => 'html',
+        'label' => __('Email Recipients', 'pn-customers-manager'),
+        'description' => __('Select users who will receive the monthly accounting summary email. Hold Ctrl/Cmd to select multiple.', 'pn-customers-manager'),
+        'parent' => 'pn_customers_manager_woocommerce_accounting_enabled',
+        'parent_option' => 'on',
+        'html_content' => '<select name="pn_customers_manager_woocommerce_accounting_recipients[]" multiple style="width:100%;min-height:150px;" class="pn-customers-manager-select">' .
+          implode('', array_map(function($user) use ($selected_recipients) {
+            $selected = in_array($user->ID, $selected_recipients) ? 'selected' : '';
+            $display = $user->display_name . ' (' . $user->user_email . ')';
+            return '<option value="' . esc_attr($user->ID) . '" ' . $selected . '>' . esc_html($display) . '</option>';
+          }, $all_users)) .
+          '</select>',
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_test'] = [
+        'id' => 'pn_customers_manager_woocommerce_accounting_test',
+        'input' => 'html',
+        'label' => __('Test Summary Email', 'pn-customers-manager'),
+        'description' => __('Send a test accounting summary to yourself for the last month. Make sure to save settings first.', 'pn-customers-manager'),
+        'parent' => 'pn_customers_manager_woocommerce_accounting_enabled',
+        'parent_option' => 'on',
+        'html_content' => '<button type="button" id="pn-cm-accounting-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent">
+            ' . __('Send Test Email', 'pn-customers-manager') . '
+          </button>
+          <div id="pn-cm-accounting-test-result" style="margin-top: 10px;"></div>',
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_section_end'] = [
+        'id' => 'pn_customers_manager_woocommerce_section_end',
+        'section' => 'end',
+      ];
+    }
+
+    // End of Marketing parent section
+    $pn_customers_manager_options['pn_customers_manager_marketing_parent_section_end'] = [
+      'id' => 'pn_customers_manager_marketing_parent_section_end',
+      'section' => 'end',
+    ];
+
+    // ── Accounting parent section ──
+    $pn_customers_manager_options['pn_customers_manager_accounting_section_start'] = [
+      'id' => 'pn_customers_manager_accounting_section_start',
+      'section' => 'start',
+      'label' => __('Accounting', 'pn-customers-manager'),
+      'description' => __('Configure budgets, invoices, and accounting settings.', 'pn-customers-manager'),
+    ];
+
+    // Budgets & Invoices subsection
+    $pn_customers_manager_options['pn_customers_manager_budget_subsection_start'] = [
+      'id' => 'pn_customers_manager_budget_subsection_start',
       'section' => 'start',
       'label' => __('Budgets & Invoices', 'pn-customers-manager'),
       'description' => __('Configure default values and company information for budget and invoice generation.', 'pn-customers-manager'),
@@ -390,14 +466,14 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'description' => __('Default notes visible to the client, pre-filled when creating a new budget.', 'pn-customers-manager'),
     ];
 
-    $pn_customers_manager_options['pn_customers_manager_budget_section_end'] = [
-      'id' => 'pn_customers_manager_budget_section_end',
+    $pn_customers_manager_options['pn_customers_manager_budget_subsection_end'] = [
+      'id' => 'pn_customers_manager_budget_subsection_end',
       'section' => 'end',
     ];
 
-    // ── Invoices section ──
-    $pn_customers_manager_options['pn_customers_manager_invoice_section_start'] = [
-      'id' => 'pn_customers_manager_invoice_section_start',
+    // Invoice settings subsection
+    $pn_customers_manager_options['pn_customers_manager_invoice_subsection_start'] = [
+      'id' => 'pn_customers_manager_invoice_subsection_start',
       'section' => 'start',
       'label' => __('Invoice settings', 'pn-customers-manager'),
       'description' => __('Invoice-specific defaults. Company info, currency, and tax rate are shared with budgets above.', 'pn-customers-manager'),
@@ -475,12 +551,382 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'description' => __('Default notes visible to the client, pre-filled when creating a new invoice.', 'pn-customers-manager'),
     ];
 
-    $pn_customers_manager_options['pn_customers_manager_invoice_section_end'] = [
-      'id' => 'pn_customers_manager_invoice_section_end',
+    $pn_customers_manager_options['pn_customers_manager_invoice_subsection_end'] = [
+      'id' => 'pn_customers_manager_invoice_subsection_end',
       'section' => 'end',
     ];
 
-    // ── API Configuration (parent section) ──
+    // End of Accounting parent section
+    $pn_customers_manager_options['pn_customers_manager_accounting_section_end'] = [
+      'id' => 'pn_customers_manager_accounting_section_end',
+      'section' => 'end',
+    ];
+
+    // ── Corporate Identity & Design (parent section) ──
+    $pn_customers_manager_options['pn_customers_manager_brand_section_start'] = [
+      'id' => 'pn_customers_manager_brand_section_start',
+      'section' => 'start',
+      'label' => __('Corporate Identity & Design', 'pn-customers-manager'),
+      'description' => __('Configure your brand identity, colors, logos, and button styles. These settings are used in the style guide.', 'pn-customers-manager'),
+    ];
+
+    // Logos subsection
+    $pn_customers_manager_options['pn_customers_manager_brand_logos_subsection_start'] = [
+      'id' => 'pn_customers_manager_brand_logos_subsection_start',
+      'section' => 'start',
+      'label' => __('Brand Logos', 'pn-customers-manager'),
+      'description' => __('Upload your company logos to use in the style guide and throughout the plugin.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_primary'] = [
+      'id' => 'pn_customers_manager_brand_logo_primary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Primary Logo', 'pn-customers-manager'),
+      'description' => __('Main logo displayed in the style guide. Recommended for use on light backgrounds.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_dark'] = [
+      'id' => 'pn_customers_manager_brand_logo_dark',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Logo for Dark Backgrounds', 'pn-customers-manager'),
+      'description' => __('Logo variation optimized for dark backgrounds (usually white or light colored).', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_monochrome'] = [
+      'id' => 'pn_customers_manager_brand_logo_monochrome',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Monochrome Logo', 'pn-customers-manager'),
+      'description' => __('Single-color logo version for documents and print materials.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_secondary'] = [
+      'id' => 'pn_customers_manager_brand_logo_secondary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Secondary Logo', 'pn-customers-manager'),
+      'description' => __('Alternative logo variation or simplified version.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logos_subsection_end'] = [
+      'id' => 'pn_customers_manager_brand_logos_subsection_end',
+      'section' => 'end',
+    ];
+
+    // Color customization subsection
+    $pn_customers_manager_options['pn_customers_manager_colors_subsection_start'] = [
+      'id' => 'pn_customers_manager_colors_subsection_start',
+      'section' => 'start',
+      'label' => __('Colors', 'pn-customers-manager'),
+      'description' => __('Customize the colors used throughout the plugin and displayed in the style guide.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main'] = [
+      'id' => 'pn_customers_manager_color_main',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Main Color', 'pn-customers-manager'),
+      'description' => __('Primary color used for text, backgrounds, and borders (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_bg_color_main'] = [
+      'id' => 'pn_customers_manager_bg_color_main',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Main Background Color', 'pn-customers-manager'),
+      'description' => __('Primary background color (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_border_color_main'] = [
+      'id' => 'pn_customers_manager_border_color_main',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Main Border Color', 'pn-customers-manager'),
+      'description' => __('Primary border color (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main_alt'] = [
+      'id' => 'pn_customers_manager_color_main_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Alternative Main Color', 'pn-customers-manager'),
+      'description' => __('Alternative color for text, backgrounds, and borders (default: #232323)', 'pn-customers-manager'),
+      'value' => '#232323',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_bg_color_main_alt'] = [
+      'id' => 'pn_customers_manager_bg_color_main_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Alternative Background Color', 'pn-customers-manager'),
+      'description' => __('Alternative background color (default: #232323)', 'pn-customers-manager'),
+      'value' => '#232323',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_border_color_main_alt'] = [
+      'id' => 'pn_customers_manager_border_color_main_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Alternative Border Color', 'pn-customers-manager'),
+      'description' => __('Alternative border color (default: #232323)', 'pn-customers-manager'),
+      'value' => '#232323',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main_blue'] = [
+      'id' => 'pn_customers_manager_color_main_blue',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Blue Color', 'pn-customers-manager'),
+      'description' => __('Blue accent color (default: #6e6eff)', 'pn-customers-manager'),
+      'value' => '#6e6eff',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main_grey'] = [
+      'id' => 'pn_customers_manager_color_main_grey',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Grey Color', 'pn-customers-manager'),
+      'description' => __('Grey color for backgrounds (default: #f5f5f5)', 'pn-customers-manager'),
+      'value' => '#f5f5f5',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_secondary'] = [
+      'id' => 'pn_customers_manager_color_secondary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Secondary Color', 'pn-customers-manager'),
+      'description' => __('Secondary brand color (default: #00aa00)', 'pn-customers-manager'),
+      'value' => '#00aa00',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_secondary_alt'] = [
+      'id' => 'pn_customers_manager_color_secondary_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Secondary Dark Color', 'pn-customers-manager'),
+      'description' => __('Darker variation of secondary color (default: #008800)', 'pn-customers-manager'),
+      'value' => '#008800',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_tertiary'] = [
+      'id' => 'pn_customers_manager_color_tertiary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Tertiary Color', 'pn-customers-manager'),
+      'description' => __('Tertiary brand color (default: #aa0000)', 'pn-customers-manager'),
+      'value' => '#aa0000',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_tertiary_alt'] = [
+      'id' => 'pn_customers_manager_color_tertiary_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Tertiary Dark Color', 'pn-customers-manager'),
+      'description' => __('Darker variation of tertiary color (default: #880000)', 'pn-customers-manager'),
+      'value' => '#880000',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_colors_subsection_end'] = [
+      'id' => 'pn_customers_manager_colors_subsection_end',
+      'section' => 'end',
+    ];
+
+    // Button styles subsection
+    $pn_customers_manager_options['pn_customers_manager_buttons_subsection_start'] = [
+      'id' => 'pn_customers_manager_buttons_subsection_start',
+      'section' => 'start',
+      'label' => __('Button Styles', 'pn-customers-manager'),
+      'description' => __('Configure CSS classes for different button styles. These are shown in the style guide.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_primary_class'] = [
+      'id' => 'pn_customers_manager_btn_primary_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Primary Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for primary buttons (default: pn-customers-manager-btn)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_secondary_class'] = [
+      'id' => 'pn_customers_manager_btn_secondary_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Secondary Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for secondary buttons (default: pn-customers-manager-btn)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_transparent_class'] = [
+      'id' => 'pn_customers_manager_btn_transparent_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Transparent/Outline Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for transparent or outline buttons (default: pn-customers-manager-btn pn-customers-manager-btn-transparent)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn pn-customers-manager-btn-transparent',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_mini_class'] = [
+      'id' => 'pn_customers_manager_btn_mini_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Mini Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for mini/small buttons (default: pn-customers-manager-btn-mini)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn-mini',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_buttons_subsection_end'] = [
+      'id' => 'pn_customers_manager_buttons_subsection_end',
+      'section' => 'end',
+    ];
+
+    // End of Corporate Identity & Design parent section
+    $pn_customers_manager_options['pn_customers_manager_brand_section_end'] = [
+      'id' => 'pn_customers_manager_brand_section_end',
+      'section' => 'end',
+    ];
+
+    // System section
+    $pn_customers_manager_options['pn_customers_manager_system_section_start'] = [
+      'id' => 'pn_customers_manager_system_section_start',
+      'section' => 'start',
+      'label' => __('System', 'pn-customers-manager'),
+      'description' => __('General plugin settings and configuration.', 'pn-customers-manager'),
+    ];
+
+    // Pages subsection (inside System)
+    $pn_customers_manager_options['pn_customers_manager_pages_subsection_start'] = [
+      'id' => 'pn_customers_manager_pages_subsection_start',
+      'section' => 'start',
+      'label' => __('Pages', 'pn-customers-manager'),
+      'description' => __('Page assignments for the CRM.', 'pn-customers-manager'),
+    ];
+
+    // Page manager alerts (only show missing pages in this section)
+    ob_start();
+    PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages());
+    $page_alerts_html = ob_get_clean();
+
+    if (!empty($page_alerts_html)) {
+      $pn_customers_manager_options['pn_customers_manager_page_alerts'] = [
+        'id' => 'pn_customers_manager_page_alerts',
+        'input' => 'html',
+        'html_content' => $page_alerts_html,
+      ];
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_commercial_crm_page'] = [
+      'id' => 'pn_customers_manager_commercial_crm_page',
+      'input' => 'page_manager',
+      'label' => __('Organizations', 'pn-customers-manager'),
+      'description' => __('Page that approved commercial agents will access to manage organizations.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-organization-list',
+      'page_option' => 'pn_customers_manager_commercial_crm_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_budget_list'] = [
+      'id' => 'pn_customers_manager_page_budget_list',
+      'input' => 'page_manager',
+      'label' => __('Budgets', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-budget-list',
+      'page_option' => 'pn_customers_manager_page_budget_list',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_invoice_list'] = [
+      'id' => 'pn_customers_manager_page_invoice_list',
+      'input' => 'page_manager',
+      'label' => __('Invoices', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-invoice-list',
+      'page_option' => 'pn_customers_manager_page_invoice_list',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_marketing_offer_page'] = [
+      'id' => 'pn_customers_manager_marketing_offer_page',
+      'input' => 'page_manager',
+      'label' => __('Business Offer Page', 'pn-customers-manager'),
+      'description' => __('Page displaying your business offer based on the configured data.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-genuine-offer',
+      'page_option' => 'pn_customers_manager_marketing_offer_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_marketing_sales_presentation_page'] = [
+      'id' => 'pn_customers_manager_marketing_sales_presentation_page',
+      'input' => 'page_manager',
+      'label' => __('Sales Presentation Page', 'pn-customers-manager'),
+      'description' => __('Page displaying your sales presentation based on the configured data.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-sales-presentation',
+      'page_option' => 'pn_customers_manager_marketing_sales_presentation_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_pages_subsection_end'] = [
+      'id' => 'pn_customers_manager_pages_subsection_end',
+      'section' => 'end',
+    ];
+
+    foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
+      $pn_customers_manager_options['pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug'] = [
+        'id' => 'pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => sprintf(
+          /* translators: %s: Post type name */
+          __('%s slug', 'pn-customers-manager'),
+          $pn_customers_manager_cpt_value
+        ),
+        'placeholder' => sprintf(
+          /* translators: %s: Post type name */
+          __('%s slug', 'pn-customers-manager'),
+          $pn_customers_manager_cpt_value
+        ),
+        'description' => sprintf(
+          /* translators: %1$s: Post type name, %2$s: Archive URL, %3$s: Archive URL, %4$s: Single post URL */
+          __('This option sets the slug of the %1$s archive page, and the %1$s pages. By default they will be:', 'pn-customers-manager'),
+          $pn_customers_manager_cpt_value
+        ) . '<br><a href="' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '</a><br>' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug/' . $pn_customers_manager_cpt_key)),
+      ];
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_allow_crm_indexing'] = [
+      'id' => 'pn_customers_manager_allow_crm_indexing',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Allow search engine indexing on CRM pages', 'pn-customers-manager'),
+      'description' => __('By default, CRM management pages include a noindex tag to prevent search engines from indexing them. Enable this option to remove those tags and allow indexing.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_options_remove'] = [
+      'id' => 'pn_customers_manager_options_remove',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Remove plugin options on deactivation', 'pn-customers-manager'),
+      'description' => __('If you activate this option the plugin will remove all options on deactivation. Please, be careful. This process cannot be undone.', 'pn-customers-manager'),
+    ];
+
+    // ── API Configuration (nested subsection) ──
     $pn_customers_manager_options['pn_customers_manager_api_section_start'] = [
       'id' => 'pn_customers_manager_api_section_start',
       'section' => 'start',
@@ -818,7 +1264,6 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
-    // ── End API Configuration ──
     // ── Akismet (nested subsection) ──
     $akismet_active    = class_exists('Akismet');
     $akismet_has_key   = $akismet_active && method_exists('Akismet', 'get_api_key') && Akismet::get_api_key();
@@ -875,157 +1320,9 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
-    // Color customization section
-    $pn_customers_manager_options['pn_customers_manager_colors_section_start'] = [
-      'id' => 'pn_customers_manager_colors_section_start',
-      'section' => 'start',
-      'label' => __('Colors', 'pn-customers-manager'),
-      'description' => __('Customize the colors used throughout the plugin by modifying the CSS root variables.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main'] = [
-      'id' => 'pn_customers_manager_color_main',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Main Color', 'pn-customers-manager'),
-      'description' => __('Primary color used for text, backgrounds, and borders (default: #0000aa)', 'pn-customers-manager'),
-      'value' => '#0000aa',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_bg_color_main'] = [
-      'id' => 'pn_customers_manager_bg_color_main',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Main Background Color', 'pn-customers-manager'),
-      'description' => __('Primary background color (default: #0000aa)', 'pn-customers-manager'),
-      'value' => '#0000aa',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_border_color_main'] = [
-      'id' => 'pn_customers_manager_border_color_main',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Main Border Color', 'pn-customers-manager'),
-      'description' => __('Primary border color (default: #0000aa)', 'pn-customers-manager'),
-      'value' => '#0000aa',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main_alt'] = [
-      'id' => 'pn_customers_manager_color_main_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Alternative Main Color', 'pn-customers-manager'),
-      'description' => __('Alternative color for text, backgrounds, and borders (default: #232323)', 'pn-customers-manager'),
-      'value' => '#232323',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_bg_color_main_alt'] = [
-      'id' => 'pn_customers_manager_bg_color_main_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Alternative Background Color', 'pn-customers-manager'),
-      'description' => __('Alternative background color (default: #232323)', 'pn-customers-manager'),
-      'value' => '#232323',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_border_color_main_alt'] = [
-      'id' => 'pn_customers_manager_border_color_main_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Alternative Border Color', 'pn-customers-manager'),
-      'description' => __('Alternative border color (default: #232323)', 'pn-customers-manager'),
-      'value' => '#232323',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main_blue'] = [
-      'id' => 'pn_customers_manager_color_main_blue',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Blue Color', 'pn-customers-manager'),
-      'description' => __('Blue accent color (default: #6e6eff)', 'pn-customers-manager'),
-      'value' => '#6e6eff',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main_grey'] = [
-      'id' => 'pn_customers_manager_color_main_grey',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Grey Color', 'pn-customers-manager'),
-      'description' => __('Grey color for backgrounds (default: #f5f5f5)', 'pn-customers-manager'),
-      'value' => '#f5f5f5',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_colors_section_end'] = [
-      'id' => 'pn_customers_manager_colors_section_end',
-      'section' => 'end',
-    ];
-
-    // System section
-    $pn_customers_manager_options['pn_customers_manager_system_section_start'] = [
-      'id' => 'pn_customers_manager_system_section_start',
-      'section' => 'start',
-      'label' => __('System', 'pn-customers-manager'),
-      'description' => __('General plugin settings and configuration.', 'pn-customers-manager'),
-    ];
-
-    foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
-      $pn_customers_manager_options['pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug'] = [
-        'id' => 'pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'text',
-        'label' => sprintf(
-          /* translators: %s: Post type name */
-          __('%s slug', 'pn-customers-manager'),
-          $pn_customers_manager_cpt_value
-        ),
-        'placeholder' => sprintf(
-          /* translators: %s: Post type name */
-          __('%s slug', 'pn-customers-manager'),
-          $pn_customers_manager_cpt_value
-        ),
-        'description' => sprintf(
-          /* translators: %1$s: Post type name, %2$s: Archive URL, %3$s: Archive URL, %4$s: Single post URL */
-          __('This option sets the slug of the %1$s archive page, and the %1$s pages. By default they will be:', 'pn-customers-manager'),
-          $pn_customers_manager_cpt_value
-        ) . '<br><a href="' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '</a><br>' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug/' . $pn_customers_manager_cpt_key)),
-      ];
-    }
-
-    $pn_customers_manager_options['pn_customers_manager_allow_crm_indexing'] = [
-      'id' => 'pn_customers_manager_allow_crm_indexing',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'checkbox',
-      'label' => __('Allow search engine indexing on CRM pages', 'pn-customers-manager'),
-      'description' => __('By default, CRM management pages include a noindex tag to prevent search engines from indexing them. Enable this option to remove those tags and allow indexing.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_options_remove'] = [
-      'id' => 'pn_customers_manager_options_remove',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'checkbox',
-      'label' => __('Remove plugin options on deactivation', 'pn-customers-manager'),
-      'description' => __('If you activate this option the plugin will remove all options on deactivation. Please, be careful. This process cannot be undone.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_system_section_end'] = [
-      'id' => 'pn_customers_manager_system_section_end',
-      'section' => 'end',
-    ];
-
-    // User Roles section
-    $pn_customers_manager_options['pn_customers_manager_roles_section_start'] = [
-      'id' => 'pn_customers_manager_roles_section_start',
+    // User Roles subsection (inside System)
+    $pn_customers_manager_options['pn_customers_manager_roles_subsection_start'] = [
+      'id' => 'pn_customers_manager_roles_subsection_start',
       'section' => 'start',
       'label' => __('User Roles', 'pn-customers-manager'),
       'description' => __('Manage plugin user roles. You can assign or remove roles from registered users.', 'pn-customers-manager'),
@@ -1055,108 +1352,16 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'role_label' => __('Commercial Agent - PN', 'pn-customers-manager'),
     ];
 
-    $pn_customers_manager_options['pn_customers_manager_roles_section_end'] = [
-      'id' => 'pn_customers_manager_roles_section_end',
+    $pn_customers_manager_options['pn_customers_manager_roles_subsection_end'] = [
+      'id' => 'pn_customers_manager_roles_subsection_end',
       'section' => 'end',
     ];
 
-    // WooCommerce section (only visible if WooCommerce is active)
-    if (class_exists('WooCommerce')) {
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_section_start'] = [
-        'id' => 'pn_customers_manager_woocommerce_section_start',
-        'section' => 'start',
-        'label' => __('WooCommerce Integration', 'pn-customers-manager'),
-        'description' => __('Configure WooCommerce features including Calendar Booking Products calendar system for managing campament reservations with capacity control and member pricing.', 'pn-customers-manager'),
-      ];
-
-      // Checkout Custom Fields
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_checkout_fields_enabled'] = [
-        'id' => 'pn_customers_manager_woocommerce_checkout_fields_enabled',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'checkbox',
-        'label' => __('Enable Checkout Custom Fields', 'pn-customers-manager'),
-        'description' => __('Allows adding custom fields to checkout page per product. Fields can be configured in the product edit page under "Checkout Fields" tab.', 'pn-customers-manager'),
-      ];
-
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_csv_export_enabled'] = [
-        'id' => 'pn_customers_manager_woocommerce_csv_export_enabled',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'checkbox',
-        'label' => __('Enable CSV Export for Product Orders', 'pn-customers-manager'),
-        'description' => __('Allows administrators to export orders with custom field data to CSV from product pages and product edit screen. Includes column selection and data preview.', 'pn-customers-manager'),
-      ];
-
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_enabled'] = [
-        'id' => 'pn_customers_manager_woocommerce_enabled',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'checkbox',
-        'label' => __('Enable WooCommerce Calendar Booking Products', 'pn-customers-manager'),
-        'description' => __('Enables the Calendar Booking Products system with interactive calendar, capacity management, and member pricing for WooCommerce products.', 'pn-customers-manager'),
-      ];
-
-      // QR Tickets
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_qr_enabled'] = [
-        'id' => 'pn_customers_manager_woocommerce_qr_enabled',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'checkbox',
-        'label' => __('Enable QR Tickets', 'pn-customers-manager'),
-        'description' => __('Allows products to generate unique QR codes as tickets for physical delivery validation. Administrators can scan QR codes to mark orders as processed.', 'pn-customers-manager'),
-      ];
-
-      // Accounting Summary
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_enabled'] = [
-        'id' => 'pn_customers_manager_woocommerce_accounting_enabled',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'checkbox',
-        'parent' => 'this',
-        'label' => __('Enable Monthly Accounting Summary', 'pn-customers-manager'),
-        'description' => __('Sends an automated monthly accounting summary email with revenue, orders, and product statistics on the 1st of each month.', 'pn-customers-manager'),
-      ];
-
-      // Get all users for multi-select
-      $all_users = get_users(['orderby' => 'display_name', 'order' => 'ASC']);
-      $selected_recipients = get_option('pn_customers_manager_woocommerce_accounting_recipients', []);
-      if (!is_array($selected_recipients)) $selected_recipients = [];
-
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_recipients'] = [
-        'id' => 'pn_customers_manager_woocommerce_accounting_recipients',
-        'input' => 'html',
-        'label' => __('Email Recipients', 'pn-customers-manager'),
-        'description' => __('Select users who will receive the monthly accounting summary email. Hold Ctrl/Cmd to select multiple.', 'pn-customers-manager'),
-        'parent' => 'pn_customers_manager_woocommerce_accounting_enabled',
-        'parent_option' => 'on',
-        'html_content' => '<select name="pn_customers_manager_woocommerce_accounting_recipients[]" multiple style="width:100%;min-height:150px;" class="pn-customers-manager-select">' .
-          implode('', array_map(function($user) use ($selected_recipients) {
-            $selected = in_array($user->ID, $selected_recipients) ? 'selected' : '';
-            $display = $user->display_name . ' (' . $user->user_email . ')';
-            return '<option value="' . esc_attr($user->ID) . '" ' . $selected . '>' . esc_html($display) . '</option>';
-          }, $all_users)) .
-          '</select>',
-      ];
-
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_test'] = [
-        'id' => 'pn_customers_manager_woocommerce_accounting_test',
-        'input' => 'html',
-        'label' => __('Test Summary Email', 'pn-customers-manager'),
-        'description' => __('Send a test accounting summary to yourself for the last month. Make sure to save settings first.', 'pn-customers-manager'),
-        'parent' => 'pn_customers_manager_woocommerce_accounting_enabled',
-        'parent_option' => 'on',
-        'html_content' => '<button type="button" id="pn-cm-accounting-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent">
-            ' . __('Send Test Email', 'pn-customers-manager') . '
-          </button>
-          <div id="pn-cm-accounting-test-result" style="margin-top: 10px;"></div>',
-      ];
-
-      $pn_customers_manager_options['pn_customers_manager_woocommerce_section_end'] = [
-        'id' => 'pn_customers_manager_woocommerce_section_end',
-        'section' => 'end',
-      ];
-    }
+    // End of System section
+    $pn_customers_manager_options['pn_customers_manager_system_section_end'] = [
+      'id' => 'pn_customers_manager_system_section_end',
+      'section' => 'end',
+    ];
 
     $pn_customers_manager_options['pn_customers_manager_nonce'] = [
       'id' => 'pn_customers_manager_nonce',
@@ -1197,8 +1402,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       $menu_cap,
       'pn_customers_manager_options',
       [$this, 'pn_customers_manager_options'],
-      PN_CUSTOMERS_MANAGER_URL . 'assets/media/pn-customers-manager-menu-icon.svg',
-      100
+      PN_CUSTOMERS_MANAGER_URL . 'assets/media/pn-customers-manager-menu-icon.svg'
     );
 		
     add_submenu_page(
@@ -1233,23 +1437,38 @@ class PN_CUSTOMERS_MANAGER_Settings {
       );
     }
 
-    // Add Budgets submenu (only if user has the capability)
+    // Add Accounting parent menu (only if user can access budgets or invoices)
+    if (current_user_can('edit_pn_cm_budget') || current_user_can('edit_pn_cm_invoice')) {
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Accounting', 'pn-customers-manager'),
+        esc_html__('Accounting', 'pn-customers-manager'),
+        'edit_pn_cm_budget',
+        'pn_customers_manager_accounting',
+        function() {
+          // Redirect to budgets by default
+          echo '<script>window.location.href = "' . esc_url(admin_url('edit.php?post_type=pn_cm_budget')) . '";</script>';
+        }
+      );
+    }
+
+    // Add Budgets submenu under Accounting (only if user has the capability)
     if (current_user_can('edit_pn_cm_budget')) {
       add_submenu_page(
         'pn_customers_manager_options',
         esc_html__('Budgets', 'pn-customers-manager'),
-        esc_html__('Budgets', 'pn-customers-manager'),
+        '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__('Budgets', 'pn-customers-manager'),
         'edit_pn_cm_budget',
         'edit.php?post_type=pn_cm_budget'
       );
     }
 
-    // Add Invoices submenu (only if user has the capability)
+    // Add Invoices submenu under Accounting (only if user has the capability)
     if (current_user_can('edit_pn_cm_invoice')) {
       add_submenu_page(
         'pn_customers_manager_options',
         esc_html__('Invoices', 'pn-customers-manager'),
-        esc_html__('Invoices', 'pn-customers-manager'),
+        '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__('Invoices', 'pn-customers-manager'),
         'edit_pn_cm_invoice',
         'edit.php?post_type=pn_cm_invoice'
       );
@@ -1296,8 +1515,9 @@ class PN_CUSTOMERS_MANAGER_Settings {
       );
     }
 
-    // Add Projections submenu
-    if (current_user_can('pn_cm_manage_crm')) {
+    // Add Projections submenu (conditional based on settings)
+    $projections_enabled = get_option('pn_customers_manager_projections_enabled', 'off');
+    if (current_user_can('pn_cm_manage_crm') && ($projections_enabled === 'on' || current_user_can('manage_options'))) {
       add_submenu_page(
         'pn_customers_manager_options',
         esc_html__('Projections', 'pn-customers-manager'),

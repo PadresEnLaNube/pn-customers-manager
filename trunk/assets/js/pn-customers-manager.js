@@ -159,12 +159,21 @@
     }, 6000);
   }
 
-	window.pn_customers_manager_get_main_message = function (pn_customers_manager_main_message_new_content){
+	window.pn_customers_manager_get_main_message = function (pn_customers_manager_main_message_new_content, pn_customers_manager_message_type){
 		var pn_customers_manager_main_message_timeout;
 
 		pn_customers_manager_main_message_animate();
 		clearTimeout(pn_customers_manager_main_message_timeout);
     var pn_customers_manager_main_message = $('#pn-customers-manager-main-message');
+
+    // Remove previous type classes
+    pn_customers_manager_main_message.removeClass('pn-customers-manager-success pn-customers-manager-error pn-customers-manager-warning');
+
+    // Add new type class if provided
+    if (pn_customers_manager_message_type) {
+      pn_customers_manager_main_message.addClass('pn-customers-manager-' + pn_customers_manager_message_type);
+    }
+
     pn_customers_manager_main_message.find('#pn-customers-manager-main-message-span').html(pn_customers_manager_main_message_new_content);
     pn_customers_manager_main_message.css('right', '-500px');
     pn_customers_manager_main_message.css('display', 'block');
@@ -376,11 +385,18 @@
 
       if (pn_customers_manager_action.popup != '') {
         $(window).on('load', function(e) {
+          var isLoggedIn = $('body').hasClass('pn-customers-manager-body-logged-in');
+          var requestedTab = pn_customers_manager_action.tab;
+
+          if (requestedTab === 'register' && isLoggedIn) {
+            return;
+          }
+
           pn_customers_manager_Popups.open($('#' + pn_customers_manager_action.popup));
 
-          if (typeof pn_customers_manager_action.tab != '') {
-            $('.userspn-tab-links[data-userspn-id="userspn-tab-' + pn_customers_manager_action.tab + '"]').click();
-            $('#userspn-' + pn_customers_manager_action.tab + ' input#userspn_email').focus();
+          if (requestedTab && requestedTab != '') {
+            $('.userspn-tab-links[data-userspn-id="userspn-tab-' + requestedTab + '"]').click();
+            $('#userspn-' + requestedTab + ' input#userspn_email').focus();
           } else {
             $('.userspn-tab-links[data-userspn-id="userspn-tab-login"]').click();
             $('#userspn-login input#user_login').focus();

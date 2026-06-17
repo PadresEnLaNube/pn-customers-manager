@@ -61,6 +61,11 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		// AJAX admin: reservas por día + resumen
 		add_action('wp_ajax_pn_cm_woo_calendar_get_date_bookings', [$this, 'ajax_get_date_bookings']);
 		add_action('wp_ajax_pn_cm_woo_calendar_get_admin_summary', [$this, 'ajax_get_admin_summary']);
+
+		// Admin: edición de fechas en pedidos
+		add_action('add_meta_boxes', [$this, 'add_order_calendar_meta_box']);
+		add_action('admin_enqueue_scripts', [$this, 'order_edit_scripts']);
+		add_action('wp_ajax_pn_cm_calendar_update_order_dates', [$this, 'ajax_update_order_dates']);
 	}
 
 	/* ───────────────────────────────────────────
@@ -1051,5 +1056,421 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			'currency'       => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '€',
 			'weeks'          => array_values($week_stats),
 		]);
+	}
+
+	/* ───────────────────────────────────────────
+	 *  Admin: edición de fechas en pedidos
+	 * ─────────────────────────────────────────── */
+
+	/**
+	 * Registra meta box para edición de fechas de calendario en pedidos
+	 */
+	public function add_order_calendar_meta_box()
+	{
+		if (!current_user_can('manage_woocommerce')) return;
+
+		$screen = class_exists('Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController')
+			&& wc_get_container()->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled()
+			? wc_get_page_screen_id('shop-order')
+			: 'shop_order';
+
+		add_meta_box(
+			'pn_cm_calendar_order_dates',
+			__('Fechas de Calendario de Productos', 'pn-customers-manager'),
+			[$this, 'render_order_calendar_meta_box'],
+			$screen,
+			'normal',
+			'default'
+		);
+	}
+
+	/**
+	 * Renderiza meta box de edición de fechas de calendario en pedidos
+	 */
+	public function render_order_calendar_meta_box($post_or_order)
+	{
+		$order = $post_or_order instanceof WP_Post
+			? wc_get_order($post_or_order->ID)
+			: $post_or_order;
+
+		if (!$order) return;
+
+		$has_calendar_items = false;
+		$items_html = '';
+
+		foreach ($order->get_items() as $item_id => $item) {
+			$product_id = $item->get_product_id();
+			if (!$this->is_camp_product($product_id)) continue;
+
+			$has_calendar_items = true;
+			$dates = $item->get_meta('_pn_cm_woo_calendar_dates');
+			$weeks_ids = $item->get_meta('_pn_cm_woo_calendar_weeks');
+
+			if (empty($dates) || !is_array($dates)) continue;
+
+			$product = wc_get_product($product_id);
+			$product_name = $product ? $product->get_name() : __('Producto', 'pn-customers-manager');
+
+			$weeks = $this->get_weeks($product_id);
+			$availability = $this->get_availability($product_id);
+
+			// Preparar datos para JavaScript
+			$weeks_for_js = [];
+			foreach ($weeks as $w) {
+				$weeks_for_js[] = [
+					'id'           => $w['id'],
+					'label'        => $w['label'],
+					'dates'        => $w['dates'],
+					'price'        => (float) $w['price'],
+					'member_price' => isset($w['member_price']) ? (float) $w['member_price'] : (float) $w['price'],
+					'capacity'     => (int) $w['capacity'],
+				];
+			}
+
+			$items_html .= '<div class="pn-cm-calendar-order-item" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px;">';
+			$items_html .= '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">';
+			$items_html .= '<strong style="font-size: 14px;">' . esc_html($product_name) . '</strong>';
+			$items_html .= '<button type="button" class="button button-primary pn-cm-calendar-edit-dates" ';
+			$items_html .= 'data-item-id="' . esc_attr($item_id) . '" ';
+			$items_html .= 'data-product-id="' . esc_attr($product_id) . '" ';
+			$items_html .= 'data-order-id="' . esc_attr($order->get_id()) . '" ';
+			$items_html .= 'data-current-dates="' . esc_attr(wp_json_encode($dates)) . '" ';
+			$items_html .= 'data-current-weeks="' . esc_attr(wp_json_encode($weeks_ids ?: [])) . '" ';
+			$items_html .= 'data-weeks="' . esc_attr(wp_json_encode($weeks_for_js)) . '" ';
+			$items_html .= 'data-day-price="' . esc_attr($this->get_day_price($product_id)) . '" ';
+			$items_html .= 'data-availability="' . esc_attr(wp_json_encode($availability)) . '">';
+			$items_html .= __('Editar Fechas', 'pn-customers-manager');
+			$items_html .= '</button>';
+			$items_html .= '</div>';
+			$items_html .= '<div class="pn-cm-calendar-dates-display" id="pn-cm-calendar-dates-display-' . esc_attr($item_id) . '">';
+			$items_html .= $this->render_dates_pills($dates, $weeks_ids, $weeks);
+			$items_html .= '</div>';
+			$items_html .= '</div>';
+		}
+
+		if (!$has_calendar_items) {
+			echo '<p>' . __('Este pedido no contiene productos de calendario.', 'pn-customers-manager') . '</p>';
+			return;
+		}
+
+		echo $items_html;
+	}
+
+	/**
+	 * Carga scripts para edición de fechas en pedidos
+	 */
+	public function order_edit_scripts($hook)
+	{
+		// Verificar si estamos en página de edición de pedido
+		$is_order_edit = in_array($hook, ['post.php', 'post-new.php']) ||
+			(class_exists('Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController') &&
+				wc_get_container()->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled() &&
+				strpos($hook, 'woocommerce_page_wc-orders') !== false);
+
+		if (!$is_order_edit) return;
+
+		// Verificar si es un pedido
+		global $post;
+		$order = null;
+
+		if ($post && $post->post_type === 'shop_order') {
+			$order = wc_get_order($post->ID);
+		} elseif (isset($_GET['id'])) {
+			$order = wc_get_order(absint($_GET['id']));
+		}
+
+		if (!$order) return;
+
+		// Verificar si tiene items de calendario
+		$has_calendar = false;
+		foreach ($order->get_items() as $item) {
+			if ($this->is_camp_product($item->get_product_id())) {
+				$has_calendar = true;
+				break;
+			}
+		}
+
+		if (!$has_calendar) return;
+
+		$plugin_url = PN_CUSTOMERS_MANAGER_URL;
+		$plugin_dir = PN_CUSTOMERS_MANAGER_DIR;
+
+		// CSS
+		wp_enqueue_style(
+			'pn-cm-calendar-booking-css',
+			$plugin_url . 'assets/css/pn-cm-calendar-booking.css',
+			[],
+			filemtime($plugin_dir . 'assets/css/pn-cm-calendar-booking.css')
+		);
+
+		// JS
+		wp_enqueue_script(
+			'pn-cm-calendar-order-edit',
+			$plugin_url . 'assets/js/pn-cm-calendar-order-edit.js',
+			['jquery'],
+			filemtime($plugin_dir . 'assets/js/pn-cm-calendar-order-edit.js'),
+			true
+		);
+
+		wp_localize_script('pn-cm-calendar-order-edit', 'pnCmCalendarOrderEdit', [
+			'ajaxUrl' => admin_url('admin-ajax.php'),
+			'nonce'   => wp_create_nonce('pn_cm_calendar_order_edit'),
+			'i18n'    => [
+				'editDates'       => __('Editar Fechas', 'pn-customers-manager'),
+				'savingChanges'   => __('Guardando cambios...', 'pn-customers-manager'),
+				'success'         => __('Fechas actualizadas correctamente', 'pn-customers-manager'),
+				'error'           => __('Error al actualizar fechas', 'pn-customers-manager'),
+				'selectDates'     => __('Selecciona las nuevas fechas', 'pn-customers-manager'),
+				'currentDates'    => __('Fechas actuales', 'pn-customers-manager'),
+				'newDates'        => __('Nuevas fechas', 'pn-customers-manager'),
+				'save'            => __('Guardar Cambios', 'pn-customers-manager'),
+				'cancel'          => __('Cancelar', 'pn-customers-manager'),
+				'total'           => __('Total', 'pn-customers-manager'),
+				'available'       => __('Disponible', 'pn-customers-manager'),
+				'selected'        => __('Seleccionado', 'pn-customers-manager'),
+				'full'            => __('Completo', 'pn-customers-manager'),
+				'noAvailability'  => __('No hay disponibilidad para las fechas seleccionadas', 'pn-customers-manager'),
+				'selectAtLeast'   => __('Selecciona al menos una fecha', 'pn-customers-manager'),
+			],
+			'months' => [
+				__('Enero', 'pn-customers-manager'), __('Febrero', 'pn-customers-manager'), __('Marzo', 'pn-customers-manager'),
+				__('Abril', 'pn-customers-manager'), __('Mayo', 'pn-customers-manager'), __('Junio', 'pn-customers-manager'),
+				__('Julio', 'pn-customers-manager'), __('Agosto', 'pn-customers-manager'), __('Septiembre', 'pn-customers-manager'),
+				__('Octubre', 'pn-customers-manager'), __('Noviembre', 'pn-customers-manager'), __('Diciembre', 'pn-customers-manager'),
+			],
+			'weekDays' => [
+				__('L', 'pn-customers-manager'), __('M', 'pn-customers-manager'), __('X', 'pn-customers-manager'),
+				__('J', 'pn-customers-manager'), __('V', 'pn-customers-manager'), __('S', 'pn-customers-manager'), __('D', 'pn-customers-manager'),
+			],
+			'currency' => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '€',
+		]);
+	}
+
+	/**
+	 * AJAX: actualizar fechas de un item de pedido
+	 */
+	public function ajax_update_order_dates()
+	{
+		check_ajax_referer('pn_cm_calendar_order_edit', 'nonce');
+
+		if (!current_user_can('manage_woocommerce')) {
+			wp_send_json_error(['message' => __('No tienes permisos para realizar esta acción', 'pn-customers-manager')]);
+		}
+
+		$order_id   = isset($_POST['order_id']) ? absint($_POST['order_id']) : 0;
+		$item_id    = isset($_POST['item_id']) ? absint($_POST['item_id']) : 0;
+		$new_dates  = isset($_POST['dates']) ? json_decode(stripslashes($_POST['dates']), true) : [];
+		$new_weeks  = isset($_POST['weeks']) ? json_decode(stripslashes($_POST['weeks']), true) : [];
+
+		if (!$order_id || !$item_id || empty($new_dates) || !is_array($new_dates)) {
+			wp_send_json_error(['message' => __('Parámetros inválidos', 'pn-customers-manager')]);
+		}
+
+		$order = wc_get_order($order_id);
+		if (!$order) {
+			wp_send_json_error(['message' => __('Pedido no encontrado', 'pn-customers-manager')]);
+		}
+
+		$item = $order->get_item($item_id);
+		if (!$item) {
+			wp_send_json_error(['message' => __('Item no encontrado', 'pn-customers-manager')]);
+		}
+
+		$product_id = $item->get_product_id();
+		if (!$this->is_camp_product($product_id)) {
+			wp_send_json_error(['message' => __('Este no es un producto de calendario', 'pn-customers-manager')]);
+		}
+
+		// Obtener fechas actuales
+		$old_dates = $item->get_meta('_pn_cm_woo_calendar_dates');
+		$old_weeks = $item->get_meta('_pn_cm_woo_calendar_weeks');
+		if (!is_array($old_dates)) $old_dates = [];
+		if (!is_array($old_weeks)) $old_weeks = [];
+
+		// Validar disponibilidad simulada (excluyendo las fechas actuales del item)
+		$simulated_availability = $this->get_simulated_availability($product_id, $old_dates);
+
+		foreach ($new_dates as $date) {
+			if (!isset($simulated_availability[$date]) || $simulated_availability[$date] <= 0) {
+				wp_send_json_error([
+					'message' => sprintf(
+						__('La fecha %s no tiene plazas disponibles', 'pn-customers-manager'),
+						$date
+					)
+				]);
+			}
+		}
+
+		// Actualización atómica: decrementar viejas, incrementar nuevas
+		$this->update_booking_dates_atomic($product_id, $old_dates, $new_dates, $order);
+
+		// Actualizar meta del item
+		$item->update_meta_data('_pn_cm_woo_calendar_dates', $new_dates);
+		$item->update_meta_data('_pn_cm_woo_calendar_weeks', $new_weeks);
+
+		// Actualizar meta visible
+		$item->update_meta_data(__('Fechas calendario de productos', 'pn-customers-manager'), implode(', ', $new_dates));
+
+		if (!empty($new_weeks)) {
+			$week_map = [];
+			foreach ($this->get_weeks($product_id) as $w) {
+				$week_map[$w['id']] = $w;
+			}
+			$labels = [];
+			foreach ($new_weeks as $wid) {
+				if (isset($week_map[$wid])) {
+					$w = $week_map[$wid];
+					$labels[] = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+				}
+			}
+			if (!empty($labels)) {
+				$item->update_meta_data(__('Semanas', 'pn-customers-manager'), implode(', ', $labels));
+			}
+		}
+
+		// Recalcular precio
+		$new_price = $this->calculate_price($product_id, $new_dates, $new_weeks, false);
+		$item->set_subtotal($new_price);
+		$item->set_total($new_price);
+		$item->save();
+
+		// Recalcular totales del pedido
+		$order->calculate_totals();
+
+		// Agregar nota al pedido
+		$old_dates_str = implode(', ', $old_dates);
+		$new_dates_str = implode(', ', $new_dates);
+		$note = sprintf(
+			__('Fechas de calendario actualizadas por %s. Fechas anteriores: %s. Nuevas fechas: %s. Nuevo precio: %s', 'pn-customers-manager'),
+			wp_get_current_user()->display_name,
+			$old_dates_str,
+			$new_dates_str,
+			wc_price($new_price)
+		);
+		$order->add_order_note($note);
+		$order->save();
+
+		// Renderizar nuevo HTML de fechas
+		$weeks = $this->get_weeks($product_id);
+		$dates_html = $this->render_dates_pills($new_dates, $new_weeks, $weeks);
+
+		wp_send_json_success([
+			'message'    => __('Fechas actualizadas correctamente', 'pn-customers-manager'),
+			'new_price'  => wc_price($new_price),
+			'dates_html' => $dates_html,
+		]);
+	}
+
+	/**
+	 * Obtener disponibilidad simulada excluyendo fechas específicas
+	 */
+	private function get_simulated_availability($product_id, $exclude_dates)
+	{
+		$weeks    = $this->get_weeks($product_id);
+		$bookings = $this->get_bookings($product_id);
+		$availability = [];
+
+		foreach ($weeks as $week) {
+			$capacity = (int) $week['capacity'];
+			foreach ($week['dates'] as $date) {
+				$booked = isset($bookings[$date]) ? (int) $bookings[$date] : 0;
+
+				// Si la fecha está en exclude_dates, liberar una plaza
+				if (in_array($date, $exclude_dates, true)) {
+					$booked = max(0, $booked - 1);
+				}
+
+				$availability[$date] = max(0, $capacity - $booked);
+			}
+		}
+
+		return $availability;
+	}
+
+	/**
+	 * Actualizar bookings de forma atómica
+	 */
+	private function update_booking_dates_atomic($product_id, $old_dates, $new_dates, $order)
+	{
+		// Solo actualizar si el pedido ya fue contado
+		$counted = $order->get_meta('_pn_cm_woo_calendar_bookings_counted');
+		if ($counted !== 'yes') {
+			return; // No hacer nada si el pedido aún no ha sido contado
+		}
+
+		$bookings = $this->get_bookings($product_id);
+
+		// Decrementar fechas viejas
+		foreach ($old_dates as $date) {
+			if (isset($bookings[$date])) {
+				$bookings[$date] = max(0, $bookings[$date] - 1);
+			}
+		}
+
+		// Incrementar fechas nuevas
+		foreach ($new_dates as $date) {
+			if (!isset($bookings[$date])) {
+				$bookings[$date] = 0;
+			}
+			$bookings[$date]++;
+		}
+
+		update_post_meta($product_id, '_pn_cm_woo_calendar_bookings', $bookings);
+	}
+
+	/**
+	 * Renderizar pills de fechas para display
+	 */
+	private function render_dates_pills($dates, $weeks_ids, $weeks)
+	{
+		if (empty($dates)) {
+			return '<p style="color: #999; font-size: 13px;">' . __('Sin fechas', 'pn-customers-manager') . '</p>';
+		}
+
+		$week_map = [];
+		foreach ($weeks as $w) {
+			$week_map[$w['id']] = $w;
+		}
+
+		$html = '';
+
+		// Mostrar semanas
+		if (!empty($weeks_ids)) {
+			$html .= '<div style="margin-bottom: 8px;">';
+			$html .= '<strong style="font-size: 12px; color: #666;">' . __('Semanas:', 'pn-customers-manager') . '</strong><br>';
+			foreach ($weeks_ids as $wid) {
+				if (isset($week_map[$wid])) {
+					$w = $week_map[$wid];
+					$label = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+					$html .= '<span style="display: inline-block; background: #e3f2fd; color: #1976d2; padding: 4px 10px; border-radius: 12px; font-size: 12px; margin: 2px 4px 2px 0;">';
+					$html .= esc_html($label);
+					$html .= '</span>';
+				}
+			}
+			$html .= '</div>';
+		}
+
+		// Mostrar días sueltos (los que no están en semanas)
+		$covered = [];
+		foreach ($weeks_ids as $wid) {
+			if (isset($week_map[$wid])) {
+				$covered = array_merge($covered, $week_map[$wid]['dates']);
+			}
+		}
+		$loose_days = array_diff($dates, $covered);
+
+		if (!empty($loose_days)) {
+			$html .= '<div>';
+			$html .= '<strong style="font-size: 12px; color: #666;">' . __('Días sueltos:', 'pn-customers-manager') . '</strong><br>';
+			foreach ($loose_days as $date) {
+				$formatted = $this->format_date_short($date);
+				$html .= '<span style="display: inline-block; background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 12px; font-size: 12px; margin: 2px 4px 2px 0;">';
+				$html .= esc_html($formatted);
+				$html .= '</span>';
+			}
+			$html .= '</div>';
+		}
+
+		return $html;
 	}
 }

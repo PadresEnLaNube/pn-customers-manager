@@ -117,8 +117,8 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 		$options['pn_customers_manager_email_campaigns_section_start'] = [
 			'id'          => 'pn_customers_manager_email_campaigns_section_start',
 			'section'     => 'start',
-			'label'       => __('Email Campaigns', 'pn-customers-manager'),
-			'description' => __('Email campaign settings with mailpn integration.', 'pn-customers-manager'),
+			'label'       => __('Campañas de correo electrónico', 'pn-customers-manager'),
+			'description' => __('Email campaign configuration and management.', 'pn-customers-manager'),
 		];
 
 		if (!self::is_mailpn_active()) {

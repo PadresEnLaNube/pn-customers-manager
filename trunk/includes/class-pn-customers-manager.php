@@ -648,6 +648,7 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-button', $plugin_shortcodes, 'pn_customers_manager_button');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-whatsapp-ai', $plugin_shortcodes, 'pn_customers_manager_whatsapp_ai');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-instagram-ai', $plugin_shortcodes, 'pn_customers_manager_instagram_ai');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-style-guide', $plugin_shortcodes, 'pn_customers_manager_style_guide');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Shortcodes', 'register_button_block');
 	}
 
