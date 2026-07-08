@@ -1,0 +1,944 @@
+/**
+ * PN Customers Manager - Checkout Fields
+ * Styles for admin and frontend checkout fields
+ */
+
+/* ═══════════════════════════════════════════════
+   ADMIN STYLES
+   ═══════════════════════════════════════════════ */
+
+/* Container - minimal styling, don't break WooCommerce layout */
+#pn_cm_woo_checkout_fields_data .pn-cm-checkout-fields-container {
+	padding: 0 20px;
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-checkout-fields-container h4 {
+	margin-top: 0;
+	margin-bottom: 10px;
+	position: relative;
+	z-index: 2;
+}
+
+#pn_cm_woo_checkout_fields_data #pn-cm-checkout-fields-list {
+	margin: 20px 0;
+	min-height: 50px;
+	position: relative;
+	z-index: 1;
+	clear: both;
+}
+
+/* Field rows */
+#pn_cm_woo_checkout_fields_data .pn-cm-checkout-field-row {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	margin-bottom: 10px;
+	transition: box-shadow 0.2s;
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-checkout-field-row:hover {
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Field header */
+#pn_cm_woo_checkout_fields_data .pn-cm-field-header {
+	display: flex;
+	align-items: center;
+	padding: 12px 15px;
+	background: #f9f9f9;
+	border-bottom: 1px solid #ddd;
+	cursor: pointer;
+	position: relative;
+	z-index: 2;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-handle {
+	cursor: move;
+	color: #999;
+	margin-right: 12px;
+	text-decoration: none;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-handle:hover {
+	color: #555;
+	text-decoration: none;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-title {
+	flex: 1;
+	font-size: 14px;
+	color: #333;
+	cursor: pointer;
+	user-select: none;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-toggle-field,
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-field {
+	padding: 0;
+	background: none;
+	border: none;
+	color: #666;
+	cursor: pointer;
+	margin-left: 12px;
+	transition: color 0.2s;
+	text-decoration: none;
+	outline: none;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-toggle-field:hover,
+#pn_cm_woo_checkout_fields_data .pn-cm-toggle-field:focus {
+	color: #0073aa;
+	text-decoration: none;
+	outline: none;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-field:hover,
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-field:focus {
+	color: #dc3232;
+	text-decoration: none;
+	outline: none;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-toggle-field .dashicons,
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-field .dashicons {
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+	text-decoration: none;
+}
+
+/* Field body */
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body {
+	padding: 20px;
+	position: relative;
+	z-index: 1;
+	background: #fff;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body p,
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body > div.pn-cm-field-options,
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body > div.pn-cm-field-range-settings,
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body > div.pn-cm-field-stars-settings,
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body > div.pn-cm-field-multiple,
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body > div.pn-cm-field-html-multi-config {
+	margin: 0 0 15px;
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 600;
+	color: #23282d;
+	position: relative;
+	z-index: 2;
+	background: #fff;
+	margin: 0;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body input[type="text"],
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body select,
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body textarea,
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body input[type="number"] {
+	width: 100%;
+	box-sizing: border-box;
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-body .description {
+	display: block;
+	margin-top: 5px;
+	color: #666;
+	font-size: 12px;
+	font-style: italic;
+	position: relative;
+	z-index: 1;
+	background: #fff;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-placeholder {
+	background: #f0f0f0;
+	border: 2px dashed #ddd;
+	height: 60px;
+	margin-bottom: 10px;
+	border-radius: 4px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-add-checkout-field {
+	margin-top: 10px;
+}
+
+/* Sortable UI */
+#pn_cm_woo_checkout_fields_data .ui-sortable-helper {
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	opacity: 0.9;
+}
+
+/* ═══════════════════════════════════════════════
+   OPTIONS MANAGER
+   ═══════════════════════════════════════════════ */
+
+#pn_cm_woo_checkout_fields_data .pn-cm-options-list {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 10px;
+	margin: 10px 0;
+	background: #fafafa;
+	min-height: 50px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 8px;
+	background: #fff;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	transition: box-shadow 0.2s;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-item:hover {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-item:last-child {
+	margin-bottom: 0;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-handle {
+	cursor: move;
+	color: #999;
+	flex-shrink: 0;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-handle:hover {
+	color: #555;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-input {
+	flex: 1;
+	padding: 6px 10px;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-size: 13px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-input:focus {
+	border-color: #0073aa;
+	outline: none;
+	box-shadow: 0 0 0 1px #0073aa;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-option {
+	flex-shrink: 0;
+	padding: 4px 8px;
+	min-width: auto;
+	height: auto;
+	line-height: 1;
+	border-color: #ddd;
+	background: #fff;
+	cursor: pointer;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-option:hover {
+	background: #fff;
+	border-color: #dc3232;
+	color: #dc3232;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-option .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-add-option {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 5px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-add-option .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-option-placeholder {
+	background: #f0f0f0;
+	border: 2px dashed #ddd;
+	height: 40px;
+	margin-bottom: 8px;
+	border-radius: 3px;
+}
+
+#pn_cm_woo_checkout_fields_data .ui-sortable-helper.pn-cm-option-item {
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	opacity: 0.9;
+}
+
+/* ═══════════════════════════════════════════════
+   HTML MULTI CONFIGURATION
+   ═══════════════════════════════════════════════ */
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-html-multi-config {
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-html-multi-config > label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 600;
+	color: #23282d;
+	position: relative;
+	z-index: 2;
+	background: #fff;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-html-multi-config > .description {
+	display: block;
+	margin-bottom: 10px;
+	color: #666;
+	font-size: 12px;
+	font-style: italic;
+	position: relative;
+	z-index: 1;
+	background: #fff;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-fields-list {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 10px;
+	margin: 10px 0;
+	background: #fafafa;
+	min-height: 50px;
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item {
+	background: #fff;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	margin-bottom: 8px;
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item:last-child {
+	margin-bottom: 0;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item input,
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item select {
+	position: relative;
+	z-index: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-add-html-multi-field {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 5px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-add-html-multi-field .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-html-multi-field {
+	flex-shrink: 0;
+	padding: 4px 8px;
+	min-width: auto;
+	height: auto;
+	line-height: 1;
+	border-color: #ddd;
+	background: #fff;
+	cursor: pointer;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-html-multi-field:hover {
+	background: #fff;
+	border-color: #dc3232;
+	color: #dc3232;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-remove-html-multi-field .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+/* ═══════════════════════════════════════════════
+   FRONTEND PRODUCT PAGE STYLES
+   ═══════════════════════════════════════════════ */
+
+.pn-cm-product-custom-fields {
+	background: #f9f9f9;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	padding: 20px;
+	margin: 20px 0;
+}
+
+.pn-cm-product-custom-fields h3 {
+	margin-top: 0;
+	margin-bottom: 15px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid #e1e1e1;
+	font-size: 18px;
+	color: #333;
+}
+
+.pn-cm-product-custom-fields .description {
+	display: block;
+	margin-bottom: 15px;
+	color: #666;
+	font-size: 14px;
+}
+
+.pn-cm-product-custom-fields .form-row {
+	margin-bottom: 15px;
+}
+
+.pn-cm-product-custom-fields label {
+	font-weight: 600;
+	color: #333;
+}
+
+.pn-cm-product-custom-fields label .required {
+	color: #dc3232;
+}
+
+/* Los inputs usan las clases del plugin pn-customers-manager-input */
+.pn-cm-product-custom-fields .pn-customers-manager-input,
+.pn-cm-product-custom-fields .pn-customers-manager-select {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* HTML Multi fields en producto también usan las clases del plugin */
+.pn-cm-product-custom-fields .pn-cm-html-multi-wrapper .pn-customers-manager-input,
+.pn-cm-product-custom-fields .pn-cm-html-multi-wrapper .pn-customers-manager-select {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* ═══════════════════════════════════════════════
+   FRONTEND CHECKOUT STYLES
+   ═══════════════════════════════════════════════ */
+
+.pn-cm-checkout-custom-fields {
+	margin: 20px 0;
+}
+
+/* HTML Multi Fields */
+.pn-cm-html-multi-wrapper {
+	margin-bottom: 20px;
+	clear: both;
+	overflow: hidden;
+	position: relative;
+}
+
+.pn-cm-html-multi-wrapper::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.pn-cm-html-multi-wrapper > label {
+	display: block;
+	margin-bottom: 10px;
+	font-weight: 600;
+	color: #333;
+}
+
+.pn-cm-html-multi-wrapper .description {
+	display: block;
+	margin-bottom: 15px;
+	color: #666;
+	font-size: 13px;
+	font-style: italic;
+}
+
+.pn-cm-html-multi-groups-container {
+	margin-bottom: 15px;
+	clear: both;
+}
+
+.pn-cm-html-multi-group {
+	background: #f9f9f9;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	padding: 15px;
+	margin-bottom: 15px;
+	clear: both;
+	overflow: hidden;
+}
+
+.pn-cm-html-multi-group::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.pn-cm-html-multi-group:last-child {
+	margin-bottom: 0;
+}
+
+.pn-cm-html-multi-fields {
+	margin-bottom: 10px;
+	clear: both;
+}
+
+.pn-cm-html-multi-field-wrapper {
+	margin-bottom: 15px;
+	clear: both;
+}
+
+.pn-cm-html-multi-field-wrapper:last-child {
+	margin-bottom: 0;
+}
+
+.pn-cm-html-multi-field-wrapper .form-row {
+	margin-bottom: 0;
+	clear: both;
+}
+
+.pn-cm-html-multi-field-label {
+	font-size: 14px;
+	font-weight: 600;
+	color: #333;
+}
+
+.pn-cm-html-multi-actions {
+	text-align: right;
+	margin-top: 10px;
+	clear: both;
+}
+
+.pn-cm-add-html-multi-group,
+.pn-cm-remove-html-multi-group {
+	display: inline-block;
+	text-decoration: none;
+	transition: all 0.2s ease;
+}
+
+.pn-cm-add-html-multi-group i {
+	color: #0073aa;
+	transition: all 0.2s ease;
+}
+
+.pn-cm-add-html-multi-group:hover i {
+	color: #005177;
+	transform: scale(1.1);
+}
+
+.pn-cm-remove-html-multi-group i {
+	color: #dc3232;
+	transition: all 0.2s ease;
+}
+
+.pn-cm-remove-html-multi-group:hover i {
+	color: #a00;
+	transform: scale(1.1);
+}
+
+.pn-cm-checkout-product-fields {
+	background: #f9f9f9;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.pn-cm-checkout-product-fields h3 {
+	margin-top: 0;
+	margin-bottom: 20px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid #e1e1e1;
+	font-size: 18px;
+	color: #333;
+}
+
+.pn-cm-checkout-product-fields .form-row {
+	margin-bottom: 15px;
+}
+
+.pn-cm-checkout-product-fields label {
+	font-weight: 600;
+	color: #333;
+}
+
+.pn-cm-checkout-product-fields label .required {
+	color: #dc3232;
+}
+
+.pn-cm-checkout-product-fields input[type="text"],
+.pn-cm-checkout-product-fields input[type="email"],
+.pn-cm-checkout-product-fields input[type="tel"],
+.pn-cm-checkout-product-fields input[type="number"],
+.pn-cm-checkout-product-fields input[type="date"],
+.pn-cm-checkout-product-fields select,
+.pn-cm-checkout-product-fields textarea {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.pn-cm-checkout-product-fields input[type="text"]:focus,
+.pn-cm-checkout-product-fields input[type="email"]:focus,
+.pn-cm-checkout-product-fields input[type="tel"]:focus,
+.pn-cm-checkout-product-fields input[type="number"]:focus,
+.pn-cm-checkout-product-fields input[type="date"]:focus,
+.pn-cm-checkout-product-fields select:focus,
+.pn-cm-checkout-product-fields textarea:focus {
+	border-color: #0073aa;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+/* Radio and Checkbox */
+.pn-cm-checkout-product-fields input[type="radio"],
+.pn-cm-checkout-product-fields input[type="checkbox"] {
+	margin-right: 8px;
+}
+
+.pn-cm-checkout-product-fields .woocommerce-input-wrapper label {
+	display: inline-block;
+	margin-right: 15px;
+	font-weight: normal;
+}
+
+/* Custom Checkbox Styling */
+.pn-cm-checkout-product-fields input[type="checkbox"].pn-customers-manager-input,
+.pn-cm-checkout-custom-fields input[type="checkbox"].pn-customers-manager-input,
+.pn-cm-product-custom-fields input[type="checkbox"].pn-customers-manager-input {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	width: 44px;
+	height: 44px;
+	border: 2px solid #ddd;
+	border-radius: 6px;
+	background-color: #ffffff;
+	cursor: pointer;
+	position: relative;
+	transition: all 0.2s ease;
+	margin-right: 12px;
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
+.pn-cm-checkout-product-fields input[type="checkbox"].pn-customers-manager-input:hover,
+.pn-cm-checkout-custom-fields input[type="checkbox"].pn-customers-manager-input:hover,
+.pn-cm-product-custom-fields input[type="checkbox"].pn-customers-manager-input:hover {
+	border-color: #999;
+}
+
+.pn-cm-checkout-product-fields input[type="checkbox"].pn-customers-manager-input:focus,
+.pn-cm-checkout-custom-fields input[type="checkbox"].pn-customers-manager-input:focus,
+.pn-cm-product-custom-fields input[type="checkbox"].pn-customers-manager-input:focus {
+	outline: none;
+	border-color: var(--pn-customers-manager-color-main, #0073aa);
+	box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+.pn-cm-checkout-product-fields input[type="checkbox"].pn-customers-manager-input:checked,
+.pn-cm-checkout-custom-fields input[type="checkbox"].pn-customers-manager-input:checked,
+.pn-cm-product-custom-fields input[type="checkbox"].pn-customers-manager-input:checked {
+	background-color: #3c3c3c;
+	border-color: #3c3c3c;
+}
+
+.pn-cm-checkout-product-fields input[type="checkbox"].pn-customers-manager-input:checked::after,
+.pn-cm-checkout-custom-fields input[type="checkbox"].pn-customers-manager-input:checked::after,
+.pn-cm-product-custom-fields input[type="checkbox"].pn-customers-manager-input:checked::after {
+	content: '✓';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	color: #ffffff;
+	font-size: 28px;
+	font-weight: bold;
+	line-height: 1;
+}
+
+/* Checkbox label alignment */
+.pn-cm-checkout-product-fields .woocommerce-form__label-for-checkbox,
+.pn-cm-checkout-custom-fields .woocommerce-form__label-for-checkbox,
+.pn-cm-product-custom-fields .woocommerce-form__label-for-checkbox {
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+	font-weight: normal !important;
+	margin-bottom: 0;
+}
+
+.pn-cm-checkout-product-fields .woocommerce-form__label-for-checkbox span,
+.pn-cm-checkout-custom-fields .woocommerce-form__label-for-checkbox span,
+.pn-cm-product-custom-fields .woocommerce-form__label-for-checkbox span {
+	line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════
+   ORDER DISPLAY STYLES
+   ═══════════════════════════════════════════════ */
+
+.pn-cm-checkout-field-display {
+	margin: 5px 0;
+	padding: 5px 0;
+	font-size: 14px;
+}
+
+.pn-cm-checkout-field-display strong {
+	color: #555;
+	margin-right: 5px;
+}
+
+/* HTML Multi Display */
+.pn-cm-html-multi-display .pn-cm-html-multi-groups {
+	margin-top: 10px;
+	margin-left: 20px;
+}
+
+.pn-cm-html-multi-group-display {
+	margin-bottom: 15px;
+	padding: 10px;
+	background: #f9f9f9;
+	border-left: 3px solid #0073aa;
+}
+
+.pn-cm-html-multi-group-display:last-child {
+	margin-bottom: 0;
+}
+
+.pn-cm-html-multi-group-display ul {
+	list-style: none;
+	padding: 0;
+	margin: 5px 0 0 0;
+}
+
+.pn-cm-html-multi-group-display li {
+	padding: 3px 0;
+	font-size: 14px;
+}
+
+/* Email styles */
+.pn-cm-checkout-fields-email h3 {
+	margin-top: 20px;
+	margin-bottom: 10px;
+	color: #333;
+	font-size: 16px;
+}
+
+.pn-cm-checkout-fields-email ul {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 20px 0;
+}
+
+.pn-cm-checkout-fields-email li {
+	padding: 5px 0;
+	font-size: 14px;
+}
+
+.pn-cm-checkout-fields-email li strong {
+	color: #555;
+	margin-right: 5px;
+}
+
+/* ═══════════════════════════════════════════════
+   CSV EXPORT (Uses plugin popup system)
+   ═══════════════════════════════════════════════ */
+
+/* Frontend export section - only visible to logged-in admins */
+.pn-cm-csv-export-frontend {
+	display: none;
+}
+
+body.logged-in.admin-bar .pn-cm-csv-export-frontend {
+	display: block;
+}
+
+/* CSV Export Popup */
+.pn-cm-csv-export-popup {
+	padding: 20px;
+}
+
+.pn-cm-csv-export-popup h2 {
+	margin-top: 0;
+	margin-bottom: 20px;
+}
+
+/* Loading state */
+.pn-cm-csv-loading {
+	text-align: center;
+	padding: 40px;
+}
+
+.pn-cm-csv-loading p {
+	margin-top: 15px;
+	color: #666;
+}
+
+/* Column selection */
+.pn-cm-csv-column-selection {
+	display: none;
+}
+
+.pn-cm-csv-column-selection h3 {
+	font-size: 16px;
+	margin-top: 20px;
+	margin-bottom: 15px;
+}
+
+.pn-cm-csv-columns-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 10px;
+	padding: 15px;
+	background: #f9f9f9;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.pn-cm-csv-column-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.pn-cm-csv-column-checkbox {
+	margin: 0;
+}
+
+.pn-cm-csv-column-label {
+	margin: 0;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+/* Preview container */
+.pn-cm-csv-preview-container {
+	display: none;
+	margin-top: 30px;
+}
+
+.pn-cm-csv-preview-container h3 {
+	font-size: 16px;
+	margin-bottom: 15px;
+}
+
+.pn-cm-csv-preview {
+	overflow-x: auto;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+}
+
+.pn-cm-csv-preview-empty {
+	padding: 20px;
+	text-align: center;
+	color: #999;
+}
+
+/* Preview table */
+.pn-cm-csv-preview table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.pn-cm-csv-preview thead tr {
+	background: #f5f5f5;
+}
+
+.pn-cm-csv-preview th {
+	padding: 10px 12px;
+	text-align: left;
+	border-bottom: 1px solid #e1e1e1;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.pn-cm-csv-preview td {
+	padding: 10px 12px;
+	border-bottom: 1px solid #e1e1e1;
+	color: #666;
+}
+
+.pn-cm-csv-preview tbody tr:hover {
+	background: #fafafa;
+}
+
+/* Info message */
+.pn-cm-csv-info-message {
+	margin-top: 10px;
+	padding: 10px;
+	background: #e8f5e9;
+	border-left: 3px solid #4caf50;
+	font-size: 13px;
+	color: #2e7d32;
+}
+
+/* Footer */
+.pn-cm-csv-footer {
+	display: none;
+	margin-top: 20px;
+	text-align: right;
+	gap: 10px;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+	.pn-cm-checkout-product-fields {
+		padding: 15px;
+	}
+
+	.pn-cm-checkout-product-fields h3 {
+		font-size: 16px;
+	}
+
+	#pn_cm_woo_checkout_fields_data .pn-cm-field-header {
+		padding: 10px;
+	}
+
+	#pn_cm_woo_checkout_fields_data .pn-cm-field-body {
+		padding: 15px;
+	}
+
+	.pn-cm-csv-modal-content {
+		width: 95%;
+		max-height: 95vh;
+	}
+
+	.pn-cm-csv-columns-list {
+		grid-template-columns: 1fr;
+	}
+
+	.pn-cm-csv-preview {
+		font-size: 12px;
+	}
+}

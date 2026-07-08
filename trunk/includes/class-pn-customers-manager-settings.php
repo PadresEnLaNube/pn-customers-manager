@@ -10,72 +10,162 @@
  * @subpackage PN_CUSTOMERS_MANAGER/includes
  * @author     Padres en la Nube
  */
-class PN_CUSTOMERS_MANAGER_Settings {
+class PN_CUSTOMERS_MANAGER_Settings
+{
   private static $managed_pages = [
     'pn_customers_manager_commercial_crm_page' => [
       'shortcode' => 'pn-customers-manager-organization-list',
-      'block'     => 'pn-customers-manager/organization-list',
-      'label'     => 'Organizations',
+      'block' => 'pn-customers-manager/organization-list',
+      'label' => 'Organizations',
     ],
     'pn_customers_manager_page_budget_list' => [
       'shortcode' => 'pn-customers-manager-budget-list',
-      'block'     => null,
-      'label'     => 'Budgets',
+      'block' => null,
+      'label' => 'Budgets',
     ],
     'pn_customers_manager_page_invoice_list' => [
       'shortcode' => 'pn-customers-manager-invoice-list',
-      'block'     => null,
-      'label'     => 'Invoices',
+      'block' => null,
+      'label' => 'Invoices',
     ],
     'pn_customers_manager_marketing_offer_page' => [
       'shortcode' => 'pn-customers-manager-genuine-offer',
-      'block'     => 'pn-customers-manager/genuine-offer',
-      'label'     => 'Business Offer',
+      'block' => 'pn-customers-manager/genuine-offer',
+      'label' => 'Business Offer',
     ],
     'pn_customers_manager_marketing_sales_presentation_page' => [
       'shortcode' => 'pn-customers-manager-sales-presentation',
-      'block'     => 'pn-customers-manager/sales-presentation',
-      'label'     => 'Sales Presentation',
+      'block' => 'pn-customers-manager/sales-presentation',
+      'label' => 'Sales Presentation',
+    ],
+    'pn_customers_manager_social_media_page' => [
+      'shortcode' => 'pn-customers-manager-social-media',
+      'block' => 'pn-customers-manager/social-media',
+      'label' => 'Social Media',
     ],
   ];
 
-  public static function pn_customers_manager_get_managed_pages() {
+  public static function pn_customers_manager_get_managed_pages()
+  {
     return self::$managed_pages;
   }
 
-  public function pn_customers_manager_get_options() {
+  public function pn_customers_manager_get_options()
+  {
     $pn_customers_manager_options = [];
 
-    // ── Marketing section (parent) ──
-    $pn_customers_manager_options['pn_customers_manager_marketing_parent_section_start'] = [
-      'id' => 'pn_customers_manager_marketing_parent_section_start',
+    // ── PAGES SECTION ──────────────────────────────────────────────────
+    $pn_customers_manager_options['pn_customers_manager_pages_section_start'] = [
+      'id' => 'pn_customers_manager_pages_section_start',
       'section' => 'start',
-      'label' => __('Marketing', 'pn-customers-manager'),
-      'description' => __('Configure marketing tools, business information, email campaigns, referrals, and projections.', 'pn-customers-manager'),
+      'label' => __('Páginas', 'pn-customers-manager'),
+      'description' => __('Page assignments for the CRM.', 'pn-customers-manager'),
     ];
 
-    // Marketing subsection 1: Información de la empresa
-    $pn_customers_manager_options['pn_customers_manager_marketing_info_subsection_start'] = [
-      'id' => 'pn_customers_manager_marketing_info_subsection_start',
+    // Page manager alerts (only show missing pages in this section)
+    ob_start();
+    PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages());
+    $page_alerts_html = ob_get_clean();
+
+    if (!empty($page_alerts_html)) {
+      $pn_customers_manager_options['pn_customers_manager_page_alerts'] = [
+        'id' => 'pn_customers_manager_page_alerts',
+        'input' => 'html',
+        'html_content' => $page_alerts_html,
+      ];
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_commercial_crm_page'] = [
+      'id' => 'pn_customers_manager_commercial_crm_page',
+      'input' => 'page_manager',
+      'label' => __('Organizations', 'pn-customers-manager'),
+      'description' => __('Page that approved commercial agents will access to manage organizations.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-organization-list',
+      'page_option' => 'pn_customers_manager_commercial_crm_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_budget_list'] = [
+      'id' => 'pn_customers_manager_page_budget_list',
+      'input' => 'page_manager',
+      'label' => __('Budgets', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-budget-list',
+      'page_option' => 'pn_customers_manager_page_budget_list',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_invoice_list'] = [
+      'id' => 'pn_customers_manager_page_invoice_list',
+      'input' => 'page_manager',
+      'label' => __('Invoices', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-invoice-list',
+      'page_option' => 'pn_customers_manager_page_invoice_list',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_marketing_offer_page'] = [
+      'id' => 'pn_customers_manager_marketing_offer_page',
+      'input' => 'page_manager',
+      'label' => __('Business Offer Page', 'pn-customers-manager'),
+      'description' => __('Page displaying your business offer based on the configured data.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-genuine-offer',
+      'page_option' => 'pn_customers_manager_marketing_offer_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_marketing_sales_presentation_page'] = [
+      'id' => 'pn_customers_manager_marketing_sales_presentation_page',
+      'input' => 'page_manager',
+      'label' => __('Sales Presentation Page', 'pn-customers-manager'),
+      'description' => __('Page displaying your sales presentation based on the configured data.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-sales-presentation',
+      'page_option' => 'pn_customers_manager_marketing_sales_presentation_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_social_media_page'] = [
+      'id' => 'pn_customers_manager_social_media_page',
+      'input' => 'page_manager',
+      'label' => __('Social Media Page', 'pn-customers-manager'),
+      'description' => __('Page displaying social media links in Linktree style.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-social-media',
+      'page_option' => 'pn_customers_manager_social_media_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_pages_section_end'] = [
+      'id' => 'pn_customers_manager_pages_section_end',
+      'section' => 'end',
+    ];
+
+    // ── Company Information (parent section) ──
+    $pn_customers_manager_options['pn_customers_manager_company_info_parent_section_start'] = [
+      'id' => 'pn_customers_manager_company_info_parent_section_start',
       'section' => 'start',
       'label' => __('Información de la empresa', 'pn-customers-manager'),
       'description' => __('Business information, target audience, and marketing configuration.', 'pn-customers-manager'),
     ];
 
-    // Marketing section content (from Marketing class)
+    // Company information content (from Marketing class)
     $marketing_options = PN_CUSTOMERS_MANAGER_Marketing::get_settings_section();
     $pn_customers_manager_options = array_merge($pn_customers_manager_options, $marketing_options);
 
-    $pn_customers_manager_options['pn_customers_manager_marketing_info_subsection_end'] = [
-      'id' => 'pn_customers_manager_marketing_info_subsection_end',
+    $pn_customers_manager_options['pn_customers_manager_company_info_parent_section_end'] = [
+      'id' => 'pn_customers_manager_company_info_parent_section_end',
       'section' => 'end',
     ];
 
-    // Marketing subsection 2: Campañas de correo electrónico (from Email_Campaigns class)
+    // ── Social Media Links section (parent) ──
+    $pn_customers_manager_options['pn_customers_manager_marketing_parent_section_start'] = [
+      'id' => 'pn_customers_manager_marketing_parent_section_start',
+      'section' => 'start',
+      'label' => __('Social Media Links', 'pn-customers-manager'),
+      'description' => __('Configure social media, email campaigns, referrals, and projections.', 'pn-customers-manager'),
+    ];
+
+    // Marketing subsection 2: Redes Sociales (from Social_Media class)
+    $social_media_options = PN_CUSTOMERS_MANAGER_Social_Media::get_settings_section();
+    $pn_customers_manager_options = array_merge($pn_customers_manager_options, $social_media_options);
+
+    // Marketing subsection 3: Campañas de correo electrónico (from Email_Campaigns class)
     $email_campaigns_options = PN_CUSTOMERS_MANAGER_Email_Campaigns::get_settings_section();
     $pn_customers_manager_options = array_merge($pn_customers_manager_options, $email_campaigns_options);
 
-    // Marketing subsection 3: Referidos
+    // Marketing subsection 4: Referidos
     $pn_customers_manager_options['pn_customers_manager_referral_section_start'] = [
       'id' => 'pn_customers_manager_referral_section_start',
       'section' => 'start',
@@ -133,11 +223,11 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
       'input' => 'select',
       'options' => [
-        '1'  => __('Every 1 day', 'pn-customers-manager'),
-        '2'  => __('Every 2 days', 'pn-customers-manager'),
-        '3'  => __('Every 3 days', 'pn-customers-manager'),
-        '5'  => __('Every 5 days', 'pn-customers-manager'),
-        '7'  => __('Every 7 days', 'pn-customers-manager'),
+        '1' => __('Every 1 day', 'pn-customers-manager'),
+        '2' => __('Every 2 days', 'pn-customers-manager'),
+        '3' => __('Every 3 days', 'pn-customers-manager'),
+        '5' => __('Every 5 days', 'pn-customers-manager'),
+        '7' => __('Every 7 days', 'pn-customers-manager'),
         '14' => __('Every 14 days', 'pn-customers-manager'),
         '30' => __('Every 30 days', 'pn-customers-manager'),
       ],
@@ -153,11 +243,11 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'description' => __('Predefined phrases that users can select for the back of their business card.', 'pn-customers-manager'),
       'html_multi_fields' => [
         [
-          'id'          => 'pn_customers_manager_referral_bizcard_phrase_text',
-          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-          'input'       => 'input',
-          'type'        => 'text',
-          'label'       => __('Phrase', 'pn-customers-manager'),
+          'id' => 'pn_customers_manager_referral_bizcard_phrase_text',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'input',
+          'type' => 'text',
+          'label' => __('Phrase', 'pn-customers-manager'),
           'placeholder' => __('Write an inspiring phrase...', 'pn-customers-manager'),
         ],
       ],
@@ -193,10 +283,10 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'parent' => 'pn_customers_manager_projections_enabled',
       'parent_option' => 'on',
       'options' => [
-        'hourly'     => __('Hourly', 'pn-customers-manager'),
+        'hourly' => __('Hourly', 'pn-customers-manager'),
         'twicedaily' => __('Twice daily', 'pn-customers-manager'),
-        'daily'      => __('Daily', 'pn-customers-manager'),
-        'weekly'     => __('Weekly', 'pn-customers-manager'),
+        'daily' => __('Daily', 'pn-customers-manager'),
+        'weekly' => __('Weekly', 'pn-customers-manager'),
       ],
       'value' => 'daily',
       'label' => __('Snapshot frequency', 'pn-customers-manager'),
@@ -269,7 +359,8 @@ class PN_CUSTOMERS_MANAGER_Settings {
       // Get all users for multi-select
       $all_users = get_users(['orderby' => 'display_name', 'order' => 'ASC']);
       $selected_recipients = get_option('pn_customers_manager_woocommerce_accounting_recipients', []);
-      if (!is_array($selected_recipients)) $selected_recipients = [];
+      if (!is_array($selected_recipients))
+        $selected_recipients = [];
 
       $pn_customers_manager_options['pn_customers_manager_woocommerce_accounting_recipients'] = [
         'id' => 'pn_customers_manager_woocommerce_accounting_recipients',
@@ -279,7 +370,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
         'parent' => 'pn_customers_manager_woocommerce_accounting_enabled',
         'parent_option' => 'on',
         'html_content' => '<select name="pn_customers_manager_woocommerce_accounting_recipients[]" multiple style="width:100%;min-height:150px;" class="pn-customers-manager-select">' .
-          implode('', array_map(function($user) use ($selected_recipients) {
+          implode('', array_map(function ($user) use ($selected_recipients) {
             $selected = in_array($user->ID, $selected_recipients) ? 'selected' : '';
             $display = $user->display_name . ' (' . $user->user_email . ')';
             return '<option value="' . esc_attr($user->ID) . '" ' . $selected . '>' . esc_html($display) . '</option>';
@@ -306,15 +397,12 @@ class PN_CUSTOMERS_MANAGER_Settings {
       ];
     }
 
-    // End of Marketing parent section
-    $pn_customers_manager_options['pn_customers_manager_marketing_parent_section_end'] = [
-      'id' => 'pn_customers_manager_marketing_parent_section_end',
-      'section' => 'end',
-    ];
+    // Note: Marketing parent section intentionally left open to include all following sections
+    // Closing it here causes rendering issues due to conditional WooCommerce block above
 
     // ── Accounting parent section ──
-    $pn_customers_manager_options['pn_customers_manager_accounting_section_start'] = [
-      'id' => 'pn_customers_manager_accounting_section_start',
+    $pn_customers_manager_options['pn_customers_manager_accounting_parent_section_start'] = [
+      'id' => 'pn_customers_manager_accounting_parent_section_start',
       'section' => 'start',
       'label' => __('Accounting', 'pn-customers-manager'),
       'description' => __('Configure budgets, invoices, and accounting settings.', 'pn-customers-manager'),
@@ -400,7 +488,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'input' => 'select',
       'options' => [
         'before' => __('Before amount (€100)', 'pn-customers-manager'),
-        'after'  => __('After amount (100 €)', 'pn-customers-manager'),
+        'after' => __('After amount (100 €)', 'pn-customers-manager'),
       ],
       'value' => 'after',
       'label' => __('Currency position', 'pn-customers-manager'),
@@ -557,14 +645,26 @@ class PN_CUSTOMERS_MANAGER_Settings {
     ];
 
     // End of Accounting parent section
-    $pn_customers_manager_options['pn_customers_manager_accounting_section_end'] = [
-      'id' => 'pn_customers_manager_accounting_section_end',
+    $pn_customers_manager_options['pn_customers_manager_accounting_parent_section_end'] = [
+      'id' => 'pn_customers_manager_accounting_parent_section_end',
       'section' => 'end',
     ];
 
-    // ── Corporate Identity & Design (parent section) ──
-    $pn_customers_manager_options['pn_customers_manager_brand_section_start'] = [
-      'id' => 'pn_customers_manager_brand_section_start',
+    // ── Financial Management (parent section) ──
+    $financial_options = PN_CUSTOMERS_MANAGER_Financial::get_settings_section();
+    $pn_customers_manager_options = array_merge($pn_customers_manager_options, $financial_options);
+
+    // ── SYSTEM PARENT SECTION ────────────────────────────────────────
+    $pn_customers_manager_options['pn_customers_manager_system_parent_section_start'] = [
+      'id' => 'pn_customers_manager_system_parent_section_start',
+      'section' => 'start',
+      'label' => __('System', 'pn-customers-manager'),
+      'description' => __('General plugin settings, design, pages, and user roles.', 'pn-customers-manager'),
+    ];
+
+    // Subsection: Corporate Identity & Design
+    $pn_customers_manager_options['pn_customers_manager_brand_subsection_start'] = [
+      'id' => 'pn_customers_manager_brand_subsection_start',
       'section' => 'start',
       'label' => __('Corporate Identity & Design', 'pn-customers-manager'),
       'description' => __('Configure your brand identity, colors, logos, and button styles. These settings are used in the style guide.', 'pn-customers-manager'),
@@ -801,86 +901,9 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
-    // End of Corporate Identity & Design parent section
-    $pn_customers_manager_options['pn_customers_manager_brand_section_end'] = [
-      'id' => 'pn_customers_manager_brand_section_end',
-      'section' => 'end',
-    ];
-
-    // System section
-    $pn_customers_manager_options['pn_customers_manager_system_section_start'] = [
-      'id' => 'pn_customers_manager_system_section_start',
-      'section' => 'start',
-      'label' => __('System', 'pn-customers-manager'),
-      'description' => __('General plugin settings and configuration.', 'pn-customers-manager'),
-    ];
-
-    // Pages subsection (inside System)
-    $pn_customers_manager_options['pn_customers_manager_pages_subsection_start'] = [
-      'id' => 'pn_customers_manager_pages_subsection_start',
-      'section' => 'start',
-      'label' => __('Pages', 'pn-customers-manager'),
-      'description' => __('Page assignments for the CRM.', 'pn-customers-manager'),
-    ];
-
-    // Page manager alerts (only show missing pages in this section)
-    ob_start();
-    PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages());
-    $page_alerts_html = ob_get_clean();
-
-    if (!empty($page_alerts_html)) {
-      $pn_customers_manager_options['pn_customers_manager_page_alerts'] = [
-        'id' => 'pn_customers_manager_page_alerts',
-        'input' => 'html',
-        'html_content' => $page_alerts_html,
-      ];
-    }
-
-    $pn_customers_manager_options['pn_customers_manager_commercial_crm_page'] = [
-      'id' => 'pn_customers_manager_commercial_crm_page',
-      'input' => 'page_manager',
-      'label' => __('Organizations', 'pn-customers-manager'),
-      'description' => __('Page that approved commercial agents will access to manage organizations.', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-organization-list',
-      'page_option' => 'pn_customers_manager_commercial_crm_page',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_page_budget_list'] = [
-      'id' => 'pn_customers_manager_page_budget_list',
-      'input' => 'page_manager',
-      'label' => __('Budgets', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-budget-list',
-      'page_option' => 'pn_customers_manager_page_budget_list',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_page_invoice_list'] = [
-      'id' => 'pn_customers_manager_page_invoice_list',
-      'input' => 'page_manager',
-      'label' => __('Invoices', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-invoice-list',
-      'page_option' => 'pn_customers_manager_page_invoice_list',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_marketing_offer_page'] = [
-      'id' => 'pn_customers_manager_marketing_offer_page',
-      'input' => 'page_manager',
-      'label' => __('Business Offer Page', 'pn-customers-manager'),
-      'description' => __('Page displaying your business offer based on the configured data.', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-genuine-offer',
-      'page_option' => 'pn_customers_manager_marketing_offer_page',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_marketing_sales_presentation_page'] = [
-      'id' => 'pn_customers_manager_marketing_sales_presentation_page',
-      'input' => 'page_manager',
-      'label' => __('Sales Presentation Page', 'pn-customers-manager'),
-      'description' => __('Page displaying your sales presentation based on the configured data.', 'pn-customers-manager'),
-      'shortcode' => 'pn-customers-manager-sales-presentation',
-      'page_option' => 'pn_customers_manager_marketing_sales_presentation_page',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_pages_subsection_end'] = [
-      'id' => 'pn_customers_manager_pages_subsection_end',
+    // End of Corporate Identity & Design subsection
+    $pn_customers_manager_options['pn_customers_manager_brand_subsection_end'] = [
+      'id' => 'pn_customers_manager_brand_subsection_end',
       'section' => 'end',
     ];
 
@@ -956,7 +979,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
       'input' => 'select',
       'options' => [
-        'gpt-4o'      => 'GPT-4o (~$2.50 / $10 per 1M tokens)',
+        'gpt-4o' => 'GPT-4o (~$2.50 / $10 per 1M tokens)',
         'gpt-4o-mini' => 'GPT-4o Mini (~$0.15 / $0.60 per 1M tokens)',
         'gpt-4-turbo' => 'GPT-4 Turbo (~$10 / $30 per 1M tokens)',
       ],
@@ -1265,8 +1288,8 @@ class PN_CUSTOMERS_MANAGER_Settings {
     ];
 
     // ── Akismet (nested subsection) ──
-    $akismet_active    = class_exists('Akismet');
-    $akismet_has_key   = $akismet_active && method_exists('Akismet', 'get_api_key') && Akismet::get_api_key();
+    $akismet_active = class_exists('Akismet');
+    $akismet_has_key = $akismet_active && method_exists('Akismet', 'get_api_key') && Akismet::get_api_key();
     $akismet_status_html = '';
     if (!$akismet_active) {
       $akismet_status_html = '<span style="color:#b32d2e;">' . esc_html__('Plugin Akismet no instalado o no activo.', 'pn-customers-manager') . '</span>';
@@ -1357,9 +1380,9 @@ class PN_CUSTOMERS_MANAGER_Settings {
       'section' => 'end',
     ];
 
-    // End of System section
-    $pn_customers_manager_options['pn_customers_manager_system_section_end'] = [
-      'id' => 'pn_customers_manager_system_section_end',
+    // End of System parent section
+    $pn_customers_manager_options['pn_customers_manager_system_parent_section_end'] = [
+      'id' => 'pn_customers_manager_system_parent_section_end',
       'section' => 'end',
     ];
 
@@ -1372,12 +1395,13 @@ class PN_CUSTOMERS_MANAGER_Settings {
     return $pn_customers_manager_options;
   }
 
-	/**
-	 * Administrator menu.
-	 *
-	 * @since    1.0.0
-	 */
-	public function pn_customers_manager_admin_menu() {
+  /**
+   * Administrator menu.
+   *
+   * @since    1.0.0
+   */
+  public function pn_customers_manager_admin_menu()
+  {
     // Determine the capability to use for the main menu
     // Use the first available capability, or manage_options as fallback
     $menu_cap = 'manage_options';
@@ -1391,7 +1415,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
 
     // Check if user has any of the required capabilities
     $has_cap = current_user_can('edit_pn_cm_funnel') || current_user_can('edit_pn_cm_organization') || current_user_can('manage_options') || current_user_can('pn_cm_manage_crm');
-    
+
     if (!$has_cap) {
       return;
     }
@@ -1404,14 +1428,14 @@ class PN_CUSTOMERS_MANAGER_Settings {
       [$this, 'pn_customers_manager_options'],
       PN_CUSTOMERS_MANAGER_URL . 'assets/media/pn-customers-manager-menu-icon.svg'
     );
-		
+
     add_submenu_page(
       'pn_customers_manager_options',
-      esc_html__('Settings', 'pn-customers-manager'), 
-      esc_html__('Settings', 'pn-customers-manager'), 
-      $menu_cap, 
-      'pn_customers_manager_options', 
-      [$this, 'pn_customers_manager_options'], 
+      esc_html__('Settings', 'pn-customers-manager'),
+      esc_html__('Settings', 'pn-customers-manager'),
+      $menu_cap,
+      'pn_customers_manager_options',
+      [$this, 'pn_customers_manager_options'],
     );
 
     // Add Funnels menu (Funnel Builder visual canvas)
@@ -1445,7 +1469,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
         esc_html__('Accounting', 'pn-customers-manager'),
         'edit_pn_cm_budget',
         'pn_customers_manager_accounting',
-        function() {
+        function () {
           // Redirect to budgets by default
           echo '<script>window.location.href = "' . esc_url(admin_url('edit.php?post_type=pn_cm_budget')) . '";</script>';
         }
@@ -1531,7 +1555,7 @@ class PN_CUSTOMERS_MANAGER_Settings {
     // Add Contact Messages submenu
     if (current_user_can('pn_cm_manage_crm')) {
       $unread = PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count();
-      $badge  = $unread > 0
+      $badge = $unread > 0
         ? ' <span class="awaiting-mod pn-customers-manager-menu-badge">' . esc_html($unread) . '</span>'
         : '';
 
@@ -1556,213 +1580,217 @@ class PN_CUSTOMERS_MANAGER_Settings {
         ['PN_CUSTOMERS_MANAGER_Mail_Stats', 'render_page']
       );
     }
-	}
+  }
 
-	public function pn_customers_manager_options() {
-	  ?>
-	    <div class="pn-customers-manager-options pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mt-50 pn-customers-manager-mb-50">
-        <img src="<?php echo esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/banner-1544x500.png'); ?>" alt="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" title="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" class="pn-customers-manager-width-100-percent pn-customers-manager-border-radius-20 pn-customers-manager-mb-30">
-        <h1 class="pn-customers-manager-mb-30"><?php esc_html_e('PN Customers Manager Settings', 'pn-customers-manager'); ?></h1>
-        <?php // Page alerts are now shown only in the Pages section ?>
-        <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30 pn-customers-manager-settings-pb-80">
-          <form action="" method="post" id="pn-customers-manager-form-setting" class="pn-customers-manager-form pn-customers-manager-p-30">
-          <?php
-            $options = self::pn_customers_manager_get_options();
+  public function pn_customers_manager_options()
+  {
+    ?>
+                          <div class="pn-customers-manager-options pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mt-50 pn-customers-manager-mb-50">
+                            <img src="<?php echo esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/banner-1544x500.png'); ?>" alt="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" title="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" class="pn-customers-manager-width-100-percent pn-customers-manager-border-radius-20 pn-customers-manager-mb-30">
+                            <h1 class="pn-customers-manager-mb-30"><?php esc_html_e('PN Customers Manager Settings', 'pn-customers-manager'); ?></h1>
+                            <?php // Page alerts are now shown only in the Pages section ?>
+                            <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30 pn-customers-manager-settings-pb-80">
+                              <form action="" method="post" id="pn-customers-manager-form-setting" class="pn-customers-manager-form pn-customers-manager-p-30">
+                              <?php
+                              $options = self::pn_customers_manager_get_options();
 
-            foreach ($options as $pn_customers_manager_option) {
-              PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_option, 'option', 0, 0, 'half');
-            }
-          ?>
-          <input type="submit" name="pn_customers_manager_submit" id="pn_customers_manager_submit" class="pn-customers-manager-settings-hidden-submit" data-pn-customers-manager-type="option" value="<?php esc_attr_e('Save options', 'pn-customers-manager'); ?>">
-          </form>
-        </div>
-      </div>
+                              foreach ($options as $pn_customers_manager_option) {
+                                PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_option, 'option', 0, 0, 'half');
+                              }
+                              ?>
+                              <input type="submit" name="pn_customers_manager_submit" id="pn_customers_manager_submit" class="pn-customers-manager-settings-hidden-submit" data-pn-customers-manager-type="option" value="<?php esc_attr_e('Save options', 'pn-customers-manager'); ?>">
+                              </form>
+                            </div>
+                          </div>
 
-      <?php
-      // --- Recommended plugins ---
-      $pn_family = [
-        'mailpn' => [
-          'name' => 'MailPN',
-          'file' => 'mailpn/mailpn.php',
-          'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 840 720"><path d="m558-240-170-170 56-56 114 114 226-226 56 56zM400-680 720-880H80zm0 80-320-200v400h206l80 80H80Q47-320 23.5-343.5 0-367 0-400V-880Q0-913 23.5-936.5 47-960 80-960h640q33 0 56.5 23.5 23.5 23.5 23.5 56.5v174l-80 80v-174zm0 0zm0-80zm0 80z" fill="#ffcc00"/></svg>',
-          'settings_page' => 'mailpn_options',
-          'desc' => __('Email marketing and newsletter campaigns.', 'pn-customers-manager'),
-        ],
-        'userspn' => [
-          'name' => 'UsersPN',
-          'file' => 'userspn/userspn.php',
-          'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q53 0 100-15.5t86-44.5q-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160Zm0-360q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0-60Zm0 360Z" fill="#00aa44"/></svg>',
-          'settings_page' => 'userspn_options',
-          'desc' => __('User management and registration forms.', 'pn-customers-manager'),
-        ],
-        'pn-tasks-manager' => [
-          'name' => 'PN Tasks Manager',
-          'file' => 'pn-tasks-manager/pn-tasks-manager.php',
-          'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m438-240 226-226-58-58-169 169-84-84-57 57 142 142ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" fill="#552200"/></svg>',
-          'settings_page' => 'pn_tasks_manager_options',
-          'desc' => __('Task and project management.', 'pn-customers-manager'),
-        ],
-        'pn-cookies-manager' => [
-          'name' => 'PN Cookies Manager',
-          'file' => 'pn-cookies-manager/pn-cookies-manager.php',
-          'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-80Q397-80 324-111.5 251-143 197-197 143-251 111.5-324 80-397 80-480q0-75 29-147 29-72 81-128.5 52-56.5 125-91 73-34.5 160-34.5 21 0 43 2 22 2 45 7-9 45 6 85 15 40 45 66.5 30 26.5 71.5 36.5 41.5 10 85.5-5-26 59 7.5 113 33.5 54 99.5 56 1 11 1.5 20.5.5 9.5.5 20.5 0 82-31.5 154.5-31.5 72.5-85.5 127-54 54.5-127 86Q563-80 480-80Zm-60-480q25 0 42.5-17.5Q480-595 480-620q0-25-17.5-42.5T420-680q-25 0-42.5 17.5T360-620q0 25 17.5 42.5T420-560Zm-80 200q25 0 42.5-17.5Q400-395 400-420q0-25-17.5-42.5T340-480q-25 0-42.5 17.5T280-420q0 25 17.5 42.5T340-360Zm260 40q17 0 28.5-11.5Q640-343 640-360q0-17-11.5-28.5T600-400q-17 0-28.5 11.5T560-360q0 17 11.5 28.5T600-320ZM480-160q122 0 216.5-84 94.5-84 103.5-214-50-22-78.5-60-28.5-38-38.5-85-77-11-132-66-55-55-68-132-80-2-140.5 29-60.5 31-101 79.5-40.5 48.5-61 105.5-20.5 57-20.5 107 0 133 93.5 226.5T480-160Zm0-324Z" fill="#803300"/></svg>',
-          'settings_page' => 'pn_cookies_manager_options',
-          'desc' => __('Cookie consent and GDPR compliance.', 'pn-customers-manager'),
-        ],
-      ];
-      $pn_recommended = ['mailpn', 'userspn'];
-      if (!function_exists('get_plugins')) {
-        require_once ABSPATH . 'wp-admin/includes/plugin.php';
-      }
-      $pn_installed = get_plugins();
-      $pn_rp_badge = 0;
-      foreach ($pn_recommended as $pn_s) {
-        if (isset($pn_family[$pn_s]) && !isset($pn_installed[$pn_family[$pn_s]['file']])) {
-          $pn_rp_badge++;
-        }
-      }
-      ?>
+                          <?php
+                          // --- Recommended plugins ---
+                          $pn_family = [
+                            'mailpn' => [
+                              'name' => 'MailPN',
+                              'file' => 'mailpn/mailpn.php',
+                              'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 840 720"><path d="m558-240-170-170 56-56 114 114 226-226 56 56zM400-680 720-880H80zm0 80-320-200v400h206l80 80H80Q47-320 23.5-343.5 0-367 0-400V-880Q0-913 23.5-936.5 47-960 80-960h640q33 0 56.5 23.5 23.5 23.5 23.5 56.5v174l-80 80v-174zm0 0zm0-80zm0 80z" fill="#ffcc00"/></svg>',
+                              'settings_page' => 'mailpn_options',
+                              'desc' => __('Email marketing and newsletter campaigns.', 'pn-customers-manager'),
+                            ],
+                            'userspn' => [
+                              'name' => 'UsersPN',
+                              'file' => 'userspn/userspn.php',
+                              'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q53 0 100-15.5t86-44.5q-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160Zm0-360q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0-60Zm0 360Z" fill="#00aa44"/></svg>',
+                              'settings_page' => 'userspn_options',
+                              'desc' => __('User management and registration forms.', 'pn-customers-manager'),
+                            ],
+                            'pn-tasks-manager' => [
+                              'name' => 'PN Tasks Manager',
+                              'file' => 'pn-tasks-manager/pn-tasks-manager.php',
+                              'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m438-240 226-226-58-58-169 169-84-84-57 57 142 142ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" fill="#552200"/></svg>',
+                              'settings_page' => 'pn_tasks_manager_options',
+                              'desc' => __('Task and project management.', 'pn-customers-manager'),
+                            ],
+                            'pn-cookies-manager' => [
+                              'name' => 'PN Cookies Manager',
+                              'file' => 'pn-cookies-manager/pn-cookies-manager.php',
+                              'icon' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-80Q397-80 324-111.5 251-143 197-197 143-251 111.5-324 80-397 80-480q0-75 29-147 29-72 81-128.5 52-56.5 125-91 73-34.5 160-34.5 21 0 43 2 22 2 45 7-9 45 6 85 15 40 45 66.5 30 26.5 71.5 36.5 41.5 10 85.5-5-26 59 7.5 113 33.5 54 99.5 56 1 11 1.5 20.5.5 9.5.5 20.5 0 82-31.5 154.5-31.5 72.5-85.5 127-54 54.5-127 86Q563-80 480-80Zm-60-480q25 0 42.5-17.5Q480-595 480-620q0-25-17.5-42.5T420-680q-25 0-42.5 17.5T360-620q0 25 17.5 42.5T420-560Zm-80 200q25 0 42.5-17.5Q400-395 400-420q0-25-17.5-42.5T340-480q-25 0-42.5 17.5T280-420q0 25 17.5 42.5T340-360Zm260 40q17 0 28.5-11.5Q640-343 640-360q0-17-11.5-28.5T600-400q-17 0-28.5 11.5T560-360q0 17 11.5 28.5T600-320ZM480-160q122 0 216.5-84 94.5-84 103.5-214-50-22-78.5-60-28.5-38-38.5-85-77-11-132-66-55-55-68-132-80-2-140.5 29-60.5 31-101 79.5-40.5 48.5-61 105.5-20.5 57-20.5 107 0 133 93.5 226.5T480-160Zm0-324Z" fill="#803300"/></svg>',
+                              'settings_page' => 'pn_cookies_manager_options',
+                              'desc' => __('Cookie consent and GDPR compliance.', 'pn-customers-manager'),
+                            ],
+                          ];
+                          $pn_recommended = ['mailpn', 'userspn'];
+                          if (!function_exists('get_plugins')) {
+                            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                          }
+                          $pn_installed = get_plugins();
+                          $pn_rp_badge = 0;
+                          foreach ($pn_recommended as $pn_s) {
+                            if (isset($pn_family[$pn_s]) && !isset($pn_installed[$pn_family[$pn_s]['file']])) {
+                              $pn_rp_badge++;
+                            }
+                          }
+                          ?>
 
-      <!-- Sticky settings footer bar -->
-      <div id="pn-customers-manager-settings-footer" class="pn-customers-manager-settings-footer">
-        <div class="pn-customers-manager-settings-footer-inner">
-          <div class="pn-customers-manager-settings-footer-left">
-            <span class="pn-customers-manager-settings-footer-plugin-name">PN Customers Manager</span>
-            <span class="pn-customers-manager-settings-footer-version">v<?php echo esc_html(PN_CUSTOMERS_MANAGER_VERSION); ?></span>
-          </div>
-          <div class="pn-customers-manager-settings-footer-right">
-            <button type="button" id="pn-customers-manager-settings-recommended" class="pn-customers-manager-settings-footer-icon-btn pn-cm-rp-btn pn-customers-manager-tooltip" title="<?php esc_attr_e('Recommended plugins', 'pn-customers-manager'); ?>">
-              <span class="material-icons-outlined">add</span>
-              <?php if ($pn_rp_badge > 0) : ?>
-                <span class="pn-cm-rp-badge"><?php echo (int) $pn_rp_badge; ?></span>
-              <?php endif; ?>
-            </button>
-            <input type="file" id="pn-customers-manager-settings-import-file" class="pn-customers-manager-settings-hidden-input" accept=".json">
-            <button type="button" id="pn-customers-manager-settings-import" class="pn-customers-manager-settings-footer-icon-btn pn-customers-manager-tooltip" title="<?php esc_attr_e('Import settings', 'pn-customers-manager'); ?>">
-              <span class="material-icons-outlined">file_upload</span>
-            </button>
-            <button type="button" id="pn-customers-manager-settings-export" class="pn-customers-manager-settings-footer-icon-btn pn-customers-manager-tooltip" title="<?php esc_attr_e('Export settings', 'pn-customers-manager'); ?>">
-              <span class="material-icons-outlined">file_download</span>
-            </button>
-            <button type="button" id="pn-customers-manager-settings-save" class="pn-customers-manager-btn pn-customers-manager-btn-mini">
-              <?php esc_html_e('Save options', 'pn-customers-manager'); ?>
-            </button>
-          </div>
-        </div>
-      </div>
+                          <!-- Sticky settings footer bar -->
+                          <div id="pn-customers-manager-settings-footer" class="pn-customers-manager-settings-footer">
+                            <div class="pn-customers-manager-settings-footer-inner">
+                              <div class="pn-customers-manager-settings-footer-left">
+                                <span class="pn-customers-manager-settings-footer-plugin-name">PN Customers Manager</span>
+                                <span class="pn-customers-manager-settings-footer-version">v<?php echo esc_html(PN_CUSTOMERS_MANAGER_VERSION); ?></span>
+                              </div>
+                              <div class="pn-customers-manager-settings-footer-right">
+                                <button type="button" id="pn-customers-manager-settings-recommended" class="pn-customers-manager-settings-footer-icon-btn pn-cm-rp-btn pn-customers-manager-tooltip" title="<?php esc_attr_e('Recommended plugins', 'pn-customers-manager'); ?>">
+                                  <span class="material-icons-outlined">add</span>
+                                  <?php if ($pn_rp_badge > 0): ?>
+                                              <span class="pn-cm-rp-badge"><?php echo (int) $pn_rp_badge; ?></span>
+                                  <?php endif; ?>
+                                </button>
+                                <input type="file" id="pn-customers-manager-settings-import-file" class="pn-customers-manager-settings-hidden-input" accept=".json">
+                                <button type="button" id="pn-customers-manager-settings-import" class="pn-customers-manager-settings-footer-icon-btn pn-customers-manager-tooltip" title="<?php esc_attr_e('Import settings', 'pn-customers-manager'); ?>">
+                                  <span class="material-icons-outlined">file_upload</span>
+                                </button>
+                                <button type="button" id="pn-customers-manager-settings-export" class="pn-customers-manager-settings-footer-icon-btn pn-customers-manager-tooltip" title="<?php esc_attr_e('Export settings', 'pn-customers-manager'); ?>">
+                                  <span class="material-icons-outlined">file_download</span>
+                                </button>
+                                <button type="button" id="pn-customers-manager-settings-save" class="pn-customers-manager-btn pn-customers-manager-btn-mini">
+                                  <?php esc_html_e('Save options', 'pn-customers-manager'); ?>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
 
-      <!-- Recommended plugins popup -->
-      <div class="pn-customers-manager-popup-overlay pn-customers-manager-display-none-soft" style="z-index:1000000;"></div>
-      <div id="pn-customers-manager-recommended-plugins" class="pn-customers-manager-popup pn-customers-manager-popup-size-medium pn-customers-manager-display-none-soft" style="z-index:1000001;">
-        <div class="pn-customers-manager-popup-content" style="padding:30px;">
-          <h3 style="margin:0 0 8px;"><?php esc_html_e('Recommended Plugins', 'pn-customers-manager'); ?></h3>
-          <p style="color:#787c82;margin:0 0 20px;"><?php esc_html_e('Enhance your workflow with these companion plugins.', 'pn-customers-manager'); ?></p>
-          <div class="pn-cm-rp-list">
-            <?php foreach ($pn_family as $pn_slug => $pn_pl) :
-              $pn_is_installed = isset($pn_installed[$pn_pl['file']]);
-              $pn_is_active    = $pn_is_installed && is_plugin_active($pn_pl['file']);
-              $pn_is_rec       = in_array($pn_slug, $pn_recommended, true);
-            ?>
-            <div class="pn-cm-rp-card" data-slug="<?php echo esc_attr($pn_slug); ?>">
-              <div class="pn-cm-rp-icon"><?php echo $pn_pl['icon']; ?></div>
-              <div class="pn-cm-rp-info">
-                <div class="pn-cm-rp-name">
-                  <?php echo esc_html($pn_pl['name']); ?>
-                  <?php if ($pn_is_rec) : ?>
-                    <span class="pn-cm-rp-recommended"><?php esc_html_e('Recommended', 'pn-customers-manager'); ?></span>
-                  <?php endif; ?>
-                </div>
-                <div class="pn-cm-rp-desc"><?php echo esc_html($pn_pl['desc']); ?></div>
-              </div>
-              <div class="pn-cm-rp-action">
-                <?php if ($pn_is_active) : ?>
-                  <span class="pn-cm-rp-active-badge"><?php esc_html_e('Active', 'pn-customers-manager'); ?></span>
-                <?php elseif ($pn_is_installed) : ?>
-                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-cm-rp-activate" data-slug="<?php echo esc_attr($pn_slug); ?>"><?php esc_html_e('Activate', 'pn-customers-manager'); ?></button>
-                <?php else : ?>
-                  <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-cm-rp-install" data-slug="<?php echo esc_attr($pn_slug); ?>"><?php esc_html_e('Install', 'pn-customers-manager'); ?></button>
-                <?php endif; ?>
-              </div>
-            </div>
-            <?php endforeach; ?>
-          </div>
-        </div>
-      </div>
+                          <!-- Recommended plugins popup -->
+                          <div class="pn-customers-manager-popup-overlay pn-customers-manager-display-none-soft" style="z-index:1000000;"></div>
+                          <div id="pn-customers-manager-recommended-plugins" class="pn-customers-manager-popup pn-customers-manager-popup-size-medium pn-customers-manager-display-none-soft" style="z-index:1000001;">
+                            <div class="pn-customers-manager-popup-content" style="padding:30px;">
+                              <h3 style="margin:0 0 8px;"><?php esc_html_e('Recommended Plugins', 'pn-customers-manager'); ?></h3>
+                              <p style="color:#787c82;margin:0 0 20px;"><?php esc_html_e('Enhance your workflow with these companion plugins.', 'pn-customers-manager'); ?></p>
+                              <div class="pn-cm-rp-list">
+                                <?php foreach ($pn_family as $pn_slug => $pn_pl):
+                                  $pn_is_installed = isset($pn_installed[$pn_pl['file']]);
+                                  $pn_is_active = $pn_is_installed && is_plugin_active($pn_pl['file']);
+                                  $pn_is_rec = in_array($pn_slug, $pn_recommended, true);
+                                  ?>
+                                          <div class="pn-cm-rp-card" data-slug="<?php echo esc_attr($pn_slug); ?>">
+                                            <div class="pn-cm-rp-icon"><?php echo $pn_pl['icon']; ?></div>
+                                            <div class="pn-cm-rp-info">
+                                              <div class="pn-cm-rp-name">
+                                                <?php echo esc_html($pn_pl['name']); ?>
+                                                <?php if ($pn_is_rec): ?>
+                                                            <span class="pn-cm-rp-recommended"><?php esc_html_e('Recommended', 'pn-customers-manager'); ?></span>
+                                                <?php endif; ?>
+                                              </div>
+                                              <div class="pn-cm-rp-desc"><?php echo esc_html($pn_pl['desc']); ?></div>
+                                            </div>
+                                            <div class="pn-cm-rp-action">
+                                              <?php if ($pn_is_active): ?>
+                                                          <span class="pn-cm-rp-active-badge"><?php esc_html_e('Active', 'pn-customers-manager'); ?></span>
+                                              <?php elseif ($pn_is_installed): ?>
+                                                          <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-cm-rp-activate" data-slug="<?php echo esc_attr($pn_slug); ?>"><?php esc_html_e('Activate', 'pn-customers-manager'); ?></button>
+                                              <?php else: ?>
+                                                          <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent pn-cm-rp-install" data-slug="<?php echo esc_attr($pn_slug); ?>"><?php esc_html_e('Install', 'pn-customers-manager'); ?></button>
+                                              <?php endif; ?>
+                                            </div>
+                                          </div>
+                                <?php endforeach; ?>
+                              </div>
+                            </div>
+                          </div>
 
-      <?php
-      wp_enqueue_style('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-popups.css', [], PN_CUSTOMERS_MANAGER_VERSION);
-      wp_enqueue_script('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
+                          <?php
+                          wp_enqueue_style('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-popups.css', [], PN_CUSTOMERS_MANAGER_VERSION);
+                          wp_enqueue_script('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
 
-      wp_enqueue_style('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-tooltips.css', [], PN_CUSTOMERS_MANAGER_VERSION);
-      wp_enqueue_script('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-tooltips.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
+                          wp_enqueue_style('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-tooltips.css', [], PN_CUSTOMERS_MANAGER_VERSION);
+                          wp_enqueue_script('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-tooltips.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
 
-      wp_enqueue_script(
-        'pn-customers-manager-api-tests',
-        PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-api-tests.js',
-        [],
-        PN_CUSTOMERS_MANAGER_VERSION,
-        true
-      );
+                          wp_enqueue_script(
+                            'pn-customers-manager-api-tests',
+                            PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-api-tests.js',
+                            [],
+                            PN_CUSTOMERS_MANAGER_VERSION,
+                            true
+                          );
 
-      wp_localize_script('pn-customers-manager-api-tests', 'pnCmApiTests', [
-        'ajaxUrl' => admin_url('admin-ajax.php'),
-        'nonce'   => wp_create_nonce('pn-customers-manager-nonce'),
-        'i18n'    => [
-          'testing'         => __('Testing...', 'pn-customers-manager'),
-          'success'         => __('Connection successful.', 'pn-customers-manager'),
-          'error'           => __('Error:', 'pn-customers-manager'),
-          'noPhone'         => __('Enter a test phone number.', 'pn-customers-manager'),
-          'waSent'          => __('Message sent successfully.', 'pn-customers-manager'),
-          'waError'         => __('Error sending message.', 'pn-customers-manager'),
-          'listening'       => __('Listening', 'pn-customers-manager'),
-          'listenStopped'   => __('Listening stopped.', 'pn-customers-manager'),
-          'listenTimeout'   => __('Timeout. No messages received.', 'pn-customers-manager'),
-          'messageReceived' => __('Message received from', 'pn-customers-manager'),
-          'noIgId'          => __('Enter a test Instagram User ID.', 'pn-customers-manager'),
-          'igSent'          => __('Instagram message sent successfully.', 'pn-customers-manager'),
-          'igError'         => __('Error sending Instagram message.', 'pn-customers-manager'),
-          'igListening'     => __('Listening for Instagram DMs', 'pn-customers-manager'),
-          'igMessageReceived' => __('Instagram DM received from', 'pn-customers-manager'),
-        ],
-      ]);
+                          wp_localize_script('pn-customers-manager-api-tests', 'pnCmApiTests', [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
+                            'i18n' => [
+                              'testing' => __('Testing...', 'pn-customers-manager'),
+                              'success' => __('Connection successful.', 'pn-customers-manager'),
+                              'error' => __('Error:', 'pn-customers-manager'),
+                              'noPhone' => __('Enter a test phone number.', 'pn-customers-manager'),
+                              'waSent' => __('Message sent successfully.', 'pn-customers-manager'),
+                              'waError' => __('Error sending message.', 'pn-customers-manager'),
+                              'listening' => __('Listening', 'pn-customers-manager'),
+                              'listenStopped' => __('Listening stopped.', 'pn-customers-manager'),
+                              'listenTimeout' => __('Timeout. No messages received.', 'pn-customers-manager'),
+                              'messageReceived' => __('Message received from', 'pn-customers-manager'),
+                              'noIgId' => __('Enter a test Instagram User ID.', 'pn-customers-manager'),
+                              'igSent' => __('Instagram message sent successfully.', 'pn-customers-manager'),
+                              'igError' => __('Error sending Instagram message.', 'pn-customers-manager'),
+                              'igListening' => __('Listening for Instagram DMs', 'pn-customers-manager'),
+                              'igMessageReceived' => __('Instagram DM received from', 'pn-customers-manager'),
+                            ],
+                          ]);
 
-      wp_enqueue_script(
-        'pn-customers-manager-settings-footer',
-        PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-settings-footer.js',
-        [],
-        PN_CUSTOMERS_MANAGER_VERSION,
-        true
-      );
+                          wp_enqueue_script(
+                            'pn-customers-manager-settings-footer',
+                            PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-settings-footer.js',
+                            [],
+                            PN_CUSTOMERS_MANAGER_VERSION,
+                            true
+                          );
 
-      $pn_rp_settings = [];
-      foreach ($pn_family as $pn_slug => $pn_pl) {
-        $pn_rp_settings[$pn_slug] = admin_url('admin.php?page=' . $pn_pl['settings_page']);
-      }
+                          $pn_rp_settings = [];
+                          foreach ($pn_family as $pn_slug => $pn_pl) {
+                            $pn_rp_settings[$pn_slug] = admin_url('admin.php?page=' . $pn_pl['settings_page']);
+                          }
 
-      wp_localize_script('pn-customers-manager-settings-footer', 'pnCustomersManagerSettingsFooter', [
-        'ajaxUrl'       => admin_url('admin-ajax.php'),
-        'nonce'         => wp_create_nonce('pn-customers-manager-nonce'),
-        'settingsPages' => $pn_rp_settings,
-        'i18n'          => [
-          'confirmImport'  => __('This will overwrite your current settings. Continue?', 'pn-customers-manager'),
-          'importSuccess'  => __('Settings imported successfully. Reloading...', 'pn-customers-manager'),
-          'importError'    => __('Error importing settings.', 'pn-customers-manager'),
-          'invalidFile'    => __('Invalid JSON file.', 'pn-customers-manager'),
-          'exportError'    => __('Error exporting settings.', 'pn-customers-manager'),
-          'installing'     => __('Installing...', 'pn-customers-manager'),
-          'activating'     => __('Activating...', 'pn-customers-manager'),
-          'installError'   => __('Error installing plugin.', 'pn-customers-manager'),
-          'activateError'  => __('Error activating plugin.', 'pn-customers-manager'),
-          'active'         => __('Active', 'pn-customers-manager'),
-          'activate'       => __('Activate', 'pn-customers-manager'),
-        ],
-      ]);
-      ?>
-	  <?php
-	}
+                          wp_localize_script('pn-customers-manager-settings-footer', 'pnCustomersManagerSettingsFooter', [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
+                            'settingsPages' => $pn_rp_settings,
+                            'i18n' => [
+                              'confirmImport' => __('This will overwrite your current settings. Continue?', 'pn-customers-manager'),
+                              'importSuccess' => __('Settings imported successfully. Reloading...', 'pn-customers-manager'),
+                              'importError' => __('Error importing settings.', 'pn-customers-manager'),
+                              'invalidFile' => __('Invalid JSON file.', 'pn-customers-manager'),
+                              'exportError' => __('Error exporting settings.', 'pn-customers-manager'),
+                              'installing' => __('Installing...', 'pn-customers-manager'),
+                              'activating' => __('Activating...', 'pn-customers-manager'),
+                              'installError' => __('Error installing plugin.', 'pn-customers-manager'),
+                              'activateError' => __('Error activating plugin.', 'pn-customers-manager'),
+                              'active' => __('Active', 'pn-customers-manager'),
+                              'activate' => __('Activate', 'pn-customers-manager'),
+                            ],
+                          ]);
+                          ?>
+                        <?php
+    // Render tutorial if not completed
+    PN_CUSTOMERS_MANAGER_Tutorial::render();
+  }
 
-  public function pn_customers_manager_activated_plugin($plugin) {
-    if($plugin == 'pn-customers-manager/pn-customers-manager.php') {
+  public function pn_customers_manager_activated_plugin($plugin)
+  {
+    if ($plugin == 'pn-customers-manager/pn-customers-manager.php') {
       if (get_option('pn_customers_manager_pages_funnel') && get_option('pn_customers_manager_url_main')) {
         if (!get_transient('pn_customers_manager_just_activated') && !defined('DOING_AJAX')) {
           set_transient('pn_customers_manager_just_activated', true, 30);
@@ -1771,7 +1799,8 @@ class PN_CUSTOMERS_MANAGER_Settings {
     }
   }
 
-  public function pn_customers_manager_check_activation() {
+  public function pn_customers_manager_check_activation()
+  {
     // Only run in admin and not during AJAX requests
     if (!is_admin() || defined('DOING_AJAX')) {
       return;
@@ -1796,14 +1825,14 @@ class PN_CUSTOMERS_MANAGER_Settings {
 
     if (get_transient('pn_customers_manager_just_activated')) {
       $target_url = admin_url('admin.php?page=pn_customers_manager_options');
-      
+
       if ($target_url) {
         // Mark that we're in the redirection process
         update_option('pn_customers_manager_redirecting', true);
-        
+
         // Remove the transient
         delete_transient('pn_customers_manager_just_activated');
-        
+
         // Redirect and exit
         wp_safe_redirect(esc_url($target_url));
         exit;
@@ -1814,11 +1843,12 @@ class PN_CUSTOMERS_MANAGER_Settings {
   /**
    * Adds the Settings link to the plugin list
    */
-  public function pn_customers_manager_plugin_action_links($links) {
-      $settings_link = '<a href="admin.php?page=pn_customers_manager_options">' . esc_html__('Settings', 'pn-customers-manager') . '</a>';
-      array_unshift($links, $settings_link);
-      
-      return $links;
+  public function pn_customers_manager_plugin_action_links($links)
+  {
+    $settings_link = '<a href="admin.php?page=pn_customers_manager_options">' . esc_html__('Settings', 'pn-customers-manager') . '</a>';
+    array_unshift($links, $settings_link);
+
+    return $links;
   }
 
 }

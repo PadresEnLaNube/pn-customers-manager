@@ -1,0 +1,262 @@
+/**
+ * Style Guide Shortcode Styles
+ *
+ * Styles for the [pn-customers-manager-style-guide] shortcode
+ */
+
+/* General wrapper */
+.pn-sg-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Reset margins for all direct children */
+.pn-sg-wrapper > * {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Header Section */
+.pn-sg-header {
+  padding: 60px 40px;
+  border-radius: 12px;
+  margin-bottom: 60px;
+  text-align: center;
+}
+
+.pn-sg-header h1 {
+  color: #ffffff;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+}
+
+.pn-sg-header p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* Section Titles */
+.pn-sg-section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 30px 0;
+  margin-bottom: 30px !important;
+}
+
+.pn-sg-section-title:not(:first-child) {
+  margin-top: 80px;
+}
+
+/* Logos Section */
+.pn-sg-logos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  margin-bottom: 80px;
+}
+
+.pn-sg-logo-card {
+  padding: 40px 30px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.pn-sg-logo-card h3 {
+  font-size: 1.3rem;
+  margin: 0 0 20px 0;
+}
+
+.pn-sg-logo-container {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+}
+
+.pn-sg-logo-container img {
+  max-width: 200px;
+  max-height: 150px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.pn-sg-logo-card p {
+  font-size: 0.9rem;
+  margin: 20px 0 0 0;
+}
+
+.pn-sg-logo-card p.pn-sg-light-text {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.pn-sg-logo-card p.pn-sg-dark-text {
+  color: #666;
+}
+
+/* Color Palette Section */
+.pn-sg-colors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  margin-bottom: 80px;
+}
+
+.pn-sg-color-card {
+  padding: 60px 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.pn-sg-color-card p.pn-sg-color-name {
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+}
+
+.pn-sg-color-card p.pn-sg-color-value {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-family: monospace;
+}
+
+/* Typography Section */
+.pn-sg-typography-container {
+  padding: 40px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 80px;
+}
+
+.pn-sg-typography-container h1 {
+  font-size: 2.5rem;
+  margin: 0 0 20px 0;
+}
+
+.pn-sg-typography-container h2 {
+  font-size: 2rem;
+  margin: 0 0 20px 0;
+}
+
+.pn-sg-typography-container h3 {
+  font-size: 1.5rem;
+  margin: 0 0 20px 0;
+}
+
+.pn-sg-typography-container h4 {
+  font-size: 1.25rem;
+  margin: 0 0 20px 0;
+}
+
+.pn-sg-typography-container p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+}
+
+/* Buttons Section */
+.pn-sg-buttons-container {
+  padding: 40px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 80px;
+}
+
+.pn-sg-button-group {
+  margin-bottom: 30px;
+}
+
+.pn-sg-button-group:last-child {
+  margin-bottom: 0;
+}
+
+.pn-sg-button-group h3 {
+  font-size: 1.3rem;
+  margin: 0 0 15px 0;
+}
+
+.pn-sg-button-group p {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0 0 15px 0;
+}
+
+.pn-sg-button-examples {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.pn-sg-usage-examples {
+  margin-top: 30px;
+  padding: 20px;
+  background: #fff;
+  border-left: 4px solid;
+  border-radius: 4px;
+}
+
+.pn-sg-usage-examples h4 {
+  font-size: 1.1rem;
+  margin: 0 0 10px 0;
+}
+
+.pn-sg-usage-examples pre {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Spacing Section */
+.pn-sg-spacing-container {
+  padding: 40px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 40px;
+}
+
+.pn-sg-spacing-item {
+  margin-bottom: 20px;
+}
+
+.pn-sg-spacing-item:last-child {
+  margin-bottom: 0;
+}
+
+.pn-sg-spacing-box {
+  display: inline-block;
+  border-radius: 2px;
+}
+
+.pn-sg-spacing-box.pn-sg-small {
+  height: 8px;
+  width: 8px;
+}
+
+.pn-sg-spacing-box.pn-sg-medium {
+  height: 16px;
+  width: 16px;
+}
+
+.pn-sg-spacing-box.pn-sg-large {
+  height: 24px;
+  width: 24px;
+}
+
+.pn-sg-spacing-box.pn-sg-xlarge {
+  height: 40px;
+  width: 40px;
+}
+
+.pn-sg-spacing-label {
+  margin-left: 15px;
+  color: #333;
+}

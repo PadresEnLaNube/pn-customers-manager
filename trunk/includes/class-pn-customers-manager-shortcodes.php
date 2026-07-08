@@ -673,4 +673,16 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
     <?php
   }
 
+  /**
+   * Social media links shortcode.
+   *
+   * Usage: [pn-customers-manager-social-media]
+   *
+   * @param array $atts
+   * @return string
+   */
+  public function pn_customers_manager_social_media($atts = []) {
+    return PN_CUSTOMERS_MANAGER_Social_Media::render_social_media($atts);
+  }
+
 }

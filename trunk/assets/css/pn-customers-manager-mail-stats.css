@@ -1,0 +1,417 @@
+/* ──────────────────────────────────────────────
+   PN Customers Manager — MailPn Statistics
+   Following UsersPn dashboard pattern
+   ────────────────────────────────────────────── */
+
+.pn-cm-ms-wrap {
+  max-width: 1000px;
+  margin: 20px auto 50px;
+  padding: 0 16px;
+}
+
+/* ── Header ── */
+.pn-cm-ms-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.pn-cm-ms-header h1 {
+  margin: 0;
+}
+
+.pn-cm-ms-period-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pn-cm-ms-period-selector label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+#pn-cm-ms-period-select {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.pn-cm-ms-valign {
+  vertical-align: middle;
+}
+
+/* ── Loading overlay ── */
+.pn-cm-ms-wrap.pn-cm-ms-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Stat cards (widgets) ── */
+.pn-cm-ms-widgets {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.pn-cm-ms-widget {
+  flex: 1;
+  min-width: 150px;
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.pn-cm-ms-widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+
+.pn-cm-ms-widget-icon {
+  margin-bottom: 10px;
+}
+
+.pn-cm-ms-widget-icon .material-icons-outlined {
+  font-size: 32px;
+  opacity: 0.85;
+}
+
+.pn-cm-ms-widget-value {
+  font-size: 2.2em;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.pn-cm-ms-widget-title {
+  font-size: 12px;
+  opacity: 0.9;
+  line-height: 1.3;
+}
+
+/* Gradient backgrounds (like UsersPn) */
+.pn-cm-ms-bg-sent {
+  background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+}
+
+.pn-cm-ms-bg-opened {
+  background: linear-gradient(135deg, #009688 0%, #26a69a 100%);
+}
+
+.pn-cm-ms-bg-clicked {
+  background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+}
+
+.pn-cm-ms-bg-open-rate {
+  background: linear-gradient(135deg, #7b1fa2 0%, #ab47bc 100%);
+}
+
+.pn-cm-ms-bg-click-rate {
+  background: linear-gradient(135deg, #c62828 0%, #ef5350 100%);
+}
+
+/* Rate cards are not clickable */
+.pn-cm-ms-widget[data-widget="open_rate"],
+.pn-cm-ms-widget[data-widget="click_rate"] {
+  cursor: default;
+}
+
+.pn-cm-ms-widget[data-widget="open_rate"]:hover,
+.pn-cm-ms-widget[data-widget="click_rate"]:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Charts section ── */
+.pn-cm-ms-charts {
+  margin-bottom: 30px;
+}
+
+.pn-cm-ms-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.pn-cm-ms-chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.pn-cm-ms-chart-wide {
+  grid-column: 1 / -1;
+}
+
+.pn-cm-ms-chart-card h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pn-cm-ms-chart-card h3 .material-icons-outlined {
+  font-size: 20px;
+  color: #787c82;
+}
+
+.pn-cm-ms-chart-wrap {
+  position: relative;
+  height: 260px;
+}
+
+.pn-cm-ms-chart-wide .pn-cm-ms-chart-wrap {
+  height: 300px;
+}
+
+/* ── Popup / Modal ── */
+.pn-cm-ms-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99998;
+}
+
+.pn-cm-ms-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 900px;
+  max-height: 85vh;
+  z-index: 99999;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.pn-cm-ms-popup-content {
+  position: relative;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.pn-cm-ms-popup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  line-height: 1;
+  z-index: 10;
+  transition: color 0.2s;
+}
+
+.pn-cm-ms-popup-close:hover {
+  color: #000;
+}
+
+.pn-cm-ms-popup-close .material-icons-outlined {
+  font-size: 24px;
+}
+
+.pn-cm-ms-popup-inner {
+  padding: 30px;
+}
+
+.pn-cm-ms-popup-inner h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
+  color: #333;
+}
+
+/* ── Analytics table (inside popup) ── */
+.pn-cm-ms-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.pn-cm-ms-table th {
+  background: #f8f9fa;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #e9ecef;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.pn-cm-ms-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.pn-cm-ms-table tr:hover {
+  background: #f8f9fa;
+}
+
+.pn-cm-ms-icon {
+  font-size: 18px;
+  vertical-align: middle;
+  margin-right: 6px;
+  color: #787c82;
+}
+
+.pn-cm-ms-link {
+  display: inline-flex;
+  align-items: center;
+  color: #2271b1;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.pn-cm-ms-link:hover {
+  color: #135e96;
+}
+
+/* Status badges */
+.pn-cm-ms-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pn-cm-ms-status-opened {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.pn-cm-ms-status-opened .pn-cm-ms-icon {
+  color: #2e7d32;
+}
+
+.pn-cm-ms-status-pending {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.pn-cm-ms-status-pending .pn-cm-ms-icon {
+  color: #e65100;
+}
+
+/* Action buttons */
+.pn-cm-ms-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pn-cm-ms-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #f0f0f1;
+  color: #50575e;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.pn-cm-ms-actions a:hover {
+  background: #2271b1;
+  color: #fff;
+}
+
+.pn-cm-ms-actions a .material-icons-outlined {
+  font-size: 18px;
+}
+
+.pn-cm-ms-empty {
+  text-align: center;
+  color: #888;
+  padding: 30px;
+  font-size: 14px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .pn-cm-ms-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pn-cm-ms-widgets {
+    flex-direction: column;
+  }
+
+  .pn-cm-ms-widget {
+    min-width: auto;
+  }
+
+  .pn-cm-ms-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pn-cm-ms-chart-wrap,
+  .pn-cm-ms-chart-wide .pn-cm-ms-chart-wrap {
+    height: 220px;
+  }
+
+  .pn-cm-ms-popup {
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+
+  .pn-cm-ms-table {
+    font-size: 12px;
+  }
+
+  .pn-cm-ms-table th,
+  .pn-cm-ms-table td {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pn-cm-ms-widget-value {
+    font-size: 1.8em;
+  }
+}

@@ -13,7 +13,7 @@
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
  * Description:       Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
- * Version:           1.1.150
+ * Version:           1.2.13
  * Requires at least: 3.0
  * Tested up to:      7.0
  * Requires PHP:      7.2
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.1.150');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.13');
 define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.7');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
@@ -247,6 +247,9 @@ $pn_customers_manager_kses = [
 		'disabled' => [],
 		'data-pn-customers-manager-ajax-type' => [],
 		'data-page-id' => [],
+		'data-cpt' => [],
+		'data-label' => [],
+		'data-popup' => [],
 	],
 
 	// Table elements
@@ -304,7 +307,8 @@ function pn_customers_manager_activation_hook()
  * Reads the `pn_customers_manager_projection_frequency` option and applies it.
  * If projections are disabled, clears the scheduled cron.
  */
-function pn_customers_manager_reschedule_projections_cron() {
+function pn_customers_manager_reschedule_projections_cron()
+{
 	$projections_enabled = get_option('pn_customers_manager_projections_enabled', 'off');
 
 	// If projections are disabled, clear the cron and return

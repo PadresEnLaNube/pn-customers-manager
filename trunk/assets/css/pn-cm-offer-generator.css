@@ -1,0 +1,423 @@
+/**
+ * AI Offer Generator Wizard styles.
+ *
+ * @package PN_CUSTOMERS_MANAGER
+ * @since   1.0.70
+ */
+
+/* ===================================================================
+   Wizard Container
+   =================================================================== */
+
+.pn-cm-offer-gen-wizard {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+}
+
+.pn-cm-offer-gen-wizard-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.pn-cm-offer-gen-wizard-header h2 {
+  font-size: 2rem;
+  color: #1d2327;
+  margin-bottom: 0.5rem;
+}
+
+.pn-cm-offer-gen-wizard-header p {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* ===================================================================
+   Progress Bar
+   =================================================================== */
+
+.pn-cm-offer-gen-wizard-progress {
+  margin-bottom: 2rem;
+}
+
+.pn-cm-offer-gen-wizard-progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.pn-cm-offer-gen-wizard-progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+.pn-cm-offer-gen-wizard-progress-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* ===================================================================
+   Steps
+   =================================================================== */
+
+.pn-cm-offer-gen-step {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.pn-cm-offer-gen-step-active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pn-cm-offer-gen-step h3 {
+  font-size: 1.5rem;
+  color: #1d2327;
+  margin-bottom: 0.5rem;
+}
+
+.pn-cm-offer-gen-step-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* ===================================================================
+   Form Fields
+   =================================================================== */
+
+.pn-cm-offer-gen-field {
+  margin-bottom: 1.5rem;
+}
+
+.pn-cm-offer-gen-field label {
+  display: block;
+  font-weight: 600;
+  color: #1d2327;
+  margin-bottom: 0.5rem;
+}
+
+.pn-cm-offer-gen-field input[type="text"],
+.pn-cm-offer-gen-field textarea,
+.pn-cm-offer-gen-field select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.pn-cm-offer-gen-field input[type="text"]:focus,
+.pn-cm-offer-gen-field textarea:focus,
+.pn-cm-offer-gen-field select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.pn-cm-offer-gen-field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.pn-cm-offer-gen-field input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.pn-cm-offer-gen-field-error {
+  border-color: #dc3545 !important;
+}
+
+.pn-cm-offer-gen-field-error-msg {
+  display: block;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ===================================================================
+   Radio Cards
+   =================================================================== */
+
+.pn-cm-offer-gen-radio-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pn-cm-offer-gen-radio-card {
+  display: block;
+  padding: 1.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.pn-cm-offer-gen-radio-card:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.pn-cm-offer-gen-radio-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.pn-cm-offer-gen-radio-card input[type="radio"]:checked + .pn-cm-offer-gen-radio-content {
+  color: #667eea;
+}
+
+.pn-cm-offer-gen-radio-card input[type="radio"]:checked ~ * {
+  border-color: #667eea;
+}
+
+.pn-cm-offer-gen-radio-card input[type="radio"]:checked {
+  & + .pn-cm-offer-gen-radio-content::before {
+    content: "✓";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 24px;
+    height: 24px;
+    background: #667eea;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
+.pn-cm-offer-gen-radio-content h4 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #1d2327;
+}
+
+.pn-cm-offer-gen-radio-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9375rem;
+}
+
+/* ===================================================================
+   Buttons
+   =================================================================== */
+
+.pn-cm-offer-gen-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.pn-cm-offer-gen-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pn-cm-offer-gen-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.pn-cm-offer-gen-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.pn-cm-offer-gen-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pn-cm-offer-gen-btn:not(.pn-cm-offer-gen-btn-primary) {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.pn-cm-offer-gen-btn:not(.pn-cm-offer-gen-btn-primary):hover {
+  background: #e0e0e0;
+}
+
+/* ===================================================================
+   Loading Spinner
+   =================================================================== */
+
+.pn-cm-offer-gen-spinner {
+  display: inline-flex;
+  align-items: center;
+}
+
+.pn-cm-offer-gen-loading-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.pn-cm-offer-gen-loading-dots span {
+  display: inline-block;
+  animation: dotPulse 1.4s infinite ease-in-out both;
+}
+
+.pn-cm-offer-gen-loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.pn-cm-offer-gen-loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===================================================================
+   Result Messages
+   =================================================================== */
+
+.pn-cm-offer-gen-result,
+.pn-cm-offer-gen-error {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.pn-cm-offer-gen-result {
+  background: #d4edda;
+  border: 2px solid #c3e6cb;
+}
+
+.pn-cm-offer-gen-result-success {
+  color: #155724;
+}
+
+.pn-cm-offer-gen-result-icon {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  background: #28a745;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.pn-cm-offer-gen-result h3 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: #155724;
+}
+
+.pn-cm-offer-gen-result-message {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #155724;
+}
+
+.pn-cm-offer-gen-error {
+  background: #f8d7da;
+  border: 2px solid #f5c6cb;
+}
+
+.pn-cm-offer-gen-error-content {
+  color: #721c24;
+}
+
+.pn-cm-offer-gen-error-icon {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  background: #dc3545;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.pn-cm-offer-gen-error-message {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #721c24;
+}
+
+/* ===================================================================
+   Responsive Design
+   =================================================================== */
+
+@media (max-width: 768px) {
+  .pn-cm-offer-gen-wizard {
+    padding: 1.5rem 1rem;
+    margin: 1rem;
+  }
+
+  .pn-cm-offer-gen-wizard-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .pn-cm-offer-gen-wizard-header p {
+    font-size: 1rem;
+  }
+
+  .pn-cm-offer-gen-step h3 {
+    font-size: 1.25rem;
+  }
+
+  .pn-cm-offer-gen-radio-group {
+    grid-template-columns: 1fr;
+  }
+
+  .pn-cm-offer-gen-actions {
+    flex-direction: column;
+  }
+
+  .pn-cm-offer-gen-btn {
+    width: 100%;
+  }
+}

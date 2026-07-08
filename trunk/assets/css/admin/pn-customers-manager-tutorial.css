@@ -1,0 +1,341 @@
+/**
+ * PN_CUSTOMERS_MANAGER - Tutorial Onboarding Styles
+ *
+ * @package PN_CUSTOMERS_MANAGER
+ * @since 1.0.0
+ */
+
+/* Tutorial Overlay */
+.pn-customers-manager-tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999998;
+  display: none;
+}
+
+/* Spotlight Effect */
+.pn-customers-manager-tutorial-spotlight {
+  position: fixed;
+  border: 3px solid var(--pn-customers-manager-color-main, #b84a00);
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35), 0 0 30px rgba(184, 74, 0, 0.9);
+  pointer-events: none;
+  z-index: 999999;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: none;
+}
+
+/* Tutorial Box */
+.pn-customers-manager-tutorial-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  z-index: 1000000;
+  max-width: 420px;
+  width: 90%;
+  max-height: 65vh;
+  display: flex;
+  flex-direction: column;
+  animation: pn-customers-managerTutorialSlideIn 0.3s ease-out;
+}
+
+@keyframes pn-customers-managerTutorialSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Tutorial Step */
+.pn-customers-manager-tutorial-step {
+  display: none;
+}
+
+/* Tutorial Header */
+.pn-customers-manager-tutorial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid #e5e5e5;
+  flex-shrink: 0;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.pn-customers-manager-tutorial-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d2327;
+}
+
+.pn-customers-manager-tutorial-skip {
+  background: none;
+  border: none;
+  color: #787c82;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pn-customers-manager-tutorial-skip:hover {
+  background: #f0f0f1;
+  color: #1d2327;
+}
+
+.pn-customers-manager-tutorial-skip .material-icons-outlined {
+  font-size: 20px;
+}
+
+/* Tutorial Content */
+.pn-customers-manager-tutorial-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.pn-customers-manager-tutorial-content p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #50575e;
+}
+
+.pn-customers-manager-tutorial-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Tutorial Features List */
+.pn-customers-manager-tutorial-features {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+}
+
+.pn-customers-manager-tutorial-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #50575e;
+}
+
+.pn-customers-manager-tutorial-features li .material-icons-outlined {
+  font-size: 20px;
+  color: var(--pn-customers-manager-color-main, #b84a00);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Tutorial Tip */
+.pn-customers-manager-tutorial-tip {
+  background: #f0f6fc;
+  border: 1px solid #d0e4f7;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pn-customers-manager-tutorial-tip .material-icons-outlined {
+  font-size: 20px;
+  color: #0073aa;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pn-customers-manager-tutorial-tip strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #0073aa;
+}
+
+/* Tutorial Content Scrollbar */
+.pn-customers-manager-tutorial-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pn-customers-manager-tutorial-content::-webkit-scrollbar-track {
+  background: #f0f0f1;
+  border-radius: 3px;
+}
+
+.pn-customers-manager-tutorial-content::-webkit-scrollbar-thumb {
+  background: #c3c4c7;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.pn-customers-manager-tutorial-content::-webkit-scrollbar-thumb:hover {
+  background: var(--pn-customers-manager-color-main, #b84a00);
+}
+
+/* Tutorial Footer */
+.pn-customers-manager-tutorial-footer {
+  padding: 14px 20px 20px;
+  border-top: 1px solid #e5e5e5;
+  flex-shrink: 0;
+}
+
+/* Tutorial Progress */
+.pn-customers-manager-tutorial-progress {
+  margin-bottom: 16px;
+}
+
+.pn-customers-manager-tutorial-progress-text {
+  display: block;
+  font-size: 12px;
+  color: #787c82;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.pn-customers-manager-tutorial-progress-bar {
+  height: 4px;
+  background: #e5e5e5;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pn-customers-manager-tutorial-progress-fill {
+  height: 100%;
+  background: var(--pn-customers-manager-bg-color-main, #b84a00);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* Tutorial Navigation */
+.pn-customers-manager-tutorial-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pn-customers-manager-tutorial-next,
+.pn-customers-manager-tutorial-prev,
+.pn-customers-manager-tutorial-finish {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.pn-customers-manager-tutorial-next .material-icons-outlined,
+.pn-customers-manager-tutorial-prev .material-icons-outlined,
+.pn-customers-manager-tutorial-finish .material-icons-outlined {
+  font-size: 18px;
+}
+
+.pn-customers-manager-tutorial-prev {
+  margin-right: auto;
+}
+
+/* Responsive */
+
+/* Medium screens (tablet/laptop with sidebar) */
+@media screen and (max-width: 1200px) {
+  .pn-customers-manager-tutorial-box {
+    /* Center on medium screens by default, but allow dragging */
+    max-width: 420px;
+    width: calc(100% - 40px);
+    max-height: 70vh;
+  }
+
+  .pn-customers-manager-tutorial-spotlight {
+    /* Hide spotlight on medium screens for better visibility */
+    display: none !important;
+  }
+}
+
+/* Small screens (mobile) */
+@media screen and (max-width: 782px) {
+  .pn-customers-manager-tutorial-box {
+    max-width: calc(100% - 32px);
+    max-height: 75vh;
+  }
+
+  .pn-customers-manager-tutorial-spotlight {
+    display: none !important;
+  }
+
+  .pn-customers-manager-tutorial-header {
+    padding: 16px 16px 12px;
+  }
+
+  .pn-customers-manager-tutorial-header h2 {
+    font-size: 17px;
+  }
+
+  .pn-customers-manager-tutorial-content {
+    padding: 16px;
+  }
+
+  .pn-customers-manager-tutorial-footer {
+    padding: 12px 16px 16px;
+  }
+
+  .pn-customers-manager-tutorial-navigation {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pn-customers-manager-tutorial-prev {
+    order: 2;
+    margin-right: 0;
+  }
+
+  .pn-customers-manager-tutorial-next,
+  .pn-customers-manager-tutorial-finish {
+    order: 1;
+  }
+}
+
+/* Extra small screens */
+@media screen and (max-width: 600px) {
+  .pn-customers-manager-tutorial-box {
+    max-width: calc(100% - 24px);
+    max-height: 80vh;
+    margin: 12px;
+  }
+
+  .pn-customers-manager-tutorial-header h2 {
+    font-size: 16px;
+  }
+
+  .pn-customers-manager-tutorial-content {
+    padding: 14px;
+  }
+
+  .pn-customers-manager-tutorial-features li {
+    font-size: 13px;
+  }
+
+  .pn-customers-manager-tutorial-tip {
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,34 @@
+.hostpn-tooltip-box {
+    position: fixed;
+    z-index: 9997;
+    max-width: 300px;
+    background: #232323;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-sizing: border-box;
+    word-wrap: break-word;
+}
+.hostpn-tooltip-box--visible {
+    opacity: 1;
+}
+.hostpn-tooltip-box::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #232323;
+}
+.hostpn-tooltip-box--bottom::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: #232323;
+}

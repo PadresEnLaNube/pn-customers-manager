@@ -1,0 +1,222 @@
+/**
+ * Instagram AI Admin – Conversations page styles.
+ *
+ * @since 1.0.60
+ */
+
+/* Wrap */
+.pn-cm-ig-admin-wrap {
+  max-width: 1100px;
+  margin: 20px auto;
+}
+
+.pn-cm-ig-admin-wrap h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Filters */
+.pn-cm-ig-filters {
+  display: flex;
+  gap: 6px;
+  margin: 16px 0;
+}
+
+.pn-cm-ig-filter-btn {
+  padding: 6px 14px;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  background: #fff;
+  text-decoration: none;
+  color: #1d2327;
+  font-size: 13px;
+}
+
+.pn-cm-ig-filter-btn.active,
+.pn-cm-ig-filter-btn:hover {
+  background: #c13584;
+  color: #fff;
+  border-color: #c13584;
+}
+
+/* Status badges */
+.pn-cm-ig-status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pn-cm-ig-status-active {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+
+.pn-cm-ig-status-closed {
+  background: #f0f0f1;
+  color: #787c82;
+}
+
+/* Table */
+.pn-cm-ig-table .pn-cm-ig-conv-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pn-cm-ig-table .pn-cm-ig-last-msg {
+  color: #787c82;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pn-cm-ig-btn-delete {
+  color: #d63638 !important;
+}
+
+.pn-cm-ig-btn-delete:hover {
+  background: #d63638 !important;
+  color: #fff !important;
+  border-color: #d63638 !important;
+}
+
+/* Empty state */
+.pn-cm-ig-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #787c82;
+}
+
+.pn-cm-ig-empty .material-icons-outlined {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+  opacity: 0.5;
+}
+
+/* Back link */
+.pn-cm-ig-back {
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pn-cm-ig-back:hover {
+  color: #c13584;
+}
+
+/* Conversation meta */
+.pn-cm-ig-conv-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #f6f7f7;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+/* Chat container */
+.pn-cm-ig-chat {
+  background: #fafafa;
+  border: 1px solid #c3c4c7;
+  border-radius: 8px;
+  padding: 20px;
+  max-height: 500px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pn-cm-ig-chat-empty {
+  text-align: center;
+  padding: 40px;
+  color: #787c82;
+}
+
+.pn-cm-ig-chat-empty .material-icons-outlined {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+/* Message bubbles */
+.pn-cm-ig-msg {
+  display: flex;
+  max-width: 75%;
+}
+
+.pn-cm-ig-msg-user {
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.pn-cm-ig-msg-assistant {
+  align-self: flex-start;
+}
+
+.pn-cm-ig-msg-bubble {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  position: relative;
+  word-break: break-word;
+}
+
+.pn-cm-ig-msg-user .pn-cm-ig-msg-bubble {
+  background: #efefef;
+  border-bottom-right-radius: 2px;
+}
+
+.pn-cm-ig-msg-assistant .pn-cm-ig-msg-bubble {
+  background: #fff;
+  border-left: 3px solid;
+  border-image: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045) 1;
+  border-bottom-left-radius: 2px;
+}
+
+.pn-cm-ig-msg-images,
+.pn-cm-wa-msg-images {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.pn-cm-ig-msg-images img,
+.pn-cm-wa-msg-images img {
+  max-width: 100%;
+  border-radius: 6px;
+  display: block;
+}
+
+.pn-cm-ig-msg-time {
+  font-size: 11px;
+  color: #999;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Actions below chat */
+.pn-cm-ig-conv-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pn-cm-ig-conv-actions .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

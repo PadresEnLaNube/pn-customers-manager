@@ -13,7 +13,8 @@
  * @author     Padres en la Nube
  */
 
-class PN_CUSTOMERS_MANAGER {
+class PN_CUSTOMERS_MANAGER
+{
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power the plugin.
 	 *
@@ -48,11 +49,12 @@ class PN_CUSTOMERS_MANAGER {
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct() {
+	public function __construct()
+	{
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.1.105';
+			$this->pn_customers_manager_version = '1.2.13';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -84,8 +86,9 @@ class PN_CUSTOMERS_MANAGER {
 		self::pn_customers_manager_define_projections_hooks();
 		self::pn_customers_manager_define_recurring_invoices_hooks();
 		self::pn_customers_manager_define_woocommerce_hooks();
+		self::pn_customers_manager_define_financial_hooks();
 	}
-			
+
 	/**
 	 * Load the required dependencies for this plugin.
 	 *
@@ -115,7 +118,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_dependencies() {
+	private function pn_customers_manager_load_dependencies()
+	{
 		/**
 		 * The class responsible for orchestrating the actions and filters of the core plugin.
 		 */
@@ -186,6 +190,18 @@ class PN_CUSTOMERS_MANAGER {
 		 * Must be loaded before Settings because Settings uses Marketing::get_settings_section()
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-marketing.php';
+
+		/**
+		 * The class managing social media links.
+		 * Must be loaded before Settings because Settings uses Social_Media::get_settings_section()
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-social-media.php';
+
+		/**
+		 * The class managing financial fields system.
+		 * Must be loaded before Settings because Settings uses Financial::get_settings_section()
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-financial.php';
 
 		/**
 		 * The class defining settings.
@@ -328,6 +344,11 @@ class PN_CUSTOMERS_MANAGER {
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce.php';
 
+		/**
+		 * The class responsible for tutorial onboarding functionality.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-tutorial.php';
+
 		$this->pn_customers_manager_loader = new PN_CUSTOMERS_MANAGER_Loader();
 	}
 
@@ -339,13 +360,14 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_i18n() {
+	private function pn_customers_manager_load_i18n()
+	{
 		$plugin_i18n = new PN_CUSTOMERS_MANAGER_i18n();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('after_setup_theme', $plugin_i18n, 'pn_customers_manager_load_plugin_textdomain');
 
 		if (class_exists('Polylang')) {
 			$this->pn_customers_manager_loader->pn_customers_manager_add_filter('pll_get_post_types', $plugin_i18n, 'pn_customers_manager_pll_get_post_types', 10, 2);
-    }
+		}
 	}
 
 	/**
@@ -354,7 +376,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_define_common_hooks() {
+	private function pn_customers_manager_define_common_hooks()
+	{
 		$plugin_common = new PN_CUSTOMERS_MANAGER_Common(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_enqueue_scripts', $plugin_common, 'pn_customers_manager_enqueue_styles');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_enqueue_scripts', $plugin_common, 'pn_customers_manager_enqueue_scripts');
@@ -381,10 +404,17 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_define_admin_hooks() {
+	private function pn_customers_manager_define_admin_hooks()
+	{
 		$plugin_admin = new PN_CUSTOMERS_MANAGER_Admin(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_admin, 'pn_customers_manager_enqueue_styles');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_admin, 'pn_customers_manager_enqueue_scripts');
+
+		// Financial management assets
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', 'PN_CUSTOMERS_MANAGER_Financial', 'enqueue_assets');
+
+		// Tutorial assets
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', 'PN_CUSTOMERS_MANAGER_Tutorial', 'enqueue_assets');
 
 		// One-time migration: budget items from custom table to post meta.
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_maybe_migrate_budget_items');
@@ -393,8 +423,9 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Run one-time migration of budget items to post meta if not done yet.
 	 */
-	public function pn_customers_manager_maybe_migrate_budget_items() {
-		if ( get_option( 'pn_cm_budget_items_migrated' ) !== '1' ) {
+	public function pn_customers_manager_maybe_migrate_budget_items()
+	{
+		if (get_option('pn_cm_budget_items_migrated') !== '1') {
 			PN_CUSTOMERS_MANAGER_Migration::migrate_budget_items_to_meta();
 		}
 	}
@@ -405,7 +436,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_define_public_hooks() {
+	private function pn_customers_manager_define_public_hooks()
+	{
 		$plugin_public = new PN_CUSTOMERS_MANAGER_Public(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_enqueue_scripts', $plugin_public, 'pn_customers_manager_enqueue_styles');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_enqueue_scripts', $plugin_public, 'pn_customers_manager_enqueue_scripts');
@@ -421,7 +453,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Output noindex meta tag on CRM management pages unless allowed by settings.
 	 */
-	public function pn_customers_manager_maybe_noindex_crm_pages() {
+	public function pn_customers_manager_maybe_noindex_crm_pages()
+	{
 		if (is_admin()) {
 			return;
 		}
@@ -483,20 +516,21 @@ class PN_CUSTOMERS_MANAGER {
 	 * @param WP_REST_Request  $request Request used to generate the response.
 	 * @return mixed|WP_Error
 	 */
-	public function pn_customers_manager_restrict_crm_rest_api( $result, $server, $request ) {
-		if ( null !== $result ) {
+	public function pn_customers_manager_restrict_crm_rest_api($result, $server, $request)
+	{
+		if (null !== $result) {
 			return $result;
 		}
 
 		$route = $request->get_route();
 
-		foreach ( array_keys( PN_CUSTOMERS_MANAGER_CPTS ) as $cpt_slug ) {
-			if ( preg_match( '#^/wp/v2/' . preg_quote( $cpt_slug, '#' ) . '(/|$)#', $route ) ) {
-				if ( ! current_user_can( 'manage_options' ) ) {
+		foreach (array_keys(PN_CUSTOMERS_MANAGER_CPTS) as $cpt_slug) {
+			if (preg_match('#^/wp/v2/' . preg_quote($cpt_slug, '#') . '(/|$)#', $route)) {
+				if (!current_user_can('manage_options')) {
 					return new WP_Error(
 						'rest_forbidden',
-						__( 'You do not have permission to access this resource.', 'pn-customers-manager' ),
-						array( 'status' => 401 )
+						__('You do not have permission to access this resource.', 'pn-customers-manager'),
+						array('status' => 401)
 					);
 				}
 				break;
@@ -512,7 +546,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_define_custom_post_types() {
+	private function pn_customers_manager_define_custom_post_types()
+	{
 		$plugin_post_type_funnel = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_post_type_funnel, 'pn_cm_funnel_register_post_type');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $plugin_post_type_funnel, 'pn_cm_funnel_add_meta_box');
@@ -557,7 +592,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_define_taxonomies() {
+	private function pn_customers_manager_define_taxonomies()
+	{
 		$plugin_taxonomies_funnel = new PN_CUSTOMERS_MANAGER_Taxonomies_Funnel();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_taxonomies_funnel, 'pn_customers_manager_register_taxonomies');
 	}
@@ -568,7 +604,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_data() {
+	private function pn_customers_manager_load_data()
+	{
 		$plugin_data = new PN_CUSTOMERS_MANAGER_Data();
 
 		if (is_admin()) {
@@ -587,7 +624,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_templates() {
+	private function pn_customers_manager_load_templates()
+	{
 		if (!defined('DOING_AJAX')) {
 			$plugin_templates = new PN_CUSTOMERS_MANAGER_Templates();
 			$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_footer', $plugin_templates, 'load_plugin_templates');
@@ -601,7 +639,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_settings() {
+	private function pn_customers_manager_load_settings()
+	{
 		$plugin_settings = new PN_CUSTOMERS_MANAGER_Settings();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_menu', $plugin_settings, 'pn_customers_manager_admin_menu');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('activated_plugin', $plugin_settings, 'pn_customers_manager_activated_plugin');
@@ -615,7 +654,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_ajax() {
+	private function pn_customers_manager_load_ajax()
+	{
 		$plugin_ajax = new PN_CUSTOMERS_MANAGER_Ajax();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_ajax', $plugin_ajax, 'pn_customers_manager_ajax_server');
 	}
@@ -626,7 +666,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_ajax_nopriv() {
+	private function pn_customers_manager_load_ajax_nopriv()
+	{
 		$plugin_ajax_nopriv = new PN_CUSTOMERS_MANAGER_Ajax_Nopriv();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_ajax_nopriv', $plugin_ajax_nopriv, 'pn_customers_manager_ajax_nopriv_server');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_nopriv_pn_customers_manager_ajax_nopriv', $plugin_ajax_nopriv, 'pn_customers_manager_ajax_nopriv_server');
@@ -638,7 +679,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function pn_customers_manager_load_shortcodes() {
+	private function pn_customers_manager_load_shortcodes()
+	{
 		$plugin_shortcodes = new PN_CUSTOMERS_MANAGER_Shortcodes();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-funnel', $plugin_shortcodes, 'pn_cm_funnel');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-test', $plugin_shortcodes, 'pn_customers_manager_test');
@@ -649,13 +691,16 @@ class PN_CUSTOMERS_MANAGER {
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-whatsapp-ai', $plugin_shortcodes, 'pn_customers_manager_whatsapp_ai');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-instagram-ai', $plugin_shortcodes, 'pn_customers_manager_instagram_ai');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-style-guide', $plugin_shortcodes, 'pn_customers_manager_style_guide');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-social-media', $plugin_shortcodes, 'pn_customers_manager_social_media');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Shortcodes', 'register_button_block');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Social_Media', 'register_block');
 	}
 
 	/**
 	 * Register hooks related to the client registration form.
 	 */
-	private function pn_customers_manager_define_client_hooks() {
+	private function pn_customers_manager_define_client_hooks()
+	{
 		$client_form = new PN_CUSTOMERS_MANAGER_Client_Form(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $client_form, 'register_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_customers_manager_form_save', $client_form, 'handle_form_save', 10, 4);
@@ -665,7 +710,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks related to the contact form.
 	 */
-	private function pn_customers_manager_define_contact_form_hooks() {
+	private function pn_customers_manager_define_contact_form_hooks()
+	{
 		$contact_form = new PN_CUSTOMERS_MANAGER_Contact_Form(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $contact_form, 'register_block');
 	}
@@ -673,7 +719,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks related to the referral system.
 	 */
-	private function pn_customers_manager_define_referral_hooks() {
+	private function pn_customers_manager_define_referral_hooks()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-referrals', 'PN_CUSTOMERS_MANAGER_Referral', 'render_referrals_shortcode');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Referral', 'register_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', 'PN_CUSTOMERS_MANAGER_Referral', 'handle_referral_acceptance');
@@ -685,7 +732,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks related to the commercial agents system.
 	 */
-	private function pn_customers_manager_define_commercial_hooks() {
+	private function pn_customers_manager_define_commercial_hooks()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-commercial-panel', 'PN_CUSTOMERS_MANAGER_Commercial', 'render_commercial_panel');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Commercial', 'register_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_ensure_commercial_role');
@@ -695,7 +743,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Ensure the commercial role exists (upgrade path for existing installs).
 	 */
-	public function pn_customers_manager_ensure_commercial_role() {
+	public function pn_customers_manager_ensure_commercial_role()
+	{
 		if (!get_role('pn_customers_manager_role_commercial')) {
 			add_role('pn_customers_manager_role_commercial', esc_html(__('Comercial - PN', 'pn-customers-manager')));
 			$role = get_role('pn_customers_manager_role_commercial');
@@ -709,7 +758,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * Ensure pn_cm_manage_crm capability exists on manager and admin roles
 	 * (upgrade path for existing installs).
 	 */
-	public function pn_customers_manager_ensure_crm_cap() {
+	public function pn_customers_manager_ensure_crm_cap()
+	{
 		$manager = get_role('pn_customers_manager_role_manager');
 		if ($manager instanceof \WP_Role && !$manager->has_cap('pn_cm_manage_crm')) {
 			$manager->add_cap('pn_cm_manage_crm');
@@ -723,7 +773,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks related to the email campaigns system.
 	 */
-	private function pn_customers_manager_define_email_campaigns_hooks() {
+	private function pn_customers_manager_define_email_campaigns_hooks()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-email-campaigns', 'PN_CUSTOMERS_MANAGER_Email_Campaigns', 'render_shortcode');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Email_Campaigns', 'register_block');
 	}
@@ -731,7 +782,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks for marketing offers and AI-powered page generation.
 	 */
-	private function pn_customers_manager_define_marketing_hooks() {
+	private function pn_customers_manager_define_marketing_hooks()
+	{
 		// Shortcodes for static pages
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode(
 			'pn-customers-manager-genuine-offer',
@@ -797,7 +849,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks for Offer Page Generator.
 	 */
-	private function pn_customers_manager_define_offer_page_generator_hooks() {
+	private function pn_customers_manager_define_offer_page_generator_hooks()
+	{
 		// Register admin menu pages
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action(
 			'admin_menu',
@@ -822,7 +875,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks for CSV import on Organizations.
 	 */
-	private function pn_customers_manager_define_csv_import_hooks() {
+	private function pn_customers_manager_define_csv_import_hooks()
+	{
 		$csv_import = new PN_CUSTOMERS_MANAGER_Csv_Import();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_head-edit.php', $csv_import, 'pn_customers_manager_csv_inject_button');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_csv_template', $csv_import, 'pn_customers_manager_csv_download_template');
@@ -833,7 +887,8 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks for Budget CSV import/export.
 	 */
-	private function pn_customers_manager_define_budget_csv_hooks() {
+	private function pn_customers_manager_define_budget_csv_hooks()
+	{
 		$budget_csv = new PN_CUSTOMERS_MANAGER_Budget_Csv();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_budget_csv_download_template', $budget_csv, 'pn_customers_manager_budget_csv_download_template');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_ajax_pn_customers_manager_budget_csv_export', $budget_csv, 'pn_customers_manager_budget_csv_export');
@@ -844,28 +899,32 @@ class PN_CUSTOMERS_MANAGER {
 	/**
 	 * Register hooks for WhatsApp AI integration.
 	 */
-	private function pn_customers_manager_define_whatsapp_ai_hooks() {
+	private function pn_customers_manager_define_whatsapp_ai_hooks()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'register_routes');
 	}
 
 	/**
 	 * Register hooks for Instagram AI integration.
 	 */
-	private function pn_customers_manager_define_instagram_ai_hooks() {
+	private function pn_customers_manager_define_instagram_ai_hooks()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_Instagram_AI', 'register_routes');
 	}
 
 	/**
 	 * Register hooks for business projections.
 	 */
-	private function pn_customers_manager_define_projections_hooks() {
+	private function pn_customers_manager_define_projections_hooks()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_projections_snapshot_cron', 'PN_CUSTOMERS_MANAGER_Projections', 'collect_snapshot');
 	}
 
 	/**
 	 * Register hooks for recurring invoices.
 	 */
-	private function pn_customers_manager_define_recurring_invoices_hooks() {
+	private function pn_customers_manager_define_recurring_invoices_hooks()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_recurring_invoices_cron', 'PN_CUSTOMERS_MANAGER_Post_Type_Invoice', 'process_recurring_invoices');
 	}
 
@@ -875,7 +934,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since    1.1.75
 	 * @access   private
 	 */
-	private function pn_customers_manager_define_woocommerce_hooks() {
+	private function pn_customers_manager_define_woocommerce_hooks()
+	{
 		// Only initialize if WooCommerce is active
 		if (class_exists('WooCommerce')) {
 			PN_CUSTOMERS_MANAGER_WooCommerce::instance();
@@ -883,11 +943,30 @@ class PN_CUSTOMERS_MANAGER {
 	}
 
 	/**
+	 * Register Financial Management hooks.
+	 *
+	 * @since    1.1.151
+	 * @access   private
+	 */
+	private function pn_customers_manager_define_financial_hooks()
+	{
+		// Auto-enable financial management for hostpn_accommodation
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Financial', 'maybe_auto_enable_accommodation');
+
+		// Enqueue financial assets in front-end
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_enqueue_scripts', 'PN_CUSTOMERS_MANAGER_Financial', 'enqueue_frontend_assets');
+
+		// Add financial data to post content in frontend
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('the_content', 'PN_CUSTOMERS_MANAGER_Financial', 'add_to_content');
+	}
+
+	/**
 	 * Run the loader to execute all of the hooks with WordPress. Then it flushes the rewrite rules if needed.
 	 *
 	 * @since    1.0.0
 	 */
-	public function pn_customers_manager_run() {
+	public function pn_customers_manager_run()
+	{
 		$this->pn_customers_manager_loader->pn_customers_manager_run();
 	}
 
@@ -897,7 +976,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since     1.0.0
 	 * @return    string    The name of the plugin.
 	 */
-	public function pn_customers_manager_get_plugin_name() {
+	public function pn_customers_manager_get_plugin_name()
+	{
 		return $this->pn_customers_manager_plugin_name;
 	}
 
@@ -907,7 +987,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since     1.0.0
 	 * @return    PN_CUSTOMERS_MANAGER_Loader    Orchestrates the hooks of the plugin.
 	 */
-	public function pn_customers_manager_get_loader() {
+	public function pn_customers_manager_get_loader()
+	{
 		return $this->pn_customers_manager_loader;
 	}
 
@@ -917,7 +998,8 @@ class PN_CUSTOMERS_MANAGER {
 	 * @since     1.0.0
 	 * @return    string    The version number of the plugin.
 	 */
-	public function pn_customers_manager_get_version() {
+	public function pn_customers_manager_get_version()
+	{
 		return $this->pn_customers_manager_version;
 	}
 }
