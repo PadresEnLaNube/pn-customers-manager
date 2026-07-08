@@ -188,6 +188,56 @@ A powerful form system that supports multiple field types:
 * User login tracking
 * User profile management with custom fields
 
+= Social Media Link Display =
+
+* **Linktree-Style Layout**: Display all your social media links and custom URLs in a clean, mobile-friendly, stacked layout similar to Linktree.
+
+* **Multiple Display Styles**: Choose from default (stacked links), grid (2-3 columns), or sidebar (compact with icons only).
+
+* **Button Customization**: Solid or outline button styles with configurable colors and fixed light gray background.
+
+* **15+ Social Networks**: Built-in support for Facebook, Instagram, Twitter/X, LinkedIn, YouTube, TikTok, Snapchat, Pinterest, Reddit, Twitch, Discord, WhatsApp, Telegram, plus email, website, and custom links.
+
+* **Custom Links**: Add unlimited custom links with custom labels and URLs for any platform not in the preset list.
+
+* **Share Functionality**: Integrated share button that opens a popup with native social sharing options (Facebook, Twitter, LinkedIn, WhatsApp, Telegram, email) and a copy-to-clipboard feature.
+
+* **SVG Icon System**: Crisp, scalable vector icons for all platforms with customizable colors.
+
+* **Shortcode & Gutenberg Block**: Use `[pn-customers-manager-social-media]` shortcode or the native Gutenberg block with live preview.
+
+* **Responsive Design**: Automatically adapts to mobile, tablet, and desktop screens with optimized layouts.
+
+= Interactive Tutorial & Onboarding =
+
+* **First-Time User Guidance**: Automatic interactive tutorial that guides new users through the plugin's main features with step-by-step overlays.
+
+* **Spotlight Highlighting**: Visual spotlight effect that highlights the relevant section of the settings page for each tutorial step.
+
+* **5-Step Walkthrough**: Covers Welcome, Marketing & Company Info, Referral System, WooCommerce Integration, and completion.
+
+* **Progress Tracking**: Visual progress bar showing current step out of total steps.
+
+* **Draggable Interface**: Tutorial box can be dragged to any position on screen for better visibility.
+
+* **Auto-Expansion**: Automatically opens collapsed sections when highlighting them in the tutorial.
+
+* **Smart Positioning**: Tutorial box intelligently positions itself next to highlighted elements, or centers on small screens.
+
+* **Skip & Complete Options**: Users can skip the tutorial at any time or mark it as completed, with persistence via AJAX.
+
+= Financial Management =
+
+* **Financial Module Toggle**: Enable or disable financial features per custom post type (Organizations, Budgets, Invoices).
+
+* **Recurring Invoices**: Configure automatic recurring invoice generation with customizable frequency.
+
+* **Payment Methods**: Manage accepted payment methods for your business.
+
+* **Tax Configuration**: Set up tax rates and rules for invoices and budgets.
+
+* **Modular Settings**: Financial settings are organized in a dedicated section within the plugin settings page.
+
 = Shortcodes =
 
 * `[pn-customers-manager-funnel]` — Display individual funnels with all their details
@@ -197,6 +247,7 @@ A powerful form system that supports multiple field types:
 * `[pn-customers-manager-contact-form]` — Contact form with Akismet spam protection
 * `[pn-customers-manager-call-to-action]` — Call-to-action blocks with icons, titles, content, and customizable buttons
 * `[pn-customers-manager-button]` — Customizable buttons (solid/outline/transparent, size, color, icon, image) with Gutenberg block support
+* `[pn-customers-manager-social-media]` — Social media link display with Linktree-style layout (also available as Gutenberg block)
 * `[pn-customers-manager-whatsapp-ai]` — WhatsApp conversations front-end panel (admin only)
 * `[pn-customers-manager-instagram-ai]` — Instagram conversations front-end panel (admin only)
 * `[pn_qr_manager]` — QR tickets management panel with built-in camera scanner, clickable table rows, and native popup integration (admin only, optional product_id parameter)

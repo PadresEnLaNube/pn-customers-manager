@@ -12,7 +12,7 @@
  * @wordpress-plugin
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
- * Description:       Manage your tasks and time tracking with this plugin. Create tasks, assign them to users, and track the time spent on each task.
+ * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, contact forms, email campaigns, budgets & invoices, social media links, referral system, and WooCommerce integration for WordPress.
  * Version:           1.2.13
  * Requires at least: 3.0
  * Tested up to:      7.0
