@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.2.13';
+			$this->pn_customers_manager_version = '1.2.17';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';

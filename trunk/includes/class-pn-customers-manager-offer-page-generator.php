@@ -1125,24 +1125,29 @@ IMPORTANTE:
 	 * @return string|false Response content or false on failure.
 	 */
 	private function call_openai_with_logging($messages, $model = 'gpt-4o', $temperature = 0.7) {
-		$api_key = get_option('pn_customers_manager_whatsapp_openai_key', '');
+		$provider = self::resolve_provider_for_model($model);
+		$api_key  = get_option($provider['key_option'], '');
 
 		if (empty($api_key)) {
-			error_log('PN_CM_Offer_Generator: API key is empty');
+			error_log('PN_CM_Offer_Generator: API key is empty for provider ' . $provider['label']);
 			return false;
 		}
 
-		error_log('PN_CM_Offer_Generator: Making API call to OpenAI...');
+		error_log('PN_CM_Offer_Generator: Making API call to ' . $provider['label'] . '...');
 
 		$body = [
 			'model'       => $model,
 			'messages'    => $messages,
-			'temperature' => $temperature,
-			'max_tokens'  => 16000, // Explicitly set max tokens for long responses
+			'max_tokens'  => 16000,
 		];
 
-		$response = wp_remote_post('https://api.openai.com/v1/chat/completions', [
-			'timeout' => 60, // Increased timeout for long responses
+		// DeepSeek R1 does not support temperature
+		if ($model !== 'deepseek-reasoner') {
+			$body['temperature'] = $temperature;
+		}
+
+		$response = wp_remote_post($provider['url'], [
+			'timeout' => 60,
 			'headers' => [
 				'Content-Type'  => 'application/json',
 				'Authorization' => 'Bearer ' . $api_key,

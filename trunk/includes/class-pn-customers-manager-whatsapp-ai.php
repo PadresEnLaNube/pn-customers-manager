@@ -255,7 +255,10 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * @param string $contact_name
    */
   private static function process_incoming_message($phone, $text, $contact_name) {
-    self::log('Processing message — phone=' . $phone . ' text=' . mb_substr($text, 0, 50));
+    self::log('Processing message — phone=' . $phone . ' contact=' . $contact_name);
+    self::log('[CONVERSATION] ── INCOMING MESSAGE ──');
+    self::log('[CONVERSATION] FROM: ' . $phone . ' (' . $contact_name . ')');
+    self::log('[CONVERSATION] USER: ' . $text);
 
     $conversation = self::get_or_create_conversation($phone, $contact_name);
 
@@ -322,7 +325,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     // Build system prompt with enriched context
     $system_prompt = self::build_enriched_system_prompt($conversation);
 
-    self::log('FINAL system_prompt length=' . mb_strlen($system_prompt) . ' preview=' . mb_substr($system_prompt, 0, 300));
+    self::log('[CONVERSATION] ── SYSTEM PROMPT (' . mb_strlen($system_prompt) . ' chars) ──');
+    self::log('[CONVERSATION] ' . $system_prompt);
+    self::log('[CONVERSATION] ── END SYSTEM PROMPT ──');
 
     // Determine AI model (trait helper)
     $ai_model = self::resolve_ai_model($node_config, $conversation);
@@ -331,6 +336,15 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     $temperature = self::get_conversation_temperature($conversation);
 
     $openai_messages = self::build_openai_messages_with_gap_markers($messages, $system_prompt);
+
+    // Log full conversation history sent to AI
+    self::log('[CONVERSATION] ── MESSAGE HISTORY (' . count($openai_messages) . ' messages) ──');
+    foreach ($openai_messages as $idx => $om) {
+      $role = $om['role'] ?? '?';
+      $content = is_string($om['content'] ?? null) ? $om['content'] : wp_json_encode($om['content'] ?? '');
+      self::log('[CONVERSATION] [' . $idx . '] ' . strtoupper($role) . ': ' . $content);
+    }
+    self::log('[CONVERSATION] ── END MESSAGE HISTORY ──');
 
     // Try to answer shipping questions directly with WooCommerce, bypassing
     // the model. This only kicks in when the "Use WooCommerce shipping zones"
@@ -349,12 +363,17 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       $openai_messages = self::maybe_inject_shipping_hint($openai_messages);
 
       // Call OpenAI
+      self::log('[CONVERSATION] ── AI REQUEST ── model=' . $ai_model . ' temperature=' . $temperature . ' provider=' . self::resolve_provider_for_model($ai_model)['label']);
       $ai_response = self::call_openai($openai_messages, $ai_model, $temperature);
 
       if ($ai_response === false) {
         $ai_response = self::get_error_fallback_message($node_config);
         $is_fallback = true;
-        self::log('call_openai returned false — using configured error fallback message');
+        self::log('[CONVERSATION] AI CALL FAILED — using error fallback message');
+      } else {
+        self::log('[CONVERSATION] ── RAW AI RESPONSE ──');
+        self::log('[CONVERSATION] ' . $ai_response);
+        self::log('[CONVERSATION] ── END RAW AI RESPONSE ──');
       }
     }
 
@@ -365,6 +384,25 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       // extraction, URL validation, etc.) and send it as-is.
       $ai_response = self::markdown_to_whatsapp($ai_response);
     } else {
+      // ── IMAGE DEBUG: raw AI response ──
+      self::log_image_debug('[IMG-DEBUG] ====== IMAGE PIPELINE START (model=' . $ai_model . ') ======');
+      self::log_image_debug('[IMG-DEBUG] RAW AI response (first 1000 chars): ' . mb_substr($ai_response, 0, 1000));
+      $has_think_tags   = (stripos($ai_response, '<think>') !== false);
+      $has_image_tags   = (bool) preg_match('/\[PRODUCT_IMAGES:\d+\]/', $ai_response);
+      $has_more_tags    = (bool) preg_match('/\[PRODUCT_MORE_IMAGES:\d+\]/', $ai_response);
+      $has_md_images    = (bool) preg_match('/!\[[^\]]*\]\([^)]+\)/', $ai_response);
+      $has_image_urls   = (bool) preg_match('/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)\b/i', $ai_response);
+      self::log_image_debug('[IMG-DEBUG] RAW flags: <think>=' . ($has_think_tags ? 'YES' : 'no')
+        . ' [PRODUCT_IMAGES]=' . ($has_image_tags ? 'YES' : 'no')
+        . ' [PRODUCT_MORE_IMAGES]=' . ($has_more_tags ? 'YES' : 'no')
+        . ' ![md_images]=' . ($has_md_images ? 'YES' : 'no')
+        . ' image_URLs=' . ($has_image_urls ? 'YES' : 'no'));
+
+      // Strip DeepSeek <think>…</think> reasoning blocks FIRST so that
+      // image tags inside the thinking section are discarded and the
+      // thinking text does not reach the customer.
+      $ai_response = self::strip_deepseek_think_tags($ai_response);
+
       // Strip system prompt fragments the model may have leaked
       $ai_response = self::sanitize_system_prompt_leak($ai_response);
 
@@ -378,7 +416,21 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       $ai_response = self::markdown_to_whatsapp($ai_response);
 
       // Strip fabricated image URLs
+      $pre_strip = $ai_response;
       $ai_response = self::strip_hallucinated_image_urls($ai_response);
+      if ($ai_response !== $pre_strip) {
+        self::log_image_debug('[IMG-DEBUG] strip_hallucinated_image_urls CHANGED the response — diff length: ' . (strlen($pre_strip) - strlen($ai_response)));
+      }
+
+      // ── IMAGE DEBUG: after cleanup, before image processing ──
+      $has_image_tags_after = (bool) preg_match('/\[PRODUCT_IMAGES:\d+\]/', $ai_response);
+      $has_more_tags_after  = (bool) preg_match('/\[PRODUCT_MORE_IMAGES:\d+\]/', $ai_response);
+      self::log_image_debug('[IMG-DEBUG] AFTER CLEANUP: [PRODUCT_IMAGES]=' . ($has_image_tags_after ? 'YES' : 'no')
+        . ' [PRODUCT_MORE_IMAGES]=' . ($has_more_tags_after ? 'YES' : 'no'));
+      if ($has_image_tags_after) {
+        preg_match_all('/\[PRODUCT_IMAGES:(\d+)\]/', $ai_response, $dbg_m);
+        self::log_image_debug('[IMG-DEBUG] PRODUCT_IMAGES IDs found: ' . implode(', ', $dbg_m[1]));
+      }
 
       // Validate URLs in the response
       $ai_response = self::validate_response_urls($ai_response);
@@ -410,6 +462,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       $already_sent_ids      = array_unique($already_sent_ids);
       $already_sent_more_ids = array_unique($already_sent_more_ids);
 
+      self::log_image_debug('[IMG-DEBUG] already_sent_ids=' . wp_json_encode($already_sent_ids)
+        . ' already_sent_more_ids=' . wp_json_encode($already_sent_more_ids));
+
       // Auto-inject image tags for products mentioned by URL.
       // When the recommendation protocol is active the AI should control
       // image delivery (Step 3). However GPT-4o-mini often forgets the
@@ -418,7 +473,11 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       // (specific showcase) but skip when 3+ URLs appear (listing phase).
       $woo_active = !empty($node_config['wa_include_woo']);
       $recommendations_disabled = !empty($node_config['wa_disable_recommendations']);
+      self::log_image_debug('[IMG-DEBUG] AUTO-INJECT check: woo_active=' . ($woo_active ? 'YES' : 'no')
+        . ' recommendations_disabled=' . ($recommendations_disabled ? 'YES' : 'no'));
+
       if (!$woo_active || $recommendations_disabled) {
+        self::log_image_debug('[IMG-DEBUG] AUTO-INJECT: running auto_inject (woo inactive or recommendations disabled)');
         $ai_response = self::auto_inject_product_image_tags($ai_response);
       } elseif (!preg_match('/\[PRODUCT_IMAGES:\d+\]/', $ai_response)) {
         // Recommendation mode is active but the AI forgot the image tag.
@@ -434,9 +493,23 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
           '#' . preg_quote($site_url, '#') . '/' . preg_quote($product_base, '#') . '/[a-z0-9\-]+/?#i',
           $ai_response
         );
+        self::log_image_debug('[IMG-DEBUG] AUTO-INJECT: AI forgot image tags, product_url_count=' . $url_count);
         if ($url_count >= 1 && $url_count <= 2) {
+          self::log_image_debug('[IMG-DEBUG] AUTO-INJECT: injecting for ' . $url_count . ' product URLs');
           $ai_response = self::auto_inject_product_image_tags($ai_response);
+        } else {
+          self::log_image_debug('[IMG-DEBUG] AUTO-INJECT: SKIPPED (url_count=' . $url_count . ', need 1-2)');
         }
+      } else {
+        self::log_image_debug('[IMG-DEBUG] AUTO-INJECT: SKIPPED (AI already included [PRODUCT_IMAGES] tags)');
+      }
+
+      // ── IMAGE DEBUG: final state before extraction ──
+      $final_img_tags = (bool) preg_match('/\[PRODUCT_IMAGES:\d+\]/', $ai_response);
+      self::log_image_debug('[IMG-DEBUG] PRE-EXTRACTION: has [PRODUCT_IMAGES]=' . ($final_img_tags ? 'YES' : 'no'));
+      if ($final_img_tags) {
+        preg_match_all('/\[PRODUCT_IMAGES:(\d+)\]/', $ai_response, $dbg_final);
+        self::log_image_debug('[IMG-DEBUG] PRE-EXTRACTION IDs: ' . implode(', ', $dbg_final[1]));
       }
 
       // Extract and send product images (before sending text).
@@ -446,6 +519,12 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
       // Extract and send additional gallery images when user asks for more.
       $ai_response = self::extract_and_send_more_product_images($ai_response, $phone, $sent_images, $already_sent_more_ids);
+
+      self::log_image_debug('[IMG-DEBUG] RESULT: sent_images_count=' . count($sent_images)
+        . ' sent_images=' . wp_json_encode(array_map(function($img) {
+          return ['id' => $img['product_id'] ?? '?', 'name' => $img['product_name'] ?? '?', 'type' => $img['type'] ?? '?'];
+        }, $sent_images)));
+      self::log_image_debug('[IMG-DEBUG] ====== IMAGE PIPELINE END ======');
     }
 
     // Add assistant message to history
@@ -468,7 +547,12 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     self::update_conversation_messages($conversation->id, $messages);
 
     // Send response via WhatsApp
-    self::log('FINAL RESPONSE TO SEND: ' . mb_substr($ai_response, 0, 300));
+    self::log('[CONVERSATION] ── FINAL RESPONSE SENT ──');
+    self::log('[CONVERSATION] ' . $ai_response);
+    if (!empty($sent_images)) {
+      self::log('[CONVERSATION] + Images sent: ' . implode(', ', array_unique(array_column($sent_images, 'product_name'))));
+    }
+    self::log('[CONVERSATION] ── END ──');
     self::send_whatsapp_message($phone, $ai_response);
   }
 
@@ -788,13 +872,15 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    */
   private static function extract_and_send_product_images($text, $phone, &$sent_images = [], $already_sent_ids = []) {
     if (preg_match_all('/\[PRODUCT_IMAGES:(\d+)\]/', $text, $matches)) {
+      self::log_image_debug('[IMG-DEBUG] extract_and_send_product_images — found ' . count($matches[1]) . ' tag(s): ' . implode(', ', $matches[1]));
+
       foreach ($matches[1] as $product_id) {
         $product_id = (int) $product_id;
 
         // If main image was already sent, promote to [PRODUCT_MORE_IMAGES]
         // so the gallery handler picks it up.
         if (in_array($product_id, $already_sent_ids, true)) {
-          self::log('extract_and_send_product_images — product ' . $product_id . ' already sent, promoting to PRODUCT_MORE_IMAGES');
+          self::log_image_debug('[IMG-DEBUG] product ' . $product_id . ' already sent in conversation, promoting to PRODUCT_MORE_IMAGES');
           $text = str_replace('[PRODUCT_IMAGES:' . $product_id . ']', '[PRODUCT_MORE_IMAGES:' . $product_id . ']', $text);
           continue;
         }
@@ -802,7 +888,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         $product = wc_get_product($product_id);
 
         if (!$product) {
-          self::log('extract_and_send_product_images — product ' . $product_id . ' not found');
+          self::log_image_debug('[IMG-DEBUG] product ' . $product_id . ' — wc_get_product() returned NULL (product not found or not WC product)');
           continue;
         }
 
@@ -811,18 +897,21 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         // Send only the main (featured) image on first mention.
         $thumb_id = get_post_thumbnail_id($product_id);
         if (!$thumb_id) {
-          self::log('extract_and_send_product_images — product ' . $product_id . ' has no featured image, skipping');
+          self::log_image_debug('[IMG-DEBUG] product ' . $product_id . ' (' . $product_name . ') — NO featured image (thumb_id=0)');
           continue;
         }
 
         $main_url = wp_get_attachment_url($thumb_id);
         if (!$main_url) {
+          self::log_image_debug('[IMG-DEBUG] product ' . $product_id . ' (' . $product_name . ') — wp_get_attachment_url returned false for thumb_id=' . $thumb_id);
           continue;
         }
 
-        self::log('extract_and_send_product_images — product ' . $product_id . ' (' . $product_name . ') — sending 1 main image');
+        self::log_image_debug('[IMG-DEBUG] product ' . $product_id . ' (' . $product_name . ') — SENDING image url=' . $main_url);
 
-        self::send_whatsapp_image($phone, $main_url, $product_name);
+        $send_result = self::send_whatsapp_image($phone, $main_url, $product_name);
+        self::log_image_debug('[IMG-DEBUG] product ' . $product_id . ' — send_whatsapp_image result=' . ($send_result ? 'OK' : 'FAILED'));
+
         $sent_images[] = [
           'url'          => $main_url,
           'product_name' => $product_name,
@@ -834,6 +923,8 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       // Remove all tags from the text
       $text = preg_replace('/\s*\[PRODUCT_IMAGES:\d+\]/', '', $text);
       $text = trim($text);
+    } else {
+      self::log_image_debug('[IMG-DEBUG] extract_and_send_product_images — NO [PRODUCT_IMAGES:*] tags found in response');
     }
 
     return $text;
@@ -964,7 +1055,8 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         'timestamp' => current_time('mysql'),
       ];
       self::send_whatsapp_message($phone, $welcome_msg);
-      self::log('Welcome message sent to ' . $phone . ': ' . mb_substr($welcome_msg, 0, 100));
+      self::log('[CONVERSATION] ── NEW CONVERSATION ──');
+      self::log('[CONVERSATION] WELCOME to ' . $phone . ' (' . $contact_name . '): ' . $welcome_msg);
     }
 
     $wpdb->insert($table, [
@@ -1037,6 +1129,8 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         'timestamp' => current_time('mysql'),
       ];
       self::send_whatsapp_message($phone, $welcome_msg);
+      self::log('[CONVERSATION] ── NEW CONVERSATION (deferred) ──');
+      self::log('[CONVERSATION] WELCOME to ' . $phone . ': ' . $welcome_msg);
     }
 
     $wpdb->insert($table, [
@@ -1563,17 +1657,21 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * @return array
    */
   public static function ajax_test_openai() {
-    $api_key = get_option('pn_customers_manager_whatsapp_openai_key', '');
+    $model       = get_option('pn_customers_manager_whatsapp_ai_model', 'gpt-4o-mini');
+    $temperature = (float) get_option('pn_customers_manager_whatsapp_temperature', 0.7);
+    $provider    = self::resolve_provider_for_model($model);
+    $api_key     = get_option($provider['key_option'], '');
 
     if (empty($api_key)) {
       return [
         'error_key'     => 'no_api_key',
-        'error_content' => esc_html__('OpenAI API Key has not been configured.', 'pn-customers-manager'),
+        'error_content' => sprintf(
+          /* translators: %s: provider name (e.g. "OpenAI", "DeepSeek") */
+          esc_html__('%s API Key has not been configured.', 'pn-customers-manager'),
+          $provider['label']
+        ),
       ];
     }
-
-    $model       = get_option('pn_customers_manager_whatsapp_ai_model', 'gpt-4o-mini');
-    $temperature = (float) get_option('pn_customers_manager_whatsapp_temperature', 0.7);
 
     $messages = [
       ['role' => 'system', 'content' => 'Answer in a single short sentence.'],
@@ -1585,7 +1683,11 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     if ($response === false) {
       return [
         'error_key'     => 'openai_error',
-        'error_content' => esc_html__('Could not connect to OpenAI. Verify the API Key and that you have available credit.', 'pn-customers-manager'),
+        'error_content' => sprintf(
+          /* translators: %s: provider name */
+          esc_html__('Could not connect to %s. Verify the API Key and that you have available credit.', 'pn-customers-manager'),
+          $provider['label']
+        ),
       ];
     }
 

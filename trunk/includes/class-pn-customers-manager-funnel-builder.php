@@ -380,9 +380,17 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
     // Check API configuration status
     $whatsapp_token  = get_option('pn_customers_manager_whatsapp_access_token', '');
     $whatsapp_phone  = get_option('pn_customers_manager_whatsapp_phone_number_id', '');
-    $openai_key      = get_option('pn_customers_manager_whatsapp_openai_key', '');
     $instagram_token = get_option('pn_customers_manager_instagram_access_token', '');
     $instagram_page  = get_option('pn_customers_manager_instagram_page_id', '');
+
+    // Check if any AI provider has a configured key
+    $has_ai_key = false;
+    foreach (PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_ai_providers() as $provider) {
+      if (!empty(get_option($provider['key_option'], ''))) {
+        $has_ai_key = true;
+        break;
+      }
+    }
 
     $settings_url = admin_url('admin.php?page=pn-customers-manager');
 
@@ -395,7 +403,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       'wooActive'  => class_exists('WooCommerce'),
       'apiStatus'  => [
         'whatsapp'  => !empty($whatsapp_token) && !empty($whatsapp_phone),
-        'openai'    => !empty($openai_key),
+        'openai'    => $has_ai_key,
         'instagram' => !empty($instagram_token) && !empty($instagram_page),
       ],
       'apiLinks'   => [
@@ -1123,12 +1131,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'input'   => 'select',
         'type'    => 'select',
         'label'   => __('AI Model', 'pn-customers-manager'),
-        'options' => [
-          ''             => __('-- Use global --', 'pn-customers-manager'),
-          'gpt-4o'       => 'GPT-4o',
-          'gpt-4o-mini'  => 'GPT-4o Mini',
-          'gpt-4-turbo'  => 'GPT-4 Turbo',
-        ],
+        'options' => PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_all_model_options(true),
       ];
       $fields[] = [
         'id'          => 'wa_temperature',
@@ -1397,12 +1400,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'input'   => 'select',
         'type'    => 'select',
         'label'   => __('AI Model', 'pn-customers-manager'),
-        'options' => [
-          ''             => __('-- Use global --', 'pn-customers-manager'),
-          'gpt-4o'       => 'GPT-4o',
-          'gpt-4o-mini'  => 'GPT-4o Mini',
-          'gpt-4-turbo'  => 'GPT-4 Turbo',
-        ],
+        'options' => PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_all_model_options(true),
       ];
       $fields[] = [
         'id'          => 'ig_temperature',

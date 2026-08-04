@@ -323,9 +323,9 @@
       url: pnCustomersManagerTutorial.ajaxUrl,
       type: 'POST',
       data: {
-        action: 'pn-customers-manager_ajax',
-        'pn-customers-manager_ajax_type': 'pn-customers-manager_complete_tutorial',
-        'pn-customers-manager_ajax_nonce': pnCustomersManagerTutorial.nonce,
+        action: 'pn_customers_manager_ajax',
+        pn_customers_manager_ajax_type: 'pn_customers_manager_complete_tutorial',
+        pn_customers_manager_ajax_nonce: pnCustomersManagerTutorial.nonce,
         completed: completed ? 1 : 0
       }
     });

@@ -2007,12 +2007,18 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 				'main_grey' => get_option('pn_customers_manager_color_main_grey', '#6B6B80'),
 			];
 
-			// Check if OpenAI API key is configured
-			$api_key = get_option('pn_customers_manager_whatsapp_openai_key', '');
+			// Check if AI API key is configured for the model that will be used
+			$ai_model    = get_option('pn_customers_manager_whatsapp_ai_model', 'gpt-4o-mini');
+			$ai_provider = PN_CUSTOMERS_MANAGER_WhatsApp_AI::resolve_provider_for_model($ai_model);
+			$api_key     = get_option($ai_provider['key_option'], '');
 			if (empty($api_key)) {
-				error_log('PN_CM_Frontend: OpenAI API key not configured');
+				error_log('PN_CM_Frontend: AI API key not configured for provider ' . $ai_provider['label']);
 				wp_send_json_error([
-					'message' => __('OpenAI API key is not configured. Please go to Settings > PN Customers Manager > WhatsApp AI and configure your OpenAI API key.', 'pn-customers-manager'),
+					'message' => sprintf(
+						/* translators: %s: provider name */
+						__('%s API key is not configured. Please go to Settings > PN Customers Manager > API Configuration > AI Providers and configure your API key.', 'pn-customers-manager'),
+						$ai_provider['label']
+					),
 				]);
 			}
 

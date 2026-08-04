@@ -144,6 +144,251 @@ class PN_CUSTOMERS_MANAGER_Settings
     $marketing_options = PN_CUSTOMERS_MANAGER_Marketing::get_settings_section();
     $pn_customers_manager_options = array_merge($pn_customers_manager_options, $marketing_options);
 
+    // Subsection: Corporate Identity & Design (inside Company Information)
+    $pn_customers_manager_options['pn_customers_manager_brand_subsection_start'] = [
+      'id' => 'pn_customers_manager_brand_subsection_start',
+      'section' => 'start',
+      'label' => __('Corporate Identity & Design', 'pn-customers-manager'),
+      'description' => __('Configure your brand identity, colors, logos, and button styles. These settings are used in the style guide.', 'pn-customers-manager'),
+    ];
+
+    // Logos subsection
+    $pn_customers_manager_options['pn_customers_manager_brand_logos_subsection_start'] = [
+      'id' => 'pn_customers_manager_brand_logos_subsection_start',
+      'section' => 'start',
+      'label' => __('Brand Logos', 'pn-customers-manager'),
+      'description' => __('Upload your company logos to use in the style guide and throughout the plugin.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_primary'] = [
+      'id' => 'pn_customers_manager_brand_logo_primary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Primary Logo', 'pn-customers-manager'),
+      'description' => __('Main logo displayed in the style guide. Recommended for use on light backgrounds.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_dark'] = [
+      'id' => 'pn_customers_manager_brand_logo_dark',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Logo for Dark Backgrounds', 'pn-customers-manager'),
+      'description' => __('Logo variation optimized for dark backgrounds (usually white or light colored).', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_monochrome'] = [
+      'id' => 'pn_customers_manager_brand_logo_monochrome',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Monochrome Logo', 'pn-customers-manager'),
+      'description' => __('Single-color logo version for documents and print materials.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logo_secondary'] = [
+      'id' => 'pn_customers_manager_brand_logo_secondary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'image',
+      'label' => __('Secondary Logo', 'pn-customers-manager'),
+      'description' => __('Alternative logo variation or simplified version.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_brand_logos_subsection_end'] = [
+      'id' => 'pn_customers_manager_brand_logos_subsection_end',
+      'section' => 'end',
+    ];
+
+    // Color customization subsection
+    $pn_customers_manager_options['pn_customers_manager_colors_subsection_start'] = [
+      'id' => 'pn_customers_manager_colors_subsection_start',
+      'section' => 'start',
+      'label' => __('Colors', 'pn-customers-manager'),
+      'description' => __('Customize the colors used throughout the plugin and displayed in the style guide.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main'] = [
+      'id' => 'pn_customers_manager_color_main',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Main Color', 'pn-customers-manager'),
+      'description' => __('Primary color used for text, backgrounds, and borders (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_bg_color_main'] = [
+      'id' => 'pn_customers_manager_bg_color_main',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Main Background Color', 'pn-customers-manager'),
+      'description' => __('Primary background color (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_border_color_main'] = [
+      'id' => 'pn_customers_manager_border_color_main',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Main Border Color', 'pn-customers-manager'),
+      'description' => __('Primary border color (default: #0000aa)', 'pn-customers-manager'),
+      'value' => '#0000aa',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main_alt'] = [
+      'id' => 'pn_customers_manager_color_main_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Alternative Main Color', 'pn-customers-manager'),
+      'description' => __('Alternative color for text, backgrounds, and borders (default: #232323)', 'pn-customers-manager'),
+      'value' => '#232323',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_bg_color_main_alt'] = [
+      'id' => 'pn_customers_manager_bg_color_main_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Alternative Background Color', 'pn-customers-manager'),
+      'description' => __('Alternative background color (default: #232323)', 'pn-customers-manager'),
+      'value' => '#232323',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_border_color_main_alt'] = [
+      'id' => 'pn_customers_manager_border_color_main_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Alternative Border Color', 'pn-customers-manager'),
+      'description' => __('Alternative border color (default: #232323)', 'pn-customers-manager'),
+      'value' => '#232323',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main_blue'] = [
+      'id' => 'pn_customers_manager_color_main_blue',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Blue Color', 'pn-customers-manager'),
+      'description' => __('Blue accent color (default: #6e6eff)', 'pn-customers-manager'),
+      'value' => '#6e6eff',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_main_grey'] = [
+      'id' => 'pn_customers_manager_color_main_grey',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Grey Color', 'pn-customers-manager'),
+      'description' => __('Grey color for backgrounds (default: #f5f5f5)', 'pn-customers-manager'),
+      'value' => '#f5f5f5',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_secondary'] = [
+      'id' => 'pn_customers_manager_color_secondary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Secondary Color', 'pn-customers-manager'),
+      'description' => __('Secondary brand color (default: #00aa00)', 'pn-customers-manager'),
+      'value' => '#00aa00',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_secondary_alt'] = [
+      'id' => 'pn_customers_manager_color_secondary_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Secondary Dark Color', 'pn-customers-manager'),
+      'description' => __('Darker variation of secondary color (default: #008800)', 'pn-customers-manager'),
+      'value' => '#008800',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_tertiary'] = [
+      'id' => 'pn_customers_manager_color_tertiary',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Tertiary Color', 'pn-customers-manager'),
+      'description' => __('Tertiary brand color (default: #aa0000)', 'pn-customers-manager'),
+      'value' => '#aa0000',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_color_tertiary_alt'] = [
+      'id' => 'pn_customers_manager_color_tertiary_alt',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'color',
+      'label' => __('Tertiary Dark Color', 'pn-customers-manager'),
+      'description' => __('Darker variation of tertiary color (default: #880000)', 'pn-customers-manager'),
+      'value' => '#880000',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_colors_subsection_end'] = [
+      'id' => 'pn_customers_manager_colors_subsection_end',
+      'section' => 'end',
+    ];
+
+    // Button styles subsection
+    $pn_customers_manager_options['pn_customers_manager_buttons_subsection_start'] = [
+      'id' => 'pn_customers_manager_buttons_subsection_start',
+      'section' => 'start',
+      'label' => __('Button Styles', 'pn-customers-manager'),
+      'description' => __('Configure CSS classes for different button styles. These are shown in the style guide.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_primary_class'] = [
+      'id' => 'pn_customers_manager_btn_primary_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Primary Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for primary buttons (default: pn-customers-manager-btn)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_secondary_class'] = [
+      'id' => 'pn_customers_manager_btn_secondary_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Secondary Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for secondary buttons (default: pn-customers-manager-btn)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_transparent_class'] = [
+      'id' => 'pn_customers_manager_btn_transparent_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Transparent/Outline Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for transparent or outline buttons (default: pn-customers-manager-btn pn-customers-manager-btn-transparent)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn pn-customers-manager-btn-transparent',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_btn_mini_class'] = [
+      'id' => 'pn_customers_manager_btn_mini_class',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Mini Button Classes', 'pn-customers-manager'),
+      'description' => __('CSS classes for mini/small buttons (default: pn-customers-manager-btn-mini)', 'pn-customers-manager'),
+      'value' => 'pn-customers-manager-btn-mini',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_buttons_subsection_end'] = [
+      'id' => 'pn_customers_manager_buttons_subsection_end',
+      'section' => 'end',
+    ];
+
+    // End of Corporate Identity & Design subsection
+    $pn_customers_manager_options['pn_customers_manager_brand_subsection_end'] = [
+      'id' => 'pn_customers_manager_brand_subsection_end',
+      'section' => 'end',
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_company_info_parent_section_end'] = [
       'id' => 'pn_customers_manager_company_info_parent_section_end',
       'section' => 'end',
@@ -654,315 +899,30 @@ class PN_CUSTOMERS_MANAGER_Settings
     $financial_options = PN_CUSTOMERS_MANAGER_Financial::get_settings_section();
     $pn_customers_manager_options = array_merge($pn_customers_manager_options, $financial_options);
 
-    // ── SYSTEM PARENT SECTION ────────────────────────────────────────
-    $pn_customers_manager_options['pn_customers_manager_system_parent_section_start'] = [
-      'id' => 'pn_customers_manager_system_parent_section_start',
-      'section' => 'start',
-      'label' => __('System', 'pn-customers-manager'),
-      'description' => __('General plugin settings, design, pages, and user roles.', 'pn-customers-manager'),
-    ];
-
-    // Subsection: Corporate Identity & Design
-    $pn_customers_manager_options['pn_customers_manager_brand_subsection_start'] = [
-      'id' => 'pn_customers_manager_brand_subsection_start',
-      'section' => 'start',
-      'label' => __('Corporate Identity & Design', 'pn-customers-manager'),
-      'description' => __('Configure your brand identity, colors, logos, and button styles. These settings are used in the style guide.', 'pn-customers-manager'),
-    ];
-
-    // Logos subsection
-    $pn_customers_manager_options['pn_customers_manager_brand_logos_subsection_start'] = [
-      'id' => 'pn_customers_manager_brand_logos_subsection_start',
-      'section' => 'start',
-      'label' => __('Brand Logos', 'pn-customers-manager'),
-      'description' => __('Upload your company logos to use in the style guide and throughout the plugin.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_brand_logo_primary'] = [
-      'id' => 'pn_customers_manager_brand_logo_primary',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'image',
-      'label' => __('Primary Logo', 'pn-customers-manager'),
-      'description' => __('Main logo displayed in the style guide. Recommended for use on light backgrounds.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_brand_logo_dark'] = [
-      'id' => 'pn_customers_manager_brand_logo_dark',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'image',
-      'label' => __('Logo for Dark Backgrounds', 'pn-customers-manager'),
-      'description' => __('Logo variation optimized for dark backgrounds (usually white or light colored).', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_brand_logo_monochrome'] = [
-      'id' => 'pn_customers_manager_brand_logo_monochrome',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'image',
-      'label' => __('Monochrome Logo', 'pn-customers-manager'),
-      'description' => __('Single-color logo version for documents and print materials.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_brand_logo_secondary'] = [
-      'id' => 'pn_customers_manager_brand_logo_secondary',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'image',
-      'label' => __('Secondary Logo', 'pn-customers-manager'),
-      'description' => __('Alternative logo variation or simplified version.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_brand_logos_subsection_end'] = [
-      'id' => 'pn_customers_manager_brand_logos_subsection_end',
-      'section' => 'end',
-    ];
-
-    // Color customization subsection
-    $pn_customers_manager_options['pn_customers_manager_colors_subsection_start'] = [
-      'id' => 'pn_customers_manager_colors_subsection_start',
-      'section' => 'start',
-      'label' => __('Colors', 'pn-customers-manager'),
-      'description' => __('Customize the colors used throughout the plugin and displayed in the style guide.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main'] = [
-      'id' => 'pn_customers_manager_color_main',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Main Color', 'pn-customers-manager'),
-      'description' => __('Primary color used for text, backgrounds, and borders (default: #0000aa)', 'pn-customers-manager'),
-      'value' => '#0000aa',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_bg_color_main'] = [
-      'id' => 'pn_customers_manager_bg_color_main',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Main Background Color', 'pn-customers-manager'),
-      'description' => __('Primary background color (default: #0000aa)', 'pn-customers-manager'),
-      'value' => '#0000aa',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_border_color_main'] = [
-      'id' => 'pn_customers_manager_border_color_main',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Main Border Color', 'pn-customers-manager'),
-      'description' => __('Primary border color (default: #0000aa)', 'pn-customers-manager'),
-      'value' => '#0000aa',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main_alt'] = [
-      'id' => 'pn_customers_manager_color_main_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Alternative Main Color', 'pn-customers-manager'),
-      'description' => __('Alternative color for text, backgrounds, and borders (default: #232323)', 'pn-customers-manager'),
-      'value' => '#232323',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_bg_color_main_alt'] = [
-      'id' => 'pn_customers_manager_bg_color_main_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Alternative Background Color', 'pn-customers-manager'),
-      'description' => __('Alternative background color (default: #232323)', 'pn-customers-manager'),
-      'value' => '#232323',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_border_color_main_alt'] = [
-      'id' => 'pn_customers_manager_border_color_main_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Alternative Border Color', 'pn-customers-manager'),
-      'description' => __('Alternative border color (default: #232323)', 'pn-customers-manager'),
-      'value' => '#232323',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main_blue'] = [
-      'id' => 'pn_customers_manager_color_main_blue',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Blue Color', 'pn-customers-manager'),
-      'description' => __('Blue accent color (default: #6e6eff)', 'pn-customers-manager'),
-      'value' => '#6e6eff',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_main_grey'] = [
-      'id' => 'pn_customers_manager_color_main_grey',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Grey Color', 'pn-customers-manager'),
-      'description' => __('Grey color for backgrounds (default: #f5f5f5)', 'pn-customers-manager'),
-      'value' => '#f5f5f5',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_secondary'] = [
-      'id' => 'pn_customers_manager_color_secondary',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Secondary Color', 'pn-customers-manager'),
-      'description' => __('Secondary brand color (default: #00aa00)', 'pn-customers-manager'),
-      'value' => '#00aa00',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_secondary_alt'] = [
-      'id' => 'pn_customers_manager_color_secondary_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Secondary Dark Color', 'pn-customers-manager'),
-      'description' => __('Darker variation of secondary color (default: #008800)', 'pn-customers-manager'),
-      'value' => '#008800',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_tertiary'] = [
-      'id' => 'pn_customers_manager_color_tertiary',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Tertiary Color', 'pn-customers-manager'),
-      'description' => __('Tertiary brand color (default: #aa0000)', 'pn-customers-manager'),
-      'value' => '#aa0000',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_color_tertiary_alt'] = [
-      'id' => 'pn_customers_manager_color_tertiary_alt',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'color',
-      'label' => __('Tertiary Dark Color', 'pn-customers-manager'),
-      'description' => __('Darker variation of tertiary color (default: #880000)', 'pn-customers-manager'),
-      'value' => '#880000',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_colors_subsection_end'] = [
-      'id' => 'pn_customers_manager_colors_subsection_end',
-      'section' => 'end',
-    ];
-
-    // Button styles subsection
-    $pn_customers_manager_options['pn_customers_manager_buttons_subsection_start'] = [
-      'id' => 'pn_customers_manager_buttons_subsection_start',
-      'section' => 'start',
-      'label' => __('Button Styles', 'pn-customers-manager'),
-      'description' => __('Configure CSS classes for different button styles. These are shown in the style guide.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_btn_primary_class'] = [
-      'id' => 'pn_customers_manager_btn_primary_class',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'text',
-      'label' => __('Primary Button Classes', 'pn-customers-manager'),
-      'description' => __('CSS classes for primary buttons (default: pn-customers-manager-btn)', 'pn-customers-manager'),
-      'value' => 'pn-customers-manager-btn',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_btn_secondary_class'] = [
-      'id' => 'pn_customers_manager_btn_secondary_class',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'text',
-      'label' => __('Secondary Button Classes', 'pn-customers-manager'),
-      'description' => __('CSS classes for secondary buttons (default: pn-customers-manager-btn)', 'pn-customers-manager'),
-      'value' => 'pn-customers-manager-btn',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_btn_transparent_class'] = [
-      'id' => 'pn_customers_manager_btn_transparent_class',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'text',
-      'label' => __('Transparent/Outline Button Classes', 'pn-customers-manager'),
-      'description' => __('CSS classes for transparent or outline buttons (default: pn-customers-manager-btn pn-customers-manager-btn-transparent)', 'pn-customers-manager'),
-      'value' => 'pn-customers-manager-btn pn-customers-manager-btn-transparent',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_btn_mini_class'] = [
-      'id' => 'pn_customers_manager_btn_mini_class',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'text',
-      'label' => __('Mini Button Classes', 'pn-customers-manager'),
-      'description' => __('CSS classes for mini/small buttons (default: pn-customers-manager-btn-mini)', 'pn-customers-manager'),
-      'value' => 'pn-customers-manager-btn-mini',
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_buttons_subsection_end'] = [
-      'id' => 'pn_customers_manager_buttons_subsection_end',
-      'section' => 'end',
-    ];
-
-    // End of Corporate Identity & Design subsection
-    $pn_customers_manager_options['pn_customers_manager_brand_subsection_end'] = [
-      'id' => 'pn_customers_manager_brand_subsection_end',
-      'section' => 'end',
-    ];
-
-    foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
-      $pn_customers_manager_options['pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug'] = [
-        'id' => 'pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'text',
-        'label' => sprintf(
-          /* translators: %s: Post type name */
-          __('%s slug', 'pn-customers-manager'),
-          $pn_customers_manager_cpt_value
-        ),
-        'placeholder' => sprintf(
-          /* translators: %s: Post type name */
-          __('%s slug', 'pn-customers-manager'),
-          $pn_customers_manager_cpt_value
-        ),
-        'description' => sprintf(
-          /* translators: %1$s: Post type name, %2$s: Archive URL, %3$s: Archive URL, %4$s: Single post URL */
-          __('This option sets the slug of the %1$s archive page, and the %1$s pages. By default they will be:', 'pn-customers-manager'),
-          $pn_customers_manager_cpt_value
-        ) . '<br><a href="' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '</a><br>' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug/' . $pn_customers_manager_cpt_key)),
-      ];
-    }
-
-    $pn_customers_manager_options['pn_customers_manager_allow_crm_indexing'] = [
-      'id' => 'pn_customers_manager_allow_crm_indexing',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'checkbox',
-      'label' => __('Allow search engine indexing on CRM pages', 'pn-customers-manager'),
-      'description' => __('By default, CRM management pages include a noindex tag to prevent search engines from indexing them. Enable this option to remove those tags and allow indexing.', 'pn-customers-manager'),
-    ];
-
-    $pn_customers_manager_options['pn_customers_manager_options_remove'] = [
-      'id' => 'pn_customers_manager_options_remove',
-      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'input',
-      'type' => 'checkbox',
-      'label' => __('Remove plugin options on deactivation', 'pn-customers-manager'),
-      'description' => __('If you activate this option the plugin will remove all options on deactivation. Please, be careful. This process cannot be undone.', 'pn-customers-manager'),
-    ];
-
-    // ── API Configuration (nested subsection) ──
-    $pn_customers_manager_options['pn_customers_manager_api_section_start'] = [
-      'id' => 'pn_customers_manager_api_section_start',
+    // ── API CONFIGURATION PARENT SECTION ──────────────────────────────
+    $pn_customers_manager_options['pn_customers_manager_api_parent_section_start'] = [
+      'id' => 'pn_customers_manager_api_parent_section_start',
       'section' => 'start',
       'label' => __('API Configuration', 'pn-customers-manager'),
       'description' => __('Configure the keys and credentials of external APIs used by the plugin. Each service has its own subsection with detailed instructions.', 'pn-customers-manager'),
     ];
 
-    // ── OpenAI (nested subsection) ──
+    // ── AI Providers (nested subsection) ──
     $pn_customers_manager_options['pn_customers_manager_openai_section_start'] = [
       'id' => 'pn_customers_manager_openai_section_start',
       'section' => 'start',
-      'label' => __('OpenAI', 'pn-customers-manager'),
-      'description' => __('OpenAI API configuration for AI-powered message processing.<br><br><strong>Prerequisites:</strong><br>1. Create an account at <a href="https://platform.openai.com/" target="_blank">OpenAI Platform</a>.<br>2. Add a payment method at <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank">Billing</a> for available credit.<br>3. Generate an API Key from <a href="https://platform.openai.com/api-keys" target="_blank">API Keys</a>.', 'pn-customers-manager'),
+      'label' => __('AI Providers', 'pn-customers-manager'),
+      'description' => __('Configure AI providers for AI-powered message processing. Select a default model and configure the corresponding API key. Supported providers: OpenAI, DeepSeek, Qwen (Alibaba), and Moonshot (Kimi).', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_whatsapp_ai_model'] = [
+      'id' => 'pn_customers_manager_whatsapp_ai_model',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'options' => PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_all_model_options(false),
+      'value' => 'gpt-4o-mini',
+      'label' => __('Default AI model', 'pn-customers-manager'),
+      'description' => __('Default AI model to use. The corresponding API key field will appear below. <code>gpt-4o-mini</code> is the most economical and recommended for most use cases.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_whatsapp_openai_key'] = [
@@ -971,21 +931,34 @@ class PN_CUSTOMERS_MANAGER_Settings
       'input' => 'input',
       'type' => 'password',
       'label' => __('OpenAI API Key', 'pn-customers-manager'),
-      'description' => __('<strong>How to get it:</strong><br>1. Go to <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>.<br>2. Click &laquo;Create new secret key&raquo;.<br>3. Copy the generated key (starts with <code>sk-</code>) and paste it here.<br><strong>Important:</strong> The key is only shown once when created. If you lose it, you will need to generate a new one.', 'pn-customers-manager'),
+      'description' => __('<strong>How to get it:</strong><br>1. Go to <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>.<br>2. Click &laquo;Create new secret key&raquo;.<br>3. Copy the generated key (starts with <code>sk-</code>) and paste it here.', 'pn-customers-manager'),
     ];
 
-    $pn_customers_manager_options['pn_customers_manager_whatsapp_ai_model'] = [
-      'id' => 'pn_customers_manager_whatsapp_ai_model',
-      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
-      'input' => 'select',
-      'options' => [
-        'gpt-4o' => 'GPT-4o (~$2.50 / $10 per 1M tokens)',
-        'gpt-4o-mini' => 'GPT-4o Mini (~$0.15 / $0.60 per 1M tokens)',
-        'gpt-4-turbo' => 'GPT-4 Turbo (~$10 / $30 per 1M tokens)',
-      ],
-      'value' => 'gpt-4o-mini',
-      'label' => __('Default AI model', 'pn-customers-manager'),
-      'description' => __('Default OpenAI model to use. Price is shown as input/output per million tokens. <code>gpt-4o-mini</code> is the most economical and recommended for most use cases.', 'pn-customers-manager'),
+    $pn_customers_manager_options['pn_customers_manager_deepseek_api_key'] = [
+      'id' => 'pn_customers_manager_deepseek_api_key',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('DeepSeek API Key', 'pn-customers-manager'),
+      'description' => __('<strong>How to get it:</strong><br>1. Go to <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com/api_keys</a>.<br>2. Create a new API key and paste it here.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_qwen_api_key'] = [
+      'id' => 'pn_customers_manager_qwen_api_key',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Qwen (Alibaba) API Key', 'pn-customers-manager'),
+      'description' => __('<strong>How to get it:</strong><br>1. Go to <a href="https://dashscope.console.aliyun.com/apiKey" target="_blank">DashScope Console</a>.<br>2. Create a new API key and paste it here.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_moonshot_api_key'] = [
+      'id' => 'pn_customers_manager_moonshot_api_key',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Moonshot (Kimi) API Key', 'pn-customers-manager'),
+      'description' => __('<strong>How to get it:</strong><br>1. Go to <a href="https://platform.moonshot.cn/console/api-keys" target="_blank">Moonshot Platform</a>.<br>2. Create a new API key and paste it here.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_whatsapp_system_prompt'] = [
@@ -1029,9 +1002,9 @@ class PN_CUSTOMERS_MANAGER_Settings
     $pn_customers_manager_options['pn_customers_manager_openai_test'] = [
       'id' => 'pn_customers_manager_openai_test',
       'input' => 'html',
-      'label' => __('Test OpenAI connection', 'pn-customers-manager'),
-      'description' => __('Sends a test message to the OpenAI API to verify that the API Key and model work correctly. It will use the model and temperature configured above.', 'pn-customers-manager'),
-      'html_content' => '<input type="button" id="pn-cm-openai-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Test OpenAI', 'pn-customers-manager') . '" /><span id="pn-cm-openai-test-result" class="pn-customers-manager-ml-10"></span>',
+      'label' => __('Test AI connection', 'pn-customers-manager'),
+      'description' => __('Sends a test message to the selected AI provider to verify that the API Key and model work correctly. It will use the model and temperature configured above.', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-openai-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Test AI', 'pn-customers-manager') . '" /><span id="pn-cm-openai-test-result" class="pn-customers-manager-ml-10"></span>',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_openai_section_end'] = [
@@ -1119,6 +1092,15 @@ class PN_CUSTOMERS_MANAGER_Settings
       'type' => 'checkbox',
       'label' => __('Enable debug log', 'pn-customers-manager'),
       'description' => __('When enabled, all WhatsApp AI activity is logged to <code>wp-content/uploads/pn-customers-manager-logs/whatsapp-ai.log</code>. Useful for debugging webhook and AI issues. <strong>Disable in production</strong> to avoid unnecessary disk usage.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_image_debug_log'] = [
+      'id' => 'pn_customers_manager_image_debug_log',
+      'class' => 'pn-customers-manager-input',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Enable image debug log', 'pn-customers-manager'),
+      'description' => __('Logs detailed image pipeline diagnostics to <code>wp-content/uploads/pn-customers-manager-logs/whatsapp-ai.log</code> (tagged <code>[IMG-DEBUG]</code>). Traces the entire flow: raw AI response, &lt;think&gt; tag stripping, hallucinated URL removal, auto-injection, image extraction, and WhatsApp media upload. Works independently of WP_DEBUG. <strong>Disable after diagnosing.</strong>', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_whatsapp_section_end'] = [
@@ -1338,9 +1320,73 @@ class PN_CUSTOMERS_MANAGER_Settings
       'section' => 'end',
     ];
 
-    $pn_customers_manager_options['pn_customers_manager_api_section_end'] = [
-      'id' => 'pn_customers_manager_api_section_end',
+    $pn_customers_manager_options['pn_customers_manager_api_parent_section_end'] = [
+      'id' => 'pn_customers_manager_api_parent_section_end',
       'section' => 'end',
+    ];
+
+    // ── SYSTEM PARENT SECTION ────────────────────────────────────────
+    $pn_customers_manager_options['pn_customers_manager_system_parent_section_start'] = [
+      'id' => 'pn_customers_manager_system_parent_section_start',
+      'section' => 'start',
+      'label' => __('System', 'pn-customers-manager'),
+      'description' => __('General plugin settings, slugs, and user roles.', 'pn-customers-manager'),
+    ];
+
+    // ── CPT Slugs subsection ──
+    $pn_customers_manager_options['pn_customers_manager_slugs_subsection_start'] = [
+      'id' => 'pn_customers_manager_slugs_subsection_start',
+      'section' => 'start',
+      'label' => __('CPT Slugs', 'pn-customers-manager'),
+      'description' => __('Configure the URL slugs for the custom post types registered by this plugin.', 'pn-customers-manager'),
+    ];
+
+    foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
+      $pn_customers_manager_options['pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug'] = [
+        'id' => 'pn_customers_manager_' . $pn_customers_manager_cpt_key . '_slug',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => sprintf(
+          /* translators: %s: Post type name */
+          __('%s slug', 'pn-customers-manager'),
+          $pn_customers_manager_cpt_value
+        ),
+        'placeholder' => sprintf(
+          /* translators: %s: Post type name */
+          __('%s slug', 'pn-customers-manager'),
+          $pn_customers_manager_cpt_value
+        ),
+        'description' => sprintf(
+          /* translators: %1$s: Post type name */
+          __('This option sets the slug of the %1$s archive page, and the %1$s pages. By default they will be:', 'pn-customers-manager'),
+          $pn_customers_manager_cpt_value
+        ) . '<br><a href="' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '" target="_blank">' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug')) . '</a><br>' . esc_url(home_url('/' . $pn_customers_manager_cpt_key . '-slug/' . $pn_customers_manager_cpt_key)),
+      ];
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_slugs_subsection_end'] = [
+      'id' => 'pn_customers_manager_slugs_subsection_end',
+      'section' => 'end',
+    ];
+
+    // ── General Settings ──
+    $pn_customers_manager_options['pn_customers_manager_allow_crm_indexing'] = [
+      'id' => 'pn_customers_manager_allow_crm_indexing',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Allow search engine indexing on CRM pages', 'pn-customers-manager'),
+      'description' => __('By default, CRM management pages include a noindex tag to prevent search engines from indexing them. Enable this option to remove those tags and allow indexing.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_options_remove'] = [
+      'id' => 'pn_customers_manager_options_remove',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Remove plugin options on deactivation', 'pn-customers-manager'),
+      'description' => __('If you activate this option the plugin will remove all options on deactivation. Please, be careful. This process cannot be undone.', 'pn-customers-manager'),
     ];
 
     // User Roles subsection (inside System)
@@ -1757,6 +1803,32 @@ class PN_CUSTOMERS_MANAGER_Settings
                             [],
                             PN_CUSTOMERS_MANAGER_VERSION,
                             true
+                          );
+
+                          // AI provider: show only the API key field matching the selected model
+                          $pn_cm_model_key_map = wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_model_to_key_option_map());
+                          $pn_cm_api_key_ids   = wp_json_encode([
+                            'pn_customers_manager_whatsapp_openai_key',
+                            'pn_customers_manager_deepseek_api_key',
+                            'pn_customers_manager_qwen_api_key',
+                            'pn_customers_manager_moonshot_api_key',
+                          ]);
+                          wp_add_inline_script('pn-customers-manager-settings-footer',
+                            '(function($){' .
+                            'var map=' . $pn_cm_model_key_map . ';' .
+                            'var keys=' . $pn_cm_api_key_ids . ';' .
+                            'function toggleKey(){' .
+                              'var m=$("#pn_customers_manager_whatsapp_ai_model").val();' .
+                              'var active=map[m]||"pn_customers_manager_whatsapp_openai_key";' .
+                              '$.each(keys,function(i,k){' .
+                                'var $w=$("#"+k).closest(".pn-customers-manager-input-wrapper");' .
+                                'if(k===active){$w.removeClass("pn-customers-manager-display-none").show();}' .
+                                'else{$w.addClass("pn-customers-manager-display-none").hide();}' .
+                              '});' .
+                            '}' .
+                            '$(document).ready(function(){toggleKey();});' .
+                            '$(document).on("change","#pn_customers_manager_whatsapp_ai_model",toggleKey);' .
+                            '})(jQuery);'
                           );
 
                           $pn_rp_settings = [];

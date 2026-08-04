@@ -68,6 +68,31 @@ trait PN_CM_AI_Chat_Common {
       return;
     }
 
+    self::log_always($message);
+  }
+
+  /**
+   * Log image-pipeline diagnostics.
+   *
+   * Writes to whatsapp-ai.log when the 'pn_customers_manager_image_debug_log'
+   * option is enabled.  Does NOT depend on WP_DEBUG or the per-platform
+   * debug option — only on its own checkbox in Settings > System.
+   *
+   * @param string $message
+   */
+  private static function log_image_debug($message) {
+    if (empty(get_option('pn_customers_manager_image_debug_log', ''))) {
+      return;
+    }
+    self::log_always($message);
+  }
+
+  /**
+   * Write to the platform log file unconditionally (no debug option check).
+   *
+   * @param string $message
+   */
+  private static function log_always($message) {
     $upload_dir = wp_upload_dir();
     $log_dir    = $upload_dir['basedir'] . '/pn-customers-manager-logs';
 
@@ -80,9 +105,9 @@ trait PN_CM_AI_Chat_Common {
     $time     = current_time('Y-m-d H:i:s');
     $line     = '[' . $time . '] ' . $message . "\n";
 
-    if (file_exists($log_file) && filesize($log_file) > 1048576) {
+    if (file_exists($log_file) && filesize($log_file) > 5242880) {
       $contents = file_get_contents($log_file);
-      file_put_contents($log_file, substr($contents, -524288));
+      file_put_contents($log_file, substr($contents, -2621440));
     }
 
     file_put_contents($log_file, $line, FILE_APPEND | LOCK_EX);
@@ -235,6 +260,123 @@ trait PN_CM_AI_Chat_Common {
       . ' conversation->ai_model=' . var_export($conversation->ai_model ?? null, true));
 
     return $ai_model;
+  }
+
+  /* ================================================================
+   * AI PROVIDER REGISTRY
+   * ================================================================ */
+
+  /**
+   * Return configurations for all supported AI providers.
+   *
+   * @return array Keyed by provider slug.
+   */
+  public static function get_ai_providers() {
+    return [
+      'openai' => [
+        'label'      => 'OpenAI',
+        'url'        => 'https://api.openai.com/v1/chat/completions',
+        'key_option' => 'pn_customers_manager_whatsapp_openai_key',
+        'models'     => [
+          'gpt-4o'      => 'GPT-4o (~$2.50 / $10 per 1M tokens)',
+          'gpt-4o-mini' => 'GPT-4o Mini (~$0.15 / $0.60 per 1M tokens)',
+          'gpt-4-turbo' => 'GPT-4 Turbo (~$10 / $30 per 1M tokens)',
+        ],
+      ],
+      'deepseek' => [
+        'label'      => 'DeepSeek',
+        'url'        => 'https://api.deepseek.com/v1/chat/completions',
+        'key_option' => 'pn_customers_manager_deepseek_api_key',
+        'models'     => [
+          'deepseek-chat'     => 'DeepSeek V3 (~$0.27 / $1.10 per 1M tokens)',
+          'deepseek-reasoner' => 'DeepSeek R1 (~$0.55 / $2.19 per 1M tokens)',
+        ],
+      ],
+      'qwen' => [
+        'label'      => 'Qwen (Alibaba)',
+        'url'        => 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+        'key_option' => 'pn_customers_manager_qwen_api_key',
+        'models'     => [
+          'qwen-max'   => 'Qwen Max (~$1.60 / $6.40 per 1M tokens)',
+          'qwen-plus'  => 'Qwen Plus (~$0.50 / $1.50 per 1M tokens)',
+          'qwen-turbo' => 'Qwen Turbo (~$0.30 / $0.60 per 1M tokens)',
+        ],
+      ],
+      'moonshot' => [
+        'label'      => 'Moonshot (Kimi)',
+        'url'        => 'https://api.moonshot.cn/v1/chat/completions',
+        'key_option' => 'pn_customers_manager_moonshot_api_key',
+        'models'     => [
+          'moonshot-v1-8k'   => 'Moonshot v1 8K',
+          'moonshot-v1-32k'  => 'Moonshot v1 32K',
+          'moonshot-v1-128k' => 'Moonshot v1 128K',
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Resolve the provider configuration for a given model name.
+   *
+   * Looks up the model in all provider registries. Falls back to the
+   * default provider (from settings) or OpenAI if no match is found.
+   *
+   * @param string $model Model name (e.g. 'deepseek-chat', 'gpt-4o').
+   * @return array Provider config array with keys: label, url, key_option, models, slug.
+   */
+  public static function resolve_provider_for_model($model) {
+    $providers = self::get_ai_providers();
+
+    foreach ($providers as $slug => $provider) {
+      if (isset($provider['models'][$model])) {
+        $provider['slug'] = $slug;
+        return $provider;
+      }
+    }
+
+    // Fall back to OpenAI
+    $providers['openai']['slug'] = 'openai';
+    return $providers['openai'];
+  }
+
+  /**
+   * Build a flat model list for select dropdowns, optionally prefixed
+   * with provider name and with an empty "use global" option.
+   *
+   * @param bool $include_empty Whether to add a '-- Use global --' option at the start.
+   * @return array Associative array of model_id => label.
+   */
+  public static function get_all_model_options($include_empty = false) {
+    $options   = [];
+    $providers = self::get_ai_providers();
+
+    if ($include_empty) {
+      $options[''] = __('-- Use global --', 'pn-customers-manager');
+    }
+
+    foreach ($providers as $provider) {
+      foreach ($provider['models'] as $model_id => $model_label) {
+        $options[$model_id] = $provider['label'] . ' — ' . $model_label;
+      }
+    }
+
+    return $options;
+  }
+
+  /**
+   * Return a map of model_id => key_option for JS-side provider resolution.
+   *
+   * @return array
+   */
+  public static function get_model_to_key_option_map() {
+    $map       = [];
+    $providers = self::get_ai_providers();
+    foreach ($providers as $provider) {
+      foreach ($provider['models'] as $model_id => $label) {
+        $map[$model_id] = $provider['key_option'];
+      }
+    }
+    return $map;
   }
 
   /**
@@ -2093,27 +2235,35 @@ trait PN_CM_AI_Chat_Common {
    * ================================================================ */
 
   private static function call_openai($messages, $model = 'gpt-4o-mini', $temperature = 0.7) {
-    $api_key = get_option('pn_customers_manager_whatsapp_openai_key', '');
+    $provider = self::resolve_provider_for_model($model);
+    $api_key  = get_option($provider['key_option'], '');
 
     if (empty($api_key)) {
+      self::log('call_openai — No API key configured for provider ' . $provider['label']);
       return false;
     }
 
-    $response = wp_remote_post('https://api.openai.com/v1/chat/completions', [
+    $body_params = [
+      'model'    => $model,
+      'messages' => $messages,
+    ];
+
+    // DeepSeek R1 (deepseek-reasoner) does not support the temperature parameter
+    if ($model !== 'deepseek-reasoner') {
+      $body_params['temperature'] = $temperature;
+    }
+
+    $response = wp_remote_post($provider['url'], [
       'timeout' => 30,
       'headers' => [
         'Content-Type'  => 'application/json',
         'Authorization' => 'Bearer ' . $api_key,
       ],
-      'body' => wp_json_encode([
-        'model'       => $model,
-        'messages'    => $messages,
-        'temperature' => $temperature,
-      ]),
+      'body' => wp_json_encode($body_params),
     ]);
 
     if (is_wp_error($response)) {
-      self::log('call_openai — WP_Error: ' . $response->get_error_message());
+      self::log('call_openai — WP_Error (' . $provider['label'] . '): ' . $response->get_error_message());
       return false;
     }
 
@@ -2121,14 +2271,32 @@ trait PN_CM_AI_Chat_Common {
     $body_raw  = wp_remote_retrieve_body($response);
     $body      = json_decode($body_raw, true);
 
-    if (isset($body['choices'][0]['message']['content'])) {
-      return $body['choices'][0]['message']['content'];
+    $content = isset($body['choices'][0]['message']['content'])
+      ? $body['choices'][0]['message']['content']
+      : null;
+
+    // DeepSeek R1 may return reasoning_content instead of (or alongside) content.
+    // Use content if available; fall back to reasoning_content as last resort.
+    if (empty($content) && !empty($body['choices'][0]['message']['reasoning_content'])) {
+      $content = $body['choices'][0]['message']['reasoning_content'];
+      self::log('call_openai — using reasoning_content as content (model=' . $model . ')');
+    }
+
+    if (!empty($content)) {
+      $usage = isset($body['usage']) ? $body['usage'] : [];
+      self::log('call_openai — OK provider=' . $provider['label'] . ' model=' . $model
+        . ' http=' . $http_code
+        . ' prompt_tokens=' . ($usage['prompt_tokens'] ?? '?')
+        . ' completion_tokens=' . ($usage['completion_tokens'] ?? '?')
+        . ' total_tokens=' . ($usage['total_tokens'] ?? '?'));
+      return $content;
     }
 
     $error_msg  = isset($body['error']['message']) ? $body['error']['message'] : 'unknown';
     $error_type = isset($body['error']['type']) ? $body['error']['type'] : 'unknown';
-    self::log('call_openai — FAILED model=' . $model . ' http=' . $http_code
-      . ' error_type=' . $error_type . ' error_msg=' . $error_msg);
+    self::log('call_openai — FAILED provider=' . $provider['label'] . ' model=' . $model
+      . ' http=' . $http_code . ' error_type=' . $error_type . ' error_msg=' . $error_msg
+      . ' raw_body=' . mb_substr($body_raw, 0, 500));
 
     return false;
   }
@@ -2482,6 +2650,29 @@ trait PN_CM_AI_Chat_Common {
     }
 
     return false;
+  }
+
+  /**
+   * Strip DeepSeek reasoning tags from the response.
+   *
+   * DeepSeek models (V3 deepseek-chat and R1 deepseek-reasoner) may wrap
+   * internal chain-of-thought in <think>…</think> blocks within the
+   * content field.  This must be removed before any further processing
+   * so that image tags inside the thinking block are not mistakenly
+   * treated as part of the visible response.
+   *
+   * @param string $text Raw AI response.
+   * @return string      Cleaned response without think blocks.
+   */
+  private static function strip_deepseek_think_tags($text) {
+    $cleaned = preg_replace('/<think>[\s\S]*?<\/think>/i', '', $text);
+    $cleaned = trim($cleaned);
+
+    if ($cleaned !== $text) {
+      self::log_image_debug('[IMG-DEBUG] strip_deepseek_think_tags — removed <think> block (' . (strlen($text) - strlen($cleaned)) . ' chars stripped)');
+    }
+
+    return $cleaned;
   }
 
   private static function strip_hallucinated_image_urls($text) {
