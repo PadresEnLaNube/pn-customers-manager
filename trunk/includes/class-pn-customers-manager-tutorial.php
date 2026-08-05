@@ -288,7 +288,10 @@ class PN_CUSTOMERS_MANAGER_Tutorial
    */
   public static function mark_completed($completed = true)
   {
-    update_option('pn_customers_manager_tutorial_completed', $completed);
+    // Always store a truthy value — both "completed" and "skipped" mean
+    // "don't show again". WordPress stores false as '' which get_option
+    // returns as falsy, causing should_display() to re-show the tutorial.
+    update_option('pn_customers_manager_tutorial_completed', $completed ? 'completed' : 'skipped');
   }
 
   /**

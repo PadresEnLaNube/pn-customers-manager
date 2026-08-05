@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.2.17';
+			$this->pn_customers_manager_version = '1.2.25';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -74,6 +74,7 @@ class PN_CUSTOMERS_MANAGER
 		self::pn_customers_manager_load_shortcodes();
 		self::pn_customers_manager_define_client_hooks();
 		self::pn_customers_manager_define_contact_form_hooks();
+		self::pn_customers_manager_define_funnel_form_hooks();
 		self::pn_customers_manager_define_referral_hooks();
 		self::pn_customers_manager_define_commercial_hooks();
 		self::pn_customers_manager_define_email_campaigns_hooks();
@@ -243,6 +244,10 @@ class PN_CUSTOMERS_MANAGER
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-contact-form.php';
 
+		/**
+		 * Funnel form helper.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-funnel-form.php';
 
 		/**
 		 * The class responsible for popups functionality.
@@ -692,6 +697,7 @@ class PN_CUSTOMERS_MANAGER
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-instagram-ai', $plugin_shortcodes, 'pn_customers_manager_instagram_ai');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-style-guide', $plugin_shortcodes, 'pn_customers_manager_style_guide');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-social-media', $plugin_shortcodes, 'pn_customers_manager_social_media');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-funnel-form', $plugin_shortcodes, 'pn_customers_manager_funnel_form');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Shortcodes', 'register_button_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Social_Media', 'register_block');
 	}
@@ -714,6 +720,15 @@ class PN_CUSTOMERS_MANAGER
 	{
 		$contact_form = new PN_CUSTOMERS_MANAGER_Contact_Form(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $contact_form, 'register_block');
+	}
+
+	/**
+	 * Register hooks related to the funnel form.
+	 */
+	private function pn_customers_manager_define_funnel_form_hooks()
+	{
+		$funnel_form = new PN_CUSTOMERS_MANAGER_Funnel_Form(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $funnel_form, 'register_block');
 	}
 
 	/**

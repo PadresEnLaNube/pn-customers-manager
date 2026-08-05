@@ -284,6 +284,28 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
               <?php esc_html_e('Settings', 'pn-customers-manager'); ?>
             </button>
 
+            <!-- Shortcode quick-copy (shown for button/form nodes) -->
+            <div id="pn-cm-fb-props-shortcode-wrap" style="display:none;">
+              <div class="pn-cm-fb-prop-group">
+                <label class="pn-cm-fb-prop-label"><?php esc_html_e('Shortcode', 'pn-customers-manager'); ?></label>
+                <div class="pn-cm-fb-props-shortcode-row">
+                  <input type="text" id="pn-cm-fb-props-shortcode" class="pn-cm-fb-prop-input pn-cm-fb-props-shortcode-input" readonly />
+                  <button type="button" id="pn-cm-fb-props-shortcode-copy" class="pn-cm-fb-btn pn-customers-manager-btn-copy" data-pn-customers-manager-copy-text="" title="<?php esc_attr_e('Copy', 'pn-customers-manager'); ?>">
+                    <span class="material-icons-outlined">content_copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form submissions button (shown for form nodes) -->
+            <div id="pn-cm-fb-form-submissions-btn-wrap" style="display:none;">
+              <hr class="pn-cm-fb-prop-divider">
+              <button type="button" id="pn-cm-fb-form-submissions-btn" class="pn-cm-fb-btn pn-cm-fb-btn-form-submissions">
+                <span class="material-icons-outlined">assignment</span>
+                <?php esc_html_e('View submissions', 'pn-customers-manager'); ?>
+              </button>
+            </div>
+
             <!-- WhatsApp conversations button (shown for whatsapp/whatsapp_ai nodes) -->
             <div id="pn-cm-fb-wa-chat-btn-wrap" style="display:none;">
               <hr class="pn-cm-fb-prop-divider">
@@ -385,11 +407,15 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
 
     // Check if any AI provider has a configured key
     $has_ai_key = false;
-    foreach (PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_ai_providers() as $provider) {
-      if (!empty(get_option($provider['key_option'], ''))) {
-        $has_ai_key = true;
-        break;
+    if (method_exists('PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'get_ai_providers')) {
+      foreach (PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_ai_providers() as $provider) {
+        if (!empty(get_option($provider['key_option'], ''))) {
+          $has_ai_key = true;
+          break;
+        }
       }
+    } else {
+      $has_ai_key = !empty(get_option('pn_customers_manager_openai_api_key', ''));
     }
 
     $settings_url = admin_url('admin.php?page=pn-customers-manager');
@@ -442,6 +468,18 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'deleteFunnelConfirm'=> __('Are you sure you want to delete this funnel? This action cannot be undone.', 'pn-customers-manager'),
         'deleteError'        => __('Error deleting funnel.', 'pn-customers-manager'),
         'deleteSuccess'      => __('Funnel deleted successfully.', 'pn-customers-manager'),
+        'formFieldLabel'     => __('Label', 'pn-customers-manager'),
+        'formFieldType'      => __('Type', 'pn-customers-manager'),
+        'formFieldPlaceholder' => __('Placeholder', 'pn-customers-manager'),
+        'formFieldRequired'  => __('Required', 'pn-customers-manager'),
+        'formFieldOptions'   => __('Options', 'pn-customers-manager'),
+        'formFieldRemove'    => __('Remove', 'pn-customers-manager'),
+        'formFieldContent'   => __('Content / Instructions', 'pn-customers-manager'),
+        'formFieldAcceptTypes' => __('Accepted types (.pdf, .jpg...)', 'pn-customers-manager'),
+        'formAddField'       => __('Add field', 'pn-customers-manager'),
+        'formOptValue'       => __('Value', 'pn-customers-manager'),
+        'formOptLabel'       => __('Label', 'pn-customers-manager'),
+        'formAddOption'      => __('Add option', 'pn-customers-manager'),
       ],
     ]);
   }
@@ -638,26 +676,10 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
 
     // Common fields for all subtypes
     $fields[] = [
-      'id'          => 'url',
-      'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input'       => 'input',
-      'type'        => 'url',
-      'label'       => 'URL',
-      'placeholder' => 'https://',
-    ];
-    $fields[] = [
       'id'          => 'notes',
       'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input'       => 'textarea',
       'label'       => __('Notes', 'pn-customers-manager'),
-    ];
-    $fields[] = [
-      'id'          => 'api_endpoint',
-      'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input'       => 'input',
-      'type'        => 'url',
-      'label'       => __('API Endpoint', 'pn-customers-manager'),
-      'placeholder' => 'https://api...',
     ];
 
     // Button specific fields
@@ -814,6 +836,105 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           . '<div style="display:flex;gap:8px;align-items:center">'
           . '<input type="text" id="pn-cm-fb-btn-shortcode" class="pn-customers-manager-input pn-customers-manager-width-80-percent" readonly style="margin-bottom:0;font-size:12px;font-family:monospace" value="" />'
           . '<button type="button" id="pn-cm-fb-btn-shortcode-copy" class="pn-customers-manager-btn pn-customers-manager-btn-copy" data-pn-customers-manager-copy-text="" style="white-space:nowrap;padding:10px 16px;font-size:13px" title="' . esc_attr__('Copy', 'pn-customers-manager') . '"><i class="material-icons-outlined" style="font-size:18px;vertical-align:middle">content_copy</i></button>'
+          . '</div>',
+      ];
+    }
+
+    // Form specific fields
+    if ($subtype === 'form') {
+      $fields[] = [
+        'id'           => 'form_heading_settings',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Form settings', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'          => 'form_title',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'text',
+        'label'       => __('Form title', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'form_description',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Form description', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'form_submit_text',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'text',
+        'label'       => __('Submit button text', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Submit', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'form_success_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'text',
+        'label'       => __('Success message', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'form_recipient_email',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'email',
+        'label'       => __('Recipient email', 'pn-customers-manager'),
+        'placeholder' => 'admin@example.com',
+      ];
+      $fields[] = [
+        'id'     => 'form_honeypot',
+        'class'  => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'  => 'input',
+        'type'   => 'checkbox',
+        'label'  => __('Enable honeypot anti-spam', 'pn-customers-manager'),
+      ];
+
+      $fields[] = [
+        'id'           => 'form_display_heading',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Display mode', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'      => 'form_display_mode',
+        'class'   => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+        'input'   => 'select',
+        'type'    => 'select',
+        'label'   => __('Form style', 'pn-customers-manager'),
+        'options' => [
+          'basic'      => __('Basic', 'pn-customers-manager'),
+          'sequential' => __('Sequential', 'pn-customers-manager'),
+          'fullscreen' => __('Full screen (Typeform)', 'pn-customers-manager'),
+        ],
+      ];
+      $fields[] = [
+        'id'          => 'form_fullscreen_bg',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'color',
+        'label'       => __('Background color', 'pn-customers-manager'),
+      ];
+
+      // Form fields editor container
+      $fields[] = [
+        'id'           => 'form_fields_editor',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Form fields', 'pn-customers-manager') . '</h4>'
+          . '<div id="pn-cm-fb-form-fields-editor">'
+          . '<div class="pn-cm-fb-form-fields-list"></div>'
+          . '<button type="button" class="pn-cm-fb-form-add-field-btn pn-cm-fb-btn pn-cm-fb-btn-transparent"><span class="material-icons-outlined" style="font-size:18px;vertical-align:middle">add</span> ' . esc_html__('Add field', 'pn-customers-manager') . '</button>'
+          . '</div>',
+      ];
+
+      // Shortcode preview
+      $fields[] = [
+        'id'           => 'form_shortcode_preview',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Shortcode', 'pn-customers-manager') . '</h4>'
+          . '<div style="display:flex;gap:8px;align-items:center">'
+          . '<input type="text" id="pn-cm-fb-form-shortcode" class="pn-customers-manager-input pn-customers-manager-width-80-percent" readonly style="margin-bottom:0;font-size:12px;font-family:monospace" value="" />'
+          . '<button type="button" id="pn-cm-fb-form-shortcode-copy" class="pn-customers-manager-btn pn-customers-manager-btn-copy" data-pn-customers-manager-copy-text="" style="white-space:nowrap;padding:10px 16px;font-size:13px" title="' . esc_attr__('Copy', 'pn-customers-manager') . '"><i class="material-icons-outlined" style="font-size:18px;vertical-align:middle">content_copy</i></button>'
           . '</div>',
       ];
     }
@@ -1477,5 +1598,28 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
     echo '</div>';
 
     return ob_get_clean();
+  }
+
+  /**
+   * Load a form node's config from canvas JSON.
+   *
+   * @param int    $funnel_id
+   * @param string $node_id
+   * @return array|null
+   */
+  public static function get_form_node_config($funnel_id, $node_id) {
+    $canvas = get_post_meta($funnel_id, self::CANVAS_META_KEY, true);
+    if (empty($canvas)) return null;
+
+    $data = json_decode($canvas, true);
+    if (empty($data) || empty($data['nodes'])) return null;
+
+    foreach ($data['nodes'] as $node) {
+      if (isset($node['id']) && (string) $node['id'] === (string) $node_id && isset($node['subtype']) && $node['subtype'] === 'form') {
+        return isset($node['config']) ? $node['config'] : [];
+      }
+    }
+
+    return null;
   }
 }

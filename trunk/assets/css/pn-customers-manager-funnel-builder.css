@@ -1010,6 +1010,41 @@
   background: #e5e5ea;
 }
 
+/* Shortcode quick-copy row in props panel */
+.pn-cm-fb-props-shortcode-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.pn-cm-fb-props-shortcode-input {
+  flex: 1;
+  font-size: 11px !important;
+  font-family: monospace;
+  background: #f5f5f5 !important;
+  padding: 5px 8px !important;
+}
+#pn-cm-fb-props-shortcode-copy {
+  padding: 5px 8px;
+  background: #f0f0f5;
+  color: #333;
+  border: 1px solid #d0d0d0;
+  flex-shrink: 0;
+}
+#pn-cm-fb-props-shortcode-copy .material-icons-outlined {
+  font-size: 15px;
+}
+
+/* Form submissions button in props panel */
+.pn-cm-fb-btn-form-submissions {
+  width: 100%;
+  justify-content: center;
+  background: var(--pn-customers-manager-color-main, #4f46e5);
+  color: #fff;
+}
+.pn-cm-fb-btn-form-submissions:hover {
+  opacity: 0.9;
+}
+
 /* Instagram chat button in sidebar */
 .pn-cm-fb-btn-ig-chat {
   width: 100%;
@@ -1195,6 +1230,200 @@
     bottom: 10px;
     right: 10px;
   }
+}
+
+/* Form field editor */
+#pn-cm-fb-form-fields-editor {
+  margin-bottom: 12px;
+}
+
+.pn-cm-fb-form-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.pn-cm-fb-form-field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px;
+  cursor: grab;
+  transition: box-shadow 0.15s, opacity 0.15s;
+}
+
+.pn-cm-fb-form-field-row:hover {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.pn-cm-fb-form-field-row.dragging {
+  opacity: 0.4;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.pn-cm-fb-form-field-handle {
+  cursor: grab;
+  color: #999;
+  font-size: 18px;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.pn-cm-fb-form-field-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pn-cm-fb-form-field-top {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pn-cm-fb-form-field-label {
+  flex: 1;
+  min-width: 100px;
+  margin-bottom: 0 !important;
+}
+
+.pn-cm-fb-form-field-type {
+  width: 110px;
+  flex-shrink: 0;
+  margin-bottom: 0 !important;
+}
+
+.pn-cm-fb-form-field-req-label {
+  font-size: 12px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.pn-cm-fb-form-field-bottom {
+  display: flex;
+  gap: 6px;
+}
+
+.pn-cm-fb-form-field-placeholder {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+.pn-cm-fb-form-field-options-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pn-cm-fb-form-field-options-wrap small {
+  font-size: 11px;
+  color: #888;
+}
+
+.pn-cm-fb-form-field-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pn-cm-fb-opt-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pn-cm-fb-opt-row.dragging {
+  opacity: 0.4;
+}
+
+.pn-cm-fb-opt-handle {
+  cursor: grab;
+  color: #bbb;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.pn-cm-fb-opt-handle:active {
+  cursor: grabbing;
+}
+
+.pn-cm-fb-opt-value,
+.pn-cm-fb-opt-label {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0 !important;
+  font-size: 12px !important;
+  padding: 5px 8px !important;
+}
+
+.pn-cm-fb-opt-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #bbb;
+  padding: 2px;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.pn-cm-fb-opt-remove:hover {
+  color: #cc0000;
+}
+
+.pn-cm-fb-opt-remove .material-icons-outlined {
+  font-size: 16px;
+}
+
+.pn-cm-fb-opt-add {
+  align-self: flex-start;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  margin-top: 2px;
+}
+
+.pn-cm-fb-form-field-content-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pn-cm-fb-form-field-content-wrap small {
+  font-size: 11px;
+  color: #888;
+}
+
+.pn-cm-fb-form-field-content-text {
+  margin-bottom: 0 !important;
+}
+
+.pn-cm-fb-form-field-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  padding: 4px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: color 0.15s;
+}
+
+.pn-cm-fb-form-field-remove:hover {
+  color: #cc0000;
+}
+
+.pn-cm-fb-form-add-field-btn {
+  margin-top: 4px;
 }
 
 @media (max-width: 600px) {

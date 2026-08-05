@@ -52,6 +52,8 @@
   var waChatBtnWrap, waChatBtn;
   var igChatBtnWrap, igChatBtn;
   var btnSettings;
+  var propsShortcodeWrap, propsShortcodeInput, propsShortcodeCopy;
+  var formSubmissionsBtnWrap, formSubmissionsBtn;
   var zoomLayer, zoomLevelEl, sidebarLeft, sidebarToggle;
 
   /* -------- Icon map -------- */
@@ -119,6 +121,11 @@
     igChatBtnWrap = document.getElementById('pn-cm-fb-ig-chat-btn-wrap');
     igChatBtn = document.getElementById('pn-cm-fb-ig-chat-btn');
     btnSettings = document.getElementById('pn-cm-fb-btn-settings');
+    propsShortcodeWrap  = document.getElementById('pn-cm-fb-props-shortcode-wrap');
+    propsShortcodeInput = document.getElementById('pn-cm-fb-props-shortcode');
+    propsShortcodeCopy  = document.getElementById('pn-cm-fb-props-shortcode-copy');
+    formSubmissionsBtnWrap = document.getElementById('pn-cm-fb-form-submissions-btn-wrap');
+    formSubmissionsBtn     = document.getElementById('pn-cm-fb-form-submissions-btn');
 
     zoomLayer = document.getElementById('pn-cm-fb-zoom-layer');
     zoomLevelEl = document.getElementById('pn-cm-fb-zoom-level');
@@ -131,6 +138,12 @@
     bindEvents();
     bindPopupEvents();
     bindIgPopupEvents();
+
+    if (formSubmissionsBtn) {
+      formSubmissionsBtn.addEventListener('click', function () {
+        window.open(cfg.adminUrl + '?page=pn_customers_manager_contact_messages&view=forms', '_blank');
+      });
+    }
 
     if (state.funnelId && cfg.canvasData) {
       loadCanvasFromJSON(cfg.canvasData);
@@ -1052,6 +1065,18 @@
       igChatBtnWrap.style.display = isIgNode ? 'block' : 'none';
     }
 
+    // Show/hide shortcode quick-copy
+    var isShortcodeNode = node.subtype === 'button' || node.subtype === 'form';
+    if (propsShortcodeWrap) {
+      propsShortcodeWrap.style.display = isShortcodeNode ? 'block' : 'none';
+      if (isShortcodeNode) updatePropsShortcode(node);
+    }
+
+    // Show/hide form submissions button
+    if (formSubmissionsBtnWrap) {
+      formSubmissionsBtnWrap.style.display = node.subtype === 'form' ? 'block' : 'none';
+    }
+
     // Show/hide API warning banner in properties panel
     var existingBanner = document.getElementById('pn-cm-fb-api-banner');
     if (existingBanner) existingBanner.remove();
@@ -1709,6 +1734,11 @@
       if (typeof window.pn_customers_manager_Popups !== 'undefined') {
         window.pn_customers_manager_Popups.close();
       }
+      // Refresh props shortcode after settings changes
+      var sel = state.selectedNode ? findNode(state.selectedNode) : null;
+      if (sel) updatePropsShortcode(sel);
+      // Persist to server so the user doesn't lose changes
+      if (state.dirty) saveCanvas();
     });
   }
 
@@ -1948,9 +1978,8 @@
         var rawName = el.getAttribute('name');
         if (!rawName) return;
         var cfgKey = normaliseFieldKey(rawName);
-        var eventName = (el.type === 'checkbox' || el.tagName === 'SELECT') ? 'change' : 'input';
 
-        el.addEventListener(eventName, function () {
+        function onFieldChange() {
           if (!node.config) node.config = {};
           if (el.type === 'checkbox') {
             node.config[cfgKey] = el.checked;
@@ -1971,13 +2000,57 @@
           if (node.subtype === 'button' && cfgKey.indexOf('btn_') === 0) {
             updateButtonShortcode(node, container);
           }
-        });
+          // Update form shortcode preview on any form_ field change
+          if (node.subtype === 'form' && cfgKey.indexOf('form_') === 0) {
+            updateFormShortcode(node, container);
+          }
+        }
+
+        if (el.type === 'checkbox') {
+          el.addEventListener('change', onFieldChange);
+        } else if (el.tagName === 'SELECT') {
+          // The custom pn_customers_manager_Selector fires jQuery .trigger('change')
+          // which only dispatches through jQuery's event system, so native
+          // addEventListener('change') won't catch it. Use jQuery when available;
+          // fall back to native for environments without jQuery.
+          if (window.jQuery) {
+            jQuery(el).on('change', onFieldChange);
+          } else {
+            el.addEventListener('change', onFieldChange);
+          }
+        } else {
+          el.addEventListener('input', onFieldChange);
+        }
       })(fields[i]);
     }
 
     // Initial shortcode build for button nodes
     if (node.subtype === 'button') {
       updateButtonShortcode(node, container);
+    }
+
+    // Form field editor for form nodes
+    if (node.subtype === 'form') {
+      initFormFieldEditor(node, container);
+      updateFormShortcode(node, container);
+
+      // Toggle fullscreen background color field visibility
+      var modeSelect = container.querySelector('[name="form_display_mode"]');
+      var bgField = container.querySelector('[name="form_fullscreen_bg"]');
+      var bgWrapper = bgField ? bgField.closest('.pn-customers-manager-input-wrapper') : null;
+      function toggleBgField() {
+        if (bgWrapper) bgWrapper.style.display = (modeSelect && modeSelect.value === 'fullscreen') ? '' : 'none';
+      }
+      if (modeSelect) {
+        // Use jQuery when available so the custom selector plugin's
+        // jQuery-triggered change events are captured.
+        if (window.jQuery) {
+          jQuery(modeSelect).on('change', toggleBgField);
+        } else {
+          modeSelect.addEventListener('change', toggleBgField);
+        }
+      }
+      toggleBgField();
     }
   }
 
@@ -2047,6 +2120,38 @@
     if (copyBtn) {
       copyBtn.setAttribute('data-pn-customers-manager-copy-text', shortcode);
     }
+  }
+
+  /**
+   * Update the shortcode quick-copy in the props panel sidebar.
+   */
+  function updatePropsShortcode(node) {
+    if (!propsShortcodeInput || !propsShortcodeCopy) return;
+
+    var shortcode = '';
+    if (node.subtype === 'button') {
+      var conf = node.config || {};
+      var parts = [];
+      for (var key in BTN_ATTR_MAP) {
+        if (!BTN_ATTR_MAP.hasOwnProperty(key)) continue;
+        var val = conf[key] !== undefined ? conf[key] : BTN_SHORTCODE_DEFAULTS[key];
+        var def = BTN_SHORTCODE_DEFAULTS[key];
+        if (typeof def === 'boolean') {
+          var boolVal = !!val && val !== '0' && val !== 'off' && val !== '';
+          if (boolVal === def) continue;
+          val = boolVal ? '1' : '0';
+        } else {
+          if (String(val) === String(def) || val === '' || val === undefined) continue;
+        }
+        parts.push(BTN_ATTR_MAP[key] + '="' + String(val).replace(/"/g, '&quot;') + '"');
+      }
+      shortcode = '[pn-customers-manager-button' + (parts.length ? ' ' + parts.join(' ') : '') + ']';
+    } else if (node.subtype === 'form') {
+      shortcode = '[pn-customers-manager-funnel-form funnel_id="' + state.funnelId + '" node_id="' + node.id + '"]';
+    }
+
+    propsShortcodeInput.value = shortcode;
+    propsShortcodeCopy.setAttribute('data-pn-customers-manager-copy-text', shortcode);
   }
 
   /**
@@ -2152,6 +2257,401 @@
           });
         }
       })(imageInputs[j]);
+    }
+  }
+
+  /* ======== Form field editor ======== */
+
+  var FORM_FIELD_TYPES = [
+    { value: 'text',     label: 'Text' },
+    { value: 'email',    label: 'Email' },
+    { value: 'number',   label: 'Number' },
+    { value: 'tel',      label: 'Tel' },
+    { value: 'url',      label: 'URL' },
+    { value: 'date',     label: 'Date' },
+    { value: 'textarea', label: 'Textarea' },
+    { value: 'select',   label: 'Select' },
+    { value: 'checkbox', label: 'Checkbox' },
+    { value: 'radio',    label: 'Radio' },
+    { value: 'file',     label: 'File' },
+    { value: 'info',     label: 'Text / Info' },
+  ];
+
+  function initFormFieldEditor(node, container) {
+    if (!node.config) node.config = {};
+    if (!Array.isArray(node.config.form_fields)) {
+      node.config.form_fields = [];
+    }
+
+    var editorEl = container.querySelector('#pn-cm-fb-form-fields-editor');
+    if (!editorEl) return;
+
+    var listEl = editorEl.querySelector('.pn-cm-fb-form-fields-list');
+    var addBtn = editorEl.querySelector('.pn-cm-fb-form-add-field-btn');
+
+    function renderFields() {
+      listEl.innerHTML = '';
+      for (var fi = 0; fi < node.config.form_fields.length; fi++) {
+        listEl.appendChild(createFieldRow(node.config.form_fields[fi], fi));
+      }
+    }
+
+    function syncAndRender() {
+      state.dirty = true;
+      updateFormShortcode(node, container);
+    }
+
+    function createFieldRow(field, index) {
+      var row = document.createElement('div');
+      row.className = 'pn-cm-fb-form-field-row';
+      row.setAttribute('draggable', 'true');
+      row.setAttribute('data-field-index', index);
+
+      // Drag handle
+      var handle = document.createElement('span');
+      handle.className = 'pn-cm-fb-form-field-handle material-icons-outlined';
+      handle.textContent = 'drag_indicator';
+      row.appendChild(handle);
+
+      var content = document.createElement('div');
+      content.className = 'pn-cm-fb-form-field-content';
+
+      // Top row: label + type + required
+      var topRow = document.createElement('div');
+      topRow.className = 'pn-cm-fb-form-field-top';
+
+      // Label input
+      var labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.className = 'pn-customers-manager-input pn-cm-fb-form-field-label';
+      labelInput.value = field.label || '';
+      labelInput.placeholder = i18n.formFieldLabel || 'Label';
+      labelInput.addEventListener('input', function() {
+        field.label = labelInput.value;
+        syncAndRender();
+      });
+      topRow.appendChild(labelInput);
+
+      // Type select
+      var typeSelect = document.createElement('select');
+      typeSelect.className = 'pn-customers-manager-select pn-cm-fb-form-field-type';
+      for (var ti = 0; ti < FORM_FIELD_TYPES.length; ti++) {
+        var opt = document.createElement('option');
+        opt.value = FORM_FIELD_TYPES[ti].value;
+        opt.textContent = FORM_FIELD_TYPES[ti].label;
+        if (field.type === FORM_FIELD_TYPES[ti].value) opt.selected = true;
+        typeSelect.appendChild(opt);
+      }
+      typeSelect.addEventListener('change', function() {
+        field.type = typeSelect.value;
+        toggleOptionsVisibility();
+        syncAndRender();
+      });
+      topRow.appendChild(typeSelect);
+
+      // Required checkbox
+      var reqLabel = document.createElement('label');
+      reqLabel.className = 'pn-cm-fb-form-field-req-label';
+      var reqCheck = document.createElement('input');
+      reqCheck.type = 'checkbox';
+      reqCheck.checked = !!field.required;
+      reqCheck.addEventListener('change', function() {
+        field.required = reqCheck.checked;
+        syncAndRender();
+      });
+      reqLabel.appendChild(reqCheck);
+      reqLabel.appendChild(document.createTextNode(' ' + (i18n.formFieldRequired || 'Required')));
+      topRow.appendChild(reqLabel);
+
+      content.appendChild(topRow);
+
+      // Bottom row: placeholder + options
+      var bottomRow = document.createElement('div');
+      bottomRow.className = 'pn-cm-fb-form-field-bottom';
+
+      var phInput = document.createElement('input');
+      phInput.type = 'text';
+      phInput.className = 'pn-customers-manager-input pn-cm-fb-form-field-placeholder';
+      phInput.value = field.placeholder || '';
+      phInput.placeholder = i18n.formFieldPlaceholder || 'Placeholder';
+      phInput.addEventListener('input', function() {
+        field.placeholder = phInput.value;
+        syncAndRender();
+      });
+      bottomRow.appendChild(phInput);
+
+      content.appendChild(bottomRow);
+
+      // Options manager (visible only for select/radio)
+      var optionsWrap = document.createElement('div');
+      optionsWrap.className = 'pn-cm-fb-form-field-options-wrap';
+
+      var optionsLabel = document.createElement('small');
+      optionsLabel.textContent = i18n.formFieldOptions || 'Options';
+      optionsWrap.appendChild(optionsLabel);
+
+      var optionsList = document.createElement('div');
+      optionsList.className = 'pn-cm-fb-form-field-options-list';
+      optionsWrap.appendChild(optionsList);
+
+      // Parse existing options into array of {value, label}.
+      // Supports both legacy "value|label\n..." string format
+      // and new [{value,label},...] array format.
+      function parseFieldOptions(raw) {
+        if (!raw) return [];
+        // New array format
+        if (Array.isArray(raw)) {
+          var result = [];
+          for (var ai = 0; ai < raw.length; ai++) {
+            if (raw[ai] && typeof raw[ai] === 'object') {
+              result.push({ value: raw[ai].value || '', label: raw[ai].label || '' });
+            }
+          }
+          return result;
+        }
+        // Legacy string format
+        if (typeof raw !== 'string') return [];
+        var lines = raw.split(/\r?\n/);
+        var result2 = [];
+        for (var li = 0; li < lines.length; li++) {
+          var line = lines[li].trim();
+          if (line === '') continue;
+          if (line.indexOf('|') !== -1) {
+            var parts = line.split('|');
+            result2.push({ value: parts[0].trim(), label: parts.slice(1).join('|').trim() });
+          } else {
+            result2.push({ value: line, label: line });
+          }
+        }
+        return result2;
+      }
+
+      var fieldOptions = parseFieldOptions(field.options);
+
+      function syncFieldOptions() {
+        // Store as array of {value, label} objects — avoids newline parsing issues
+        var out = [];
+        for (var si = 0; si < fieldOptions.length; si++) {
+          out.push({ value: fieldOptions[si].value, label: fieldOptions[si].label });
+        }
+        field.options = out;
+        syncAndRender();
+      }
+
+      function renderOptionRows() {
+        optionsList.innerHTML = '';
+        for (var oi = 0; oi < fieldOptions.length; oi++) {
+          optionsList.appendChild(createOptionRow(oi));
+        }
+      }
+
+      function createOptionRow(optIdx) {
+        var optRow = document.createElement('div');
+        optRow.className = 'pn-cm-fb-opt-row';
+        optRow.setAttribute('draggable', 'true');
+        optRow.setAttribute('data-opt-index', optIdx);
+
+        var optHandle = document.createElement('span');
+        optHandle.className = 'pn-cm-fb-opt-handle material-icons-outlined';
+        optHandle.textContent = 'drag_indicator';
+        optRow.appendChild(optHandle);
+
+        var optValInput = document.createElement('input');
+        optValInput.type = 'text';
+        optValInput.className = 'pn-customers-manager-input pn-cm-fb-opt-value';
+        optValInput.value = fieldOptions[optIdx].value;
+        optValInput.placeholder = i18n.formOptValue || 'Value';
+        optValInput.addEventListener('input', function() {
+          fieldOptions[optIdx].value = optValInput.value;
+          syncFieldOptions();
+        });
+        optRow.appendChild(optValInput);
+
+        var optLblInput = document.createElement('input');
+        optLblInput.type = 'text';
+        optLblInput.className = 'pn-customers-manager-input pn-cm-fb-opt-label';
+        optLblInput.value = fieldOptions[optIdx].label;
+        optLblInput.placeholder = i18n.formOptLabel || 'Label';
+        optLblInput.addEventListener('input', function() {
+          fieldOptions[optIdx].label = optLblInput.value;
+          syncFieldOptions();
+        });
+        optRow.appendChild(optLblInput);
+
+        var optRemove = document.createElement('button');
+        optRemove.type = 'button';
+        optRemove.className = 'pn-cm-fb-opt-remove';
+        optRemove.title = i18n.formFieldRemove || 'Remove';
+        optRemove.innerHTML = '<span class="material-icons-outlined">close</span>';
+        optRemove.addEventListener('click', function() {
+          fieldOptions.splice(optIdx, 1);
+          renderOptionRows();
+          syncFieldOptions();
+        });
+        optRow.appendChild(optRemove);
+
+        // Drag reorder
+        optRow.addEventListener('dragstart', function(e) {
+          e.stopPropagation(); // prevent parent field row drag
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/pn-cm-fb-opt-idx', String(optIdx));
+          optRow.classList.add('dragging');
+        });
+        optRow.addEventListener('dragend', function() {
+          optRow.classList.remove('dragging');
+        });
+        optRow.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.dataTransfer.dropEffect = 'move';
+        });
+        optRow.addEventListener('drop', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var fromIdx = parseInt(e.dataTransfer.getData('text/pn-cm-fb-opt-idx'), 10);
+          var toIdx = optIdx;
+          if (isNaN(fromIdx) || fromIdx === toIdx) return;
+          var moved = fieldOptions.splice(fromIdx, 1)[0];
+          fieldOptions.splice(toIdx, 0, moved);
+          renderOptionRows();
+          syncFieldOptions();
+        });
+
+        return optRow;
+      }
+
+      var optAddBtn = document.createElement('button');
+      optAddBtn.type = 'button';
+      optAddBtn.className = 'pn-cm-fb-opt-add pn-cm-fb-btn pn-cm-fb-btn-transparent';
+      optAddBtn.innerHTML = '<span class="material-icons-outlined" style="font-size:16px;vertical-align:middle">add</span> ' + (i18n.formAddOption || 'Add option');
+      optAddBtn.addEventListener('click', function() {
+        fieldOptions.push({ value: '', label: '' });
+        renderOptionRows();
+        syncFieldOptions();
+        // Focus the new value input
+        var lastRow = optionsList.lastElementChild;
+        if (lastRow) {
+          var inp = lastRow.querySelector('.pn-cm-fb-opt-value');
+          if (inp) inp.focus();
+        }
+      });
+      optionsWrap.appendChild(optAddBtn);
+
+      renderOptionRows();
+
+      content.appendChild(optionsWrap);
+
+      // Content textarea (visible only for info type)
+      var contentWrap = document.createElement('div');
+      contentWrap.className = 'pn-cm-fb-form-field-content-wrap';
+
+      var contentLbl = document.createElement('small');
+      contentLbl.textContent = i18n.formFieldContent || 'Content / Instructions';
+      contentWrap.appendChild(contentLbl);
+
+      var contentTextarea = document.createElement('textarea');
+      contentTextarea.className = 'pn-customers-manager-input pn-cm-fb-form-field-content-text';
+      contentTextarea.rows = 3;
+      contentTextarea.value = field.content || '';
+      contentTextarea.addEventListener('input', function() {
+        field.content = contentTextarea.value;
+        syncAndRender();
+      });
+      contentWrap.appendChild(contentTextarea);
+
+      content.appendChild(contentWrap);
+
+      row.appendChild(content);
+
+      // Remove button
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'pn-cm-fb-form-field-remove';
+      removeBtn.title = i18n.formFieldRemove || 'Remove';
+      removeBtn.innerHTML = '<span class="material-icons-outlined">delete</span>';
+      removeBtn.addEventListener('click', function() {
+        node.config.form_fields.splice(index, 1);
+        renderFields();
+        syncAndRender();
+      });
+      row.appendChild(removeBtn);
+
+      function toggleOptionsVisibility() {
+        var isSelectRadio = field.type === 'select' || field.type === 'radio';
+        var isInfo = field.type === 'info';
+        var isFile = field.type === 'file';
+
+        optionsWrap.style.display = isSelectRadio ? '' : 'none';
+        contentWrap.style.display = isInfo ? '' : 'none';
+        reqLabel.style.display = isInfo ? 'none' : '';
+        bottomRow.style.display = isInfo ? 'none' : '';
+
+        // Relabel placeholder for file fields
+        if (isFile) {
+          phInput.placeholder = i18n.formFieldAcceptTypes || 'Accepted types (.pdf, .jpg...)';
+        } else {
+          phInput.placeholder = i18n.formFieldPlaceholder || 'Placeholder';
+        }
+      }
+      toggleOptionsVisibility();
+
+      // Drag events for reorder
+      row.addEventListener('dragstart', function(e) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/pn-cm-fb-field-idx', String(index));
+        row.classList.add('dragging');
+      });
+      row.addEventListener('dragend', function() {
+        row.classList.remove('dragging');
+      });
+      row.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+      row.addEventListener('drop', function(e) {
+        e.preventDefault();
+        var fromIdx = parseInt(e.dataTransfer.getData('text/pn-cm-fb-field-idx'), 10);
+        var toIdx = index;
+        if (isNaN(fromIdx) || fromIdx === toIdx) return;
+        var moved = node.config.form_fields.splice(fromIdx, 1)[0];
+        node.config.form_fields.splice(toIdx, 0, moved);
+        renderFields();
+        syncAndRender();
+      });
+
+      return row;
+    }
+
+    // Add field button
+    if (addBtn) {
+      addBtn.addEventListener('click', function() {
+        node.config.form_fields.push({
+          id: 'field_' + Date.now(),
+          label: '',
+          type: 'text',
+          placeholder: '',
+          required: false,
+          options: '',
+          content: '',
+        });
+        renderFields();
+        syncAndRender();
+      });
+    }
+
+    renderFields();
+  }
+
+  function updateFormShortcode(node, container) {
+    var input = container.querySelector('#pn-cm-fb-form-shortcode');
+    if (!input) return;
+
+    var shortcode = '[pn-customers-manager-funnel-form funnel_id="' + state.funnelId + '" node_id="' + node.id + '"]';
+    input.value = shortcode;
+
+    var copyBtn = container.querySelector('#pn-cm-fb-form-shortcode-copy');
+    if (copyBtn) {
+      copyBtn.setAttribute('data-pn-customers-manager-copy-text', shortcode);
     }
   }
 

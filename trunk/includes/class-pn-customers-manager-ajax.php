@@ -775,9 +775,10 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             );
 
             echo wp_json_encode([
-              'error_key'    => '',
-              'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
-              'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'error_key'          => '',
+              'unread_count'       => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'         => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'forms_unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_forms_unread_count(),
             ]);
             exit;
           }
@@ -805,9 +806,10 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             );
 
             echo wp_json_encode([
-              'error_key'    => '',
-              'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
-              'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'error_key'          => '',
+              'unread_count'       => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'         => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'forms_unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_forms_unread_count(),
             ]);
             exit;
           }
@@ -869,15 +871,80 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             }
 
             echo wp_json_encode([
-              'error_key'    => '',
-              'unmark'       => $unmark ? 1 : 0,
-              'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
-              'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'error_key'          => '',
+              'unmark'             => $unmark ? 1 : 0,
+              'unread_count'       => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'         => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'forms_unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_forms_unread_count(),
             ]);
             exit;
           }
 
           echo wp_json_encode(['error_key' => 'pn_cm_contact_mark_spam_error']);
+          exit;
+          break;
+        case 'pn_cm_form_mark_read':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode([
+              'error_key'     => 'pn_cm_contact_permission_error',
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $message_id = isset($_POST['message_id']) ? absint($_POST['message_id']) : 0;
+
+          if (!empty($message_id)) {
+            global $wpdb;
+            $wpdb->update(
+              $wpdb->prefix . 'pn_cm_funnel_form_submissions',
+              ['is_read' => 1],
+              ['id' => $message_id],
+              ['%d'],
+              ['%d']
+            );
+
+            echo wp_json_encode([
+              'error_key'          => '',
+              'unread_count'       => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'         => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'forms_unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_forms_unread_count(),
+            ]);
+            exit;
+          }
+
+          echo wp_json_encode(['error_key' => 'pn_cm_form_mark_read_error']);
+          exit;
+          break;
+        case 'pn_cm_form_delete':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode([
+              'error_key'     => 'pn_cm_contact_permission_error',
+              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+            ]);
+            exit;
+          }
+
+          $message_id = isset($_POST['message_id']) ? absint($_POST['message_id']) : 0;
+
+          if (!empty($message_id)) {
+            global $wpdb;
+            $wpdb->delete(
+              $wpdb->prefix . 'pn_cm_funnel_form_submissions',
+              ['id' => $message_id],
+              ['%d']
+            );
+
+            echo wp_json_encode([
+              'error_key'          => '',
+              'unread_count'       => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+              'spam_count'         => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+              'forms_unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_forms_unread_count(),
+            ]);
+            exit;
+          }
+
+          echo wp_json_encode(['error_key' => 'pn_cm_form_delete_error']);
           exit;
           break;
         case 'pn_cm_contact_list':
@@ -892,14 +959,23 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $view  = isset($_POST['view']) ? sanitize_key(wp_unslash($_POST['view'])) : 'inbox';
           $paged = isset($_POST['paged']) ? max(1, intval($_POST['paged'])) : 1;
 
+          $normalized_view = in_array($view, ['inbox', 'spam', 'forms'], true) ? $view : 'inbox';
+
+          if ($normalized_view === 'forms') {
+            $html = PN_CUSTOMERS_MANAGER_Contact_Messages::render_forms_list($normalized_view, $paged);
+          } else {
+            $html = PN_CUSTOMERS_MANAGER_Contact_Messages::render_messages_list($normalized_view, $paged);
+          }
+
           echo wp_json_encode([
-            'error_key'    => '',
-            'view'         => in_array($view, ['inbox', 'spam'], true) ? $view : 'inbox',
-            'paged'        => $paged,
-            'html'         => PN_CUSTOMERS_MANAGER_Contact_Messages::render_messages_list($view, $paged),
-            'tabs_html'    => PN_CUSTOMERS_MANAGER_Contact_Messages::render_tabs($view),
-            'unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
-            'spam_count'   => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+            'error_key'          => '',
+            'view'               => $normalized_view,
+            'paged'              => $paged,
+            'html'               => $html,
+            'tabs_html'          => PN_CUSTOMERS_MANAGER_Contact_Messages::render_tabs($normalized_view),
+            'unread_count'       => PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count(),
+            'spam_count'         => PN_CUSTOMERS_MANAGER_Contact_Messages::get_spam_count(),
+            'forms_unread_count' => PN_CUSTOMERS_MANAGER_Contact_Messages::get_forms_unread_count(),
           ]);
           exit;
           break;

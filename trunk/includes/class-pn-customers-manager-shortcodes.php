@@ -168,6 +168,16 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
   }
 
   /**
+   * Funnel form shortcode.
+   *
+   * @param array $atts
+   * @return string
+   */
+  public function pn_customers_manager_funnel_form($atts = []) {
+    return PN_CUSTOMERS_MANAGER_Funnel_Form::render_form($atts);
+  }
+
+  /**
    * Register the Gutenberg block for the button shortcode.
    */
   public static function register_button_block() {

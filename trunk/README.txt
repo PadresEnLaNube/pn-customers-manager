@@ -4,10 +4,10 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 7.0
-Stable tag: 1.2.17
+Stable tag: 1.2.25
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, contact forms, email campaigns, and WooCommerce integration for WordPress.
+A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, and WooCommerce integration for WordPress.
 
 == Description ==
 
@@ -130,7 +130,7 @@ Whether you run an online store, a service-based business, an agency, or a membe
   * Industry and segment classification
   * Team size and annual revenue tracking
 
-* **Contact Messages**: A built-in contact form system with inbox management. Messages are organized in Inbox and Spam tabs with unread counters, read/unread status, mark as spam, and full sender details including source page and IP address.
+* **Contact Messages**: A built-in contact form system with inbox management. Messages are organized in Inbox, Spam, and Forms tabs with unread counters, read/unread status, mark as spam, and full sender details including source page and IP address.
 
 * **Akismet Spam Protection**: Contact form submissions are automatically checked against Akismet for spam detection and filtering.
 
@@ -169,6 +169,31 @@ A powerful form system that supports multiple field types:
 * HTML content blocks
 * Form validation and sanitization
 * Forms can save data to WordPress users, custom post types, or options
+
+= Funnel Form Builder =
+
+* **Visual Form Editor**: Build custom forms inside the funnel builder with a drag-and-drop field editor. Add, remove, and reorder fields with an intuitive interface directly in the node settings popup.
+
+* **Multiple Field Types**: Support for text, email, number, phone, URL, date, textarea, select (dropdown), checkbox, radio, file upload, and informational text blocks.
+
+* **Interactive Option Manager**: Configure select and radio field options with individual value/label inputs, drag-and-drop reordering, and add/remove buttons — no more error-prone textareas.
+
+* **Three Display Modes**: Choose how forms are presented to visitors:
+  * **Basic**: All fields displayed at once (default)
+  * **Sequential**: One field at a time with progress bar, step counter, and back/next navigation
+  * **Fullscreen (Typeform-style)**: Immersive full-screen overlay with custom background color and automatic dark/light text detection
+
+* **Loader Overlay & Feedback**: During AJAX submission, a spinner overlay covers the form. On completion, an animated success or error icon with message is displayed for a few seconds before fading out.
+
+* **Form Submissions Dashboard**: All submissions are stored in a dedicated database table and displayed in a new "Forms" tab within Contact Messages. View submitted data, sender email, source page, user, date, and funnel association. Mark as read, expand details, and delete submissions with live badge counters.
+
+* **Anti-Spam Protection**: Optional honeypot field to catch automated bots without requiring CAPTCHAs.
+
+* **Email Notifications**: Optionally send form submissions to a configurable recipient email address.
+
+* **Shortcode**: Embed any funnel form on any page using `[pn-customers-manager-funnel-form funnel_id="123" node_id="abc"]`.
+
+* **Gutenberg Block**: Native block editor support with live preview for funnel forms.
 
 = Referral System =
 
@@ -250,6 +275,7 @@ A powerful form system that supports multiple field types:
 * `[pn-customers-manager-social-media]` — Social media link display with Linktree-style layout (also available as Gutenberg block)
 * `[pn-customers-manager-whatsapp-ai]` — WhatsApp conversations front-end panel (admin only)
 * `[pn-customers-manager-instagram-ai]` — Instagram conversations front-end panel (admin only)
+* `[pn-customers-manager-funnel-form]` — Funnel form with configurable fields, display modes, and AJAX submission (requires funnel_id and node_id parameters)
 * `[pn_qr_manager]` — QR tickets management panel with built-in camera scanner, clickable table rows, and native popup integration (admin only, optional product_id parameter)
 
 = Settings & Configuration =
@@ -380,6 +406,33 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 
 == Changelog ==
+
+= 1.2.25 =
+
+- Add funnel form builder: new form node type in the funnel builder with a visual drag-and-drop field editor supporting text, email, number, tel, URL, date, textarea, select, checkbox, radio, file upload, and informational text block field types
+- Add interactive option manager for select and radio fields with individual value/label inputs per row, drag-and-drop reordering, and add/remove buttons, replacing the previous textarea-based editor
+- Add three form display modes: Basic (all fields at once), Sequential (one field at a time with progress bar, step counter, and back/next navigation), and Fullscreen (Typeform-style immersive overlay with configurable background color and automatic dark/light text detection based on luminance)
+- Add loader overlay during AJAX form submission with a spinner covering the form, replaced on completion by an animated success (green checkmark) or error (red X) icon with message, visible for a few seconds before fade-out
+- Add form submissions dashboard as a new "Formularios" tab in Contact Messages with table listing, expandable detail rows showing all submitted field data, read/unread status tracking, mark as read, and delete functionality
+- Add unread form submissions badge counter in the Forms tab header and admin menu, updated in real time via AJAX alongside existing inbox and spam counters
+- Add `pn_cm_funnel_form_submissions` database table for storing form submissions with funnel/node association, submitted data (JSON), sender email, source URL/title, IP address, user ID, read/spam status, and timestamps
+- Add `[pn-customers-manager-funnel-form]` shortcode with `funnel_id` and `node_id` parameters to embed funnel forms on any page, with corresponding Gutenberg block registration
+- Add shortcode quick-copy display with copy button in the right sidebar props panel for both button and form nodes, so users can copy shortcodes without opening the settings popup
+- Add "View submissions" button in the props panel for form nodes that opens the Forms dashboard tab in a new browser tab
+- Add form settings fields: title, description, submit button text, success message, recipient email, and honeypot anti-spam toggle
+- Add AJAX nopriv handler for public funnel form submissions and admin AJAX handlers for marking form submissions as read and deleting them
+- Add file upload input support across the forms infrastructure: new `upload` option renders a native `<input type="file">` element with `accept` attribute for allowed file types
+- Add section label type with configurable background color and colored section support with CSS custom properties across the forms infrastructure (input_wrapper_builder and input_display_wrapper)
+- Add `accept` attribute support and file type value skip in the default input case to prevent invalid HTML on file inputs
+- Add button type width handling in input_wrapper_builder so button inputs render at full width like submit inputs
+- Add `required`, `accept`, `tabindex`, and `autocomplete` to the allowed HTML attributes whitelist (KSES)
+- Add method_exists safety check for get_ai_providers in the funnel builder to prevent errors when the WhatsApp AI class is not fully loaded
+- Fix settings popup save button not persisting data to server — the save button now calls saveCanvas() after closing the popup
+- Fix select fields in the funnel builder settings popup not saving: the custom pn_customers_manager_Selector jQuery plugin fires jQuery .trigger('change') events which native addEventListener('change') cannot capture; changed to jQuery(el).on('change') for SELECT elements
+- Fix select/radio options appearing concatenated as a single option: changed storage format from newline-separated string to JSON array of {value, label} objects to prevent data loss during JSON serialization, with backward-compatible parsing for the legacy string format
+- Fix sequential form navigation layout jumping when buttons are hidden/shown: back button is now disabled instead of hidden on the first step, and next button is disabled on the last step, maintaining consistent layout
+- Fix tutorial completion not being saved: store 'completed' or 'skipped' string values instead of boolean to prevent WordPress from storing false as an empty string, which caused the tutorial to re-appear
+- Remove URL and API Endpoint common fields from funnel node settings, keeping only Notes as the first common field
 
 = 1.1.113 =
 

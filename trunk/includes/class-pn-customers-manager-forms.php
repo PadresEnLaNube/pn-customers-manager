@@ -93,15 +93,29 @@ class PN_CUSTOMERS_MANAGER_Forms {
       case 'input':        
         switch ($pn_customers_manager_input['type']) {
           case 'file':
-            ?>
-              <?php if (empty($pn_customers_manager_value)): ?>
-                <p class="pn-customers-manager-m-10"><?php esc_html_e('No file found', 'pn-customers-manager'); ?></p>
-              <?php else: ?>
-                <p class="pn-customers-manager-m-10">
-                  <a href="<?php echo esc_url(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['id'], true)['url']); ?>" target="_blank"><?php echo esc_html(basename(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['id'], true)['url'])); ?></a>
-                </p>
-              <?php endif ?>
-            <?php
+            if (!empty($pn_customers_manager_input['upload'])) {
+              ?>
+                <input
+                  id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>"
+                  name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>"
+                  class="pn-customers-manager-field <?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?>"
+                  type="file"
+                  <?php echo (!empty($pn_customers_manager_input['accept']) ? 'accept="' . esc_attr($pn_customers_manager_input['accept']) . '"' : ''); ?>
+                  <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?>
+                  <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?>
+                />
+              <?php
+            } else {
+              ?>
+                <?php if (empty($pn_customers_manager_value)): ?>
+                  <p class="pn-customers-manager-m-10"><?php esc_html_e('No file found', 'pn-customers-manager'); ?></p>
+                <?php else: ?>
+                  <p class="pn-customers-manager-m-10">
+                    <a href="<?php echo esc_url(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['id'], true)['url']); ?>" target="_blank"><?php echo esc_html(basename(get_post_meta($pn_customers_manager_id, $pn_customers_manager_input['id'], true)['url'])); ?></a>
+                  </p>
+                <?php endif ?>
+              <?php
+            }
             break;
           case 'checkbox':
             ?>
@@ -271,9 +285,12 @@ class PN_CUSTOMERS_MANAGER_Forms {
                 <?php echo (isset($pn_customers_manager_input['min']) ? 'min="' . esc_attr($pn_customers_manager_input['min']) . '"' : ''); ?>
                 <?php echo (isset($pn_customers_manager_input['maxlength']) ? 'maxlength="' . esc_attr($pn_customers_manager_input['maxlength']) . '"' : ''); ?>
                 <?php echo (isset($pn_customers_manager_input['pattern']) ? 'pattern="' . esc_attr($pn_customers_manager_input['pattern']) . '"' : ''); ?>
-                
+                <?php echo (isset($pn_customers_manager_input['accept']) ? 'accept="' . esc_attr($pn_customers_manager_input['accept']) . '"' : ''); ?>
+
                 <?php /* Content attributes */ ?>
+                <?php if ($pn_customers_manager_input['type'] !== 'file'): ?>
                 value="<?php echo (!empty($pn_customers_manager_input['button_text']) ? esc_html($pn_customers_manager_input['button_text']) : esc_html($pn_customers_manager_value)); ?>"
+                <?php endif; ?>
                 placeholder="<?php echo (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_html($pn_customers_manager_input['placeholder']) : ''); ?>"
                 
                 <?php /* Custom data attributes */ ?>
@@ -792,17 +809,33 @@ class PN_CUSTOMERS_MANAGER_Forms {
   public static function pn_customers_manager_input_wrapper_builder($input_array, $type, $pn_customers_manager_id = 0, $disabled = 0, $cm_pn_format = 'half'){
     ?>
       <?php if (array_key_exists('section', $input_array) && !empty($input_array['section'])): ?>
-        <?php if ($input_array['section'] == 'start'): ?>
-          <div class="pn-customers-manager-toggle-wrapper pn-customers-manager-section-wrapper pn-customers-manager-position-relative pn-customers-manager-mb-10 <?php echo array_key_exists('class', $input_array) ? esc_attr($input_array['class']) : ''; ?>" id="<?php echo array_key_exists('id', $input_array) ? esc_attr($input_array['id']) : ''; ?>">
-            <a href="#" class="pn-customers-manager-toggle pn-customers-manager-width-100-percent pn-customers-manager-text-decoration-none">
-              <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-20">
-                <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
-                  <label class="pn-customers-manager-cursor-pointer pn-customers-manager-mb-20 pn-customers-manager-color-main-0"><?php echo wp_kses_post($input_array['label']); ?></label>
-                </div>
-                <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-right">
-                  <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-color-main-0">add</i>
-                </div>
+        <?php if ($input_array['section'] == 'label'): ?>
+              <?php $label_color = !empty($input_array['section_color']) ? $input_array['section_color'] : '#7c3aed'; ?>
+              <div class="pn-customers-manager-sections-label" style="background: <?php echo esc_attr($label_color); ?>;">
+                <span><?php echo wp_kses_post($input_array['label']); ?></span>
               </div>
+        <?php elseif ($input_array['section'] == 'start'): ?>
+          <?php $section_color = !empty($input_array['section_color']) ? $input_array['section_color'] : ''; ?>
+          <div
+            class="pn-customers-manager-toggle-wrapper pn-customers-manager-section-wrapper pn-customers-manager-position-relative pn-customers-manager-mb-10 <?php echo $section_color ? 'pn-customers-manager-section-colored' : ''; ?> <?php echo array_key_exists('class', $input_array) ? esc_attr($input_array['class']) : ''; ?>"
+            id="<?php echo array_key_exists('id', $input_array) ? esc_attr($input_array['id']) : ''; ?>"
+            <?php echo $section_color ? 'style="--pn-customers-manager-section-color: ' . esc_attr($section_color) . '"' : ''; ?>>
+            <a href="#" class="pn-customers-manager-toggle pn-customers-manager-width-100-percent pn-customers-manager-text-decoration-none">
+              <?php if ($section_color): ?>
+                <div class="pn-customers-manager-section-header">
+                  <label class="pn-customers-manager-cursor-pointer"><?php echo wp_kses_post($input_array['label']); ?></label>
+                  <i class="material-icons-outlined pn-customers-manager-cursor-pointer">add</i>
+                </div>
+              <?php else: ?>
+                <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-20">
+                  <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
+                    <label class="pn-customers-manager-cursor-pointer pn-customers-manager-mb-20 pn-customers-manager-color-main-0"><?php echo wp_kses_post($input_array['label']); ?></label>
+                  </div>
+                  <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-right">
+                    <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-color-main-0">add</i>
+                  </div>
+                </div>
+              <?php endif; ?>
             </a>
 
             <div class="pn-customers-manager-content pn-customers-manager-pl-10 pn-customers-manager-toggle-content pn-customers-manager-mb-20 pn-customers-manager-display-none-soft">
@@ -857,17 +890,33 @@ class PN_CUSTOMERS_MANAGER_Forms {
     ob_start();
     ?>
     <?php if (array_key_exists('section', $input_array) && !empty($input_array['section'])): ?>
-      <?php if ($input_array['section'] == 'start'): ?>
-        <div class="pn-customers-manager-toggle-wrapper pn-customers-manager-section-wrapper pn-customers-manager-position-relative pn-customers-manager-mb-10 <?php echo array_key_exists('class', $input_array) ? esc_attr($input_array['class']) : ''; ?>" id="<?php echo array_key_exists('id', $input_array) ? esc_attr($input_array['id']) : ''; ?>">
-          <a href="#" class="pn-customers-manager-toggle pn-customers-manager-width-100-percent pn-customers-manager-text-decoration-none">
-            <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-20">
-              <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
-                <label class="pn-customers-manager-cursor-pointer pn-customers-manager-mb-20 pn-customers-manager-color-main-0"><?php echo wp_kses($input_array['label'], PN_CUSTOMERS_MANAGER_KSES); ?></label>
-              </div>
-              <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-right">
-                <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-color-main-0">add</i>
-              </div>
+      <?php if ($input_array['section'] == 'label'): ?>
+            <?php $label_color = !empty($input_array['section_color']) ? $input_array['section_color'] : '#7c3aed'; ?>
+            <div class="pn-customers-manager-sections-label" style="background: <?php echo esc_attr($label_color); ?>;">
+              <span><?php echo wp_kses_post($input_array['label']); ?></span>
             </div>
+      <?php elseif ($input_array['section'] == 'start'): ?>
+        <?php $section_color = !empty($input_array['section_color']) ? $input_array['section_color'] : ''; ?>
+        <div
+          class="pn-customers-manager-toggle-wrapper pn-customers-manager-section-wrapper pn-customers-manager-position-relative pn-customers-manager-mb-10 <?php echo $section_color ? 'pn-customers-manager-section-colored' : ''; ?> <?php echo array_key_exists('class', $input_array) ? esc_attr($input_array['class']) : ''; ?>"
+          id="<?php echo array_key_exists('id', $input_array) ? esc_attr($input_array['id']) : ''; ?>"
+          <?php echo $section_color ? 'style="--pn-customers-manager-section-color: ' . esc_attr($section_color) . '"' : ''; ?>>
+          <a href="#" class="pn-customers-manager-toggle pn-customers-manager-width-100-percent pn-customers-manager-text-decoration-none">
+            <?php if ($section_color): ?>
+              <div class="pn-customers-manager-section-header">
+                <label class="pn-customers-manager-cursor-pointer"><?php echo wp_kses($input_array['label'], PN_CUSTOMERS_MANAGER_KSES); ?></label>
+                <i class="material-icons-outlined pn-customers-manager-cursor-pointer">add</i>
+              </div>
+            <?php else: ?>
+              <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-20">
+                <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
+                  <label class="pn-customers-manager-cursor-pointer pn-customers-manager-mb-20 pn-customers-manager-color-main-0"><?php echo wp_kses($input_array['label'], PN_CUSTOMERS_MANAGER_KSES); ?></label>
+                </div>
+                <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-right">
+                  <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-color-main-0">add</i>
+                </div>
+              </div>
+            <?php endif; ?>
           </a>
 
           <div class="pn-customers-manager-content pn-customers-manager-pl-10 pn-customers-manager-toggle-content pn-customers-manager-mb-20 pn-customers-manager-display-none-soft">

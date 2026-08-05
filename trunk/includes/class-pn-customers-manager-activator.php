@@ -202,6 +202,28 @@ class PN_CUSTOMERS_MANAGER_Activator {
       KEY target_date (target_date)
     ) {$charset_collate};";
 
+    $table_funnel_form_submissions = $wpdb->prefix . 'pn_cm_funnel_form_submissions';
+
+    $sql .= "\nCREATE TABLE {$table_funnel_form_submissions} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      funnel_id BIGINT(20) UNSIGNED NOT NULL,
+      node_id VARCHAR(255) NOT NULL,
+      form_title VARCHAR(255) DEFAULT '',
+      submitted_data LONGTEXT NOT NULL,
+      sender_email VARCHAR(255) DEFAULT '',
+      source_url VARCHAR(2083) DEFAULT '',
+      source_title VARCHAR(255) DEFAULT '',
+      ip_address VARCHAR(45) DEFAULT '',
+      user_id BIGINT(20) UNSIGNED DEFAULT 0,
+      is_read TINYINT(1) DEFAULT 0,
+      is_spam TINYINT(1) DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY funnel_node (funnel_id, node_id),
+      KEY is_spam (is_spam),
+      KEY user_id (user_id)
+    ) {$charset_collate};";
+
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
 

@@ -95,6 +95,23 @@
         spamBadge.remove();
       }
     }
+
+    var formsTab = document.querySelector('.pn-customers-manager-messages-tab[data-view="forms"]');
+    if (formsTab && data.forms_unread_count !== undefined) {
+      var formsBadge = formsTab.querySelector('.pn-customers-manager-badge');
+      if (data.forms_unread_count > 0) {
+        if (formsBadge) {
+          formsBadge.textContent = data.forms_unread_count;
+        } else {
+          formsBadge = document.createElement('span');
+          formsBadge.className = 'pn-customers-manager-badge';
+          formsBadge.textContent = data.forms_unread_count;
+          formsTab.appendChild(formsBadge);
+        }
+      } else if (formsBadge) {
+        formsBadge.remove();
+      }
+    }
   }
 
   /**
@@ -178,6 +195,37 @@
               dot.classList.add('pn-customers-manager-status-read');
             }
             var markBtn = row.querySelector('.pn-customers-manager-msg-mark-read');
+            if (markBtn) markBtn.remove();
+          }
+          updateHeaderBadge(data);
+          updateTabBadges(data);
+        }
+      });
+  }
+
+  /**
+   * Mark a form submission as read.
+   */
+  function markFormRead(id, row) {
+    var fd = new FormData();
+    fd.append('action', 'pn_customers_manager_ajax');
+    fd.append('pn_customers_manager_ajax_type', 'pn_cm_form_mark_read');
+    fd.append('pn_customers_manager_ajax_nonce', nonce);
+    fd.append('message_id', id);
+
+    fetch(ajaxUrl, { method: 'POST', credentials: 'same-origin', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.error_key || data.error_key === '') {
+          if (row) {
+            row.classList.remove('pn-customers-manager-message-unread');
+            row.classList.add('pn-customers-manager-message-read');
+            var dot = row.querySelector('.pn-customers-manager-status-dot');
+            if (dot) {
+              dot.classList.remove('pn-customers-manager-status-unread');
+              dot.classList.add('pn-customers-manager-status-read');
+            }
+            var markBtn = row.querySelector('.pn-customers-manager-form-mark-read');
             if (markBtn) markBtn.remove();
           }
           updateHeaderBadge(data);
@@ -281,6 +329,62 @@
             var ddetail = listWrap.querySelector('tr.pn-customers-manager-message-detail[data-id="' + did + '"]');
             if (drow) drow.remove();
             if (ddetail) ddetail.remove();
+            updateHeaderBadge(data);
+            updateTabBadges(data);
+          }
+        });
+      return;
+    }
+
+    // Form submission toggle
+    var formToggleBtn = e.target.closest('.pn-customers-manager-form-toggle');
+    if (formToggleBtn) {
+      e.preventDefault();
+      var ftrow = formToggleBtn.closest('tr');
+      var ftid  = ftrow.getAttribute('data-id');
+      var ftdetail = listWrap.querySelector('tr.pn-customers-manager-message-detail[data-id="' + ftid + '"]');
+      if (ftdetail) {
+        var ftexpanded = ftdetail.style.display === 'none';
+        ftdetail.style.display = ftexpanded ? '' : 'none';
+        setToggleIcon(formToggleBtn, ftexpanded);
+      }
+      if (ftrow.classList.contains('pn-customers-manager-message-unread')) {
+        markFormRead(ftid, ftrow);
+      }
+      return;
+    }
+
+    // Form submission mark as read
+    var formReadBtn = e.target.closest('.pn-customers-manager-form-mark-read');
+    if (formReadBtn) {
+      e.preventDefault();
+      var frid = formReadBtn.getAttribute('data-id');
+      var frrow = listWrap.querySelector('tr.pn-customers-manager-message-row[data-id="' + frid + '"]');
+      markFormRead(frid, frrow);
+      return;
+    }
+
+    // Form submission delete
+    var formDelBtn = e.target.closest('.pn-customers-manager-form-delete');
+    if (formDelBtn) {
+      e.preventDefault();
+      if (!confirm(i18n.confirmDeleteForm || '\u00bfEst\u00e1s seguro de que quieres eliminar este formulario?')) return;
+      var fdid = formDelBtn.getAttribute('data-id');
+
+      var fffd = new FormData();
+      fffd.append('action', 'pn_customers_manager_ajax');
+      fffd.append('pn_customers_manager_ajax_type', 'pn_cm_form_delete');
+      fffd.append('pn_customers_manager_ajax_nonce', nonce);
+      fffd.append('message_id', fdid);
+
+      fetch(ajaxUrl, { method: 'POST', credentials: 'same-origin', body: fffd })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.error_key || data.error_key === '') {
+            var fdrow = listWrap.querySelector('tr.pn-customers-manager-message-row[data-id="' + fdid + '"]');
+            var fddetail = listWrap.querySelector('tr.pn-customers-manager-message-detail[data-id="' + fdid + '"]');
+            if (fdrow) fdrow.remove();
+            if (fddetail) fddetail.remove();
             updateHeaderBadge(data);
             updateTabBadges(data);
           }

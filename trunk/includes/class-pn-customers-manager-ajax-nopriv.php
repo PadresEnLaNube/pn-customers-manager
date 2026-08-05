@@ -344,6 +344,10 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           echo wp_json_encode(['error_key' => '']);
           exit;
 
+        case 'pn_cm_funnel_form_submit':
+          PN_CUSTOMERS_MANAGER_Funnel_Form::handle_submission();
+          break;
+
         case 'cm_pn_form_save':
           $cm_pn_form_type = !empty($_POST['cm_pn_form_type']) ? PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(wp_unslash($_POST['cm_pn_form_type'])) : '';
 

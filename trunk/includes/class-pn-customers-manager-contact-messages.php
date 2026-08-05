@@ -44,6 +44,28 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
   }
 
   /**
+   * Get total number of form submissions (excluding spam).
+   *
+   * @return int
+   */
+  public static function get_forms_count() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'pn_cm_funnel_form_submissions';
+    return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} WHERE is_spam = 0");
+  }
+
+  /**
+   * Get number of unread form submissions (excluding spam).
+   *
+   * @return int
+   */
+  public static function get_forms_unread_count() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'pn_cm_funnel_form_submissions';
+    return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} WHERE is_read = 0 AND is_spam = 0");
+  }
+
+  /**
    * Sanitize and normalize a raw view value from the request.
    *
    * @param string $raw
@@ -51,7 +73,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
    */
   private static function normalize_view($raw) {
     $view = sanitize_key((string) $raw);
-    return in_array($view, ['inbox', 'spam'], true) ? $view : 'inbox';
+    return in_array($view, ['inbox', 'spam', 'forms'], true) ? $view : 'inbox';
   }
 
   /**
@@ -61,10 +83,11 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
    * @return string
    */
   public static function render_tabs($view) {
-    $view         = self::normalize_view($view);
-    $unread_count = self::get_unread_count();
-    $spam_count   = self::get_spam_count();
-    $base_url     = admin_url('admin.php?page=pn_customers_manager_contact_messages');
+    $view                = self::normalize_view($view);
+    $unread_count        = self::get_unread_count();
+    $spam_count          = self::get_spam_count();
+    $forms_unread_count  = self::get_forms_unread_count();
+    $base_url            = admin_url('admin.php?page=pn_customers_manager_contact_messages');
 
     ob_start();
     ?>
@@ -81,6 +104,13 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
         <?php esc_html_e('Spam', 'pn-customers-manager'); ?>
         <?php if ($spam_count > 0): ?>
           <span class="pn-customers-manager-badge"><?php echo esc_html($spam_count); ?></span>
+        <?php endif; ?>
+      </a>
+      <a href="<?php echo esc_url(add_query_arg('view', 'forms', $base_url)); ?>" class="pn-customers-manager-messages-tab <?php echo $view === 'forms' ? 'pn-customers-manager-messages-tab-active' : ''; ?>" data-view="forms">
+        <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">dynamic_form</span>
+        <?php esc_html_e('Formularios', 'pn-customers-manager'); ?>
+        <?php if ($forms_unread_count > 0): ?>
+          <span class="pn-customers-manager-badge"><?php echo esc_html($forms_unread_count); ?></span>
         <?php endif; ?>
       </a>
     </div>
@@ -225,6 +255,154 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
   }
 
   /**
+   * Render the form submissions list (table + pagination) for the forms view.
+   *
+   * @param string $view  Only 'forms' is expected here.
+   * @param int    $paged 1-based page number.
+   * @return string
+   */
+  public static function render_forms_list($view, $paged = 1) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'pn_cm_funnel_form_submissions';
+
+    $where = 'WHERE is_spam = 0';
+
+    $paged  = max(1, intval($paged));
+    $offset = ($paged - 1) * self::$per_page;
+
+    $total       = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} {$where}");
+    $submissions = $wpdb->get_results(
+      $wpdb->prepare(
+        "SELECT * FROM {$table} {$where} ORDER BY created_at DESC LIMIT %d OFFSET %d",
+        self::$per_page,
+        $offset
+      )
+    );
+
+    $total_pages = (int) ceil($total / self::$per_page);
+    $base_url    = admin_url('admin.php?page=pn_customers_manager_contact_messages');
+    $col_count   = 7;
+
+    ob_start();
+    ?>
+    <?php if (empty($submissions)): ?>
+      <p><?php esc_html_e('No hay formularios enviados todavía.', 'pn-customers-manager'); ?></p>
+    <?php else: ?>
+      <table class="pn-customers-manager-messages-table">
+        <thead>
+          <tr>
+            <th class="pn-customers-manager-messages-col-status"><?php esc_html_e('Estado', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Formulario', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Email', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Usuario', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Página', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Fecha', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Acciones', 'pn-customers-manager'); ?></th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($submissions as $sub): ?>
+            <?php
+              $user_display = '—';
+              if (!empty($sub->user_id) && $sub->user_id > 0) {
+                $user = get_userdata($sub->user_id);
+                if ($user) {
+                  $edit_link    = get_edit_user_link($sub->user_id);
+                  $user_display = '<a href="' . esc_url($edit_link) . '">' . esc_html($user->display_name) . '</a>';
+                }
+              }
+            ?>
+            <tr class="pn-customers-manager-message-row <?php echo $sub->is_read ? 'pn-customers-manager-message-read' : 'pn-customers-manager-message-unread'; ?>" data-id="<?php echo esc_attr($sub->id); ?>">
+              <td class="pn-customers-manager-messages-col-status">
+                <?php if ($sub->is_read): ?>
+                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-read" title="<?php esc_attr_e('Leído', 'pn-customers-manager'); ?>"></span>
+                <?php else: ?>
+                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-unread" title="<?php esc_attr_e('No leído', 'pn-customers-manager'); ?>"></span>
+                <?php endif; ?>
+              </td>
+              <td><?php echo esc_html(!empty($sub->form_title) ? $sub->form_title : __('Formulario', 'pn-customers-manager')); ?></td>
+              <td>
+                <?php if (!empty($sub->sender_email)): ?>
+                  <a href="mailto:<?php echo esc_attr($sub->sender_email); ?>"><?php echo esc_html($sub->sender_email); ?></a>
+                <?php else: ?>
+                  —
+                <?php endif; ?>
+              </td>
+              <td><?php echo wp_kses($user_display, ['a' => ['href' => []]]); ?></td>
+              <td>
+                <?php if (!empty($sub->source_url)): ?>
+                  <a href="<?php echo esc_url($sub->source_url); ?>" target="_blank" title="<?php echo esc_attr($sub->source_url); ?>">
+                    <?php echo esc_html(!empty($sub->source_title) ? $sub->source_title : wp_parse_url($sub->source_url, PHP_URL_PATH)); ?>
+                  </a>
+                <?php else: ?>
+                  —
+                <?php endif; ?>
+              </td>
+              <td><?php echo esc_html(wp_date(get_option('date_format') . ' ' . get_option('time_format'), strtotime($sub->created_at))); ?></td>
+              <td class="pn-customers-manager-messages-actions">
+                <a href="#" class="pn-customers-manager-form-toggle" title="<?php esc_attr_e('Ver detalles', 'pn-customers-manager'); ?>">
+                  <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">expand_more</span>
+                </a>
+                <?php if (!$sub->is_read): ?>
+                  <a href="#" class="pn-customers-manager-form-mark-read" data-id="<?php echo esc_attr($sub->id); ?>" title="<?php esc_attr_e('Marcar como leído', 'pn-customers-manager'); ?>">
+                    <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">done</span>
+                  </a>
+                <?php endif; ?>
+                <a href="#" class="pn-customers-manager-form-delete" data-id="<?php echo esc_attr($sub->id); ?>" title="<?php esc_attr_e('Eliminar', 'pn-customers-manager'); ?>">
+                  <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">delete</span>
+                </a>
+              </td>
+            </tr>
+            <tr class="pn-customers-manager-message-detail" data-id="<?php echo esc_attr($sub->id); ?>" style="display:none;">
+              <td colspan="<?php echo esc_attr($col_count); ?>">
+                <div class="pn-customers-manager-message-body">
+                  <?php
+                    $fields = json_decode($sub->submitted_data, true);
+                    if (is_array($fields)):
+                      foreach ($fields as $field):
+                        $label = isset($field['label']) ? $field['label'] : (isset($field['id']) ? $field['id'] : '');
+                        $value = isset($field['value']) ? $field['value'] : '';
+                  ?>
+                    <p><strong><?php echo esc_html($label); ?>:</strong> <?php echo esc_html($value); ?></p>
+                  <?php
+                      endforeach;
+                    endif;
+                  ?>
+                  <hr>
+                  <p><strong><?php esc_html_e('IP:', 'pn-customers-manager'); ?></strong> <?php echo esc_html($sub->ip_address); ?></p>
+                  <?php if (!empty($sub->user_id) && $sub->user_id > 0): ?>
+                    <p><strong><?php esc_html_e('Usuario:', 'pn-customers-manager'); ?></strong> <?php echo wp_kses($user_display, ['a' => ['href' => []]]); ?></p>
+                  <?php endif; ?>
+                  <?php
+                    $funnel = get_post($sub->funnel_id);
+                    if ($funnel):
+                  ?>
+                    <p><strong><?php esc_html_e('Funnel:', 'pn-customers-manager'); ?></strong> <?php echo esc_html($funnel->post_title); ?></p>
+                  <?php endif; ?>
+                </div>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+
+      <?php if ($total_pages > 1): ?>
+        <div class="pn-customers-manager-messages-pagination pn-customers-manager-mt-20">
+          <?php
+          $pagination_base = add_query_arg('view', 'forms', $base_url);
+          for ($i = 1; $i <= $total_pages; $i++):
+            $class = ($i === $paged) ? 'pn-customers-manager-pagination-current' : '';
+          ?>
+            <a href="<?php echo esc_url(add_query_arg('paged', $i, $pagination_base)); ?>" class="pn-customers-manager-pagination-link <?php echo esc_attr($class); ?>"><?php echo esc_html($i); ?></a>
+          <?php endfor; ?>
+        </div>
+      <?php endif; ?>
+    <?php endif; ?>
+    <?php
+    return (string) ob_get_clean();
+  }
+
+  /**
    * Render the messages admin page.
    */
   public static function render_page() {
@@ -249,7 +427,13 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
       <?php echo self::render_tabs($view); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
       <div id="pn-cm-contact-messages-list" class="pn-customers-manager-messages-list-wrap" data-view="<?php echo esc_attr($view); ?>">
-        <?php echo self::render_messages_list($view, $current_page); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+        <?php
+          if ($view === 'forms') {
+            echo self::render_forms_list($view, $current_page); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+          } else {
+            echo self::render_messages_list($view, $current_page); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+          }
+        ?>
       </div>
     </div>
 
@@ -263,14 +447,16 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
     );
 
     wp_localize_script('pn-customers-manager-contact-messages', 'pnCmContactMessages', [
-      'ajaxUrl' => $ajax_url,
-      'nonce'   => $nonce,
-      'view'    => $view,
-      'i18n'    => [
-        'confirmDelete'   => __('¿Estás seguro de que quieres eliminar este mensaje?', 'pn-customers-manager'),
-        'confirmMarkSpam' => __('¿Marcar este mensaje como spam?', 'pn-customers-manager'),
-        'markAsSpam'      => __('Marcar como spam', 'pn-customers-manager'),
-        'notSpam'         => __('No es spam', 'pn-customers-manager'),
+      'ajaxUrl'     => $ajax_url,
+      'nonce'       => $nonce,
+      'view'        => $view,
+      'forms_count' => self::get_forms_count(),
+      'i18n'        => [
+        'confirmDelete'     => __('¿Estás seguro de que quieres eliminar este mensaje?', 'pn-customers-manager'),
+        'confirmDeleteForm' => __('¿Estás seguro de que quieres eliminar este formulario?', 'pn-customers-manager'),
+        'confirmMarkSpam'   => __('¿Marcar este mensaje como spam?', 'pn-customers-manager'),
+        'markAsSpam'        => __('Marcar como spam', 'pn-customers-manager'),
+        'notSpam'           => __('No es spam', 'pn-customers-manager'),
       ],
     ]);
     ?>

@@ -12,8 +12,8 @@
  * @wordpress-plugin
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
- * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, contact forms, email campaigns, budgets & invoices, social media links, referral system, and WooCommerce integration for WordPress.
- * Version:           1.2.17
+ * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, and WooCommerce integration for WordPress.
+ * Version:           1.2.25
  * Requires at least: 3.0
  * Tested up to:      7.0
  * Requires PHP:      7.2
@@ -35,8 +35,8 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.17');
-define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.7');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.25');
+define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.9');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
 define('PN_CUSTOMERS_MANAGER_CPTS', [
@@ -185,11 +185,15 @@ $pn_customers_manager_kses = [
 		'multiple' => [],
 		'disabled' => [],
 		'readonly' => [],
+		'required' => [],
+		'accept' => [],
 		'value' => [],
 		'placeholder' => [],
 		'step' => [],
 		'min' => [],
 		'max' => [],
+		'tabindex' => [],
+		'autocomplete' => [],
 		'data-pn-customers-manager-parent' => [],
 		'data-pn-customers-manager-parent-option' => [],
 		'data-pn-customers-manager-type' => [],

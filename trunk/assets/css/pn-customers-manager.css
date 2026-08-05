@@ -2713,3 +2713,96 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
 .pn-customers-manager-page-manager-create-form .pn-customers-manager-btn {
   margin-top: 0;
 }
+
+/* ===== Funnel form loader overlay ===== */
+.pn-cm-funnel-form-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: inherit;
+}
+.pn-cm-funnel-form-overlay .pn-customers-manager-loader-circle {
+  width: 50px;
+  height: 50px;
+}
+.pn-cm-funnel-form-overlay .pn-customers-manager-loader-circle div {
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  border-width: 5px;
+}
+
+/* Overlay result state (replaces spinner with icon + text) */
+.pn-cm-funnel-form-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 20px;
+  animation: pn-cm-funnel-form-fade-in 0.3s ease;
+}
+.pn-cm-funnel-form-result-icon {
+  width: 48px;
+  height: 48px;
+}
+.pn-cm-funnel-form-result-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.4;
+  max-width: 280px;
+}
+.pn-cm-funnel-form-overlay-fade-out {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* ===== Funnel form display modes ===== */
+
+/* Step container with fade-in animation */
+.pn-cm-funnel-form-step {
+  animation: pn-cm-funnel-form-fade-in 0.3s ease;
+}
+@keyframes pn-cm-funnel-form-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress bar */
+.pn-cm-funnel-form-progress { width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; margin-bottom: 8px; overflow: hidden; }
+.pn-cm-funnel-form-progress-bar { height: 100%; background: var(--pn-customers-manager-color-main, #4f46e5); border-radius: 3px; transition: width 0.3s ease; width: 0; }
+.pn-cm-funnel-form-progress-text { font-size: 12px; color: #888; text-align: center; margin-bottom: 16px; }
+
+/* Navigation buttons */
+.pn-cm-funnel-form-nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; }
+.pn-cm-funnel-form-nav-btn { padding: 8px 20px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; color: #333; font-size: 14px; cursor: pointer; transition: background 0.15s; }
+.pn-cm-funnel-form-nav-btn:hover:not(:disabled) { background: #f5f5f5; }
+.pn-cm-funnel-form-nav-btn:disabled { opacity: 0.35; cursor: default; }
+.pn-cm-funnel-form-nav-submit { margin-left: auto; }
+
+/* Fullscreen overlay */
+.pn-cm-funnel-form-fullscreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999999; display: flex; align-items: center; justify-content: center; overflow-y: auto; }
+.pn-cm-funnel-form-fullscreen-container { width: 100%; max-width: 600px; padding: 40px 20px; }
+.pn-cm-funnel-form-fullscreen-close { position: absolute; top: 20px; right: 20px; background: none; border: none; cursor: pointer; color: #666; padding: 8px; border-radius: 50%; z-index: 1; }
+.pn-cm-funnel-form-fullscreen-close:hover { background: rgba(0,0,0,0.08); color: #333; }
+
+/* Dark background variant */
+.pn-cm-funnel-form-fullscreen-dark { color: #fff; }
+.pn-cm-funnel-form-fullscreen-dark label,
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-title,
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-description,
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-progress-text { color: rgba(255,255,255,0.9); }
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-nav-btn { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3); }
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.2); }
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-fullscreen-close { color: rgba(255,255,255,0.7); }
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-fullscreen-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-progress { background: rgba(255,255,255,0.2); }
+.pn-cm-funnel-form-fullscreen-placeholder { display: none; }
