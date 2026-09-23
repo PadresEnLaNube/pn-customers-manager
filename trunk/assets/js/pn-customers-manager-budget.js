@@ -283,17 +283,21 @@
             var $group    = $(this).closest('.pn-cm-budget-phase-group');
             var itemIds   = [];
 
+            // Only affect optional items (those with a toggle checkbox).
             $group.find('.pn-cm-budget-phase-items .pn-cm-budget-item-row').each(function () {
-                itemIds.push($(this).data('item-id'));
+                var $toggle = $(this).find('.pn-cm-budget-toggle-item');
+                if ($toggle.length) {
+                    itemIds.push($(this).data('item-id'));
+                }
             });
 
             if (!itemIds.length) return;
 
             // Update individual toggles immediately for visual feedback.
             $group.find('.pn-cm-budget-phase-items .pn-cm-budget-item-row').each(function () {
-                $(this).toggleClass('pn-cm-budget-item-deselected', !isChecked);
                 var $toggle = $(this).find('.pn-cm-budget-toggle-item');
                 if ($toggle.length) {
+                    $(this).toggleClass('pn-cm-budget-item-deselected', !isChecked);
                     $toggle.prop('checked', isChecked);
                 }
             });
@@ -325,11 +329,11 @@
                     }
                 }
             }, 'json').fail(function () {
-                // Revert on failure.
+                // Revert on failure — only optional items.
                 $group.find('.pn-cm-budget-phase-items .pn-cm-budget-item-row').each(function () {
-                    $(this).toggleClass('pn-cm-budget-item-deselected', isChecked);
                     var $toggle = $(this).find('.pn-cm-budget-toggle-item');
                     if ($toggle.length) {
+                        $(this).toggleClass('pn-cm-budget-item-deselected', isChecked);
                         $toggle.prop('checked', !isChecked);
                     }
                 });

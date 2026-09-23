@@ -319,6 +319,11 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     padding-bottom: 6px;
 }
 
+.pn-cm-budget-col-phase p {
+    margin: 0;
+    padding: 0;
+}
+
 .pn-cm-budget-phase-total {
     font-size: 13px;
     font-weight: 600;
@@ -641,6 +646,111 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
    2. ADMIN ITEMS EDITOR
    ========================================================================== */
 
+/* --- Admin metabox padding --- */
+.pn-cm-budget-admin-totals-section .pn-customers-manager-content {
+    padding: 15px !important;
+}
+
+/* --- Quick-access public URL block --- */
+.pn-cm-budget-admin-quick-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f0f6fc;
+    border: 1px solid #c3d9ed;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.pn-cm-budget-admin-quick-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #2271b1;
+    color: #fff !important;
+    border-radius: 4px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.pn-cm-budget-admin-quick-link-btn:hover {
+    background: #135e96;
+    color: #fff !important;
+}
+
+.pn-cm-budget-admin-quick-link-btn i {
+    font-size: 18px;
+}
+
+.pn-cm-budget-admin-quick-link-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    background: #fff;
+    color: #2271b1 !important;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pn-cm-budget-admin-quick-link-copy:hover {
+    background: #2271b1;
+    color: #fff !important;
+}
+
+.pn-cm-budget-admin-quick-link-copy i {
+    font-size: 16px;
+}
+
+/* --- Admin item row actions --- */
+.pn-cm-budget-admin-items-table .pn-customers-manager-budget-col-actions {
+    white-space: nowrap;
+}
+
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-edit,
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    text-decoration: none;
+}
+
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-edit {
+    color: #2271b1;
+}
+
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-edit:hover {
+    background: #f0f6fc;
+    color: #135e96;
+}
+
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-delete {
+    color: #b32d2e;
+}
+
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-delete:hover {
+    background: #fcf0f1;
+    color: #8a2424;
+}
+
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-edit i,
+.pn-cm-budget-admin-items-table .pn-cm-budget-row-delete i {
+    font-size: 18px;
+}
+
 .pn-cm-budget-admin-items {
     margin-top: 10px;
 }
@@ -704,10 +814,32 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 }
 
 /* --- Admin totals display --- */
-.pn-cm-budget-admin-totals {
-    max-width: 300px;
+.pn-customers-manager-budget-totals {
+    max-width: 350px;
     margin-left: auto;
-    margin-top: 15px;
+    margin-top: 20px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    padding: 15px 20px;
+}
+
+.pn-customers-manager-budget-totals table {
+    border-collapse: collapse;
+}
+
+.pn-customers-manager-budget-totals td {
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+}
+
+.pn-customers-manager-budget-total-row td {
+    font-size: 16px;
+    font-weight: 700;
+    border-top: 2px solid #333;
+    border-bottom: none !important;
+    padding-top: 12px;
+    margin-top: 4px;
 }
 
 .pn-cm-budget-admin-totals-row {
@@ -1050,7 +1182,7 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 }
 
 .pn-cm-budget-edit-item-popup .pn-customers-manager-btn,
-.pn-cm-budget-edit-item-popup button[type="button"] {
+.pn-cm-budget-edit-item-popup button[type="button"]:not(.trumbowyg-button-group button) {
     display: inline-block;
     padding: 10px 20px;
     background: #0073aa;
@@ -1063,7 +1195,7 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 }
 
 .pn-cm-budget-edit-item-popup .pn-customers-manager-btn:hover,
-.pn-cm-budget-edit-item-popup button[type="button"]:hover {
+.pn-cm-budget-edit-item-popup button[type="button"]:not(.trumbowyg-button-group button):hover {
     background: #005a87;
 }
 

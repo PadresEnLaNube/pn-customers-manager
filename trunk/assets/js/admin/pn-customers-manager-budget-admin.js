@@ -212,7 +212,9 @@
             + '<input type="checkbox" class="pn-customers-manager-budget-item-optional-toggle"' + (parseInt(item.is_optional, 10) ? ' checked' : '') + ' />'
             + '</td>'
             + '<td class="pn-customers-manager-budget-col-actions">'
-            + '<a href="#" class="pn-customers-manager-budget-item-delete pn-customers-manager-text-decoration-none">'
+            + '<a href="#" class="pn-cm-budget-row-edit pn-customers-manager-text-decoration-none" title="Edit">'
+            + '<i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-cursor-pointer">edit</i></a>'
+            + '<a href="#" class="pn-cm-budget-row-delete pn-customers-manager-text-decoration-none" title="Delete">'
             + '<i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-cursor-pointer">delete</i></a>'
             + '</td>'
             + '</tr>';
@@ -228,7 +230,7 @@
                 + '<span class="pn-cm-budget-col-drag"><i class="material-icons-outlined pn-cm-budget-drag-handle" title="Drag to reorder">drag_indicator</i></span>'
                 + '<i class="material-icons-outlined pn-cm-budget-phase-toggle" title="Collapse / Expand">expand_more</i>'
                 + '<div class="pn-cm-budget-item-content">'
-                + '<span class="pn-cm-budget-col-phase">' + escHtml(item.description) + '</span>'
+                + '<span class="pn-cm-budget-col-phase">' + item.description + '</span>'
                 + '<span class="pn-cm-budget-phase-total"></span>'
                 + '<span class="pn-cm-budget-col-actions">'
                 + '<a href="#" class="pn-cm-budget-row-edit" title="Edit"><i class="material-icons-outlined">edit</i></a>'
@@ -251,7 +253,9 @@
             + '<input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-budget-phase-input" value="' + escHtml(item.description) + '" />'
             + '</td>'
             + '<td class="pn-customers-manager-budget-col-actions">'
-            + '<a href="#" class="pn-customers-manager-budget-item-delete pn-customers-manager-text-decoration-none">'
+            + '<a href="#" class="pn-cm-budget-row-edit pn-customers-manager-text-decoration-none" title="Edit">'
+            + '<i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-cursor-pointer">edit</i></a>'
+            + '<a href="#" class="pn-cm-budget-row-delete pn-customers-manager-text-decoration-none" title="Delete">'
             + '<i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-cursor-pointer">delete</i></a>'
             + '</td>'
             + '</tr>';
@@ -284,7 +288,7 @@
             + '<img src="' + escHtml(item.description) + '" class="pn-customers-manager-budget-image-preview" alt="" />'
             + '</td>'
             + '<td class="pn-customers-manager-budget-col-actions">'
-            + '<a href="#" class="pn-customers-manager-budget-item-delete pn-customers-manager-text-decoration-none">'
+            + '<a href="#" class="pn-cm-budget-row-delete pn-customers-manager-text-decoration-none" title="Delete">'
             + '<i class="material-icons-outlined pn-customers-manager-vertical-align-middle pn-customers-manager-cursor-pointer">delete</i></a>'
             + '</td>'
             + '</tr>';
@@ -322,14 +326,20 @@
         var tax = afterDiscount * (taxRate / 100);
         var grandTotal = afterDiscount + tax;
 
-        $('.pn-customers-manager-budget-totals .pn-customers-manager-budget-totals-value').each(function (index) {
-            switch (index) {
-                case 0: $(this).text(formatCurrency(subtotal)); break;
-                case 1: $(this).text(discountRate > 0 ? '-' + formatCurrency(discount) : formatCurrency(0)); break;
-                case 2: $(this).text(formatCurrency(tax)); break;
-            }
-        });
-        $('.pn-customers-manager-budget-total-row .pn-customers-manager-budget-totals-value').text(formatCurrency(grandTotal));
+        $('#pn-cm-budget-admin-subtotal').text(formatCurrency(subtotal));
+        if (discountRate > 0) {
+            $('#pn-cm-budget-admin-discount-row').show();
+            $('#pn-cm-budget-admin-discount').text('-' + formatCurrency(discount));
+        } else {
+            $('#pn-cm-budget-admin-discount-row').hide();
+        }
+        if (taxRate > 0) {
+            $('#pn-cm-budget-admin-tax-row').show();
+            $('#pn-cm-budget-admin-tax').text(formatCurrency(tax));
+        } else {
+            $('#pn-cm-budget-admin-tax-row').hide();
+        }
+        $('#pn-cm-budget-admin-total').html('<strong>' + formatCurrency(grandTotal) + '</strong>');
     }
 
     /**
@@ -533,6 +543,34 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
             }
         }
 
+        // Helper: initialise Trumbowyg editors inside a container (for AJAX-loaded popups).
+        function initPopupEditors($container) {
+            if ($.trumbowyg && typeof pn_customers_manager_trumbowyg !== 'undefined') {
+                $.trumbowyg.svgPath = pn_customers_manager_trumbowyg.path;
+                $container.find('.pn-customers-manager-wysiwyg').each(function () {
+                    $(this).trumbowyg({
+                        btns: [
+                            ['formatting'],
+                            ['strong', 'em', 'underline'],
+                            ['unorderedList', 'orderedList'],
+                            ['link'],
+                            ['removeformat'],
+                        ],
+                        autogrow: true,
+                        removeformatPasted: true,
+                    });
+                });
+            }
+        }
+
+        // Helper: get HTML content from a Trumbowyg editor or fall back to .val().
+        function getEditorValue($el) {
+            if ($el.data('trumbowyg')) {
+                return $el.trumbowyg('html');
+            }
+            return $el.val();
+        }
+
         // Helper: inject close button into popup content.
         function addCloseButton($popup) {
             var $content = $popup.find('.pn-customers-manager-popup-content');
@@ -560,6 +598,7 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
                 if (response.error_key === '' && response.html) {
                     $popup.find('.pn-customers-manager-popup-content').html(response.html);
                     addCloseButton($popup);
+                    initPopupEditors($popup);
                 } else {
                     alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
                     closePopup($popup);
@@ -579,7 +618,7 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
             var $popup = $(this).closest('.pn-customers-manager-popup');
 
             var type = $wrapper.find('#pn_cm_item_type').val();
-            var description = $.trim($wrapper.find('#pn_cm_item_description').val());
+            var description = $.trim(getEditorValue($wrapper.find('#pn_cm_item_description')));
             var quantity = $wrapper.find('#pn_cm_item_quantity').val();
             var unitPrice = $wrapper.find('#pn_cm_item_unit_price').val();
             var optional = $wrapper.find('#pn_cm_item_is_optional').is(':checked') ? 1 : 0;
@@ -1060,97 +1099,96 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
         });
 
         /* ==============================================================
-         * 10. Public page: popup editing per row + delete
+         * 10. Popup editing per row + delete (admin + public)
          * ============================================================*/
 
-        if (isPublicPage) {
+        // --- Edit button: open popup with form loaded via AJAX ---
+        $(document).on('click', '.pn-cm-budget-row-edit', function (e) {
+            e.preventDefault();
+            var $row = $(this).closest('.pn-cm-budget-item-row, .pn-customers-manager-budget-item-row');
+            var itemId = $row.data('item-id');
+            var budgetId = getBudgetId($row);
 
-            var hasOptional = !!pnCmBudgetAdmin.hasOptionalItems;
+            var $popup = createPopupShell();
 
-            // --- Edit button: open popup with form loaded via AJAX ---
-            $(document).on('click', '.pn-cm-budget-row-edit', function (e) {
-                e.preventDefault();
-                var $row = $(this).closest('.pn-cm-budget-item-row');
-                var itemId = $row.data('item-id');
-                var budgetId = getBudgetId($row);
-
-                var $popup = createPopupShell();
-
-                $.post(pnCmBudgetAdmin.ajaxUrl, {
-                    action: 'pn_customers_manager_ajax',
-                    pn_customers_manager_ajax_type: 'pn_cm_budget_edit_item_form',
-                    pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
-                    budget_id: budgetId,
-                    item_id: itemId
-                }, function (response) {
-                    if (response.error_key === '' && response.html) {
-                        $popup.find('.pn-customers-manager-popup-content').html(response.html);
-                        addCloseButton($popup);
-                    } else {
-                        alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
-                        closePopup($popup);
-                    }
-                }).fail(function () {
+            $.post(pnCmBudgetAdmin.ajaxUrl, {
+                action: 'pn_customers_manager_ajax',
+                pn_customers_manager_ajax_type: 'pn_cm_budget_edit_item_form',
+                pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
+                budget_id: budgetId,
+                item_id: itemId
+            }, function (response) {
+                if (response.error_key === '' && response.html) {
+                    $popup.find('.pn-customers-manager-popup-content').html(response.html);
+                    addCloseButton($popup);
+                    initPopupEditors($popup);
+                } else {
                     alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
                     closePopup($popup);
-                });
-            });
-
-            // --- Save button inside edit popup ---
-            $(document).on('click', '.pn-cm-budget-popup-save', function (e) {
-                e.preventDefault();
-                var $wrapper = $(this).closest('.pn-cm-budget-edit-item-popup');
-                var itemId = $wrapper.data('item-id');
-                var budgetId = $wrapper.data('budget-id');
-                var isPhase = $wrapper.data('item-type') === 'phase';
-                var $popup = $(this).closest('.pn-customers-manager-popup');
-
-                var postData = {
-                    action: 'pn_customers_manager_ajax',
-                    pn_customers_manager_ajax_type: 'pn_cm_budget_update_item',
-                    pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
-                    budget_id: budgetId,
-                    item_id: itemId
-                };
-
-                if (isPhase) {
-                    postData.description = $wrapper.find('#pn_cm_item_description').val();
-                    postData.item_type = 'phase';
-                    postData.quantity = 0;
-                    postData.unit_price = 0;
-                    postData.is_optional = 0;
-                } else {
-                    postData.description = $wrapper.find('#pn_cm_item_description').val();
-                    postData.item_type = $wrapper.find('#pn_cm_item_type').val();
-                    postData.quantity = $wrapper.find('#pn_cm_item_quantity').val();
-                    postData.unit_price = $wrapper.find('#pn_cm_item_unit_price').val();
-                    postData.is_optional = $wrapper.find('#pn_cm_item_is_optional').is(':checked') ? 1 : 0;
                 }
+            }).fail(function () {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                closePopup($popup);
+            });
+        });
 
-                var $btn = $(this);
-                $btn.addClass('pn-customers-manager-disabled');
+        // --- Save button inside edit popup ---
+        $(document).on('click', '.pn-cm-budget-popup-save', function (e) {
+            e.preventDefault();
+            var $wrapper = $(this).closest('.pn-cm-budget-edit-item-popup');
+            var itemId = $wrapper.data('item-id');
+            var budgetId = $wrapper.data('budget-id');
+            var isPhase = $wrapper.data('item-type') === 'phase';
+            var $popup = $(this).closest('.pn-customers-manager-popup');
 
-                $.post(pnCmBudgetAdmin.ajaxUrl, postData, function (response) {
-                    $btn.removeClass('pn-customers-manager-disabled');
+            var postData = {
+                action: 'pn_customers_manager_ajax',
+                pn_customers_manager_ajax_type: 'pn_cm_budget_update_item',
+                pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
+                budget_id: budgetId,
+                item_id: itemId
+            };
 
-                    if (response.error_key === '' && response.item) {
-                        var item = response.item;
-                        var total = (parseFloat(item.quantity) * parseFloat(item.unit_price)) || 0;
+            if (isPhase) {
+                postData.description = getEditorValue($wrapper.find('#pn_cm_item_description'));
+                postData.item_type = 'phase';
+                postData.quantity = 0;
+                postData.unit_price = 0;
+                postData.is_optional = 0;
+            } else {
+                postData.description = getEditorValue($wrapper.find('#pn_cm_item_description'));
+                postData.item_type = $wrapper.find('#pn_cm_item_type').val();
+                postData.quantity = $wrapper.find('#pn_cm_item_quantity').val();
+                postData.unit_price = $wrapper.find('#pn_cm_item_unit_price').val();
+                postData.is_optional = $wrapper.find('#pn_cm_item_is_optional').is(':checked') ? 1 : 0;
+            }
+
+            var $btn = $(this);
+            $btn.addClass('pn-customers-manager-disabled');
+
+            $.post(pnCmBudgetAdmin.ajaxUrl, postData, function (response) {
+                $btn.removeClass('pn-customers-manager-disabled');
+
+                if (response.error_key === '' && response.item) {
+                    var item = response.item;
+                    var total = (parseFloat(item.quantity) * parseFloat(item.unit_price)) || 0;
+
+                    if (isPublicPage) {
+                        var hasOptional = !!pnCmBudgetAdmin.hasOptionalItems;
                         var $row = $('#pn-cm-budget-items-body [data-item-id="' + itemId + '"]');
 
-                        // Update data attributes.
                         $row.attr('data-item-description', item.description);
                         $row.attr('data-item-type', item.item_type);
 
                         if (isPhase) {
-                            $row.find('.pn-cm-budget-col-phase').text(item.description);
+                            $row.find('.pn-cm-budget-col-phase').html(item.description);
                         } else {
                             $row.attr('data-item-quantity', parseFloat(item.quantity).toFixed(2));
                             $row.attr('data-item-unit-price', parseFloat(item.unit_price).toFixed(2));
                             $row.attr('data-item-optional', item.is_optional);
                             $row.attr('data-item-total', total.toFixed(2));
 
-                            $row.find('.pn-cm-budget-col-desc').text(item.description);
+                            $row.find('.pn-cm-budget-col-desc').html(item.description);
                             $row.find('.pn-cm-budget-col-type').html('<i class="material-icons-outlined">' + (item.item_type === 'hours' ? 'schedule' : 'payments') + '</i>');
                             $row.find('.pn-cm-budget-col-qty').text(formatNumber(item.quantity));
                             $row.find('.pn-cm-budget-col-price').text(formatCurrency(item.unit_price));
@@ -1171,7 +1209,6 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
                             }
                         }
 
-                        // Update totals from server response.
                         if (response.totals) {
                             $('#pn-cm-budget-subtotal').text(formatCurrency(response.totals.subtotal));
                             if ($('#pn-cm-budget-discount').length) {
@@ -1182,39 +1219,58 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
                             }
                             $('#pn-cm-budget-total').text(formatCurrency(response.totals.total));
                         }
-
-                        closePopup($popup);
                     } else {
-                        alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                        // Admin dashboard: update the inline table row.
+                        var $row = $('.pn-customers-manager-budget-items-body [data-item-id="' + itemId + '"]');
+
+                        if (isPhase) {
+                            $row.find('input[name="pn_cm_budget_item_description[]"]').val(item.description);
+                        } else {
+                            $row.find('input[name="pn_cm_budget_item_description[]"]').val(item.description);
+                            $row.find('select[name="pn_cm_budget_item_type[]"]').val(item.item_type);
+                            $row.find('.pn-customers-manager-budget-item-quantity').val(parseFloat(item.quantity).toFixed(2));
+                            $row.find('.pn-customers-manager-budget-item-unit-price').val(parseFloat(item.unit_price).toFixed(2));
+                            $row.find('.pn-customers-manager-budget-item-line-total').text(formatCurrency(total));
+                            var optVal = parseInt(item.is_optional, 10) ? 1 : 0;
+                            $row.find('input[name="pn_cm_budget_item_is_optional[]"]').val(optVal);
+                            $row.find('.pn-customers-manager-budget-item-optional-toggle').prop('checked', !!optVal);
+                        }
+
+                        recalculateTotals();
                     }
-                }).fail(function () {
-                    $btn.removeClass('pn-customers-manager-disabled');
+
+                    closePopup($popup);
+                } else {
                     alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
-                });
+                }
+            }).fail(function () {
+                $btn.removeClass('pn-customers-manager-disabled');
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
             });
+        });
 
-            // --- Delete button (public page) ---
-            $(document).on('click', '.pn-cm-budget-row-delete', function (e) {
-                e.preventDefault();
+        // --- Delete button (admin + public) ---
+        $(document).on('click', '.pn-cm-budget-row-delete', function (e) {
+            e.preventDefault();
 
-                if (!confirm(pnCmBudgetAdmin.i18n.confirmDelete || 'Delete this item?')) return;
+            if (!confirm(pnCmBudgetAdmin.i18n.confirmDelete || 'Delete this item?')) return;
 
-                var $row = $(this).closest('.pn-cm-budget-item-row');
-                var itemId = $row.data('item-id');
-                var budgetId = getBudgetId($row);
-                var isPhase = $row.hasClass('pn-cm-budget-item-phase');
-                var $group = isPhase ? $row.closest('.pn-cm-budget-phase-group') : null;
+            var $row = $(this).closest('.pn-cm-budget-item-row, .pn-customers-manager-budget-item-row');
+            var itemId = $row.data('item-id');
+            var budgetId = getBudgetId($row);
+            var isPhase = $row.hasClass('pn-cm-budget-item-phase') || $row.hasClass('pn-customers-manager-budget-item-phase');
+            var $group = isPhase ? $row.closest('.pn-cm-budget-phase-group') : null;
 
-                $.post(pnCmBudgetAdmin.ajaxUrl, {
-                    action: 'pn_customers_manager_ajax',
-                    pn_customers_manager_ajax_type: 'pn_cm_budget_remove_item',
-                    pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
-                    budget_id: budgetId,
-                    item_id: itemId
-                }, function (response) {
-                    if (response.error_key === '') {
+            $.post(pnCmBudgetAdmin.ajaxUrl, {
+                action: 'pn_customers_manager_ajax',
+                pn_customers_manager_ajax_type: 'pn_cm_budget_remove_item',
+                pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
+                budget_id: budgetId,
+                item_id: itemId
+            }, function (response) {
+                if (response.error_key === '') {
+                    if (isPublicPage) {
                         if (isPhase && $group) {
-                            // When deleting a phase, move its items out as loose items.
                             var $phaseItems = $group.find('.pn-cm-budget-phase-items > .pn-cm-budget-item-row');
                             $phaseItems.insertBefore($group);
                             $group.fadeOut(300, function () {
@@ -1229,12 +1285,20 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
                             });
                         }
                     } else {
-                        alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                        $row.fadeOut(300, function () {
+                            $(this).remove();
+                            recalculateTotals();
+                        });
                     }
-                }).fail(function () {
+                } else {
                     alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
-                });
+                }
+            }).fail(function () {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
             });
+        });
+
+        if (isPublicPage) {
 
             /* ==============================================================
              * 11a. Toggle individual optional item (admin – private AJAX)
@@ -1309,8 +1373,12 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
                 var budgetId = getBudgetId($group);
                 var itemIds = [];
 
+                // Only affect optional items (those with a toggle checkbox).
                 $group.find('.pn-cm-budget-phase-items .pn-cm-budget-item-row').each(function () {
-                    itemIds.push($(this).data('item-id'));
+                    var $toggle = $(this).find('.pn-cm-budget-toggle-item');
+                    if ($toggle.length) {
+                        itemIds.push($(this).data('item-id'));
+                    }
                 });
 
                 if (!itemIds.length) return;
@@ -1324,16 +1392,11 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
                     is_selected: isChecked ? 1 : 0
                 }, function (response) {
                     if (response.error_key === '') {
-                        // Update visual state of items.
+                        // Update visual state of optional items only.
                         $group.find('.pn-cm-budget-phase-items .pn-cm-budget-item-row').each(function () {
-                            if (isChecked) {
-                                $(this).removeClass('pn-cm-budget-item-deselected');
-                            } else {
-                                $(this).addClass('pn-cm-budget-item-deselected');
-                            }
-                            // Update individual toggle switches if they exist.
                             var $toggle = $(this).find('.pn-cm-budget-toggle-item');
                             if ($toggle.length) {
+                                $(this).toggleClass('pn-cm-budget-item-deselected', !isChecked);
                                 $toggle.prop('checked', isChecked);
                             }
                         });

@@ -394,12 +394,12 @@ class PN_CUSTOMERS_MANAGER_Settings
       'section' => 'end',
     ];
 
-    // ── Social Media Links section (parent) ──
+    // ── Marketing section (parent) ──
     $pn_customers_manager_options['pn_customers_manager_marketing_parent_section_start'] = [
       'id' => 'pn_customers_manager_marketing_parent_section_start',
       'section' => 'start',
-      'label' => __('Social Media Links', 'pn-customers-manager'),
-      'description' => __('Configure social media, email campaigns, referrals, and projections.', 'pn-customers-manager'),
+      'label' => __('Marketing', 'pn-customers-manager'),
+      'description' => __('Configure social media, email campaigns, referrals, projections, and call to action.', 'pn-customers-manager'),
     ];
 
     // Marketing subsection 2: Redes Sociales (from Social_Media class)
@@ -503,7 +503,90 @@ class PN_CUSTOMERS_MANAGER_Settings
       'section' => 'end',
     ];
 
-    // Marketing subsection 4: Proyecciones
+    // Marketing subsection: Call to Action
+    $pn_customers_manager_options['pn_customers_manager_cta_section_start'] = [
+      'id' => 'pn_customers_manager_cta_section_start',
+      'section' => 'start',
+      'label' => __('Call to Action', 'pn-customers-manager'),
+      'description' => __('Inject custom HTML content (CTA) into selected post types at a configurable position.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_cta_enabled'] = [
+      'id' => 'pn_customers_manager_cta_enabled',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'value' => 'on',
+      'parent' => 'this',
+      'label' => __('Enable Call to Action', 'pn-customers-manager'),
+      'description' => __('Enables the injection of custom HTML content into the selected post types.', 'pn-customers-manager'),
+    ];
+
+    // Build CPT options dynamically
+    $cta_cpt_options = [];
+    $public_post_types = get_post_types(['public' => true], 'objects');
+    foreach ($public_post_types as $pt) {
+      $cta_cpt_options[$pt->name] = $pt->labels->singular_name;
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_cta_cpts'] = [
+      'id' => 'pn_customers_manager_cta_cpts',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'multiple' => true,
+      'options' => $cta_cpt_options,
+      'parent' => 'pn_customers_manager_cta_enabled',
+      'parent_option' => 'on',
+      'label' => __('Post types', 'pn-customers-manager'),
+      'description' => __('Select the post types where the CTA will be displayed.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_cta_position'] = [
+      'id' => 'pn_customers_manager_cta_position',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'options' => [
+        'before' => __('At the beginning of the content', 'pn-customers-manager'),
+        'after' => __('At the end of the content', 'pn-customers-manager'),
+        'inside' => __('Inside the content (after X% of paragraphs)', 'pn-customers-manager'),
+      ],
+      'value' => 'after',
+      'parent' => 'pn_customers_manager_cta_enabled',
+      'parent_option' => 'on',
+      'label' => __('Position', 'pn-customers-manager'),
+      'description' => __('Where to inject the CTA content relative to the post content.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_cta_position_percentage'] = [
+      'id' => 'pn_customers_manager_cta_position_percentage',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '50',
+      'min' => '0',
+      'max' => '100',
+      'parent' => 'pn_customers_manager_cta_position',
+      'parent_option' => 'inside',
+      'label' => __('Percentage of paragraphs', 'pn-customers-manager'),
+      'description' => __('Insert the CTA after this percentage of paragraphs (0-100). For example, 50 inserts it halfway through the content.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_cta_content'] = [
+      'id' => 'pn_customers_manager_cta_content',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'editor',
+      'parent' => 'pn_customers_manager_cta_enabled',
+      'parent_option' => 'on',
+      'label' => __('CTA Content', 'pn-customers-manager'),
+      'description' => __('HTML content to inject. You can use any HTML including links, images, forms, etc.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_cta_section_end'] = [
+      'id' => 'pn_customers_manager_cta_section_end',
+      'section' => 'end',
+    ];
+
+    // Marketing subsection: Proyecciones
     $pn_customers_manager_options['pn_customers_manager_projections_section_start'] = [
       'id' => 'pn_customers_manager_projections_section_start',
       'section' => 'start',
@@ -894,10 +977,6 @@ class PN_CUSTOMERS_MANAGER_Settings
       'id' => 'pn_customers_manager_accounting_parent_section_end',
       'section' => 'end',
     ];
-
-    // ── Financial Management (parent section) ──
-    $financial_options = PN_CUSTOMERS_MANAGER_Financial::get_settings_section();
-    $pn_customers_manager_options = array_merge($pn_customers_manager_options, $financial_options);
 
     // ── API CONFIGURATION PARENT SECTION ──────────────────────────────
     $pn_customers_manager_options['pn_customers_manager_api_parent_section_start'] = [

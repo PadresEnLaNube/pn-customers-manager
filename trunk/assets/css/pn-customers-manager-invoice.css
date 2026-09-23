@@ -834,7 +834,7 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 }
 
 .pn-cm-invoice-edit-item-popup .pn-customers-manager-btn,
-.pn-cm-invoice-edit-item-popup button[type="button"] {
+.pn-cm-invoice-edit-item-popup button[type="button"]:not(.trumbowyg-button-group button) {
     display: inline-block;
     padding: 10px 20px;
     background: #0073aa;
@@ -847,7 +847,7 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 }
 
 .pn-cm-invoice-edit-item-popup .pn-customers-manager-btn:hover,
-.pn-cm-invoice-edit-item-popup button[type="button"]:hover {
+.pn-cm-invoice-edit-item-popup button[type="button"]:not(.trumbowyg-button-group button):hover {
     background: #005a87;
 }
 

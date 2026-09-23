@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.2.25';
+			$this->pn_customers_manager_version = '1.2.35';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -85,9 +85,9 @@ class PN_CUSTOMERS_MANAGER
 		self::pn_customers_manager_define_whatsapp_ai_hooks();
 		self::pn_customers_manager_define_instagram_ai_hooks();
 		self::pn_customers_manager_define_projections_hooks();
+		self::pn_customers_manager_define_cta_hooks();
 		self::pn_customers_manager_define_recurring_invoices_hooks();
 		self::pn_customers_manager_define_woocommerce_hooks();
-		self::pn_customers_manager_define_financial_hooks();
 	}
 
 	/**
@@ -199,10 +199,10 @@ class PN_CUSTOMERS_MANAGER
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-social-media.php';
 
 		/**
-		 * The class managing financial fields system.
-		 * Must be loaded before Settings because Settings uses Financial::get_settings_section()
+		 * The class managing Call to Action injection into post content.
 		 */
-		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-financial.php';
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-cta.php';
+
 
 		/**
 		 * The class defining settings.
@@ -414,9 +414,6 @@ class PN_CUSTOMERS_MANAGER
 		$plugin_admin = new PN_CUSTOMERS_MANAGER_Admin(self::pn_customers_manager_get_plugin_name(), self::pn_customers_manager_get_version());
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_admin, 'pn_customers_manager_enqueue_styles');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_admin, 'pn_customers_manager_enqueue_scripts');
-
-		// Financial management assets
-		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', 'PN_CUSTOMERS_MANAGER_Financial', 'enqueue_assets');
 
 		// Tutorial assets
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', 'PN_CUSTOMERS_MANAGER_Tutorial', 'enqueue_assets');
@@ -936,6 +933,14 @@ class PN_CUSTOMERS_MANAGER
 	}
 
 	/**
+	 * Register hooks for CTA content injection.
+	 */
+	private function pn_customers_manager_define_cta_hooks()
+	{
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('the_content', 'PN_CUSTOMERS_MANAGER_CTA', 'add_to_content');
+	}
+
+	/**
 	 * Register hooks for recurring invoices.
 	 */
 	private function pn_customers_manager_define_recurring_invoices_hooks()
@@ -955,24 +960,6 @@ class PN_CUSTOMERS_MANAGER
 		if (class_exists('WooCommerce')) {
 			PN_CUSTOMERS_MANAGER_WooCommerce::instance();
 		}
-	}
-
-	/**
-	 * Register Financial Management hooks.
-	 *
-	 * @since    1.1.151
-	 * @access   private
-	 */
-	private function pn_customers_manager_define_financial_hooks()
-	{
-		// Auto-enable financial management for hostpn_accommodation
-		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Financial', 'maybe_auto_enable_accommodation');
-
-		// Enqueue financial assets in front-end
-		$this->pn_customers_manager_loader->pn_customers_manager_add_action('wp_enqueue_scripts', 'PN_CUSTOMERS_MANAGER_Financial', 'enqueue_frontend_assets');
-
-		// Add financial data to post content in frontend
-		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('the_content', 'PN_CUSTOMERS_MANAGER_Financial', 'add_to_content');
 	}
 
 	/**

@@ -361,11 +361,11 @@ class PN_CUSTOMERS_MANAGER_Common
 			return $result;
 		}
 
-		// Token-based budget/invoice public pages.
+		// Token-based budget/invoice public pages manage their own assets,
+		// so they are not considered CRM pages for enqueue purposes.
 		if ( get_query_var( 'pn_cm_budget_token' ) || get_query_var( 'pn_cm_invoice_token' ) ) {
-			$result = true;
-			/** @since 1.1.30 */
-			return apply_filters( 'pn_customers_manager_is_crm_page', $result );
+			$result = false;
+			return $result;
 		}
 
 		$post = get_queried_object();

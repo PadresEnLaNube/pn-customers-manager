@@ -127,10 +127,25 @@ if ( $is_admin ) {
 
 	wp_enqueue_media();
 	wp_enqueue_script( 'jquery-ui-sortable' );
+
+	// Popups CSS/JS (needed for edit/add item popups).
+	wp_enqueue_style( 'pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-popups.css', array(), PN_CUSTOMERS_MANAGER_VERSION );
+	wp_enqueue_script( 'pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js', array( 'jquery' ), PN_CUSTOMERS_MANAGER_VERSION, true );
+
+	// Material icons for admin UI.
+	wp_enqueue_style( 'wph-material-icons-outlined', PN_CUSTOMERS_MANAGER_URL . 'assets/css/material-icons-outlined.min.css', array(), PN_CUSTOMERS_MANAGER_VERSION );
+
+	// Trumbowyg WYSIWYG editor for item popups.
+	wp_enqueue_style( 'wph-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/css/trumbowyg.min.css', array(), PN_CUSTOMERS_MANAGER_VERSION );
+	wp_enqueue_script( 'wph-trumbowyg', PN_CUSTOMERS_MANAGER_URL . 'assets/js/trumbowyg.min.js', array( 'jquery' ), PN_CUSTOMERS_MANAGER_VERSION, true );
+	wp_localize_script( 'wph-trumbowyg', 'pn_customers_manager_trumbowyg', array(
+		'path' => PN_CUSTOMERS_MANAGER_URL . 'assets/media/trumbowyg-icons.svg',
+	) );
+
 	wp_enqueue_script(
 		'pn-customers-manager-budget-admin',
 		PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-budget-admin.js',
-		array( 'jquery', 'jquery-ui-sortable' ),
+		array( 'jquery', 'jquery-ui-sortable', 'wph-trumbowyg' ),
 		PN_CUSTOMERS_MANAGER_VERSION,
 		true
 	);
@@ -164,8 +179,8 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 	// Styles to always remove (conflict with budget standalone layout).
 	$styles_to_remove = array(
 		'pn-customers-manager',              // Main plugin CSS — overrides budget layout
+		'pn-customers-manager-public',       // Public styles not needed on budget page
 		'pn-customers-manager-selector',
-		'wph-trumbowyg',
 		'pn-customers-manager-tooltips',
 		'wph-owl',
 		'pn-customers-manager-referral',
@@ -177,10 +192,10 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 	$scripts_to_remove = array(
 		'pn-customers-manager',              // Main plugin JS
 		'pn-customers-manager-aux',          // Initializes Selector on ALL selects — causes layout shift
+		'pn-customers-manager-public',       // Calls owlCarousel which is not loaded here
 		'pn-customers-manager-selector',
 		'pn-customers-manager-forms',
 		'pn-customers-manager-ajax',
-		'wph-trumbowyg',
 		'pn-customers-manager-tooltips',
 		'wph-owl',
 		'pn-customers-manager-referral',
@@ -190,6 +205,12 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 		'pn-customers-manager-commercial',
 		'pn-customers-manager-email-campaigns',
 	);
+
+	if ( ! $is_admin ) {
+		// Non-admin: also remove Trumbowyg (not needed for public view).
+		$styles_to_remove[]  = 'wph-trumbowyg';
+		$scripts_to_remove[] = 'wph-trumbowyg';
+	}
 
 	if ( ! $is_admin ) {
 		// Non-admin: also remove popups and material icons (not needed for public view).
@@ -224,6 +245,7 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 			'dashicons', 'media-views', 'imgareaselect', 'buttons',
 			'editor-buttons', 'wp-auth-check', 'wp-mediaelement',
 			'pn-customers-manager-invoice',
+			'wph-trumbowyg',
 		) );
 	}
 
@@ -239,24 +261,43 @@ add_action( 'wp_enqueue_scripts', function () use ( $is_admin ) {
 	}
 
 	// Also remove ALL theme/other plugin scripts — only keep our whitelist.
-	// Skip script filtering for admins: they need wp.media and other WP core scripts.
-	if ( ! $is_admin ) {
-		$allowed_scripts = array(
-			'jquery',
-			'jquery-core',
-			'jquery-migrate',
-			'pn-customers-manager-budget',
-		);
+	$allowed_scripts = array(
+		'jquery',
+		'jquery-core',
+		'jquery-migrate',
+		'pn-customers-manager-budget',
+	);
 
-		global $wp_scripts;
-		if ( ! empty( $wp_scripts->queue ) ) {
-			$queued_scripts = array_values( $wp_scripts->queue );
-			foreach ( $queued_scripts as $handle ) {
-				if ( ! in_array( $handle, $allowed_scripts, true ) ) {
-					wp_dequeue_script( $handle );
-					wp_deregister_script( $handle );
+	if ( $is_admin ) {
+		$allowed_scripts = array_merge( $allowed_scripts, array(
+			'jquery-ui-core',
+			'jquery-ui-mouse',
+			'jquery-ui-widget',
+			'jquery-ui-sortable',
+			'pn-customers-manager-budget-admin',
+			'pn-customers-manager-popups',
+			'wph-trumbowyg',
+		) );
+	}
+
+	global $wp_scripts;
+	if ( ! empty( $wp_scripts->queue ) ) {
+		$queued_scripts = array_values( $wp_scripts->queue );
+		foreach ( $queued_scripts as $handle ) {
+			if ( in_array( $handle, $allowed_scripts, true ) ) {
+				continue;
+			}
+			// For admins, keep all WP core scripts (wp-includes / wp-admin)
+			// so wp.media and its full dependency tree remain intact.
+			// WP may store src as relative path or full URL, so check both.
+			if ( $is_admin && isset( $wp_scripts->registered[ $handle ] ) ) {
+				$src = $wp_scripts->registered[ $handle ]->src;
+				if ( $src && ( strpos( $src, '/wp-includes/' ) !== false || strpos( $src, '/wp-admin/' ) !== false ) ) {
+					continue;
 				}
 			}
+			wp_dequeue_script( $handle );
+			wp_deregister_script( $handle );
 		}
 	}
 }, 999 );
@@ -437,12 +478,12 @@ foreach ( $items as $item ) {
 									<?php endif; ?>
 									<div class="pn-cm-budget-item-content">
 										<div class="pn-cm-budget-item-title">
-											<span class="pn-cm-budget-col-desc"><?php echo esc_html( $item['description'] ); ?></span>
+											<span class="pn-cm-budget-col-desc"><?php echo wp_kses_post( $item['description'] ); ?></span>
 											<?php if ( $has_optional ) : ?>
 												<span class="pn-cm-budget-col-toggle">
 													<?php if ( ! empty( $item['is_optional'] ) ) : ?>
 														<label class="pn-cm-budget-toggle">
-															<input type="checkbox" class="pn-cm-budget-toggle-item" data-item-id="<?php echo esc_attr( $item['id'] ); ?>" <?php checked( $item['is_selected'], 1 ); ?> <?php echo ( ! $is_admin && 'sent' !== $budget_status ) ? 'disabled' : ''; ?>>
+															<input type="checkbox" class="pn-cm-budget-toggle-item" data-item-id="<?php echo esc_attr( $item['id'] ); ?>" <?php checked( $item['is_selected'], 1 ); ?>>
 															<span class="pn-cm-budget-toggle-slider"></span>
 														</label>
 													<?php endif; ?>
@@ -469,11 +510,17 @@ foreach ( $items as $item ) {
 							// Phase group.
 							$phase_item   = $group['phase'];
 							$phase_items  = $group['items'];
-							$all_selected = true;
-							$phase_total  = 0;
+							$all_selected    = true;
+							$all_optional    = true;
+							$phase_total     = 0;
+							$phase_has_items = false;
 							foreach ( $phase_items as $pi ) {
 								if ( 'image' === $pi['item_type'] ) {
 									continue;
+								}
+								$phase_has_items = true;
+								if ( empty( $pi['is_optional'] ) ) {
+									$all_optional = false;
 								}
 								if ( empty( $pi['is_selected'] ) ) {
 									$all_selected = false;
@@ -492,9 +539,9 @@ foreach ( $items as $item ) {
 									<?php endif; ?>
 									<i class="material-icons-outlined pn-cm-budget-phase-toggle" title="<?php esc_attr_e( 'Collapse / Expand', 'pn-customers-manager' ); ?>">expand_more</i>
 									<div class="pn-cm-budget-item-content">
-										<span class="pn-cm-budget-col-phase"><?php echo esc_html( $phase_item['description'] ); ?></span>
+										<span class="pn-cm-budget-col-phase"><?php echo wp_kses_post( $phase_item['description'] ); ?></span>
 										<span class="pn-cm-budget-phase-total"><?php echo esc_html( $format_currency( $phase_total ) ); ?></span>
-										<?php if ( ! empty( $phase_items ) && ( $is_admin || 'sent' === $budget_status ) ) : ?>
+										<?php if ( $phase_has_items && $all_optional ) : ?>
 											<label class="pn-cm-budget-toggle pn-cm-budget-phase-switch">
 												<input type="checkbox" class="pn-cm-budget-phase-switch-input" <?php checked( $all_selected ); ?>>
 												<span class="pn-cm-budget-toggle-slider"></span>
@@ -524,12 +571,12 @@ foreach ( $items as $item ) {
 											<?php endif; ?>
 											<div class="pn-cm-budget-item-content">
 												<div class="pn-cm-budget-item-title">
-													<span class="pn-cm-budget-col-desc"><?php echo esc_html( $item['description'] ); ?></span>
+													<span class="pn-cm-budget-col-desc"><?php echo wp_kses_post( $item['description'] ); ?></span>
 													<?php if ( $has_optional ) : ?>
 														<span class="pn-cm-budget-col-toggle">
 															<?php if ( ! empty( $item['is_optional'] ) ) : ?>
 																<label class="pn-cm-budget-toggle">
-																	<input type="checkbox" class="pn-cm-budget-toggle-item" data-item-id="<?php echo esc_attr( $item['id'] ); ?>" <?php checked( $item['is_selected'], 1 ); ?> <?php echo ( ! $is_admin && 'sent' !== $budget_status ) ? 'disabled' : ''; ?>>
+																	<input type="checkbox" class="pn-cm-budget-toggle-item" data-item-id="<?php echo esc_attr( $item['id'] ); ?>" <?php checked( $item['is_selected'], 1 ); ?>>
 																	<span class="pn-cm-budget-toggle-slider"></span>
 																</label>
 															<?php endif; ?>
@@ -595,21 +642,6 @@ foreach ( $items as $item ) {
 				</div>
 			<?php endif; ?>
 
-			<!-- Footer image -->
-			<?php
-			$footer_image_id = get_post_meta( $budget_id, 'pn_cm_budget_footer_image', true );
-			if ( ! empty( $footer_image_id ) && is_numeric( $footer_image_id ) ) :
-				$footer_image_url = wp_get_attachment_url( intval( $footer_image_id ) );
-				if ( $footer_image_url ) :
-					?>
-					<div class="pn-cm-budget-footer-image">
-						<img src="<?php echo esc_url( $footer_image_url ); ?>" alt="<?php esc_attr_e( 'Budget image', 'pn-customers-manager' ); ?>" />
-					</div>
-					<?php
-				endif;
-			endif;
-			?>
-
 			<?php if ( $is_admin ) : ?>
 				<div class="pn-cm-budget-admin-buttons">
 					<a href="#" class="pn-cm-budget-btn pn-cm-budget-btn-secondary pn-customers-manager-budget-add-phase">
@@ -651,6 +683,21 @@ foreach ( $items as $item ) {
 				<span id="pn-cm-budget-total"><?php echo esc_html( $format_currency( $budget_total ) ); ?></span>
 			</div>
 		</div>
+
+		<!-- Footer image -->
+		<?php
+		$footer_image_id = get_post_meta( $budget_id, 'pn_cm_budget_footer_image', true );
+		if ( ! empty( $footer_image_id ) && is_numeric( $footer_image_id ) ) :
+			$footer_image_url = wp_get_attachment_url( intval( $footer_image_id ) );
+			if ( $footer_image_url ) :
+				?>
+				<div class="pn-cm-budget-footer-image">
+					<img src="<?php echo esc_url( $footer_image_url ); ?>" alt="<?php esc_attr_e( 'Budget image', 'pn-customers-manager' ); ?>" />
+				</div>
+				<?php
+			endif;
+		endif;
+		?>
 
 		<!-- Actions (only when status = sent) -->
 		<?php if ( 'sent' === $budget_status ) : ?>

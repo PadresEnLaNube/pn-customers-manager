@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Load the plugin Ajax functions.
  *
@@ -743,7 +743,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_commercial_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -757,7 +757,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -790,7 +790,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -821,7 +821,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -887,7 +887,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -920,7 +920,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -951,7 +951,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -1098,7 +1098,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_email_campaign_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -1111,7 +1111,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_email_campaign_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -1124,7 +1124,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (!current_user_can('manage_options') && !current_user_can('edit_pn_cm_funnel') && !current_user_can('edit_pn_cm_organization')) {
             echo wp_json_encode([
               'error_key' => 'pn_cm_email_campaign_permission_error',
-              'error_content' => esc_html__('No tienes permiso para realizar esta acción.', 'pn-customers-manager'),
+              'error_content' => esc_html__('No tienes permiso para realizar esta acciÃ³n.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -1309,7 +1309,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           exit;
           break;
 
-        // ── Budget AJAX cases ──
+        // â”€â”€ Budget AJAX cases â”€â”€
         case 'pn_cm_budget_view':
           $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
@@ -1393,7 +1393,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
                 update_post_meta($new_id, 'pn_cm_budget_status', 'draft');
                 update_post_meta($new_id, 'pn_cm_budget_token', PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_generate_token());
 
-                // Copy items from post meta — reassign IDs
+                // Copy items from post meta â€” reassign IDs
                 $src_items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($pn_cm_budget_id);
                 $new_items = [];
                 $next_id   = 1;
@@ -1421,7 +1421,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
             $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
-            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+            $description = wp_kses_post(wp_unslash($_POST['description'] ?? ''));
             $quantity    = floatval($_POST['quantity'] ?? 1);
             $unit_price  = floatval($_POST['unit_price'] ?? 0);
             $is_optional = intval($_POST['is_optional'] ?? 0);
@@ -1565,7 +1565,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
           if (!empty($pn_cm_budget_id) && !empty($item_id)) {
             $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
-            $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+            $description = wp_kses_post(wp_unslash($_POST['description'] ?? ''));
             $quantity    = floatval($_POST['quantity'] ?? 0);
             $unit_price  = floatval($_POST['unit_price'] ?? 0);
             $is_optional = intval($_POST['is_optional'] ?? 0);
@@ -1716,7 +1716,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           ]);
           break;
 
-        // ── Invoice AJAX cases ──
+        // â”€â”€ Invoice AJAX cases â”€â”€
         case 'pn_cm_invoice_view':
           $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
           if (!empty($pn_cm_invoice_id)) {
@@ -2017,689 +2017,6 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           echo wp_json_encode([
             'error_key' => '',
             'html' => $html,
-          ]);
-          exit;
-          break;
-
-        // Financial Management cases
-        case 'get_financial_manager_modal':
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_financial_manager_error',
-              'error_content' => esc_html(__('You do not have permission to manage financial settings.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $available_cpts = PN_CUSTOMERS_MANAGER_Financial::get_available_post_types();
-          $enabled_cpts = PN_CUSTOMERS_MANAGER_Financial::get_enabled_cpts();
-
-          ob_start();
-          ?>
-          <div class="pn-cm-modal-content">
-            <div class="pn-cm-modal-header">
-              <h2><?php esc_html_e('Financial Fields Manager', 'pn-customers-manager'); ?></h2>
-              <button type="button" class="pn-cm-close-modal">
-                <i class="material-icons-outlined">close</i>
-              </button>
-            </div>
-            <div class="pn-cm-modal-body">
-              <h3><?php esc_html_e('Enable Financial Management for Post Types', 'pn-customers-manager'); ?></h3>
-              <ul class="pn-cm-cpt-list">
-                <?php foreach ($available_cpts as $post_type => $label): ?>
-                  <li class="pn-cm-cpt-list-item">
-                    <strong><?php echo esc_html($label); ?> (<?php echo esc_html($post_type); ?>)</strong>
-                    <input type="checkbox" class="pn-cm-enable-cpt-checkbox" data-post-type="<?php echo esc_attr($post_type); ?>" <?php checked(in_array($post_type, $enabled_cpts)); ?>>
-                  </li>
-                <?php endforeach; ?>
-              </ul>
-
-              <hr style="margin: 30px 0;">
-
-              <h3><?php esc_html_e('Configure Fields', 'pn-customers-manager'); ?></h3>
-              <label><?php esc_html_e('Select Post Type', 'pn-customers-manager'); ?></label>
-              <select id="pn-cm-financial-cpt-selector" class="pn-cm-select">
-                <option value=""><?php esc_html_e('-- Select Post Type --', 'pn-customers-manager'); ?></option>
-                <?php foreach ($enabled_cpts as $post_type): ?>
-                  <?php if (isset($available_cpts[$post_type])): ?>
-                    <option value="<?php echo esc_attr($post_type); ?>"><?php echo esc_html($available_cpts[$post_type]); ?></option>
-                  <?php endif; ?>
-                <?php endforeach; ?>
-              </select>
-
-              <div id="pn-cm-financial-fields-container" style="margin-top: 20px;">
-                <p><?php esc_html_e('Select a post type to configure fields.', 'pn-customers-manager'); ?></p>
-              </div>
-            </div>
-          </div>
-          <?php
-          $html = ob_get_clean();
-
-          echo wp_json_encode([
-            'error_key' => '',
-            'html' => $html,
-          ]);
-          exit;
-          break;
-
-        case 'get_financial_cpt_fields':
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_financial_fields_error',
-              'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $post_type = !empty($_POST['post_type']) ? sanitize_text_field(wp_unslash($_POST['post_type'])) : '';
-          if (empty($post_type)) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_financial_fields_error',
-              'error_content' => esc_html(__('Post type is required.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $fields = PN_CUSTOMERS_MANAGER_Financial::get_fields($post_type);
-
-          ob_start();
-          ?>
-          <form id="pn-cm-financial-config-form">
-            <div id="pn-cm-financial-fields-list">
-              <?php if (!empty($fields)): ?>
-                <?php foreach ($fields as $index => $field): ?>
-                  <div class="pn-cm-field-config" data-field-index="<?php echo esc_attr($index); ?>">
-                    <div class="pn-cm-field-config-header">
-                      <h4><?php echo esc_html__('Field', 'pn-customers-manager') . ' ' . ($index + 1); ?></h4>
-                      <button type="button" class="pn-cm-remove-field pn-cm-btn-icon">
-                        <i class="material-icons-outlined">close</i>
-                      </button>
-                    </div>
-                    <div class="pn-cm-field-config-body">
-                      <div class="pn-cm-field-row">
-                        <div class="pn-cm-field-col">
-                          <label><?php esc_html_e('Field ID', 'pn-customers-manager'); ?></label>
-                          <input type="text" name="field_id[]" class="pn-cm-input" value="<?php echo esc_attr($field['id']); ?>" required>
-                        </div>
-                        <div class="pn-cm-field-col">
-                          <label><?php esc_html_e('Label', 'pn-customers-manager'); ?></label>
-                          <input type="text" name="field_label[]" class="pn-cm-input" value="<?php echo esc_attr($field['label']); ?>" required>
-                        </div>
-                      </div>
-                      <div class="pn-cm-field-row">
-                        <div class="pn-cm-field-col">
-                          <label><?php esc_html_e('Field Type', 'pn-customers-manager'); ?></label>
-                          <select name="field_type[]" class="pn-cm-select pn-cm-field-type-select" required>
-                            <option value="text" <?php selected($field['type'], 'text'); ?>><?php esc_html_e('Text', 'pn-customers-manager'); ?></option>
-                            <option value="number" <?php selected($field['type'], 'number'); ?>><?php esc_html_e('Number', 'pn-customers-manager'); ?></option>
-                            <option value="date" <?php selected($field['type'], 'date'); ?>><?php esc_html_e('Date', 'pn-customers-manager'); ?></option>
-                            <option value="textarea" <?php selected($field['type'], 'textarea'); ?>><?php esc_html_e('Textarea', 'pn-customers-manager'); ?></option>
-                            <option value="select" <?php selected($field['type'], 'select'); ?>><?php esc_html_e('Select', 'pn-customers-manager'); ?></option>
-                            <option value="checkbox" <?php selected($field['type'], 'checkbox'); ?>><?php esc_html_e('Checkbox', 'pn-customers-manager'); ?></option>
-                            <option value="email" <?php selected($field['type'], 'email'); ?>><?php esc_html_e('Email', 'pn-customers-manager'); ?></option>
-                            <option value="url" <?php selected($field['type'], 'url'); ?>><?php esc_html_e('URL', 'pn-customers-manager'); ?></option>
-                          </select>
-                        </div>
-                        <div class="pn-cm-field-col">
-                          <label><?php esc_html_e('Required', 'pn-customers-manager'); ?></label>
-                          <input type="checkbox" name="field_required[<?php echo esc_attr($index); ?>]" class="pn-cm-checkbox" value="1" <?php checked(!empty($field['required'])); ?>>
-                        </div>
-                      </div>
-                      <div class="pn-cm-field-options" style="display: <?php echo $field['type'] === 'select' ? 'block' : 'none'; ?>;">
-                        <label><?php esc_html_e('Options (one per line, format: value|Label)', 'pn-customers-manager'); ?></label>
-                        <textarea name="field_options[]" class="pn-cm-textarea" rows="4"><?php
-                          if (!empty($field['options'])) {
-                            foreach ($field['options'] as $key => $label) {
-                              echo esc_textarea($key . '|' . $label) . "\n";
-                            }
-                          }
-                        ?></textarea>
-                      </div>
-                      <div class="pn-cm-field-advanced">
-                        <label><?php esc_html_e('Default Value', 'pn-customers-manager'); ?></label>
-                        <input type="text" name="field_default[]" class="pn-cm-input" value="<?php echo esc_attr($field['value'] ?? ''); ?>">
-                      </div>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </div>
-
-            <button type="button" id="pn-cm-add-financial-field" class="pn-customers-manager-btn">
-              <i class="material-icons-outlined">add</i>
-              <?php esc_html_e('Add Field', 'pn-customers-manager'); ?>
-            </button>
-
-            <div class="pn-cm-modal-footer">
-              <button type="button" class="pn-customers-manager-btn pn-cm-close-modal">
-                <?php esc_html_e('Cancel', 'pn-customers-manager'); ?>
-              </button>
-              <button type="button" id="pn-cm-save-financial-config" class="pn-customers-manager-btn">
-                <i class="material-icons-outlined">save</i>
-                <?php esc_html_e('Save Configuration', 'pn-customers-manager'); ?>
-              </button>
-            </div>
-          </form>
-          <?php
-          $html = ob_get_clean();
-
-          echo wp_json_encode([
-            'error_key' => '',
-            'html' => $html,
-          ]);
-          exit;
-          break;
-
-        case 'toggle_financial_cpt':
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_toggle_cpt_error',
-              'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $post_type = !empty($_POST['post_type']) ? sanitize_text_field(wp_unslash($_POST['post_type'])) : '';
-          $enabled = !empty($_POST['enabled']) && $_POST['enabled'] === '1';
-
-          if (empty($post_type)) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_toggle_cpt_error',
-              'error_content' => esc_html(__('Post type is required.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          if ($enabled) {
-            PN_CUSTOMERS_MANAGER_Financial::enable_for_cpt($post_type);
-          } else {
-            PN_CUSTOMERS_MANAGER_Financial::disable_for_cpt($post_type);
-          }
-
-          echo wp_json_encode([
-            'error_key' => '',
-          ]);
-          exit;
-          break;
-
-        case 'save_financial_fields':
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_save_fields_error',
-              'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $post_type = !empty($_POST['post_type']) ? sanitize_text_field(wp_unslash($_POST['post_type'])) : '';
-          $fields_json = !empty($_POST['fields']) ? wp_unslash($_POST['fields']) : '';
-
-          if (empty($post_type) || empty($fields_json)) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_save_fields_error',
-              'error_content' => esc_html(__('Post type and fields are required.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $fields = json_decode($fields_json, true);
-          if (!is_array($fields)) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_save_fields_error',
-              'error_content' => esc_html(__('Invalid fields data.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          PN_CUSTOMERS_MANAGER_Financial::save_fields($post_type, $fields);
-
-          echo wp_json_encode([
-            'error_key' => '',
-          ]);
-          exit;
-          break;
-
-        case 'get_financial_fields_modal':
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_fields_modal_error',
-              'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $cpt = !empty($_POST['cpt']) ? sanitize_text_field(wp_unslash($_POST['cpt'])) : '';
-          $cpt_label = !empty($_POST['cpt_label']) ? sanitize_text_field(wp_unslash($_POST['cpt_label'])) : '';
-
-          if (empty($cpt)) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_fields_modal_error',
-              'error_content' => esc_html(__('CPT is required.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $fields = PN_CUSTOMERS_MANAGER_Financial::get_fields($cpt);
-          $field_types = PN_CUSTOMERS_MANAGER_Financial::get_available_field_types();
-          $is_pn_family = strpos($cpt, 'hostpn_') === 0 || strpos($cpt, 'pn_') === 0;
-          $has_template = !empty(PN_CUSTOMERS_MANAGER_Financial::get_pn_template_fields($cpt));
-
-          ob_start();
-          ?>
-          <div class="pn-cm-fields-modal-container">
-            <div class="pn-cm-field-types-selector">
-              <h4><?php esc_html_e('Add Field', 'pn-customers-manager'); ?></h4>
-              <div class="pn-cm-field-type-grid">
-                <?php foreach ($field_types as $type => $config): ?>
-                  <div class="pn-cm-field-type-card" data-type="<?php echo esc_attr($type); ?>">
-                    <i class="material-icons-outlined"><?php echo esc_html($config['icon']); ?></i>
-                    <span><?php echo esc_html($config['label']); ?></span>
-                  </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-
-            <div class="pn-cm-fields-list-container">
-              <div class="pn-cm-fields-list-header">
-                <h4><?php esc_html_e('Configured Fields', 'pn-customers-manager'); ?></h4>
-                <div class="pn-cm-fields-actions">
-                  <?php if ($is_pn_family && $has_template): ?>
-                    <button type="button" id="pn-cm-import-template-btn" class="pn-cm-btn pn-cm-btn-secondary">
-                      <i class="material-icons-outlined">file_download</i>
-                      <?php esc_html_e('Import PN Template', 'pn-customers-manager'); ?>
-                    </button>
-                  <?php endif; ?>
-                  <button type="button" id="pn-cm-add-field-btn" class="pn-cm-btn pn-cm-btn-primary">
-                    <i class="material-icons-outlined">add</i>
-                    <?php esc_html_e('Add Custom Field', 'pn-customers-manager'); ?>
-                  </button>
-                </div>
-              </div>
-
-              <div id="pn-cm-fields-list">
-                <?php if (!empty($fields)): ?>
-                  <?php foreach ($fields as $index => $field): ?>
-                    <div class="pn-cm-field-item" data-index="<?php echo esc_attr($index); ?>">
-                      <div class="pn-cm-field-header">
-                        <span class="pn-cm-field-number"><?php echo $index + 1; ?></span>
-                        <input type="text"
-                               class="pn-cm-field-label-input"
-                               name="field_label_<?php echo esc_attr($index); ?>"
-                               placeholder="<?php esc_attr_e('Field Label', 'pn-customers-manager'); ?>"
-                               value="<?php echo esc_attr($field['label']); ?>">
-                        <button type="button" class="pn-cm-remove-field-btn">
-                          <i class="material-icons-outlined">delete</i>
-                        </button>
-                      </div>
-                      <div class="pn-cm-field-body">
-                        <div class="pn-cm-field-row">
-                          <div class="pn-cm-field-col">
-                            <label><?php esc_html_e('Field ID', 'pn-customers-manager'); ?></label>
-                            <input type="text" name="field_id_<?php echo esc_attr($index); ?>" class="pn-cm-input" value="<?php echo esc_attr($field['id']); ?>">
-                          </div>
-                          <div class="pn-cm-field-col">
-                            <label><?php esc_html_e('Field Type', 'pn-customers-manager'); ?></label>
-                            <select name="field_type_<?php echo esc_attr($index); ?>" class="pn-cm-select pn-cm-field-type-select">
-                              <option value="text" <?php selected($field['type'], 'text'); ?>><?php esc_html_e('Text', 'pn-customers-manager'); ?></option>
-                              <option value="number" <?php selected($field['type'], 'number'); ?>><?php esc_html_e('Number', 'pn-customers-manager'); ?></option>
-                              <option value="email" <?php selected($field['type'], 'email'); ?>><?php esc_html_e('Email', 'pn-customers-manager'); ?></option>
-                              <option value="url" <?php selected($field['type'], 'url'); ?>><?php esc_html_e('URL', 'pn-customers-manager'); ?></option>
-                              <option value="date" <?php selected($field['type'], 'date'); ?>><?php esc_html_e('Date', 'pn-customers-manager'); ?></option>
-                              <option value="time" <?php selected($field['type'], 'time'); ?>><?php esc_html_e('Time', 'pn-customers-manager'); ?></option>
-                              <option value="color" <?php selected($field['type'], 'color'); ?>><?php esc_html_e('Color', 'pn-customers-manager'); ?></option>
-                              <option value="textarea" <?php selected($field['type'], 'textarea'); ?>><?php esc_html_e('Textarea', 'pn-customers-manager'); ?></option>
-                              <option value="select" <?php selected($field['type'], 'select'); ?>><?php esc_html_e('Select', 'pn-customers-manager'); ?></option>
-                              <option value="checkbox" <?php selected($field['type'], 'checkbox'); ?>><?php esc_html_e('Checkbox', 'pn-customers-manager'); ?></option>
-                              <option value="radio" <?php selected($field['type'], 'radio'); ?>><?php esc_html_e('Radio', 'pn-customers-manager'); ?></option>
-                              <option value="range" <?php selected($field['type'], 'range'); ?>><?php esc_html_e('Range', 'pn-customers-manager'); ?></option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="pn-cm-field-row">
-                          <div class="pn-cm-field-col pn-cm-field-required-wrapper">
-                            <label class="pn-cm-field-required-label"><?php esc_html_e('Required Field', 'pn-customers-manager'); ?></label>
-                            <label class="pn-customers-manager-switch">
-                              <input type="checkbox" name="field_required_<?php echo esc_attr($index); ?>" class="pn-customers-manager-checkbox pn-customers-manager-checkbox-switch" <?php checked(!empty($field['required'])); ?>>
-                              <span class="pn-customers-manager-slider pn-customers-manager-round"></span>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="pn-cm-field-options" style="<?php echo ($field['type'] === 'select' || $field['type'] === 'radio') ? '' : 'display:none;'; ?>" data-field-index="<?php echo esc_attr($index); ?>">
-                          <div class="pn-cm-options-header">
-                            <label><?php esc_html_e('Options', 'pn-customers-manager'); ?></label>
-                            <button type="button" class="pn-cm-btn pn-cm-btn-small pn-cm-add-option-btn" data-field-index="<?php echo esc_attr($index); ?>">
-                              <i class="material-icons-outlined">add</i>
-                              <?php esc_html_e('Add Option', 'pn-customers-manager'); ?>
-                            </button>
-                          </div>
-                          <div class="pn-cm-options-list" data-field-index="<?php echo esc_attr($index); ?>">
-                            <?php if (!empty($field['options'])): ?>
-                              <?php $opt_index = 0; foreach ($field['options'] as $key => $label): ?>
-                                <div class="pn-cm-option-item" data-option-index="<?php echo $opt_index; ?>">
-                                  <div class="pn-cm-option-grip">
-                                    <i class="material-icons-outlined">drag_indicator</i>
-                                  </div>
-                                  <div class="pn-cm-option-inputs">
-                                    <input type="text"
-                                           class="pn-cm-input pn-cm-option-value"
-                                           placeholder="<?php esc_attr_e('Value', 'pn-customers-manager'); ?>"
-                                           value="<?php echo esc_attr($key); ?>">
-                                    <input type="text"
-                                           class="pn-cm-input pn-cm-option-label"
-                                           placeholder="<?php esc_attr_e('Label', 'pn-customers-manager'); ?>"
-                                           value="<?php echo esc_attr($label); ?>">
-                                  </div>
-                                  <div class="pn-cm-option-actions">
-                                    <button type="button" class="pn-cm-btn-icon pn-cm-move-option-up" title="<?php esc_attr_e('Move up', 'pn-customers-manager'); ?>">
-                                      <i class="material-icons-outlined">arrow_upward</i>
-                                    </button>
-                                    <button type="button" class="pn-cm-btn-icon pn-cm-move-option-down" title="<?php esc_attr_e('Move down', 'pn-customers-manager'); ?>">
-                                      <i class="material-icons-outlined">arrow_downward</i>
-                                    </button>
-                                    <button type="button" class="pn-cm-btn-icon pn-cm-remove-option-btn" title="<?php esc_attr_e('Remove', 'pn-customers-manager'); ?>">
-                                      <i class="material-icons-outlined">delete</i>
-                                    </button>
-                                  </div>
-                                </div>
-                              <?php $opt_index++; endforeach; ?>
-                            <?php endif; ?>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </div>
-
-              <div class="pn-cm-fields-list-footer">
-                <button type="button" id="pn-cm-save-fields-btn" class="pn-cm-btn pn-cm-btn-primary pn-cm-btn-large">
-                  <i class="material-icons-outlined">save</i>
-                  <?php esc_html_e('Save Fields Configuration', 'pn-customers-manager'); ?>
-                </button>
-              </div>
-            </div>
-          </div>
-          <?php
-
-          $html = ob_get_clean();
-
-          echo wp_json_encode([
-            'error_key' => '',
-            'html' => $html,
-          ]);
-          exit;
-          break;
-
-        case 'import_financial_template':
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_import_template_error',
-              'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $cpt = !empty($_POST['cpt']) ? sanitize_text_field(wp_unslash($_POST['cpt'])) : '';
-
-          if (empty($cpt)) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_import_template_error',
-              'error_content' => esc_html(__('CPT is required.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          $template_fields = PN_CUSTOMERS_MANAGER_Financial::get_pn_template_fields($cpt);
-
-          if (empty($template_fields)) {
-            echo wp_json_encode([
-              'error_key' => 'pn_cm_import_template_error',
-              'error_content' => esc_html(__('No template available for this CPT.', 'pn-customers-manager')),
-            ]);
-            exit;
-          }
-
-          PN_CUSTOMERS_MANAGER_Financial::save_fields($cpt, $template_fields);
-
-          echo wp_json_encode([
-            'error_key' => '',
-          ]);
-          exit;
-          break;
-        case 'add_financial_transaction':
-          // Add financial transaction
-          $post_id = isset($_POST['data-post-id']) ? intval($_POST['data-post-id']) : 0;
-
-          if (!$post_id) {
-            echo wp_json_encode([
-              'error_key' => 'invalid_post_id',
-              'error_content' => esc_html__('Invalid post ID.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          // Verify nonce
-          if (!isset($_POST['pn_cm_financial_nonce']) || !wp_verify_nonce($_POST['pn_cm_financial_nonce'], 'pn_cm_financial_transaction')) {
-            echo wp_json_encode([
-              'error_key' => 'invalid_nonce',
-              'error_content' => esc_html__('Security verification failed.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          // Check permissions
-          if (!current_user_can('edit_post', $post_id)) {
-            echo wp_json_encode([
-              'error_key' => 'permission_denied',
-              'error_content' => esc_html__('You do not have permission to edit this post.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          // Prepare transaction data
-          $transaction = [
-            'type' => sanitize_text_field($_POST['type']),
-            'category' => sanitize_text_field($_POST['category']),
-            'amount' => floatval($_POST['amount']),
-            'date' => sanitize_text_field($_POST['date']),
-            'description' => sanitize_textarea_field($_POST['description']),
-          ];
-
-          $result = PN_CUSTOMERS_MANAGER_Financial::add_transaction($post_id, $transaction);
-
-          if ($result) {
-            echo wp_json_encode([
-              'error_key' => '',
-              'success' => true,
-              'transaction_id' => $result,
-            ]);
-          } else {
-            echo wp_json_encode([
-              'error_key' => 'save_failed',
-              'error_content' => esc_html__('Failed to add transaction.', 'pn-customers-manager'),
-            ]);
-          }
-          exit;
-          break;
-
-        case 'delete_financial_transaction':
-          // Delete financial transaction
-          $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-          $transaction_id = isset($_POST['transaction_id']) ? sanitize_text_field($_POST['transaction_id']) : '';
-
-          if (!$post_id || !$transaction_id) {
-            echo wp_json_encode([
-              'error_key' => 'invalid_data',
-              'error_content' => esc_html__('Invalid data.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          // Check permissions
-          if (!current_user_can('edit_post', $post_id)) {
-            echo wp_json_encode([
-              'error_key' => 'permission_denied',
-              'error_content' => esc_html__('You do not have permission to edit this post.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          $result = PN_CUSTOMERS_MANAGER_Financial::delete_transaction($post_id, $transaction_id);
-
-          if ($result) {
-            echo wp_json_encode([
-              'error_key' => '',
-              'success' => true,
-            ]);
-          } else {
-            echo wp_json_encode([
-              'error_key' => 'delete_failed',
-              'error_content' => esc_html__('Failed to delete transaction.', 'pn-customers-manager'),
-            ]);
-          }
-          exit;
-          break;
-
-        case 'export_financial_csv':
-          // Export transactions to CSV
-          $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
-
-          if (!$post_id) {
-            wp_die(esc_html__('Invalid post ID.', 'pn-customers-manager'));
-          }
-
-          // Check permissions
-          if (!current_user_can('read_post', $post_id)) {
-            wp_die(esc_html__('You do not have permission to access this post.', 'pn-customers-manager'));
-          }
-
-          $transactions = PN_CUSTOMERS_MANAGER_Financial::get_transactions($post_id);
-          $csv_content = PN_CUSTOMERS_MANAGER_Financial::export_to_csv($transactions);
-
-          header('Content-Type: text/csv');
-          header('Content-Disposition: attachment; filename="financial-transactions-' . $post_id . '-' . date('Y-m-d') . '.csv"');
-          header('Pragma: no-cache');
-          header('Expires: 0');
-
-          echo $csv_content;
-          exit;
-          break;
-
-        case 'add_financial_category':
-          // Add category
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'permission_denied',
-              'error_content' => esc_html__('You do not have permission to manage categories.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          $cpt = isset($_POST['cpt']) ? sanitize_text_field($_POST['cpt']) : '';
-          $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
-          $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'expense';
-          $color = isset($_POST['color']) ? sanitize_hex_color($_POST['color']) : '#ef4444';
-
-          if (!$cpt || !$name) {
-            echo wp_json_encode([
-              'error_key' => 'invalid_data',
-              'error_content' => esc_html__('Invalid data.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          $categories = PN_CUSTOMERS_MANAGER_Financial::get_categories($cpt);
-          $categories[] = [
-            'id' => sanitize_title($name) . '_' . time(),
-            'name' => $name,
-            'type' => $type,
-            'color' => $color,
-          ];
-
-          if (PN_CUSTOMERS_MANAGER_Financial::save_categories($cpt, $categories)) {
-            echo wp_json_encode([
-              'error_key' => '',
-              'success' => true,
-            ]);
-          } else {
-            echo wp_json_encode([
-              'error_key' => 'save_failed',
-              'error_content' => esc_html__('Failed to add category.', 'pn-customers-manager'),
-            ]);
-          }
-          exit;
-          break;
-
-        case 'delete_financial_category':
-          // Delete category
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'permission_denied',
-              'error_content' => esc_html__('You do not have permission to manage categories.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          $cpt = isset($_POST['cpt']) ? sanitize_text_field($_POST['cpt']) : '';
-          $category_id = isset($_POST['category_id']) ? sanitize_text_field($_POST['category_id']) : '';
-
-          if (!$cpt || !$category_id) {
-            echo wp_json_encode([
-              'error_key' => 'invalid_data',
-              'error_content' => esc_html__('Invalid data.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          $categories = PN_CUSTOMERS_MANAGER_Financial::get_categories($cpt);
-          $categories = array_filter($categories, function($cat) use ($category_id) {
-            return $cat['id'] !== $category_id;
-          });
-
-          if (PN_CUSTOMERS_MANAGER_Financial::save_categories($cpt, array_values($categories))) {
-            echo wp_json_encode([
-              'error_key' => '',
-              'success' => true,
-            ]);
-          } else {
-            echo wp_json_encode([
-              'error_key' => 'delete_failed',
-              'error_content' => esc_html__('Failed to delete category.', 'pn-customers-manager'),
-            ]);
-          }
-          exit;
-          break;
-
-        case 'toggle_financial_cpt':
-          // Toggle CPT enable/disable
-          if (!current_user_can('manage_options')) {
-            echo wp_json_encode([
-              'error_key' => 'permission_denied',
-              'error_content' => esc_html__('You do not have permission to manage financial settings.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : '';
-          $enabled = isset($_POST['enabled']) && $_POST['enabled'] === '1';
-
-          if (!$post_type) {
-            echo wp_json_encode([
-              'error_key' => 'invalid_data',
-              'error_content' => esc_html__('Invalid post type.', 'pn-customers-manager'),
-            ]);
-            exit;
-          }
-
-          if ($enabled) {
-            PN_CUSTOMERS_MANAGER_Financial::enable_for_cpt($post_type);
-          } else {
-            PN_CUSTOMERS_MANAGER_Financial::disable_for_cpt($post_type);
-          }
-
-          echo wp_json_encode([
-            'error_key' => '',
-            'success' => true,
           ]);
           exit;
           break;

@@ -4,10 +4,10 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 7.0
-Stable tag: 1.2.25
+Stable tag: 1.2.35
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, and WooCommerce integration for WordPress.
+A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, CTA injection, and WooCommerce integration for WordPress.
 
 == Description ==
 
@@ -251,17 +251,17 @@ A powerful form system that supports multiple field types:
 
 * **Skip & Complete Options**: Users can skip the tutorial at any time or mark it as completed, with persistence via AJAX.
 
-= Financial Management =
+= Call to Action (CTA) Injection =
 
-* **Financial Module Toggle**: Enable or disable financial features per custom post type (Organizations, Budgets, Invoices).
+* **Automatic CTA Insertion**: Inject custom HTML content (banners, promotions, signup forms) into any public post type content automatically — no shortcode needed.
 
-* **Recurring Invoices**: Configure automatic recurring invoice generation with customizable frequency.
+* **Flexible Positioning**: Place the CTA at the beginning of the content, at the end, or inside the content after a configurable percentage of paragraphs (e.g., 50% inserts it halfway through).
 
-* **Payment Methods**: Manage accepted payment methods for your business.
+* **Post Type Targeting**: Select which post types display the CTA from a dynamically generated list of all public post types on your site.
 
-* **Tax Configuration**: Set up tax rates and rules for invoices and budgets.
+* **WYSIWYG Editor**: Write your CTA content with a rich text editor supporting links, images, formatting, and raw HTML.
 
-* **Modular Settings**: Financial settings are organized in a dedicated section within the plugin settings page.
+* **Settings Integration**: Enable/disable CTA globally, configure position, target post types, and content — all from the Marketing section in plugin settings.
 
 = Shortcodes =
 
@@ -407,7 +407,7 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 == Changelog ==
 
-= 1.2.25 =
+= 1.2.35 =
 
 - Add funnel form builder: new form node type in the funnel builder with a visual drag-and-drop field editor supporting text, email, number, tel, URL, date, textarea, select, checkbox, radio, file upload, and informational text block field types
 - Add interactive option manager for select and radio fields with individual value/label inputs per row, drag-and-drop reordering, and add/remove buttons, replacing the previous textarea-based editor
@@ -427,6 +427,38 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 - Add button type width handling in input_wrapper_builder so button inputs render at full width like submit inputs
 - Add `required`, `accept`, `tabindex`, and `autocomplete` to the allowed HTML attributes whitelist (KSES)
 - Add method_exists safety check for get_ai_providers in the funnel builder to prevent errors when the WhatsApp AI class is not fully loaded
+- Add Call to Action (CTA) injection system: automatically insert custom HTML content into any public post type at configurable positions (before, after, or inside content at a given paragraph percentage)
+- Add CTA settings in the Marketing section with enable toggle, post type multi-select, position selector, percentage input, and WYSIWYG content editor
+- Add `PN_CUSTOMERS_MANAGER_CTA` class with `the_content` filter that injects CTA HTML on singular front-end views for selected post types
+- Add quick-access public URL block at the top of the budget admin metabox with "View public budget" link and "Copy URL" button
+- Add WYSIWYG editor (Trumbowyg) for budget item descriptions in both edit and add item popup forms, replacing the plain text input and textarea
+- Add edit button to budget item rows and phase rows in the WP Admin items editor, opening the same popup-based editing form used on the public page
+- Add delete button with AJAX removal to budget item rows in the WP Admin items editor, with fade-out animation and totals recalculation
+- Add Trumbowyg WYSIWYG initialization for AJAX-loaded popup forms via `initPopupEditors()` helper, with `getEditorValue()` to extract HTML content from the editor
+- Add budget CSS and admin JS enqueue directly in the metabox render function so the admin items editor works independently of the front-end page context
+- Add admin totals display with unique IDs (`pn-cm-budget-admin-subtotal`, `pn-cm-budget-admin-discount`, `pn-cm-budget-admin-tax`, `pn-cm-budget-admin-total`) for reliable JS-driven recalculation, with show/hide logic for discount and tax rows
+- Add styled admin totals section with background, border-radius, and visual separation between subtotal, discount, tax, and total rows
+- Add styled quick-link block CSS for the admin metabox with "View public budget" and "Copy URL" buttons
+- Add styled admin item row action buttons (edit and delete) with hover states and icon sizing
+- Add CSS rule to reset `<p>` margins inside `.pn-cm-budget-col-phase` so WYSIWYG-generated HTML in phase titles renders without extra spacing
+- Add Trumbowyg button exclusion in popup CSS so `.trumbowyg-button-group button` elements are not overridden by the popup's generic button styles (budget and invoice)
+- Move footer image from before the totals section to after the totals section on the public budget page
+- Move popup-based edit, save, and delete handlers from public-page-only scope to shared scope so they work on both the public page and the WP Admin items editor
+- Render budget item and phase descriptions as HTML (`wp_kses_post`) instead of escaped text (`esc_html`) in the public budget template so WYSIWYG-formatted content displays correctly
+- Render phase titles as HTML (`.html()` instead of `.text()`) in the admin JS when building or updating phase rows
+- Change budget item description sanitization on save from `sanitize_text_field` to `wp_kses_post` to preserve HTML formatting from the WYSIWYG editor
+- Change public budget page to be fully self-contained for assets: explicitly enqueue popups, material icons, Trumbowyg CSS/JS, and budget-admin JS with all dependencies inside the template when admin is viewing
+- Change script cleanup on public budget page from a strict handle whitelist to a source-URL-based approach that keeps all WP core scripts (`/wp-includes/` and `/wp-admin/`) for admins, ensuring `wp.media` and its full dependency tree remain intact
+- Change `pn_customers_manager_is_crm_page()` to return `false` for budget and invoice token-based public pages, preventing common.php from enqueuing unneeded scripts (aux.js, selector.js, owl.js, public.js) that caused console errors
+- Change phase toggle switch to only appear when all items in the phase are optional, instead of when any item is optional
+- Change phase toggle to only affect optional items (those with a toggle checkbox) instead of all items in the phase, in both public and admin JS
+- Change optional item checkboxes to always be interactive regardless of budget status or user login state, removing the `disabled` attribute restriction
+- Rename settings section from "Social Media Links" to "Marketing" and update its description to include CTA
+- Rename settings subsection from "OpenAI" references to "AI Providers" where applicable
+- Remove the Totals section from the budget WP Admin metabox (static display replaced by the live-updating totals in the items editor)
+- Remove the Financial Management module entirely: delete `class-pn-customers-manager-financial.php`, its admin and front-end CSS, its admin and front-end JS, all financial AJAX handlers, settings section, hook registrations, and asset enqueue calls
+- Remove `pn-customers-manager-public` script and style from the public budget page to prevent `owlCarousel is not a function` console error
+- Remove Trumbowyg from the always-remove list on the public budget page for admin users so the WYSIWYG editor loads correctly
 - Fix settings popup save button not persisting data to server — the save button now calls saveCanvas() after closing the popup
 - Fix select fields in the funnel builder settings popup not saving: the custom pn_customers_manager_Selector jQuery plugin fires jQuery .trigger('change') events which native addEventListener('change') cannot capture; changed to jQuery(el).on('change') for SELECT elements
 - Fix select/radio options appearing concatenated as a single option: changed storage format from newline-separated string to JSON array of {value, label} objects to prevent data loss during JSON serialization, with backward-compatible parsing for the legacy string format
