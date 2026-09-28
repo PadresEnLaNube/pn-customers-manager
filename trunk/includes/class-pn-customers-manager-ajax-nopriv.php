@@ -344,6 +344,10 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           echo wp_json_encode(['error_key' => '']);
           exit;
 
+        case 'pn_cm_woo_bis_subscribe':
+          PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock::handle_subscription();
+          break;
+
         case 'pn_cm_funnel_form_submit':
           PN_CUSTOMERS_MANAGER_Funnel_Form::handle_submission();
           break;

@@ -224,6 +224,23 @@ class PN_CUSTOMERS_MANAGER_Activator {
       KEY user_id (user_id)
     ) {$charset_collate};";
 
+    $table_bis = $wpdb->prefix . 'pn_cm_woo_back_in_stock';
+
+    $sql .= "\nCREATE TABLE {$table_bis} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      product_id BIGINT(20) UNSIGNED NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      user_id BIGINT(20) UNSIGNED DEFAULT 0,
+      status VARCHAR(20) DEFAULT 'pending',
+      notified_at DATETIME DEFAULT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY product_id (product_id),
+      KEY email (email),
+      KEY status (status),
+      UNIQUE KEY product_email (product_id, email)
+    ) {$charset_collate};";
+
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
 

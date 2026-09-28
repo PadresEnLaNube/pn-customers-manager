@@ -12,8 +12,8 @@
  * @wordpress-plugin
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
- * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, CTA injection, and WooCommerce integration for WordPress.
- * Version:           1.2.35
+ * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, and WooCommerce integration for WordPress.
+ * Version:           1.2.46
  * Requires at least: 3.0
  * Tested up to:      7.0
  * Requires PHP:      7.2
@@ -35,8 +35,8 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.35');
-define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.0.9');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.46');
+define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.1.0');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
 define('PN_CUSTOMERS_MANAGER_CPTS', [
@@ -257,13 +257,13 @@ $pn_customers_manager_kses = [
 	],
 
 	// Table elements
-	'table' => ['id' => [], 'class' => []],
+	'table' => ['id' => [], 'class' => [], 'style' => []],
 	'thead' => ['id' => [], 'class' => []],
 	'tbody' => ['id' => [], 'class' => []],
 	'tfoot' => ['id' => [], 'class' => []],
-	'tr' => ['id' => [], 'class' => [], 'data-item-id' => []],
-	'th' => ['id' => [], 'class' => [], 'colspan' => [], 'rowspan' => []],
-	'td' => ['id' => [], 'class' => [], 'colspan' => [], 'rowspan' => []],
+	'tr' => ['id' => [], 'class' => [], 'style' => [], 'data-item-id' => []],
+	'th' => ['id' => [], 'class' => [], 'style' => [], 'colspan' => [], 'rowspan' => []],
+	'td' => ['id' => [], 'class' => [], 'style' => [], 'colspan' => [], 'rowspan' => []],
 ];
 
 foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {

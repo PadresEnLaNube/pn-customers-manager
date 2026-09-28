@@ -719,6 +719,70 @@ class PN_CUSTOMERS_MANAGER_Settings
           <div id="pn-cm-accounting-test-result" style="margin-top: 10px;"></div>',
       ];
 
+      // Back in Stock Notifications
+      $pn_customers_manager_options['pn_customers_manager_woo_bis_enabled'] = [
+        'id' => 'pn_customers_manager_woo_bis_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'parent' => 'this',
+        'label' => __('Enable Back in Stock Notifications', 'pn-customers-manager'),
+        'description' => __('Shows an email subscription form on out-of-stock products. Visitors can subscribe and receive an email when the product is restocked.', 'pn-customers-manager'),
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woo_bis_heading'] = [
+        'id' => 'pn_customers_manager_woo_bis_heading',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => __('Form Heading', 'pn-customers-manager'),
+        'placeholder' => 'Notify me when available!',
+        'parent' => 'pn_customers_manager_woo_bis_enabled',
+        'parent_option' => 'on',
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woo_bis_description'] = [
+        'id' => 'pn_customers_manager_woo_bis_description',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'textarea',
+        'label' => __('Form Description', 'pn-customers-manager'),
+        'placeholder' => 'Leave your email and we will notify you when this product is back in stock.',
+        'parent' => 'pn_customers_manager_woo_bis_enabled',
+        'parent_option' => 'on',
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woo_bis_button_text'] = [
+        'id' => 'pn_customers_manager_woo_bis_button_text',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => __('Button Text', 'pn-customers-manager'),
+        'placeholder' => 'Notify me',
+        'parent' => 'pn_customers_manager_woo_bis_enabled',
+        'parent_option' => 'on',
+      ];
+
+      $pn_customers_manager_options['pn_customers_manager_woo_bis_success_message'] = [
+        'id' => 'pn_customers_manager_woo_bis_success_message',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => __('Success Message', 'pn-customers-manager'),
+        'placeholder' => 'Done! We will notify you when it is available.',
+        'parent' => 'pn_customers_manager_woo_bis_enabled',
+        'parent_option' => 'on',
+      ];
+
+      // WooCommerce CTA Block
+      $pn_customers_manager_options['pn_customers_manager_woocommerce_cta_block_enabled'] = [
+        'id' => 'pn_customers_manager_woocommerce_cta_block_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'label' => __('Enable WooCommerce CTA Block', 'pn-customers-manager'),
+        'description' => __('Adds a Gutenberg block for creating Call to Action sections linked to WooCommerce products, categories, tags, or the shop page.', 'pn-customers-manager'),
+      ];
+
       $pn_customers_manager_options['pn_customers_manager_woocommerce_section_end'] = [
         'id' => 'pn_customers_manager_woocommerce_section_end',
         'section' => 'end',

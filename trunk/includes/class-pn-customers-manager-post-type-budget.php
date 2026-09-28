@@ -175,21 +175,19 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         'id' => 'pn_cm_budget_section_notes_end',
         'section' => 'end',
       ];
-      $pn_customers_manager_fields_meta['pn_cm_budget_section_items_start'] = [
-        'id' => 'pn_cm_budget_section_items_start',
-        'section' => 'start',
-        'label' => esc_html__('Line items', 'pn-customers-manager'),
-      ];
       $pn_customers_manager_fields_meta['pn_cm_budget_items_block'] = [
         'id' => 'pn_cm_budget_items_block',
+        'label' => '',
         'input' => 'html',
         'skip_save' => true,
-        'label' => esc_html__('Items', 'pn-customers-manager'),
         'html_content' => $this->render_admin_items_editor($budget_id),
       ];
-      $pn_customers_manager_fields_meta['pn_cm_budget_section_items_end'] = [
-        'id' => 'pn_cm_budget_section_items_end',
-        'section' => 'end',
+      $pn_customers_manager_fields_meta['pn_cm_budget_totals_block'] = [
+        'id' => 'pn_cm_budget_totals_block',
+        'label' => '',
+        'input' => 'html',
+        'skip_save' => true,
+        'html_content' => $this->render_totals_display($budget_id),
       ];
       $pn_customers_manager_fields_meta['pn_cm_budget_section_footer_image_start'] = [
         'id' => 'pn_cm_budget_section_footer_image_start',
@@ -448,7 +446,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
       return;
     }
 
-    $descriptions = array_map( 'wp_kses_post', wp_unslash( $_POST['pn_cm_budget_item_description'] ) );
+    $descriptions = array_map( 'sanitize_text_field', wp_unslash( $_POST['pn_cm_budget_item_description'] ) );
     $types        = isset( $_POST['pn_cm_budget_item_type'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['pn_cm_budget_item_type'] ) ) : [];
     $quantities   = isset( $_POST['pn_cm_budget_item_quantity'] ) ? array_map( 'floatval', wp_unslash( $_POST['pn_cm_budget_item_quantity'] ) ) : [];
     $unit_prices  = isset( $_POST['pn_cm_budget_item_unit_price'] ) ? array_map( 'floatval', wp_unslash( $_POST['pn_cm_budget_item_unit_price'] ) ) : [];
@@ -651,7 +649,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
                       <input type="hidden" name="pn_cm_budget_item_is_optional[]" value="0" />
                     </td>
                     <td colspan="6" class="pn-customers-manager-budget-col-description">
-                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-budget-phase-input" value="<?php echo esc_attr($item['description']); ?>" />
+                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-budget-phase-input" value="<?php echo esc_attr(wp_strip_all_tags($item['description'])); ?>" />
                     </td>
                     <td class="pn-customers-manager-budget-col-actions">
                       <a href="#" class="pn-cm-budget-row-edit pn-customers-manager-text-decoration-none" title="<?php esc_attr_e('Edit', 'pn-customers-manager'); ?>">
@@ -689,7 +687,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
                       <input type="hidden" name="pn_cm_budget_item_id[]" value="<?php echo esc_attr($item['id']); ?>" />
                     </td>
                     <td class="pn-customers-manager-budget-col-description">
-                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent" value="<?php echo esc_attr($item['description']); ?>" />
+                      <input type="text" name="pn_cm_budget_item_description[]" class="pn-customers-manager-input pn-customers-manager-width-100-percent" value="<?php echo esc_attr(wp_strip_all_tags($item['description'])); ?>" />
                     </td>
                     <td class="pn-customers-manager-budget-col-type">
                       <select name="pn_cm_budget_item_type[]" class="pn-customers-manager-select">
@@ -726,15 +724,15 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         </table>
 
         <div class="pn-customers-manager-text-align-right pn-customers-manager-mt-15">
-          <a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-phase">
+          <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-phase">
             <?php esc_html_e('Add phase', 'pn-customers-manager'); ?>
-          </a>
-          <a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-item">
+          </button>
+          <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-item">
             <?php esc_html_e('Add item', 'pn-customers-manager'); ?>
-          </a>
-          <a href="#" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-image">
+          </button>
+          <button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-budget-add-image">
             <?php esc_html_e('Add image', 'pn-customers-manager'); ?>
-          </a>
+          </button>
         </div>
       </div>
     <?php

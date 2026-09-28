@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.2.35';
+			$this->pn_customers_manager_version = '1.2.46';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -203,6 +203,15 @@ class PN_CUSTOMERS_MANAGER
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-cta.php';
 
+		/**
+		 * The class managing WooCommerce CTA Gutenberg block.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woo-cta.php';
+
+		/**
+		 * The class managing WooCommerce Back in Stock notifications.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woo-back-in-stock.php';
 
 		/**
 		 * The class defining settings.
@@ -697,6 +706,7 @@ class PN_CUSTOMERS_MANAGER
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-funnel-form', $plugin_shortcodes, 'pn_customers_manager_funnel_form');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Shortcodes', 'register_button_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Social_Media', 'register_block');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Woo_CTA', 'register_block');
 	}
 
 	/**
@@ -959,6 +969,7 @@ class PN_CUSTOMERS_MANAGER
 		// Only initialize if WooCommerce is active
 		if (class_exists('WooCommerce')) {
 			PN_CUSTOMERS_MANAGER_WooCommerce::instance();
+			new PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock();
 		}
 	}
 

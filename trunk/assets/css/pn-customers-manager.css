@@ -1760,6 +1760,11 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
     padding:0;
     overflow:hidden;
   }
+  .pn-customers-manager-input-wrapper.pn-customers-manager-input-field-html:has(input[type="hidden"]){
+    height:auto;
+    margin-bottom:10px;
+    overflow:visible;
+  }
 
   /* Tags Wrapper */
   .pn-customers-manager-tags-wrapper {
@@ -2806,3 +2811,345 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
 .pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-fullscreen-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .pn-cm-funnel-form-fullscreen-dark .pn-cm-funnel-form-progress { background: rgba(255,255,255,0.2); }
 .pn-cm-funnel-form-fullscreen-placeholder { display: none; }
+
+/* ── WooCommerce CTA Block ── */
+.pn-cm-woo-cta {
+  background-color: var(--pn-cm-woo-cta-bg, #0000aa);
+  color: var(--pn-cm-woo-cta-text, #fff);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 24px 0;
+}
+.pn-cm-woo-cta--align-center { margin-left: auto; margin-right: auto; }
+.pn-cm-woo-cta--align-left { margin-right: auto; }
+.pn-cm-woo-cta--align-right { margin-left: auto; }
+
+/* Card style */
+.pn-cm-woo-cta--card {
+  display: flex;
+  max-width: 600px;
+}
+.pn-cm-woo-cta--card .pn-cm-woo-cta__image {
+  width: 200px;
+  flex-shrink: 0;
+}
+.pn-cm-woo-cta--card .pn-cm-woo-cta__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pn-cm-woo-cta--card .pn-cm-woo-cta__content {
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Banner style */
+.pn-cm-woo-cta--banner {
+  position: relative;
+  text-align: center;
+  border-radius: 0;
+  max-width: 100%;
+}
+.pn-cm-woo-cta--banner .pn-cm-woo-cta__image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.pn-cm-woo-cta--banner .pn-cm-woo-cta__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.3;
+}
+.pn-cm-woo-cta--banner .pn-cm-woo-cta__content {
+  position: relative;
+  z-index: 1;
+  padding: 48px 24px;
+}
+
+/* Typography */
+.pn-cm-woo-cta__heading {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--pn-cm-woo-cta-text, #fff);
+}
+.pn-cm-woo-cta__description {
+  margin: 0 0 20px;
+  font-size: 15px;
+  opacity: 0.9;
+  color: var(--pn-cm-woo-cta-text, #fff);
+}
+
+/* Button */
+.pn-cm-woo-cta__button {
+  display: inline-block;
+  padding: 10px 28px;
+  background-color: var(--pn-cm-woo-cta-btn-bg, #232323);
+  color: var(--pn-cm-woo-cta-btn-text, #fff);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.pn-cm-woo-cta__button:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+  color: var(--pn-cm-woo-cta-btn-text, #fff);
+  text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .pn-cm-woo-cta--card {
+    flex-direction: column;
+    max-width: 100%;
+  }
+  .pn-cm-woo-cta--card .pn-cm-woo-cta__image {
+    width: 100%;
+    height: auto;
+  }
+  .pn-cm-woo-cta--card .pn-cm-woo-cta__image img {
+    height: auto;
+    object-fit: contain;
+  }
+  .pn-cm-woo-cta--card .pn-cm-woo-cta__content {
+    padding: 20px;
+    text-align: center;
+  }
+  .pn-cm-woo-cta--banner .pn-cm-woo-cta__content {
+    padding: 32px 16px;
+  }
+}
+
+/* ── Back in Stock Notification Form ── */
+.pn-cm-bis-form {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  background: #f9f9f9;
+}
+.pn-cm-bis-form__heading {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+.pn-cm-bis-form__description {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+.pn-cm-bis-form__fields {
+  display: flex;
+  gap: 8px;
+}
+.pn-cm-bis-form__input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.pn-cm-bis-form__input:focus {
+  border-color: #0000aa;
+}
+.pn-cm-bis-form__button {
+  padding: 10px 22px;
+  background: #0000aa;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.pn-cm-bis-form__button:hover {
+  opacity: 0.85;
+}
+.pn-cm-bis-form__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.pn-cm-bis-form__button-loader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+.pn-cm-bis-form__button-loader .pn-customers-manager-waiting {
+  display: inline-flex !important;
+  align-items: center;
+}
+.pn-cm-bis-form__button-loader .pn-customers-manager-loader-circle-waiting div {
+  border-color: #fff transparent transparent;
+}
+.pn-cm-bis-form__message {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.pn-cm-bis-form__message--success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+.pn-cm-bis-form__message--error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+@media (max-width: 480px) {
+  .pn-cm-bis-form__fields {
+    flex-direction: column;
+  }
+  .pn-cm-bis-form__button {
+    width: 100%;
+  }
+}
+
+/* ── Back in Stock — Admin subscribers panel ── */
+.pn-cm-bis-admin {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0 0;
+  background: #fff;
+  font-size: 13px;
+}
+.pn-cm-bis-admin__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.pn-cm-bis-admin__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pn-cm-bis-admin__toggle-icon {
+  font-size: 20px;
+  color: #666;
+  transition: transform 0.2s;
+  user-select: none;
+  flex-shrink: 0;
+}
+.pn-cm-bis-admin--collapsed .pn-cm-bis-admin__toggle-icon {
+  transform: rotate(-90deg);
+}
+.pn-cm-bis-admin--collapsed .pn-cm-bis-admin__body {
+  display: none;
+}
+.pn-cm-bis-admin__count {
+  font-weight: 400;
+  font-size: 12px;
+  color: #888;
+  margin-left: 6px;
+}
+.pn-cm-bis-admin__export {
+  padding: 6px 14px;
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.pn-cm-bis-admin__export:hover {
+  background: #e4e4e4;
+}
+.pn-cm-bis-admin__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.pn-cm-bis-admin__table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+.pn-cm-bis-admin__table td {
+  padding: 8px;
+  border-bottom: 1px solid #f5f5f5;
+  vertical-align: middle;
+}
+.pn-cm-bis-admin__table tr:last-child td {
+  border-bottom: none;
+}
+.pn-cm-bis-admin__date {
+  color: #999;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.pn-cm-bis-admin__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.pn-cm-bis-admin__badge--pending {
+  background: #fff3e0;
+  color: #e65100;
+}
+.pn-cm-bis-admin__badge--notified {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.pn-cm-bis-admin__delete {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.2s, background 0.2s;
+}
+.pn-cm-bis-admin__delete:hover {
+  color: #c62828;
+  background: #ffebee;
+}
+.pn-cm-bis-admin__empty {
+  color: #999;
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+  padding: 8px 0;
+}
+@media (max-width: 480px) {
+  .pn-cm-bis-admin__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pn-cm-bis-admin__table th:nth-child(3),
+  .pn-cm-bis-admin__table td:nth-child(3) {
+    display: none;
+  }
+}

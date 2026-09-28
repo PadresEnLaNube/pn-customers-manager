@@ -1421,7 +1421,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
             $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
-            $description = wp_kses_post(wp_unslash($_POST['description'] ?? ''));
+            $description = sanitize_text_field(wp_unslash($_POST['description'] ?? ''));
             $quantity    = floatval($_POST['quantity'] ?? 1);
             $unit_price  = floatval($_POST['unit_price'] ?? 0);
             $is_optional = intval($_POST['is_optional'] ?? 0);
@@ -1565,7 +1565,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
           if (!empty($pn_cm_budget_id) && !empty($item_id)) {
             $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
-            $description = wp_kses_post(wp_unslash($_POST['description'] ?? ''));
+            $description = sanitize_text_field(wp_unslash($_POST['description'] ?? ''));
             $quantity    = floatval($_POST['quantity'] ?? 0);
             $unit_price  = floatval($_POST['unit_price'] ?? 0);
             $is_optional = intval($_POST['is_optional'] ?? 0);
@@ -2019,6 +2019,14 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             'html' => $html,
           ]);
           exit;
+          break;
+
+        case 'pn_cm_bis_delete':
+          PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock::handle_delete();
+          break;
+
+        case 'pn_cm_bis_export_csv':
+          PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock::handle_export_csv();
           break;
 
         case 'pn_customers_manager_complete_tutorial':

@@ -139,6 +139,7 @@
     fd.append('paged', paged || 1);
 
     listWrap.classList.add('pn-customers-manager-loading');
+    listWrap.innerHTML = '<div class="pn-customers-manager-waiting pn-customers-manager-display-block"><div class="pn-customers-manager-loader-circle-waiting"><div></div><div></div><div></div><div></div></div></div>';
 
     fetch(ajaxUrl, { method: 'POST', credentials: 'same-origin', body: fd })
       .then(function(r) { return r.json(); })

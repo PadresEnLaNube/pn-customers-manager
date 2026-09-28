@@ -502,8 +502,7 @@
 
     $(document).ready(function () {
 
-        
-if (typeof pnCmBudgetAdmin === 'undefined') return;
+        if (typeof pnCmBudgetAdmin === 'undefined') return;
 
         /* ==============================================================
          * 1. Add item – modal popup
@@ -674,6 +673,7 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
 
         $(document).on('click', '.pn-customers-manager-budget-add-phase', function (e) {
             e.preventDefault();
+            e.stopPropagation();
 
             var budgetId = getBudgetId($(this));
             var $btn = $(this);
@@ -691,20 +691,23 @@ if (typeof pnCmBudgetAdmin === 'undefined') return;
                 is_optional: 0
             }, function (response) {
                 $btn.removeClass('pn-customers-manager-disabled');
-
                 if (response.error_key === '' && response.item) {
+                    var phaseHtml = buildPhaseRow(response.item);
+                    var $tbody = getItemsTbody();
                     if (isPublicPage) {
-                        var $html = $(buildPhaseRow(response.item));
-                        getItemsTbody().append($html);
+                        var $html = $(phaseHtml);
+                        $tbody.append($html);
                         initPhaseItemsSortable($html.find('.pn-cm-budget-phase-items'));
                     } else {
-                        getItemsTbody().append(buildPhaseRow(response.item));
+                        $tbody.append(phaseHtml);
                     }
                 } else {
+                    console.error('[budget-admin] Add phase error:', response.error_key);
                     alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
                 }
-            }).fail(function () {
+            }).fail(function (jqXHR, textStatus, errorThrown) {
                 $btn.removeClass('pn-customers-manager-disabled');
+                console.error('[budget-admin] Add phase AJAX fail:', textStatus, errorThrown);
                 alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
             });
         });

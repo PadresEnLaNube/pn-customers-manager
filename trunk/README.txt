@@ -4,10 +4,10 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 7.0
-Stable tag: 1.2.35
+Stable tag: 1.2.46
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, CTA injection, and WooCommerce integration for WordPress.
+A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, and WooCommerce integration for WordPress.
 
 == Description ==
 
@@ -263,6 +263,32 @@ A powerful form system that supports multiple field types:
 
 * **Settings Integration**: Enable/disable CTA globally, configure position, target post types, and content — all from the Marketing section in plugin settings.
 
+= WooCommerce CTA Block =
+
+* **Gutenberg Block**: A dedicated Call to Action Gutenberg block (`pn-customers-manager/woo-cta`) for promoting WooCommerce products, categories, tags, or the shop page directly in the editor.
+
+* **Two Display Styles**: Choose between a Card layout (horizontal with image + content) or a Banner layout (full-width with background image overlay).
+
+* **Dynamic Data**: The block automatically fetches the product/category/tag name, image, and permalink for the selected target. Falls back to the shop page URL for shop-type CTAs.
+
+* **Color Customization**: Native color picker inputs for background, text, button, and button text colors. Defaults to your plugin's brand colors when not customized.
+
+* **Editor Preview**: Live preview in the Gutenberg editor with real-time color and layout updates as you configure the block settings.
+
+= WooCommerce Back in Stock Notifications =
+
+* **Email Subscription Form**: Displays a configurable email subscription form on out-of-stock WooCommerce product pages. Visitors enter their email to be notified when the product is restocked.
+
+* **Automatic Restock Emails**: When a product returns to in-stock status, all pending subscribers automatically receive an email with the product name and a direct link. Supports MAILPN for email delivery when available.
+
+* **CRM Integration**: Each subscription creates a contact message in the CRM Messages inbox and registers the subscriber as a WordPress user (without overwriting existing user data).
+
+* **Admin Notification**: Shop administrators receive an email notification for each new subscription, with subscriber email, product name, and a link to the product.
+
+* **Admin Subscribers Panel**: Administrators see a collapsible subscribers panel on product pages listing all subscriptions with email, status (pending/notified), date, individual delete buttons, and CSV export.
+
+* **Configurable Texts**: Customize the form heading, description, button text, and success message from the WooCommerce section in plugin settings.
+
 = Shortcodes =
 
 * `[pn-customers-manager-funnel]` — Display individual funnels with all their details
@@ -407,7 +433,36 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 == Changelog ==
 
-= 1.2.35 =
+= 1.2.46 =
+
+- Add WooCommerce Back in Stock notification system: email subscription form on out-of-stock products with configurable heading, description, button text, and success message
+- Add `pn_cm_woo_back_in_stock` database table for tracking product-email subscriptions with status, user association, and notification timestamps
+- Add automatic restock notification emails to all pending subscribers when a product returns to in-stock status, with dual hook coverage (`woocommerce_product_set_stock_status` and `woocommerce_product_object_updated_props`) and deduplication
+- Add MAILPN integration for both admin notification and subscriber restock emails, falling back to `wp_mail` when MAILPN is not active
+- Add CRM contact message insertion when a visitor subscribes to a back-in-stock notification, making the request visible in the Messages inbox
+- Add WordPress user creation for new subscriber emails via `pn_customers_manager_user_insert`, with existing user detection to avoid overwriting user data
+- Add admin subscribers panel on product pages showing all subscriptions with email, status (pending/notified), date, individual delete buttons, and CSV export
+- Add collapsible toggle on the admin subscribers panel using the plugin's standard Material Icons expand/collapse pattern, collapsed by default
+- Add Back in Stock settings in the WooCommerce section: enable checkbox with four conditional text fields (heading, description, button text, success message)
+- Add the plugin's standard loader animation inside the subscription button during AJAX submission
+- Add the global slide-in notification (`get_main_message`) on subscription success/error, with standalone implementation for non-CRM pages
+- Add WooCommerce CTA Gutenberg block (`pn-customers-manager/woo-cta`) for creating Call to Action sections linked to WooCommerce products, categories, tags, or the shop page
+- Add CTA block with two styles (card and banner), configurable colors (background, text, button, button text), alignment, image toggle, and open-in-new-tab option
+- Add CTA block server-side rendering with dynamic product/category/tag data (name, image, permalink) and shop page fallback
+- Add CTA block frontend stylesheet registration via `register_block_type` so styles load on pages containing the block, independent of CRM page assets
+- Add color picker inputs (native `<input type="color">` combined with hex text input) to the CTA block editor, replacing plain text fields for the four color attributes
+- Add CTA block settings in the WooCommerce section with an enable checkbox
+- Add loader animation in the Contact Messages tab content area when switching between Inbox, Spam, and Forms tabs during AJAX loading
+- Add `style` attribute to KSES whitelist for `table`, `tr`, `th`, and `td` elements
+- Add `stopPropagation` to the budget admin "Add phase" button click handler to prevent event bubbling
+- Remove the wrapping section around the budget items editor in the admin metabox, rendering items block and totals block as standalone HTML fields
+- Add standalone totals display block in the budget admin metabox
+- Change budget item description inputs in the admin editor to strip HTML tags via `wp_strip_all_tags` for display in plain text inputs
+- Change budget item description sanitization on AJAX add and edit from `wp_kses_post` to `sanitize_text_field`
+- Change budget admin "Add phase", "Add item", and "Add image" action elements from `<a>` links to `<button>` elements to prevent default anchor behavior
+- Fix input wrapper for HTML fields with hidden inputs collapsing to zero height
+
+= 1.2.45 =
 
 - Add funnel form builder: new form node type in the funnel builder with a visual drag-and-drop field editor supporting text, email, number, tel, URL, date, textarea, select, checkbox, radio, file upload, and informational text block field types
 - Add interactive option manager for select and radio fields with individual value/label inputs per row, drag-and-drop reordering, and add/remove buttons, replacing the previous textarea-based editor
