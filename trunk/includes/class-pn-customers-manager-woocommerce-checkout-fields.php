@@ -132,7 +132,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 								?>
 							</div>
 
-							<div class="pn-cm-checkout-fields-container" style="padding: 0 20px;">
+							<div class="pn-cm-checkout-fields-container">
 								<h4><?php _e('Custom Fields', 'pn-customers-manager'); ?></h4>
 								<p class="description">
 									<?php _e('Define the fields that will be displayed at checkout when customers purchase this product.', 'pn-customers-manager'); ?>
@@ -280,14 +280,13 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 											foreach ($html_multi_fields as $hmf_index => $hmf) {
 												?>
 																<div class="pn-cm-html-multi-field-item">
-																	<div style="display: flex; gap: 10px; margin-bottom: 5px; align-items: center;">
+																	<div class="pn-cm-html-multi-field-item__row">
 																		<input type="text"
+																			class="pn-cm-html-multi-field-item__label"
 																			name="_pn_cm_checkout_fields[<?php echo $index; ?>][html_multi_fields][<?php echo $hmf_index; ?>][label]"
 																			value="<?php echo esc_attr($hmf['label'] ?? ''); ?>"
-																			placeholder="<?php _e('Field Label', 'pn-customers-manager'); ?>"
-																			style="flex: 2;" />
-																		<select name="_pn_cm_checkout_fields[<?php echo $index; ?>][html_multi_fields][<?php echo $hmf_index; ?>][type]"
-																			style="flex: 1;">
+																			placeholder="<?php _e('Field Label', 'pn-customers-manager'); ?>" />
+																		<select class="pn-cm-html-multi-field-item__type" name="_pn_cm_checkout_fields[<?php echo $index; ?>][html_multi_fields][<?php echo $hmf_index; ?>][type]">
 																			<option value="text" <?php selected($hmf['type'] ?? 'text', 'text'); ?>><?php _e('Text', 'pn-customers-manager'); ?></option>
 																			<option value="email" <?php selected($hmf['type'] ?? '', 'email'); ?>><?php _e('Email', 'pn-customers-manager'); ?></option>
 																			<option value="tel" <?php selected($hmf['type'] ?? '', 'tel'); ?>><?php _e('Phone', 'pn-customers-manager'); ?></option>
@@ -295,7 +294,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 																			<option value="date" <?php selected($hmf['type'] ?? '', 'date'); ?>><?php _e('Date', 'pn-customers-manager'); ?></option>
 																			<option value="textarea" <?php selected($hmf['type'] ?? '', 'textarea'); ?>><?php _e('Textarea', 'pn-customers-manager'); ?></option>
 																		</select>
-																		<label style="margin: 0; display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+																		<label class="pn-cm-html-multi-field-item__required">
 																			<input type="checkbox"
 																				name="_pn_cm_checkout_fields[<?php echo $index; ?>][html_multi_fields][<?php echo $hmf_index; ?>][required]"
 																				value="1"
@@ -319,22 +318,22 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 
 								<div class="pn-cm-field-range-settings" style="<?php echo in_array($field['type'], ['number', 'range']) ? '' : 'display:none;'; ?>">
 									<label><?php _e('Min / Max / Step', 'pn-customers-manager'); ?></label>
-									<div style="display: flex; gap: 10px;">
+									<div class="pn-cm-field-range-settings__row">
 										<input type="number"
+											class="pn-cm-field-range-settings__input"
 											name="_pn_cm_checkout_fields[<?php echo $index; ?>][min]"
 											value="<?php echo esc_attr($field['min']); ?>"
-											placeholder="Min"
-											style="flex: 1;" />
+											placeholder="Min" />
 										<input type="number"
+											class="pn-cm-field-range-settings__input"
 											name="_pn_cm_checkout_fields[<?php echo $index; ?>][max]"
 											value="<?php echo esc_attr($field['max']); ?>"
-											placeholder="Max"
-											style="flex: 1;" />
+											placeholder="Max" />
 										<input type="number"
+											class="pn-cm-field-range-settings__input"
 											name="_pn_cm_checkout_fields[<?php echo $index; ?>][step]"
 											value="<?php echo esc_attr($field['step']); ?>"
-											placeholder="Step"
-											style="flex: 1;" />
+											placeholder="Step" />
 									</div>
 								</div>
 
@@ -709,7 +708,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 								</div>
 							</div>
 
-							<div style="text-align: right; margin-top: 10px;">
+							<div class="pn-cm-html-multi-actions">
 								<a href="#" class="pn-cm-add-html-multi-group pn-customers-manager-tooltip" data-field-name="<?php echo esc_attr($field['name']); ?>" title="<?php esc_attr_e('Add element', 'pn-customers-manager'); ?>">
 									<i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-font-size-40">add</i>
 								</a>
@@ -1049,7 +1048,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 								<?php endfor; ?>
 							</div>
 
-							<div style="text-align: right; margin-top: 10px;">
+							<div class="pn-cm-html-multi-actions">
 								<a href="#" class="pn-cm-add-html-multi-group pn-customers-manager-tooltip" data-field-id="<?php echo esc_attr($field_id); ?>" title="<?php esc_attr_e('Add element', 'pn-customers-manager'); ?>">
 									<i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-font-size-40">add</i>
 								</a>
@@ -1363,6 +1362,19 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 			);
 		}
 
+		// Inject corporate identity CSS custom properties for global button/input classes
+		$corporate_defaults = [
+			'color_main' => '#0000aa', 'bg_color_main' => '#0000aa', 'border_color_main' => '#0000aa',
+			'color_main_alt' => '#232323', 'bg_color_main_alt' => '#232323',
+		];
+		$css_vars = ':root{';
+		foreach ($corporate_defaults as $key => $default) {
+			$val = sanitize_hex_color(get_option('pn_customers_manager_' . $key, $default)) ?: $default;
+			$css_vars .= '--pn-customers-manager-' . str_replace('_', '-', $key) . ':' . $val . ';';
+		}
+		$css_vars .= '}';
+		wp_add_inline_style('pn-customers-manager', $css_vars);
+
 		// Enqueue checkout fields specific CSS
 		wp_enqueue_style(
 			'pn-cm-checkout-fields',
@@ -1543,13 +1555,13 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 
 					// Handle html_multi fields (array values)
 					if ($config['type'] === 'html_multi' && is_array($value)) {
-						echo '<div class="pn-cm-checkout-field-display pn-cm-html-multi-display" style="margin-top: 10px;">';
+						echo '<div class="pn-cm-checkout-field-display pn-cm-html-multi-display">';
 						echo '<strong>' . esc_html($label) . ':</strong>';
 						echo '<div class="pn-cm-html-multi-groups">';
 						foreach ($value as $group_index => $group_data) {
-							echo '<div class="pn-cm-html-multi-group-display" style="margin-left: 15px;">';
+							echo '<div class="pn-cm-html-multi-group-display">';
 							echo '<strong>' . sprintf(__('Group %d', 'pn-customers-manager'), $group_index + 1) . ':</strong>';
-							echo '<ul style="margin: 5px 0;">';
+							echo '<ul>';
 							if (is_array($group_data) && !empty($config['html_multi_fields'])) {
 								foreach ($config['html_multi_fields'] as $hmf_index => $hmf) {
 									$display_value = isset($group_data[$hmf_index]) ? $group_data[$hmf_index] : '';
@@ -1572,7 +1584,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 						echo '</div>';
 					} else {
 						// Regular fields
-						echo '<div class="pn-cm-checkout-field-display" style="margin-top: 5px;">';
+						echo '<div class="pn-cm-checkout-field-display">';
 						echo '<strong>' . esc_html($label) . ':</strong> ';
 						echo esc_html($value);
 						echo '</div>';
@@ -1786,8 +1798,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Checkout_Fields
 
 		?>
 						<input type="hidden" id="pn-cm-csv-nonce-<?php echo esc_attr($product_id); ?>" value="<?php echo wp_create_nonce('pn-cm-csv-export'); ?>" />
-						<div class="pn-cm-csv-export-frontend" style="margin: 20px 0; padding: 20px; background: #f9f9f9; border: 1px solid #e1e1e1; border-radius: 4px;">
-							<button type="button" class="button button-primary pn-cm-open-csv-popup" data-product-id="<?php echo esc_attr($product_id); ?>">
+						<div class="pn-cm-csv-export-frontend">
+							<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-transparent pn-cm-open-csv-popup" data-product-id="<?php echo esc_attr($product_id); ?>">
 								<?php _e('Export Orders to CSV', 'pn-customers-manager'); ?>
 							</button>
 						</div>

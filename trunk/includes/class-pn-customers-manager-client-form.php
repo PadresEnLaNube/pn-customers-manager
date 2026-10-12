@@ -199,14 +199,14 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
     if (empty($first_name) || empty($last_name) || empty($email)) {
       wp_send_json([
         'error_key'     => 'pn_customers_manager_client_form_missing_data',
-        'error_content' => esc_html__('Nombre, apellidos y correo electrónico son obligatorios.', 'pn-customers-manager'),
+        'error_content' => esc_html__('Name, last name and email are required.', 'pn-customers-manager'),
       ]);
     }
 
     if (!is_email($email)) {
       wp_send_json([
         'error_key'     => 'pn_customers_manager_client_form_email_invalid',
-        'error_content' => esc_html__('Introduce un correo electrónico válido.', 'pn-customers-manager'),
+        'error_content' => esc_html__('Please enter a valid email address.', 'pn-customers-manager'),
       ]);
     }
 
@@ -323,8 +323,8 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
     $defaults = [
       'form_id'             => 'pn-customers-manager-client-form-' . wp_rand(1000, 99999),
       'show_title'          => true,
-      'title'               => esc_html__('Alta de organización', 'pn-customers-manager'),
-      'description'         => esc_html__('Completa los datos para registrar una nueva organización en el CRM.', 'pn-customers-manager'),
+      'title'               => esc_html__('Register organization', 'pn-customers-manager'),
+      'description'         => esc_html__('Fill in the details to register a new organization in the CRM.', 'pn-customers-manager'),
       'organization_fields' => [],
     ];
 
@@ -373,19 +373,19 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
     // Campos básicos obligatorios: título y descripción de la organización.
     $fields[] = [
       'id'          => 'pn_cm_organization_title',
-      'label'       => esc_html__('Título de la organización', 'pn-customers-manager'),
+      'label'       => esc_html__('Organization title', 'pn-customers-manager'),
       'input'       => 'input',
       'type'        => 'text',
       'required'    => true,
-      'placeholder' => esc_html__('Nombre de la organización', 'pn-customers-manager'),
+      'placeholder' => esc_html__('Organization name', 'pn-customers-manager'),
     ];
 
     $fields[] = [
       'id'          => 'pn_cm_organization_description',
-      'label'       => esc_html__('Descripción de la organización', 'pn-customers-manager'),
+      'label'       => esc_html__('Organization description', 'pn-customers-manager'),
       'input'       => 'textarea',
       'required'    => true,
-      'placeholder' => esc_html__('Describe brevemente la organización…', 'pn-customers-manager'),
+      'placeholder' => esc_html__('Briefly describe the organization...', 'pn-customers-manager'),
     ];
 
     // Si no hay campos seleccionados, solo mostramos título y descripción.
@@ -464,7 +464,7 @@ class PN_CUSTOMERS_MANAGER_Client_Form {
       'id'        => 'pn_cm_organization_form_submit',
       'input'     => 'input',
       'type'      => 'submit',
-      'value'     => esc_html__('Crear organización', 'pn-customers-manager'),
+      'value'     => esc_html__('Create organization', 'pn-customers-manager'),
       'subtype'   => 'post_new',
       'post_type' => 'pn_cm_organization',
     ];

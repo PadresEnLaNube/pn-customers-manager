@@ -12,8 +12,8 @@
  * @wordpress-plugin
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
- * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, and WooCommerce integration for WordPress.
- * Version:           1.2.46
+ * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, mockup flow viewer, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, product calendar, solidarity purchases, and WooCommerce integration for WordPress.
+ * Version:           1.2.95
  * Requires at least: 3.0
  * Tested up to:      7.0
  * Requires PHP:      7.2
@@ -35,8 +35,8 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.46');
-define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.1.0');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.95');
+define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.3.0');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
 define('PN_CUSTOMERS_MANAGER_CPTS', [
@@ -44,6 +44,7 @@ define('PN_CUSTOMERS_MANAGER_CPTS', [
 	'pn_cm_organization' => 'Organization',
 	'pn_cm_budget' => 'Budget',
 	'pn_cm_invoice' => 'Invoice',
+	'pn_cm_mockup_flow' => 'Mockup Flow',
 ]);
 
 /**

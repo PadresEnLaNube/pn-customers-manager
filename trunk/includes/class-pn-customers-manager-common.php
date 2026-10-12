@@ -390,6 +390,8 @@ class PN_CUSTOMERS_MANAGER_Common
 			'pn-customers-manager-referrals',
 			'pn-customers-manager-commercial-panel',
 			'pn-customers-manager-email-campaigns',
+			'pn-customers-manager-mockup-flow-list',
+			'pn-customers-manager-mockup-flow',
 		);
 
 		$crm_blocks = array(
@@ -401,6 +403,7 @@ class PN_CUSTOMERS_MANAGER_Common
 			'pn-customers-manager/button',
 			'pn-customers-manager/contact-form',
 			'pn-customers-manager/referrals',
+			'pn-customers-manager/mockup-flow',
 		);
 
 		foreach ( $crm_shortcodes as $shortcode ) {

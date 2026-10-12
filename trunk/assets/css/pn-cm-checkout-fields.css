@@ -347,6 +347,42 @@
 	z-index: 1;
 }
 
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item__row {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 5px;
+	align-items: center;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item__label {
+	flex: 2;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item__type {
+	flex: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-html-multi-field-item__required {
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	white-space: nowrap;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-range-settings__row {
+	display: flex;
+	gap: 10px;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-field-range-settings__input {
+	flex: 1;
+}
+
+#pn_cm_woo_checkout_fields_data .pn-cm-checkout-fields-container {
+	padding: 0 20px;
+}
+
 #pn_cm_woo_checkout_fields_data .pn-cm-add-html-multi-field {
 	display: inline-flex;
 	align-items: center;
@@ -772,6 +808,7 @@
 /* Frontend export section - only visible to logged-in admins */
 .pn-cm-csv-export-frontend {
 	display: none;
+	margin: 20px 0;
 }
 
 body.logged-in.admin-bar .pn-cm-csv-export-frontend {

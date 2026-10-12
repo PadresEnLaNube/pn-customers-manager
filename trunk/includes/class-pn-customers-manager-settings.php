@@ -43,6 +43,11 @@ class PN_CUSTOMERS_MANAGER_Settings
       'block' => 'pn-customers-manager/social-media',
       'label' => 'Social Media',
     ],
+    'pn_customers_manager_page_mockup_flow' => [
+      'shortcode' => 'pn-customers-manager-mockup-flow',
+      'block' => null,
+      'label' => 'Mockup Flow',
+    ],
   ];
 
   public static function pn_customers_manager_get_managed_pages()
@@ -586,6 +591,40 @@ class PN_CUSTOMERS_MANAGER_Settings
       'section' => 'end',
     ];
 
+    // Marketing subsection: Mockup Flow
+    $pn_customers_manager_options['pn_customers_manager_mockup_flow_section_start'] = [
+      'id' => 'pn_customers_manager_mockup_flow_section_start',
+      'section' => 'start',
+      'label' => __('Mockup Flow', 'pn-customers-manager'),
+      'description' => __('A Figma-style flow viewer for mockup screens. Clients can review and comment on project screens before development.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_mockup_flow_enabled'] = [
+      'id' => 'pn_customers_manager_mockup_flow_enabled',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'value' => 'on',
+      'parent' => 'this',
+      'label' => __('Enable Mockup Flow Viewer', 'pn-customers-manager'),
+      'description' => __('Enables the Mockup Flow post type, shortcode, and Gutenberg block.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_mockup_flow'] = [
+      'id' => 'pn_customers_manager_page_mockup_flow',
+      'input' => 'page_manager',
+      'label' => __('Mockup Flow Page', 'pn-customers-manager'),
+      'description' => __('Page with the [pn-customers-manager-mockup-flow] shortcode. The canvas viewer loads here via ?mockup_flow_id=ID.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-mockup-flow',
+      'page_option' => 'pn_customers_manager_page_mockup_flow',
+      'parent' => 'pn_customers_manager_mockup_flow_enabled',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_mockup_flow_section_end'] = [
+      'id' => 'pn_customers_manager_mockup_flow_section_end',
+      'section' => 'end',
+    ];
+
     // Marketing subsection: Proyecciones
     $pn_customers_manager_options['pn_customers_manager_projections_section_start'] = [
       'id' => 'pn_customers_manager_projections_section_start',
@@ -773,6 +812,17 @@ class PN_CUSTOMERS_MANAGER_Settings
         'parent_option' => 'on',
       ];
 
+      // Fila Cero (Solidarity Purchases)
+      $pn_customers_manager_options['pn_customers_manager_woo_fila_cero_enabled'] = [
+        'id' => 'pn_customers_manager_woo_fila_cero_enabled',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'checkbox',
+        'parent' => 'this',
+        'label' => __('Enable Fila Cero (Solidarity Purchases)', 'pn-customers-manager'),
+        'description' => __('Allows a solidarity purchase system on products. Buyers can leave their name visible on the product page. Stock is not reduced.', 'pn-customers-manager'),
+      ];
+
       // WooCommerce CTA Block
       $pn_customers_manager_options['pn_customers_manager_woocommerce_cta_block_enabled'] = [
         'id' => 'pn_customers_manager_woocommerce_cta_block_enabled',
@@ -933,7 +983,7 @@ class PN_CUSTOMERS_MANAGER_Settings
     $pn_customers_manager_options['pn_customers_manager_budget_terms'] = [
       'id' => 'pn_customers_manager_budget_terms',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'textarea',
+      'input' => 'editor',
       'label' => __('Terms and conditions', 'pn-customers-manager'),
       'description' => __('Default terms and conditions shown at the bottom of every budget.', 'pn-customers-manager'),
     ];
@@ -941,9 +991,17 @@ class PN_CUSTOMERS_MANAGER_Settings
     $pn_customers_manager_options['pn_customers_manager_budget_default_client_notes'] = [
       'id' => 'pn_customers_manager_budget_default_client_notes',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-      'input' => 'textarea',
+      'input' => 'editor',
       'label' => __('Default client notes', 'pn-customers-manager'),
       'description' => __('Default notes visible to the client, pre-filled when creating a new budget.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_budget_default_others'] = [
+      'id' => 'pn_customers_manager_budget_default_others',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'editor',
+      'label' => __('Default additional information', 'pn-customers-manager'),
+      'description' => __('Default additional information pre-filled when creating a new budget. Visible to the client.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_budget_subsection_end'] = [
@@ -1476,6 +1534,16 @@ class PN_CUSTOMERS_MANAGER_Settings
       'description' => __('General plugin settings, slugs, and user roles.', 'pn-customers-manager'),
     ];
 
+    $pn_customers_manager_options['pn_customers_manager_show_banner'] = [
+      'id' => 'pn_customers_manager_show_banner',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Show settings banner image', 'pn-customers-manager'),
+      'description' => __('Show the banner image at the top of the settings page.', 'pn-customers-manager'),
+      'default' => 'on',
+    ];
+
     // ── CPT Slugs subsection ──
     $pn_customers_manager_options['pn_customers_manager_slugs_subsection_start'] = [
       'id' => 'pn_customers_manager_slugs_subsection_start',
@@ -1775,7 +1843,14 @@ class PN_CUSTOMERS_MANAGER_Settings
   {
     ?>
                           <div class="pn-customers-manager-options pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mt-50 pn-customers-manager-mb-50">
-                            <img src="<?php echo esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/banner-1544x500.png'); ?>" alt="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" title="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" class="pn-customers-manager-width-100-percent pn-customers-manager-border-radius-20 pn-customers-manager-mb-30">
+                            <?php if (get_option('pn_customers_manager_show_banner', 'on') === 'on'): ?>
+                            <div class="pn-customers-manager-banner-wrapper">
+                              <img src="<?php echo esc_url(PN_CUSTOMERS_MANAGER_URL . 'assets/media/banner-1544x500.png'); ?>" alt="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" title="<?php esc_html_e('Plugin main Banner', 'pn-customers-manager'); ?>" class="pn-customers-manager-width-100-percent pn-customers-manager-border-radius-20 pn-customers-manager-mb-30">
+                              <button type="button" id="pn-customers-manager-banner-hide-btn" class="pn-customers-manager-banner-hide-btn pn-customers-manager-tooltip" title="<?php esc_attr_e('Hide image', 'pn-customers-manager'); ?>">
+                                <i class="material-icons-outlined">close</i>
+                              </button>
+                            </div>
+                            <?php endif; ?>
                             <h1 class="pn-customers-manager-mb-30"><?php esc_html_e('PN Customers Manager Settings', 'pn-customers-manager'); ?></h1>
                             <?php // Page alerts are now shown only in the Pages section ?>
                             <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30 pn-customers-manager-settings-pb-80">
@@ -1984,6 +2059,7 @@ class PN_CUSTOMERS_MANAGER_Settings
                             'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
                             'settingsPages' => $pn_rp_settings,
                             'i18n' => [
+                              'confirmHideBanner' => __('Are you sure you want to hide the banner image? You can re-enable it in System settings.', 'pn-customers-manager'),
                               'confirmImport' => __('This will overwrite your current settings. Continue?', 'pn-customers-manager'),
                               'importSuccess' => __('Settings imported successfully. Reloading...', 'pn-customers-manager'),
                               'importError' => __('Error importing settings.', 'pn-customers-manager'),

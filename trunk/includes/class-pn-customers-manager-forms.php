@@ -68,7 +68,7 @@ class PN_CUSTOMERS_MANAGER_Forms {
 
     // If no value is found and there's a default value in the input config, use it
     // BUT NOT for checkboxes in multiple fields, as empty string and 'off' are valid states (unchecked)
-    if (empty($current_value) && !empty($pn_customers_manager_input['value'])) {
+    if ($current_value === false && !empty($pn_customers_manager_input['value'])) {
       // For checkboxes in multiple fields, don't override empty values or 'off' with default
       if (!($pn_customers_manager_meta_array && isset($pn_customers_manager_input['type']) && $pn_customers_manager_input['type'] === 'checkbox')) {
         $current_value = $pn_customers_manager_input['value'];
@@ -427,7 +427,7 @@ class PN_CUSTOMERS_MANAGER_Forms {
       case 'editor':
         ?>
           <div class="pn-customers-manager-field" <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
-            <textarea id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-wysiwyg"><?php echo ((empty($pn_customers_manager_value)) ? (array_key_exists('placeholder', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['placeholder']) : '') : esc_html($pn_customers_manager_value)); ?></textarea>
+            <textarea id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>" class="pn-customers-manager-input pn-customers-manager-width-100-percent pn-customers-manager-wysiwyg"<?php if ( empty( $pn_customers_manager_value ) && array_key_exists( 'placeholder', $pn_customers_manager_input ) ) { echo ' placeholder="' . esc_attr( $pn_customers_manager_input['placeholder'] ) . '"'; } ?>><?php echo ! empty( $pn_customers_manager_value ) ? esc_html( $pn_customers_manager_value ) : ''; ?></textarea>
           </div>
         <?php
         break;
@@ -666,9 +666,9 @@ class PN_CUSTOMERS_MANAGER_Forms {
                 <span class="pn-customers-manager-page-manager-badge"><?php echo esc_html(ucfirst($page->post_status)); ?></span>
               </div>
               <div class="pn-customers-manager-page-manager-actions pn-customers-manager-display-flex pn-customers-manager-gap-10">
-                <a href="<?php echo esc_url(get_permalink($page_id)); ?>" target="_blank" class="pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('View page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">visibility</i></a>
-                <a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" target="_blank" class="pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('Edit page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">edit</i></a>
-                <a href="#" class="pn-customers-manager-page-manager-unlink-btn pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('Unlink page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">link_off</i></a>
+                <a href="<?php echo esc_url(get_permalink($page_id)); ?>" target="_blank" class="pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('View page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">visibility</i></a>
+                <a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" target="_blank" class="pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Edit page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">edit</i></a>
+                <a href="#" class="pn-customers-manager-page-manager-unlink-btn pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Unlink page', 'pn-customers-manager'); ?>"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle">link_off</i></a>
               </div>
             </div>
           <?php else: ?>

@@ -63,7 +63,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 							<input type="email" id="pn_cm_commercial_email" name="pn_cm_commercial_email" value="<?php echo esc_attr($user->user_email); ?>" required />
 						</div>
 						<div class="pn-cm-commercial-form-field">
-							<label for="pn_cm_commercial_phone"><?php esc_html_e('Teléfono', 'pn-customers-manager'); ?> <span class="pn-cm-commercial-required">*</span></label>
+							<label for="pn_cm_commercial_phone"><?php esc_html_e('Phone', 'pn-customers-manager'); ?> <span class="pn-cm-commercial-required">*</span></label>
 							<input type="tel" id="pn_cm_commercial_phone" name="pn_cm_commercial_phone" required />
 						</div>
 					</div>
@@ -388,7 +388,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 					<tr>
 						<th><?php esc_html_e('Nombre', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Email', 'pn-customers-manager'); ?></th>
-						<th><?php esc_html_e('Teléfono', 'pn-customers-manager'); ?></th>
+						<th><?php esc_html_e('Phone', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Empresa', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Fecha solicitud', 'pn-customers-manager'); ?></th>
 						<th><?php esc_html_e('Estado', 'pn-customers-manager'); ?></th>

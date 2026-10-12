@@ -27,6 +27,51 @@
     }
   });
 
+  // Hide banner image
+  var bannerHideBtn = document.getElementById('pn-customers-manager-banner-hide-btn');
+  if (bannerHideBtn) {
+    bannerHideBtn.addEventListener('click', function () {
+      if (!confirm(pnCustomersManagerSettingsFooter.i18n.confirmHideBanner)) return;
+
+      var wrapper = bannerHideBtn.closest('.pn-customers-manager-banner-wrapper');
+      if (!wrapper) return;
+
+      var overlay = document.createElement('div');
+      overlay.className = 'pn-customers-manager-banner-loader-overlay';
+      overlay.innerHTML = '<div class="pn-customers-manager-waiting pn-customers-manager-display-block"><div class="pn-customers-manager-loader-circle-waiting"><div></div><div></div><div></div><div></div></div></div>';
+      wrapper.appendChild(overlay);
+      bannerHideBtn.style.display = 'none';
+
+      var fd = new FormData();
+      fd.append('action', 'pn_customers_manager_ajax');
+      fd.append('pn_customers_manager_ajax_type', 'pn_cm_hide_banner');
+      fd.append('pn_customers_manager_ajax_nonce', pnCustomersManagerSettingsFooter.nonce);
+
+      fetch(pnCustomersManagerSettingsFooter.ajaxUrl, { method: 'POST', body: fd })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.error_key) {
+            wrapper.style.transition = 'opacity 0.3s';
+            wrapper.style.opacity = '0';
+            setTimeout(function () { wrapper.remove(); }, 300);
+
+            var bannerCheckbox = document.getElementById('pn_customers_manager_show_banner');
+            if (bannerCheckbox) {
+              bannerCheckbox.checked = false;
+              bannerCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          } else {
+            overlay.remove();
+            bannerHideBtn.style.display = '';
+          }
+        })
+        .catch(function () {
+          overlay.remove();
+          bannerHideBtn.style.display = '';
+        });
+    });
+  }
+
   // Export
   exportBtn.addEventListener('click', function () {
     var fd = new FormData();

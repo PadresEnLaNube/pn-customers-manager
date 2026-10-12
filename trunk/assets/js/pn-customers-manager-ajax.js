@@ -300,6 +300,12 @@
         pn_cm_invoice_id = pn_customers_manager_btn.closest('[data-pn_cm_invoice-id]').attr('data-pn_cm_invoice-id') || '';
       }
 
+      // Get mockup flow ID
+      var pn_cm_mockup_flow_id = pn_customers_manager_btn.attr('data-pn_cm_mockup_flow-id') || '';
+      if (!pn_cm_mockup_flow_id) {
+        pn_cm_mockup_flow_id = pn_customers_manager_btn.closest('[data-pn_cm_mockup_flow-id]').attr('data-pn_cm_mockup_flow-id') || '';
+      }
+
       // Get QR code
       var qr_code = pn_customers_manager_btn.attr('data-qr-code') || '';
       if (!qr_code) {
@@ -342,6 +348,7 @@
             pn_cm_organization_id: pn_cm_organization_id ? pn_cm_organization_id : '',
             pn_cm_budget_id: pn_cm_budget_id ? pn_cm_budget_id : '',
             pn_cm_invoice_id: pn_cm_invoice_id ? pn_cm_invoice_id : '',
+            pn_cm_mockup_flow_id: pn_cm_mockup_flow_id ? pn_cm_mockup_flow_id : '',
             qr_code: qr_code ? qr_code : '',
           };
 

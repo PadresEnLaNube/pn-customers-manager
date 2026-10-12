@@ -4,10 +4,10 @@ Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
 Requires at least: 3.0
 Tested up to: 7.0
-Stable tag: 1.2.46
+Stable tag: 1.2.95
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, and WooCommerce integration for WordPress.
+A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, mockup flow viewer, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, product calendar, solidarity purchases, and WooCommerce integration for WordPress.
 
 == Description ==
 
@@ -97,7 +97,15 @@ Whether you run an online store, a service-based business, an agency, or a membe
 
 = Budgets & Invoices =
 
-* **Budget Management**: Create professional proposals and quotations with customizable items, phases, tax rates, and discount rates. Budgets support multiple item types (hours, fixed, phase, image), optional items that customers can toggle on/off, and image galleries for visual references.
+* **Budget Management**: Create professional proposals and quotations with customizable items, phases, tax rates, and discount rates. Budgets support multiple item types (hours, fixed, phase, image, image compare), optional items that customers can toggle on/off, recurring items with configurable periods (daily, weekly, monthly, yearly), and image galleries for visual references.
+
+* **Item Alternatives**: Each budget item or phase can have an alternative version. Toggle between original and alternative with a single click — totals update automatically, showing only the active version's prices.
+
+* **Before/After Image Compare**: Add side-by-side image comparisons to budgets with an interactive slider that clients can drag to reveal before and after states.
+
+* **Recurring Items**: Mark items as recurring with a period badge. Recurring items are displayed separately from the one-time subtotal for clear pricing breakdowns.
+
+* **Bulk Selection & Actions**: Enter selection mode to check multiple items at once (with Shift+click range selection), then bulk delete, mark as optional, or mark as recurring in a single action.
 
 * **Invoice Management**: Generate invoices linked to organizations with automatic invoice numbering, due dates, status tracking (Draft, Sent, Paid, Cancelled), and payment date recording.
 
@@ -109,9 +117,11 @@ Whether you run an online store, a service-based business, an agency, or a membe
 
 * **PDF Generation**: Generate professional PDF documents from both budgets and invoices directly from the public or admin view.
 
-* **Inline Editing**: Admins can edit budget and invoice items, reorder with drag-and-drop, add new items, and manage status directly from the public-facing template without returning to the admin panel.
+* **Inline Editing**: Admins can edit budget and invoice items with WYSIWYG rich text descriptions, reorder with drag-and-drop, add new items, upload images via wp.media, and manage status directly from the public-facing template without returning to the admin panel.
 
 * **CSV Import/Export**: Bulk import and export budgets via CSV files. Includes a downloadable template with sample data, a multi-step import wizard with preview, and automatic organization name resolution.
+
+* **Default Content**: Configure default terms and conditions, client notes, and additional information in settings — automatically pre-filled when creating new budgets, with per-budget WYSIWYG overrides.
 
 = Core CRM Features =
 
@@ -289,6 +299,32 @@ A powerful form system that supports multiple field types:
 
 * **Configurable Texts**: Customize the form heading, description, button text, and success message from the WooCommerce section in plugin settings.
 
+= Mockup Flow Viewer =
+
+* **Figma-Style Flow Viewer**: A custom post type for presenting mockup screens in an interactive canvas. Connect screens with visual flow lines, add labels and annotations, and switch between mobile and desktop versions.
+
+* **Client Comments**: Clients can review mockup screens and leave comments directly on specific screens, with resolved/unresolved status tracking stored in a dedicated database table.
+
+* **Shortcode & Block**: Embed mockup flows on any page using `[pn-customers-manager-mockup-flow]` shortcode or the native Gutenberg block. List all mockup flows with `[pn-customers-manager-mockup-flow-list]`.
+
+* **Settings Integration**: Enable/disable from the Marketing section in plugin settings with a dedicated page manager.
+
+= WooCommerce Product Calendar =
+
+* **Product Calendar Block**: A Gutenberg block and shortcode (`pn-customers-manager-product-calendar`) that displays an interactive calendar showing products with calendar booking dates, sorted by date proximity.
+
+* **Activity Groups**: Organize calendar booking blocks into activity groups with individual capacity, name, and drag-and-drop reordering. Bookings track group-level availability.
+
+* **Per-Block Pricing**: Each calendar block supports individual pricing, member pricing, and configurable discounts (percentage or fixed amount).
+
+= WooCommerce Fila Cero (Solidarity Purchases) =
+
+* **Solidarity Purchase System**: Allow visitors to make a solidarity purchase on products without reducing stock. The buyer's name is displayed on the product page as a supporter.
+
+* **Per-Product Settings**: Enable Fila Cero on individual products from the WooCommerce product editor.
+
+* **Settings Toggle**: Enable/disable globally from the WooCommerce section in plugin settings.
+
 = Shortcodes =
 
 * `[pn-customers-manager-funnel]` — Display individual funnels with all their details
@@ -303,6 +339,9 @@ A powerful form system that supports multiple field types:
 * `[pn-customers-manager-instagram-ai]` — Instagram conversations front-end panel (admin only)
 * `[pn-customers-manager-funnel-form]` — Funnel form with configurable fields, display modes, and AJAX submission (requires funnel_id and node_id parameters)
 * `[pn_qr_manager]` — QR tickets management panel with built-in camera scanner, clickable table rows, and native popup integration (admin only, optional product_id parameter)
+* `[pn-customers-manager-mockup-flow]` — Mockup Flow interactive canvas viewer (loads via ?mockup_flow_id=ID)
+* `[pn-customers-manager-mockup-flow-list]` — List all mockup flows
+* `[pn-customers-manager-product-calendar]` — Interactive product calendar with date-sorted product excerpts
 
 = Settings & Configuration =
 
@@ -433,7 +472,7 @@ Go to the 'Plugins' screen in WordPress, find the PN Customers Manager plugin, a
 
 == Changelog ==
 
-= 1.2.46 =
+= 1.2.52 =
 
 - Add WooCommerce Back in Stock notification system: email subscription form on out-of-stock products with configurable heading, description, button text, and success message
 - Add `pn_cm_woo_back_in_stock` database table for tracking product-email subscriptions with status, user association, and notification timestamps

@@ -465,6 +465,55 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
         'id' => 'pn_cm_organization_section_basic_end',
         'section' => 'end',
       ];
+      $pn_customers_manager_fields_meta['pn_cm_organization_section_legal_start'] = [
+        'id' => 'pn_cm_organization_section_legal_start',
+        'section' => 'start',
+        'label' => esc_html__('Legal & Corporate', 'pn-customers-manager'),
+        'description' => esc_html__('Legal identification, registered office, and corporate activity data.', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_organization_cif'] = [
+        'id' => 'pn_cm_organization_cif',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => esc_html__('CIF / NIF', 'pn-customers-manager'),
+        'placeholder' => esc_html__('e.g. B12345678', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_organization_vies'] = [
+        'id' => 'pn_cm_organization_vies',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => esc_html__('VIES (EU VAT number)', 'pn-customers-manager'),
+        'placeholder' => esc_html__('e.g. ESB12345678', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_organization_registered_office'] = [
+        'id' => 'pn_cm_organization_registered_office',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => esc_html__('Registered office', 'pn-customers-manager'),
+        'placeholder' => esc_html__('Official registered address', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_organization_cnae'] = [
+        'id' => 'pn_cm_organization_cnae',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'input',
+        'type' => 'text',
+        'label' => esc_html__('CNAE (primary activity)', 'pn-customers-manager'),
+        'placeholder' => esc_html__('e.g. 6201 - Computer programming', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_organization_corporate_purpose'] = [
+        'id' => 'pn_cm_organization_corporate_purpose',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'textarea',
+        'label' => esc_html__('Corporate purpose', 'pn-customers-manager'),
+        'placeholder' => esc_html__('Description of the company\'s corporate purpose', 'pn-customers-manager'),
+      ];
+      $pn_customers_manager_fields_meta['pn_cm_organization_section_legal_end'] = [
+        'id' => 'pn_cm_organization_section_legal_end',
+        'section' => 'end',
+      ];
       $pn_customers_manager_fields_meta['pn_cm_organization_section_advanced_start'] = [
         'id' => 'pn_cm_organization_section_advanced_start',
         'section' => 'start',
@@ -602,7 +651,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
         'id' => 'pn_cm_organization_next_action',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'textarea',
-        'label' => esc_html__('Próximo paso acordado', 'pn-customers-manager'),
+        'label' => esc_html__('Next agreed step', 'pn-customers-manager'),
         'placeholder' => esc_html__('Describe el siguiente hito o compromiso.', 'pn-customers-manager'),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_billing_email'] = [
@@ -610,21 +659,21 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
         'type' => 'email',
-        'label' => esc_html__('Email de facturación', 'pn-customers-manager'),
+        'label' => esc_html__('Billing email', 'pn-customers-manager'),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_billing_phone'] = [
         'id' => 'pn_cm_organization_billing_phone',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
         'type' => 'tel',
-        'label' => esc_html__('Teléfono de facturación', 'pn-customers-manager'),
+        'label' => esc_html__('Billing phone', 'pn-customers-manager'),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_billing_address'] = [
         'id' => 'pn_cm_organization_billing_address',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'input',
         'type' => 'text',
-        'label' => esc_html__('Dirección de facturación', 'pn-customers-manager'),
+        'label' => esc_html__('Billing address', 'pn-customers-manager'),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_tags'] = [
         'id' => 'pn_cm_organization_tags',
@@ -632,7 +681,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
         'input' => 'input',
         'type' => 'text',
         'label' => esc_html__('Etiquetas', 'pn-customers-manager'),
-        'placeholder' => esc_html__('Ej: Clientes VIP, Renovación, Partner', 'pn-customers-manager'),
+        'placeholder' => esc_html__('E.g.: VIP Clients, Renewal, Partner', 'pn-customers-manager'),
         'description' => esc_html__('Separa las etiquetas con comas.', 'pn-customers-manager'),
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_notes'] = [

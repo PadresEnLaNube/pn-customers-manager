@@ -798,6 +798,7 @@ input:checked + .pn-customers-manager-slider:before{
   color:#ffffff;
   display:inline-block;
   margin:auto;
+  margin-top: 0;
   font-size:var(--wp--preset--font-size--normal);
   font-family:var(--wp--preset--font-family--manrope);
   font-weight:var(--wp--preset--font-weight--bold);
@@ -3037,6 +3038,7 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   justify-content: space-between;
   margin-bottom: 12px;
   gap: 10px;
+  cursor: pointer;
 }
 .pn-cm-bis-admin__title {
   margin: 0;
@@ -3067,18 +3069,8 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   margin-left: 6px;
 }
 .pn-cm-bis-admin__export {
-  padding: 6px 14px;
-  background: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
-  border-radius: 4px;
   font-size: 12px;
-  cursor: pointer;
   white-space: nowrap;
-  transition: background 0.2s;
-}
-.pn-cm-bis-admin__export:hover {
-  background: #e4e4e4;
 }
 .pn-cm-bis-admin__table {
   width: 100%;
@@ -3150,6 +3142,186 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   }
   .pn-cm-bis-admin__table th:nth-child(3),
   .pn-cm-bis-admin__table td:nth-child(3) {
+    display: none;
+  }
+}
+
+/* ── Fila Cero — Solidarity Purchase ── */
+.pn-cm-fc {
+  border: 1px solid var(--pn-customers-manager-border-color-main, #0000aa);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  background: transparent;
+}
+.pn-cm-fc__heading {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pn-customers-manager-color-main, #0000aa);
+}
+.pn-cm-fc__description {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+.pn-cm-fc-form {
+  display: flex;
+  gap: 8px;
+}
+.pn-cm-fc-form__input.pn-customers-manager-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+.pn-cm-fc-form__button.pn-customers-manager-btn {
+  white-space: nowrap;
+}
+.pn-cm-fc-names {
+  margin-top: 16px;
+}
+.pn-cm-fc-names__heading {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+.pn-cm-fc-names__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pn-cm-fc-names__item {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #eee;
+  border-radius: 16px;
+  font-size: 13px;
+  color: #444;
+}
+@media (max-width: 480px) {
+  .pn-cm-fc-form {
+    flex-direction: column;
+  }
+  .pn-cm-fc-form__button {
+    width: 100%;
+  }
+}
+
+/* ── Fila Cero — Admin panel ── */
+.pn-cm-fc-admin {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0 0;
+  background: #fff;
+  font-size: 13px;
+}
+.pn-cm-fc-admin__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.pn-cm-fc-admin__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pn-cm-fc-admin__toggle-icon {
+  font-size: 20px;
+  color: #666;
+  transition: transform 0.2s;
+  user-select: none;
+  flex-shrink: 0;
+}
+.pn-cm-fc-admin--collapsed .pn-cm-fc-admin__toggle-icon {
+  transform: rotate(-90deg);
+}
+.pn-cm-fc-admin--collapsed .pn-cm-fc-admin__body {
+  display: none;
+}
+.pn-cm-fc-admin__count {
+  font-weight: 400;
+  font-size: 12px;
+  color: #888;
+  margin-left: 6px;
+}
+.pn-cm-fc-admin__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.pn-cm-fc-admin__table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+.pn-cm-fc-admin__table td {
+  padding: 8px;
+  border-bottom: 1px solid #f5f5f5;
+  vertical-align: middle;
+}
+.pn-cm-fc-admin__table tr:last-child td {
+  border-bottom: none;
+}
+.pn-cm-fc-admin__date {
+  color: #999;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.pn-cm-fc-admin__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.pn-cm-fc-admin__badge--active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.pn-cm-fc-admin__badge--hidden {
+  background: #f5f5f5;
+  color: #999;
+}
+.pn-cm-fc-admin__delete {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.2s, background 0.2s;
+}
+.pn-cm-fc-admin__delete:hover {
+  color: #c62828;
+  background: #ffebee;
+}
+.pn-cm-fc-admin__empty {
+  color: #999;
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+  padding: 8px 0;
+}
+@media (max-width: 480px) {
+  .pn-cm-fc-admin__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pn-cm-fc-admin__table th:nth-child(3),
+  .pn-cm-fc-admin__table td:nth-child(3) {
     display: none;
   }
 }

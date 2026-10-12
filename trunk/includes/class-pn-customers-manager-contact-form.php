@@ -111,7 +111,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Form {
 
     $fields[] = [
       'id'          => 'contact_email',
-      'label'       => esc_html__('Correo electrónico', 'pn-customers-manager'),
+      'label'       => esc_html__('Email address', 'pn-customers-manager'),
       'input'       => 'input',
       'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'type'        => 'email',
@@ -134,7 +134,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Form {
       'input'       => 'textarea',
       'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'required'    => true,
-      'placeholder' => esc_html__('Escribe tu mensaje aquí…', 'pn-customers-manager'),
+      'placeholder' => esc_html__('Write your message here...', 'pn-customers-manager'),
     ];
 
     // Honeypot (hidden via CSS)

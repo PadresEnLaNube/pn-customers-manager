@@ -77,5 +77,13 @@ class PN_CUSTOMERS_MANAGER_WooCommerce {
 		} else {
 			error_log('PN_CM_WooCommerce: QR NOT loaded - option not enabled');
 		}
+
+		// Load Fila Cero (solidarity purchases) — control is per-product
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce-fila-cero.php';
+		PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero::instance();
+
+		// Load Product Calendar Gutenberg Block
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woocommerce-product-calendar-block.php';
+		PN_CUSTOMERS_MANAGER_WooCommerce_Product_Calendar_Block::instance();
 	}
 }

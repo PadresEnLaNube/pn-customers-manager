@@ -25,7 +25,7 @@
 }
 
 /* Hide ALL elements injected outside the wrapper (theme headers, plugin banners, etc.) */
-body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-cm-budget-sticky-totals):not(script):not(style):not(.pn-customers-manager-popup):not(#pn-cm-budget-add-item-modal) {
+body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-cm-budget-sticky-totals):not(script):not(style):not(.pn-customers-manager-popup):not(#pn-cm-budget-add-item-modal):not(.pn-customers-manager-tooltip-box) {
     display: none !important;
     height: 0 !important;
     overflow: hidden !important;
@@ -155,6 +155,34 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     color: #721c24;
 }
 
+.pn-cm-budget-status-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pn-cm-budget-status-select {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    outline: none;
+}
+
+.pn-cm-budget-status-select:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+@media print {
+    .pn-cm-budget-status-select {
+        display: none !important;
+    }
+}
+
 /* --- Info row: bill to + details --- */
 .pn-cm-budget-info-row {
     display: flex !important;
@@ -216,6 +244,23 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 
 .pn-cm-budget-item-row:last-child {
     border-bottom: none;
+}
+
+.pn-cm-budget-alt-hidden {
+    display: none !important;
+}
+
+.pn-cm-budget-alt-badge {
+    display: inline-block;
+    background: #e3f2fd;
+    color: #1565c0;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.5px;
 }
 
 .pn-cm-budget-item-row > .pn-cm-budget-col-drag {
@@ -437,6 +482,31 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     cursor: not-allowed;
 }
 
+/* --- Recurring badge --- */
+.pn-cm-budget-recurring-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #fff3e0;
+    color: #e65100;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pn-cm-budget-recurring-badge i {
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+/* --- Recurring totals rows --- */
+.pn-cm-budget-totals-recurring {
+    color: #e65100 !important;
+    font-style: italic;
+}
+
 /* --- Totals section --- */
 .pn-cm-budget-totals {
     margin-left: auto;
@@ -565,11 +635,166 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     padding: 2px 4px;
 }
 
+/* --- Image compare slider (before/after) --- */
+.pn-cm-budget-compare-slider {
+    position: relative;
+    overflow: hidden;
+    cursor: col-resize;
+    border-radius: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+    line-height: 0;
+    margin: 8px 0;
+}
+
+.pn-cm-budget-compare-before,
+.pn-cm-budget-compare-after {
+    display: block;
+    width: 100%;
+}
+
+.pn-cm-budget-compare-before img,
+.pn-cm-budget-compare-after img {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+}
+
+.pn-cm-budget-compare-after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    clip-path: inset(0 0 0 50%);
+}
+
+.pn-cm-budget-compare-handle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 3px;
+    height: 100%;
+    background: #fff;
+    box-shadow: 0 0 6px rgba(0,0,0,0.4);
+    transform: translateX(-50%);
+    z-index: 2;
+    cursor: col-resize;
+}
+
+.pn-cm-budget-compare-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.pn-cm-budget-compare-handle::before {
+    content: '◀  ▶';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: #555;
+    z-index: 1;
+    line-height: 1;
+    letter-spacing: 2px;
+    white-space: nowrap;
+}
+
+.pn-cm-budget-compare-label {
+    position: absolute;
+    top: 10px;
+    padding: 4px 10px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 1;
+    line-height: 1.4;
+}
+
+.pn-cm-budget-compare-label-before {
+    left: 10px;
+}
+
+.pn-cm-budget-compare-label-after {
+    right: 10px;
+}
+
+/* Compare slider inside admin table */
+.pn-customers-manager-budget-item-image-compare td {
+    border-bottom: none !important;
+}
+
+.pn-customers-manager-budget-item-image-compare .pn-cm-budget-compare-slider {
+    max-height: 300px;
+}
+
+.pn-customers-manager-budget-item-image-compare .pn-cm-budget-compare-slider img {
+    max-height: 300px;
+    width: auto;
+    max-width: 100%;
+}
+
+/* Compare slider inside public page */
+.pn-cm-budget-item-image-compare .pn-cm-budget-item-content {
+    position: relative;
+}
+
+.pn-cm-budget-item-image-compare .pn-cm-budget-col-actions {
+    position: absolute;
+    top: 16px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 4px;
+    padding: 2px 4px;
+    z-index: 3;
+}
+
+@media print {
+    .pn-cm-budget-compare-handle {
+        display: none !important;
+    }
+    .pn-cm-budget-compare-after {
+        clip-path: inset(0 0 0 50%) !important;
+    }
+    .pn-cm-budget-item-image-compare .pn-cm-budget-col-actions {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .pn-cm-budget-compare-handle::after {
+        width: 28px;
+        height: 28px;
+    }
+    .pn-cm-budget-compare-handle::before {
+        font-size: 10px;
+    }
+    .pn-cm-budget-compare-label {
+        font-size: 10px;
+        padding: 3px 7px;
+    }
+}
+
 /* --- Images gallery (after items, before totals) --- */
 .pn-cm-budget-images-gallery {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
+    margin-top: 40px;
     margin-bottom: 30px;
 }
 
@@ -635,10 +860,29 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     line-height: 1.6;
 }
 
+.pn-cm-budget-others {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.pn-cm-budget-others h3 {
+    font-size: 14px;
+    margin: 0 0 10px;
+    color: #333 !important;
+}
+
+.pn-cm-budget-others-content {
+    font-size: 12px;
+    color: #888 !important;
+    line-height: 1.6;
+}
+
 /* --- Print button wrapper --- */
 .pn-cm-budget-print-btn-wrapper {
     text-align: center;
     margin-top: 30px;
+    padding-bottom: 70px;
 }
 
 
@@ -899,6 +1143,85 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 .pn-cm-budget-list-status-accepted { background: #d4edda; color: #155724; }
 .pn-cm-budget-list-status-rejected { background: #f8d7da; color: #721c24; }
 
+/* --- Budget list table (dashboard) --- */
+.pn-cm-budget-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.pn-cm-budget-list-table thead th {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #666;
+    white-space: nowrap;
+}
+
+.pn-cm-budget-list-table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background .15s;
+}
+
+.pn-cm-budget-list-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.pn-cm-budget-list-table tbody td {
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+
+.pn-cm-budget-list-col-number { width: 110px; }
+.pn-cm-budget-list-col-title { min-width: 140px; }
+.pn-cm-budget-list-col-org { min-width: 120px; }
+.pn-cm-budget-list-col-date { width: 130px; white-space: nowrap; }
+.pn-cm-budget-list-col-status { width: 110px; text-align: center; }
+.pn-cm-budget-list-col-total { width: 100px; text-align: right; white-space: nowrap; }
+.pn-cm-budget-list-col-actions { width: 50px; text-align: center; }
+
+.pn-cm-budget-list-table thead .pn-cm-budget-list-col-status { text-align: center; }
+.pn-cm-budget-list-table thead .pn-cm-budget-list-col-total { text-align: right; }
+.pn-cm-budget-list-table thead .pn-cm-budget-list-col-actions { text-align: center; }
+
+.pn-cm-budget-list-col-date small,
+.pn-cm-budget-list-col-status small {
+    display: block;
+    margin-top: 2px;
+    color: #888;
+    font-size: 11px;
+}
+
+@media (max-width: 768px) {
+    .pn-cm-budget-list-table thead { display: none; }
+    .pn-cm-budget-list-table,
+    .pn-cm-budget-list-table tbody,
+    .pn-cm-budget-list-table tr,
+    .pn-cm-budget-list-table td { display: block; width: 100%; }
+    .pn-cm-budget-list-table tbody tr {
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .pn-cm-budget-list-table tbody td {
+        padding: 4px 8px;
+        text-align: left;
+    }
+    .pn-cm-budget-list-table tbody td::before {
+        content: attr(data-label);
+        display: inline-block;
+        font-weight: 600;
+        margin-right: 8px;
+        min-width: 90px;
+        font-size: 12px;
+        color: #666;
+    }
+    .pn-cm-budget-list-col-actions { text-align: right; }
+    .pn-cm-budget-list-col-actions::before { display: none !important; }
+}
+
 /* ==========================================================================
    2b. ADMIN EDITING ON PUBLIC PAGE
    ========================================================================== */
@@ -1074,6 +1397,34 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     font-size: 18px;
 }
 
+/* --- Admin icon-only buttons (frontend budget page) --- */
+.pn-cm-budget-admin-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #666;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pn-cm-budget-admin-icon-btn:hover {
+    background: rgba(10, 108, 186, 0.1);
+    color: #0a6cba;
+    text-decoration: none;
+}
+
+.pn-cm-budget-admin-icon-btn i {
+    font-size: 22px;
+    line-height: 1;
+}
+
 /* --- Admin image rows (dashboard popup) --- */
 .pn-customers-manager-budget-item-image td {
     border-bottom: none !important;
@@ -1201,33 +1552,45 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 
 
 /* ==========================================================================
-   2b. EMAIL PROMPT (accept budget — non-logged-in users)
+   2b. SIGNATURE PANEL (accept budget)
    ========================================================================== */
 
-.pn-cm-budget-email-prompt {
+.pn-cm-budget-signature-panel {
     background: #f7fafc;
     border: 1px solid #d0dce6;
     border-radius: 8px;
-    padding: 18px 22px;
-    margin-bottom: 16px;
+    padding: 24px 28px;
+    margin: 30px 0 16px;
 }
 
-.pn-cm-budget-email-prompt label {
+.pn-cm-budget-signature-panel h3 {
+    margin: 0 0 18px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #333;
+}
+
+.pn-cm-budget-signature-fields {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.pn-cm-budget-signature-field {
+    flex: 1;
+}
+
+.pn-cm-budget-signature-field label,
+.pn-cm-budget-signature-canvas-wrapper > label {
     display: block;
     font-size: 13px;
     font-weight: 600;
     color: #444;
-    margin-bottom: 8px;
-}
-
-.pn-cm-budget-email-prompt-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+    margin-bottom: 6px;
 }
 
 .pn-cm-budget-email-input {
-    flex: 1;
+    width: 100%;
     padding: 10px 14px;
     font-size: 14px;
     border: 1px solid #ccc;
@@ -1241,13 +1604,82 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     border-color: #0a6cba;
 }
 
+.pn-cm-budget-signature-canvas-wrapper {
+    margin-bottom: 16px;
+}
+
+#pn-cm-budget-signature-canvas {
+    display: block;
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #c0c8d0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.pn-cm-budget-btn-clear {
+    background: #e9ecef;
+    color: #555;
+    margin-top: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+}
+
+.pn-cm-budget-btn-clear:hover {
+    background: #d5d9dd;
+}
+
+/* Accepted signature display */
+.pn-cm-budget-signature-accepted {
+    text-align: center;
+    margin: 30px 0 10px;
+    padding: 20px;
+}
+
+.pn-cm-budget-signature-image {
+    border-bottom: 2px solid #333;
+    display: inline-block;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.pn-cm-budget-signature-image img {
+    max-width: 300px;
+    height: auto;
+    display: block;
+}
+
+.pn-cm-budget-signature-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.pn-cm-budget-signature-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.pn-cm-budget-signature-email {
+    font-size: 13px;
+    color: #666;
+}
+
 @media (max-width: 480px) {
-    .pn-cm-budget-email-prompt-row {
+    .pn-cm-budget-signature-panel {
+        padding: 18px 16px;
+    }
+
+    .pn-cm-budget-signature-fields {
         flex-direction: column;
     }
 
-    .pn-cm-budget-email-input {
-        width: 100%;
+    .pn-cm-budget-signature-image img {
+        max-width: 100%;
     }
 }
 
@@ -1305,6 +1737,20 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     color: #0a6cba;
 }
 
+/* --- Sticky recurring items --- */
+.pn-cm-budget-sticky-recurring {
+    display: contents;
+}
+
+.pn-cm-budget-sticky-item-recurring .pn-cm-budget-sticky-label {
+    color: #e65100;
+}
+
+.pn-cm-budget-sticky-item-recurring .pn-cm-budget-sticky-value {
+    color: #e65100;
+    font-style: italic;
+}
+
 
 /* ==========================================================================
    3. PRINT STYLES
@@ -1355,6 +1801,8 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     .pn-cm-budget-phase-toggle,
     .pn-cm-budget-phase-switch,
     .pn-cm-budget-sortable-placeholder,
+    .pn-cm-budget-field-edit,
+    .pn-cm-budget-signature-panel,
     #wpadminbar,
     .pn-customers-manager-popup {
         display: none !important;
@@ -2007,6 +2455,107 @@ body.pn-customers-manager-budget-public .pn-customers-manager-popup-close-wrappe
 }
 
 
+/* --- WYSIWYG list formatting inside descriptions & editor --- */
+.pn-customers-manager-budget-item-desc-display ul,
+.pn-customers-manager-budget-item-desc-display ol,
+.pn-cm-budget-col-desc ul,
+.pn-cm-budget-col-desc ol,
+.pn-cm-budget-col-phase ul,
+.pn-cm-budget-col-phase ol,
+.pn-cm-budget-edit-item-popup .trumbowyg-editor ul,
+.pn-cm-budget-edit-item-popup .trumbowyg-editor ol {
+    margin: 4px 0;
+    padding-left: 20px;
+}
+
+.pn-customers-manager-budget-item-desc-display ul,
+.pn-cm-budget-col-desc ul,
+.pn-cm-budget-col-phase ul,
+.pn-cm-budget-edit-item-popup .trumbowyg-editor ul {
+    list-style-type: disc;
+}
+
+.pn-customers-manager-budget-item-desc-display ol,
+.pn-cm-budget-col-desc ol,
+.pn-cm-budget-col-phase ol,
+.pn-cm-budget-edit-item-popup .trumbowyg-editor ol {
+    list-style-type: decimal;
+}
+
+.pn-customers-manager-budget-item-desc-display li,
+.pn-cm-budget-col-desc li,
+.pn-cm-budget-col-phase li,
+.pn-cm-budget-edit-item-popup .trumbowyg-editor li {
+    display: list-item;
+    margin: 2px 0;
+}
+
+.pn-customers-manager-budget-item-desc-display p,
+.pn-cm-budget-edit-item-popup .trumbowyg-editor p {
+    margin: 4px 0;
+}
+
+/* --- Read-only admin table description display --- */
+.pn-customers-manager-budget-item-desc-display {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.pn-customers-manager-budget-item-phase .pn-customers-manager-budget-item-desc-display {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* --- Field edit pencil (admin only) --- */
+.pn-cm-budget-field-edit {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+    color: #999;
+    text-decoration: none;
+    vertical-align: middle;
+    transition: color .2s;
+}
+
+.pn-cm-budget-field-edit:hover {
+    color: #2271b1;
+}
+
+.pn-cm-budget-field-edit i {
+    font-size: 16px;
+}
+
+.pn-cm-budget-field-empty {
+    color: #999;
+    font-style: italic;
+}
+
+/* WYSIWYG content inside budget text blocks */
+.pn-cm-budget-field-content ul,
+.pn-cm-budget-field-content ol {
+    margin: 4px 0;
+    padding-left: 20px;
+}
+
+.pn-cm-budget-field-content ul {
+    list-style-type: disc;
+}
+
+.pn-cm-budget-field-content ol {
+    list-style-type: decimal;
+}
+
+.pn-cm-budget-field-content li {
+    display: list-item;
+    margin: 2px 0;
+}
+
+.pn-cm-budget-field-content p {
+    margin: 6px 0;
+}
+
+
 /* ==========================================================================
    6. CSV IMPORT / EXPORT (uses plugin popup system)
    ========================================================================== */
@@ -2259,4 +2808,146 @@ body.pn-customers-manager-budget-public .pn-customers-manager-popup-close-wrappe
 
 .pn-cm-csv-footer:empty {
     display: none;
+}
+
+/* --- AI prompt block --- */
+.pn-cm-budget-ai-prompt-block {
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f9f9f9;
+    overflow: hidden;
+}
+
+.pn-cm-budget-ai-prompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+}
+
+.pn-cm-budget-ai-prompt-text {
+    margin: 0;
+    padding: 14px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 350px;
+    overflow-y: auto;
+    color: #333;
+}
+
+/* --- Import items popup --- */
+.pn-cm-budget-import-popup-inner {
+    padding: 24px;
+    text-align: center;
+}
+
+.pn-cm-budget-import-popup-inner h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.pn-cm-budget-import-dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 40px 20px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.pn-cm-budget-import-dropzone:hover,
+.pn-cm-budget-import-dropzone-active {
+    border-color: #2271b1;
+    background: #f0f6fc;
+}
+
+.pn-cm-budget-import-dropzone p {
+    margin: 10px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.pn-cm-budget-import-status {
+    margin-top: 12px;
+}
+
+/* --- Bulk select mode --- */
+.pn-cm-budget-admin-buttons-separator {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    background: #ddd;
+    vertical-align: middle;
+    margin: 0 4px;
+}
+
+.pn-cm-budget-bulk-delete {
+    display: none !important;
+}
+
+.pn-cm-budget-bulk-select-toggle.active {
+    background: #1a73e8;
+    color: #fff !important;
+}
+
+.pn-cm-budget-bulk-select-toggle.active:hover {
+    background: #1565c0;
+}
+
+.pn-cm-budget-selecting .pn-cm-budget-bulk-delete {
+    display: inline-flex !important;
+    color: #dc3545 !important;
+}
+
+.pn-cm-budget-selecting .pn-cm-budget-bulk-delete:hover {
+    background: #fcf0f1;
+}
+
+.pn-cm-budget-selecting .pn-cm-budget-col-drag {
+    display: none !important;
+}
+
+.pn-cm-budget-bulk-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    margin-right: 4px;
+}
+
+.pn-cm-budget-bulk-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #1a73e8;
+}
+
+.pn-cm-budget-item-row.pn-cm-budget-bulk-checked {
+    background: #e8f0fe;
+    border-radius: 4px;
+}
+
+.pn-cm-budget-bulk-action-switch {
+    display: none !important;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.pn-cm-budget-bulk-action-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+}
+
+.pn-cm-budget-selecting .pn-cm-budget-bulk-action-switch {
+    display: inline-flex !important;
 }

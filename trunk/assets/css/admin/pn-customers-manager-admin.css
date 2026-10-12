@@ -191,3 +191,9 @@ body.folded .pn-customers-manager-settings-footer{
     text-align:right;
   }
 }
+/* Banner hide button */
+.pn-customers-manager-banner-wrapper{position:relative}
+.pn-customers-manager-banner-hide-btn{position:absolute;top:12px;right:12px;background:none;border:none;color:#333;cursor:pointer;padding:0;line-height:1;opacity:.7;transition:opacity .2s}
+.pn-customers-manager-banner-hide-btn:hover{opacity:1}
+.pn-customers-manager-banner-hide-btn i{font-size:22px}
+.pn-customers-manager-banner-loader-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.7);border-radius:20px;display:flex;align-items:center;justify-content:center}

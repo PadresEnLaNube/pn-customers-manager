@@ -241,6 +241,37 @@ class PN_CUSTOMERS_MANAGER_Activator {
       UNIQUE KEY product_email (product_id, email)
     ) {$charset_collate};";
 
+    $table_fila_cero = $wpdb->prefix . 'pn_cm_woo_fila_cero';
+
+    $sql .= "\nCREATE TABLE {$table_fila_cero} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      product_id BIGINT(20) UNSIGNED NOT NULL,
+      order_id BIGINT(20) UNSIGNED NOT NULL,
+      display_name VARCHAR(255) NOT NULL,
+      status VARCHAR(20) DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY product_id (product_id),
+      KEY order_id (order_id),
+      KEY status (status)
+    ) {$charset_collate};";
+
+    $table_mockup_comments = $wpdb->prefix . 'pn_cm_mockup_comments';
+
+    $sql .= "\nCREATE TABLE {$table_mockup_comments} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      mockup_flow_id BIGINT(20) UNSIGNED NOT NULL,
+      mockup_id VARCHAR(100) NOT NULL,
+      user_id BIGINT(20) UNSIGNED DEFAULT NULL,
+      user_name VARCHAR(255) NOT NULL,
+      comment_text LONGTEXT NOT NULL,
+      is_resolved TINYINT(1) DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY mockup_flow_id (mockup_flow_id),
+      KEY mockup_id (mockup_id)
+    ) {$charset_collate};";
+
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
 

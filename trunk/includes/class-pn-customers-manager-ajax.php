@@ -1178,6 +1178,16 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           PN_CUSTOMERS_MANAGER_Mail_Stats::ajax_dashboard_period();
           exit;
 
+        case 'pn_cm_hide_banner':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'permission_denied']);
+            exit;
+          }
+          update_option('pn_customers_manager_show_banner', '');
+          echo wp_json_encode(['error_key' => '']);
+          exit;
+          break;
+
         case 'pn_cm_settings_export':
           if (!current_user_can('manage_options')) {
             echo wp_json_encode(['error_key' => 'permission_denied']);
@@ -1421,34 +1431,57 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
             $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
-            $description = sanitize_text_field(wp_unslash($_POST['description'] ?? ''));
+            $description = wp_kses_post(wp_unslash($_POST['description'] ?? ''));
             $quantity    = floatval($_POST['quantity'] ?? 1);
             $unit_price  = floatval($_POST['unit_price'] ?? 0);
-            $is_optional = intval($_POST['is_optional'] ?? 0);
-            $total       = round($quantity * $unit_price, 2);
+            $is_optional      = intval($_POST['is_optional'] ?? 0);
+            $is_recurring     = intval($_POST['is_recurring'] ?? 0);
+            $recurring_period = sanitize_text_field(wp_unslash($_POST['recurring_period'] ?? ''));
+            $alt_of           = intval($_POST['alt_of'] ?? 0);
+            $total            = round($quantity * $unit_price, 2);
 
-            $item_id = PN_CUSTOMERS_MANAGER_Post_Type_Budget::add_budget_item($pn_cm_budget_id, [
-              'item_type'   => $item_type,
-              'description' => $description,
-              'quantity'    => $quantity,
-              'unit_price'  => $unit_price,
-              'is_optional' => $is_optional,
-              'is_selected' => 1,
-            ]);
+            $item_data = [
+              'item_type'        => $item_type,
+              'description'      => $description,
+              'quantity'         => $quantity,
+              'unit_price'       => $unit_price,
+              'is_optional'      => $is_optional,
+              'is_selected'      => 1,
+              'is_recurring'     => $is_recurring,
+              'recurring_period' => $recurring_period,
+              'alt_of'           => $alt_of,
+            ];
+
+            // If creating an alternative, place it right after the original item.
+            if ($alt_of > 0) {
+              $all_items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($pn_cm_budget_id);
+              foreach ($all_items as $ai) {
+                if (intval($ai['id']) === $alt_of) {
+                  $item_data['sort_order'] = intval($ai['sort_order']) + 1;
+                  break;
+                }
+              }
+            }
+
+            $item_id = PN_CUSTOMERS_MANAGER_Post_Type_Budget::add_budget_item($pn_cm_budget_id, $item_data);
 
             PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
 
             wp_send_json([
               'error_key' => '',
               'item' => [
-                'id'          => $item_id,
-                'item_type'   => $item_type,
-                'description' => $description,
-                'quantity'    => $quantity,
-                'unit_price'  => $unit_price,
-                'total'       => $total,
-                'is_optional' => $is_optional,
-                'is_selected' => 1,
+                'id'               => $item_id,
+                'item_type'        => $item_type,
+                'description'      => $description,
+                'quantity'         => $quantity,
+                'unit_price'       => $unit_price,
+                'total'            => $total,
+                'is_optional'      => $is_optional,
+                'is_selected'      => 1,
+                'is_recurring'     => $is_recurring,
+                'recurring_period' => $recurring_period,
+                'alt_of'           => $alt_of,
+                'alt_active'       => 'original',
               ],
               'totals' => [
                 'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
@@ -1493,6 +1526,83 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             ]);
           }
           wp_send_json(['error_key' => 'pn_cm_budget_remove_item_error']);
+          break;
+
+        case 'pn_cm_budget_bulk_remove_items':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_budget_bulk_remove_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_ids = !empty($_POST['item_ids']) ? json_decode(stripslashes($_POST['item_ids']), true) : [];
+          if (!empty($pn_cm_budget_id) && !empty($item_ids) && is_array($item_ids)) {
+            foreach ($item_ids as $iid) {
+              PN_CUSTOMERS_MANAGER_Post_Type_Budget::delete_budget_item($pn_cm_budget_id, intval($iid));
+            }
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_bulk_remove_error']);
+          break;
+
+        case 'pn_cm_budget_bulk_update_items':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_budget_bulk_update_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_ids = !empty($_POST['item_ids']) ? json_decode(stripslashes($_POST['item_ids']), true) : [];
+          $field = !empty($_POST['field']) ? sanitize_text_field($_POST['field']) : '';
+          $value = intval($_POST['value'] ?? 0);
+          if (!empty($pn_cm_budget_id) && !empty($item_ids) && is_array($item_ids) && in_array($field, ['is_optional', 'is_recurring'], true)) {
+            foreach ($item_ids as $iid) {
+              PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($pn_cm_budget_id, intval($iid), [$field => $value ? 1 : 0]);
+            }
+            PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_bulk_update_error']);
+          break;
+
+        case 'pn_cm_budget_toggle_alternative':
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+          if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            $item = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_item($pn_cm_budget_id, $item_id);
+            if ($item) {
+              $current = !empty($item['alt_active']) ? $item['alt_active'] : 'original';
+              $new_state = ($current === 'original') ? 'alternative' : 'original';
+              PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($pn_cm_budget_id, $item_id, ['alt_active' => $new_state]);
+              PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+              wp_send_json([
+                'error_key'  => '',
+                'alt_active' => $new_state,
+                'totals' => [
+                  'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+                  'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+                  'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+                  'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+                ],
+              ]);
+            }
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_toggle_alt_error']);
           break;
 
         case 'pn_cm_budget_reorder_items':
@@ -1565,31 +1675,37 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
           if (!empty($pn_cm_budget_id) && !empty($item_id)) {
             $item_type   = sanitize_text_field(wp_unslash($_POST['item_type'] ?? 'fixed'));
-            $description = sanitize_text_field(wp_unslash($_POST['description'] ?? ''));
+            $description = wp_kses_post(wp_unslash($_POST['description'] ?? ''));
             $quantity    = floatval($_POST['quantity'] ?? 0);
             $unit_price  = floatval($_POST['unit_price'] ?? 0);
-            $is_optional = intval($_POST['is_optional'] ?? 0);
-            $total       = round($quantity * $unit_price, 2);
+            $is_optional      = intval($_POST['is_optional'] ?? 0);
+            $is_recurring     = intval($_POST['is_recurring'] ?? 0);
+            $recurring_period = sanitize_text_field(wp_unslash($_POST['recurring_period'] ?? ''));
+            $total            = round($quantity * $unit_price, 2);
 
             PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($pn_cm_budget_id, $item_id, [
-              'item_type'   => $item_type,
-              'description' => $description,
-              'quantity'    => $quantity,
-              'unit_price'  => $unit_price,
-              'is_optional' => $is_optional,
+              'item_type'        => $item_type,
+              'description'      => $description,
+              'quantity'         => $quantity,
+              'unit_price'       => $unit_price,
+              'is_optional'      => $is_optional,
+              'is_recurring'     => $is_recurring,
+              'recurring_period' => $recurring_period,
             ]);
             PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
 
             wp_send_json([
               'error_key' => '',
               'item' => [
-                'id'          => $item_id,
-                'item_type'   => $item_type,
-                'description' => $description,
-                'quantity'    => $quantity,
-                'unit_price'  => $unit_price,
-                'total'       => $total,
-                'is_optional' => $is_optional,
+                'id'               => $item_id,
+                'item_type'        => $item_type,
+                'description'      => $description,
+                'quantity'         => $quantity,
+                'unit_price'       => $unit_price,
+                'total'            => $total,
+                'is_optional'      => $is_optional,
+                'is_recurring'     => $is_recurring,
+                'recurring_period' => $recurring_period,
               ],
               'totals' => [
                 'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
@@ -1615,6 +1731,32 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             ]);
           }
           wp_send_json(['error_key' => 'pn_cm_budget_edit_form_error']);
+          break;
+
+        case 'pn_cm_budget_update_field':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            wp_send_json(['error_key' => 'pn_cm_budget_update_field_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $field_key = !empty($_POST['field_key']) ? sanitize_text_field(wp_unslash($_POST['field_key'])) : '';
+          $field_value = isset($_POST['field_value']) ? wp_kses_post(wp_unslash($_POST['field_value'])) : '';
+
+          $allowed_fields = ['pn_cm_budget_client_notes', 'pn_cm_budget_conditions', 'pn_cm_budget_others'];
+          $allowed_status_values = ['draft', 'sent', 'accepted', 'rejected'];
+
+          if (!empty($pn_cm_budget_id) && $field_key === 'pn_cm_budget_status') {
+            $status_value = sanitize_text_field(wp_unslash($_POST['field_value']));
+            if (in_array($status_value, $allowed_status_values, true)) {
+              update_post_meta($pn_cm_budget_id, 'pn_cm_budget_status', $status_value);
+              wp_send_json(['error_key' => '', 'value' => $status_value]);
+            }
+          }
+
+          if (!empty($pn_cm_budget_id) && in_array($field_key, $allowed_fields, true)) {
+            update_post_meta($pn_cm_budget_id, $field_key, $field_value);
+            wp_send_json(['error_key' => '', 'value' => $field_value]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_budget_update_field_error']);
           break;
 
         case 'pn_cm_budget_send':
@@ -1716,7 +1858,172 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           ]);
           break;
 
-        // â”€â”€ Invoice AJAX cases â”€â”€
+        case 'pn_cm_budget_export_items':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_budget_export_items_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          if (empty($pn_cm_budget_id)) {
+            wp_send_json(['error_key' => 'pn_cm_budget_export_items_error', 'error_content' => esc_html(__('Budget ID is required.', 'pn-customers-manager'))]);
+          }
+
+          $items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($pn_cm_budget_id);
+          $budget_title = sanitize_file_name(get_the_title($pn_cm_budget_id));
+
+          header('Content-Type: text/csv; charset=UTF-8');
+          header('Content-Disposition: attachment; filename="budget-items-' . $budget_title . '.csv"');
+          header('Pragma: no-cache');
+          header('Expires: 0');
+
+          $output = fopen('php://output', 'w');
+          // UTF-8 BOM for Excel compatibility.
+          fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+          fputcsv($output, ['item_type', 'description', 'quantity', 'unit_price', 'is_optional', 'is_recurring', 'recurring_period', 'alt_of', 'alt_active']);
+
+          foreach ($items as $item) {
+            if (isset($item['item_type']) && $item['item_type'] === 'image') {
+              continue;
+            }
+            fputcsv($output, [
+              isset($item['item_type']) ? $item['item_type'] : 'fixed',
+              isset($item['description']) ? $item['description'] : '',
+              isset($item['item_type']) && $item['item_type'] === 'phase' ? '' : (isset($item['quantity']) ? floatval($item['quantity']) : 0),
+              isset($item['item_type']) && $item['item_type'] === 'phase' ? '' : (isset($item['unit_price']) ? floatval($item['unit_price']) : 0),
+              isset($item['is_optional']) ? intval($item['is_optional']) : 0,
+              isset($item['is_recurring']) ? intval($item['is_recurring']) : 0,
+              isset($item['recurring_period']) ? $item['recurring_period'] : '',
+              isset($item['alt_of']) ? intval($item['alt_of']) : 0,
+              isset($item['alt_active']) ? $item['alt_active'] : '',
+            ]);
+          }
+
+          fclose($output);
+          exit;
+          break;
+
+        case 'pn_cm_budget_import_items':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_budget_import_items_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          if (empty($pn_cm_budget_id)) {
+            wp_send_json(['error_key' => 'pn_cm_budget_import_items_error', 'error_content' => esc_html(__('Budget ID is required.', 'pn-customers-manager'))]);
+          }
+
+          if (empty($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json(['error_key' => 'pn_cm_budget_import_items_error', 'error_content' => esc_html(__('No valid CSV file uploaded.', 'pn-customers-manager'))]);
+          }
+
+          $csv_file = $_FILES['csv_file']['tmp_name'];
+          $handle = fopen($csv_file, 'r');
+          if (!$handle) {
+            wp_send_json(['error_key' => 'pn_cm_budget_import_items_error', 'error_content' => esc_html(__('Could not read the CSV file.', 'pn-customers-manager'))]);
+          }
+
+          // Skip UTF-8 BOM if present.
+          $bom = fread($handle, 3);
+          if ($bom !== chr(0xEF) . chr(0xBB) . chr(0xBF)) {
+            rewind($handle);
+          }
+
+          // Read and validate header row.
+          $header = fgetcsv($handle);
+          if (!$header) {
+            fclose($handle);
+            wp_send_json(['error_key' => 'pn_cm_budget_import_items_error', 'error_content' => esc_html(__('Empty CSV file.', 'pn-customers-manager'))]);
+          }
+          $header = array_map('trim', $header);
+          $header = array_map('strtolower', $header);
+
+          $valid_types = ['phase', 'fixed', 'hours', 'image'];
+          $valid_periods = ['daily', 'weekly', 'monthly', 'yearly', ''];
+          $new_items = [];
+          $row_number = 1;
+
+          while (($row = fgetcsv($handle)) !== false) {
+            $row_number++;
+            if (empty(array_filter($row))) {
+              continue; // skip empty rows
+            }
+
+            $data = [];
+            foreach ($header as $i => $col) {
+              $data[$col] = isset($row[$i]) ? $row[$i] : '';
+            }
+
+            $item_type = isset($data['item_type']) ? sanitize_text_field(trim($data['item_type'])) : 'fixed';
+            if (!in_array($item_type, $valid_types, true)) {
+              $item_type = 'fixed';
+            }
+
+            $description = isset($data['description']) ? wp_kses_post(trim($data['description'])) : '';
+            $quantity = isset($data['quantity']) ? floatval($data['quantity']) : ($item_type === 'phase' ? 0 : 1);
+            $unit_price = isset($data['unit_price']) ? floatval($data['unit_price']) : 0;
+            $is_optional = isset($data['is_optional']) ? intval($data['is_optional']) : 0;
+            $is_recurring = isset($data['is_recurring']) ? intval($data['is_recurring']) : 0;
+            $recurring_period = isset($data['recurring_period']) ? sanitize_text_field(trim($data['recurring_period'])) : '';
+            if (!in_array($recurring_period, $valid_periods, true)) {
+              $recurring_period = '';
+            }
+            $alt_of = isset($data['alt_of']) ? intval($data['alt_of']) : 0;
+            $alt_active = isset($data['alt_active']) ? sanitize_text_field(trim($data['alt_active'])) : '';
+
+            if ($item_type === 'phase') {
+              $quantity = 0;
+              $unit_price = 0;
+              $is_optional = 0;
+              $is_recurring = 0;
+              $recurring_period = '';
+            }
+
+            $item_id = PN_CUSTOMERS_MANAGER_Post_Type_Budget::add_budget_item($pn_cm_budget_id, [
+              'item_type'        => $item_type,
+              'description'      => $description,
+              'quantity'         => $quantity,
+              'unit_price'       => $unit_price,
+              'is_optional'      => $is_optional,
+              'is_selected'      => 1,
+              'is_recurring'     => $is_recurring,
+              'recurring_period' => $recurring_period,
+              'alt_of'           => $alt_of,
+              'alt_active'       => $alt_active,
+            ]);
+
+            $total = round($quantity * $unit_price, 2);
+            $new_items[] = [
+              'id'               => $item_id,
+              'item_type'        => $item_type,
+              'description'      => $description,
+              'quantity'         => $quantity,
+              'unit_price'       => $unit_price,
+              'total'            => $total,
+              'is_optional'      => $is_optional,
+              'is_selected'      => 1,
+              'is_recurring'     => $is_recurring,
+              'recurring_period' => $recurring_period,
+              'alt_of'           => $alt_of,
+              'alt_active'       => $alt_active,
+            ];
+          }
+
+          fclose($handle);
+
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
+
+          wp_send_json([
+            'error_key' => '',
+            'items' => $new_items,
+            'count' => count($new_items),
+            'totals' => [
+              'subtotal'        => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_subtotal', true)),
+              'tax_amount'      => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_tax_amount', true)),
+              'discount_amount' => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_discount_amount', true)),
+              'total'           => floatval(get_post_meta($pn_cm_budget_id, 'pn_cm_budget_total', true)),
+            ],
+          ]);
+          break;
+
+        // â"€â"€ Invoice AJAX cases â"€â"€
         case 'pn_cm_invoice_view':
           $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
           if (!empty($pn_cm_invoice_id)) {
@@ -2025,6 +2332,10 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock::handle_delete();
           break;
 
+        case 'pn_cm_woo_fila_cero_delete':
+          PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero::ajax_delete_entry();
+          break;
+
         case 'pn_cm_bis_export_csv':
           PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock::handle_export_csv();
           break;
@@ -2033,6 +2344,96 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $completed = !empty($_POST['completed']) ? intval($_POST['completed']) : 0;
           PN_CUSTOMERS_MANAGER_Tutorial::mark_completed($completed ? true : false);
           echo wp_json_encode(['success' => true]);
+          exit;
+          break;
+
+        case 'pn_cm_mockup_flow_save_canvas':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_save_canvas();
+          break;
+        case 'pn_cm_mockup_flow_add_comment':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_add_comment();
+          break;
+        case 'pn_cm_mockup_flow_get_comments':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_get_comments();
+          break;
+        case 'pn_cm_mockup_flow_get_image_urls':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_get_image_urls();
+          break;
+        case 'pn_cm_mockup_flow_download_all':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_download_all_images();
+          break;
+        case 'pn_cm_mockup_flow_import_images':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_import_images();
+          break;
+        case 'pn_cm_mockup_flow_resolve_comment':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_resolve_comment();
+          break;
+        case 'pn_cm_mockup_flow_delete_comment':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_delete_comment();
+          break;
+
+        case 'pn_cm_mockup_flow_new':
+          if (!is_user_logged_in()) {
+            echo wp_json_encode(['error_key' => 'not_logged_in', 'error_content' => esc_html(__('You must be logged in.', 'pn-customers-manager'))]);
+            exit;
+          }
+          echo wp_json_encode([
+            'error_key' => '',
+            'html' => PN_CUSTOMERS_MANAGER_Mockup_Flow::mockup_flow_new(),
+          ]);
+          exit;
+          break;
+
+        case 'pn_cm_mockup_flow_view':
+          $pn_cm_mockup_flow_id = !empty($_POST['pn_cm_mockup_flow_id']) ? intval($_POST['pn_cm_mockup_flow_id']) : 0;
+          if (!empty($pn_cm_mockup_flow_id)) {
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Mockup_Flow::mockup_flow_view($pn_cm_mockup_flow_id),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_mockup_flow_view_error', 'error_content' => esc_html(__('Mockup Flow not found.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_mockup_flow_edit':
+          $pn_cm_mockup_flow_id = !empty($_POST['pn_cm_mockup_flow_id']) ? intval($_POST['pn_cm_mockup_flow_id']) : 0;
+          if (!empty($pn_cm_mockup_flow_id)) {
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Mockup_Flow::mockup_flow_edit($pn_cm_mockup_flow_id),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_mockup_flow_edit_error', 'error_content' => esc_html(__('Mockup Flow not found.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_mockup_flow_remove_confirm':
+          $pn_cm_mockup_flow_id = !empty($_POST['pn_cm_mockup_flow_id']) ? intval($_POST['pn_cm_mockup_flow_id']) : 0;
+          if (!empty($pn_cm_mockup_flow_id)) {
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Mockup_Flow::mockup_flow_remove_confirm($pn_cm_mockup_flow_id),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_mockup_flow_remove_error', 'error_content' => esc_html(__('Mockup Flow not found.', 'pn-customers-manager'))]);
+          exit;
+          break;
+
+        case 'pn_cm_mockup_flow_remove':
+          $pn_cm_mockup_flow_id = !empty($_POST['pn_cm_mockup_flow_id']) ? intval($_POST['pn_cm_mockup_flow_id']) : 0;
+          if (!empty($pn_cm_mockup_flow_id)) {
+            wp_delete_post($pn_cm_mockup_flow_id, true);
+            echo wp_json_encode([
+              'error_key' => '',
+              'html' => PN_CUSTOMERS_MANAGER_Mockup_Flow::mockup_flow_list(),
+            ]);
+            exit;
+          }
+          echo wp_json_encode(['error_key' => 'pn_cm_mockup_flow_remove_error', 'error_content' => esc_html(__('An error occurred.', 'pn-customers-manager'))]);
           exit;
           break;
       }

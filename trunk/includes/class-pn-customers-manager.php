@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.2.46';
+			$this->pn_customers_manager_version = '1.2.95';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -88,6 +88,7 @@ class PN_CUSTOMERS_MANAGER
 		self::pn_customers_manager_define_cta_hooks();
 		self::pn_customers_manager_define_recurring_invoices_hooks();
 		self::pn_customers_manager_define_woocommerce_hooks();
+		self::pn_customers_manager_define_mockup_flow_hooks();
 	}
 
 	/**
@@ -212,6 +213,11 @@ class PN_CUSTOMERS_MANAGER
 		 * The class managing WooCommerce Back in Stock notifications.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-woo-back-in-stock.php';
+
+		/**
+		 * The class providing the Mockup Flow viewer.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-mockup-flow.php';
 
 		/**
 		 * The class defining settings.
@@ -585,6 +591,11 @@ class PN_CUSTOMERS_MANAGER
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', $plugin_post_type_budget, 'pn_cm_budget_template_redirect');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('query_vars', $plugin_post_type_budget, 'pn_cm_budget_query_vars');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-budget-list', $plugin_post_type_budget, 'pn_cm_budget_list_wrapper');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('manage_pn_cm_budget_posts_columns', $plugin_post_type_budget, 'pn_cm_budget_admin_columns');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('manage_pn_cm_budget_posts_custom_column', $plugin_post_type_budget, 'pn_cm_budget_admin_column_content', 10, 2);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('manage_edit-pn_cm_budget_sortable_columns', $plugin_post_type_budget, 'pn_cm_budget_admin_sortable_columns');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pre_get_posts', $plugin_post_type_budget, 'pn_cm_budget_admin_sort_columns');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_post_type_budget, 'pn_cm_budget_admin_list_styles');
 
 		$plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', $plugin_post_type_invoice, 'pn_cm_invoice_register_post_type');
@@ -707,6 +718,9 @@ class PN_CUSTOMERS_MANAGER
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Shortcodes', 'register_button_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Social_Media', 'register_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Woo_CTA', 'register_block');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-mockup-flow', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'shortcode_handler');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-mockup-flow-list', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'list_wrapper');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'register_block');
 	}
 
 	/**
@@ -971,6 +985,16 @@ class PN_CUSTOMERS_MANAGER
 			PN_CUSTOMERS_MANAGER_WooCommerce::instance();
 			new PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock();
 		}
+	}
+
+	/**
+	 * Register Mockup Flow hooks.
+	 */
+	private function pn_customers_manager_define_mockup_flow_hooks()
+	{
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'register_post_type');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'add_meta_box');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('save_post_pn_cm_mockup_flow', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'save_post');
 	}
 
 	/**

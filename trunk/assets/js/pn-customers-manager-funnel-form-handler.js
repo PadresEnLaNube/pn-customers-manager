@@ -54,7 +54,7 @@
 
       if (!allFilled) {
         feedback.className = 'pn-cm-funnel-form-feedback pn-cm-funnel-form-error';
-        feedback.textContent = i18n.requiredFields || 'Por favor, completa todos los campos obligatorios.';
+        feedback.textContent = i18n.requiredFields || 'Please complete all required fields.';
         return;
       }
 
@@ -65,7 +65,7 @@
         var emailVal = emailInputs[ei].value.trim();
         if (emailVal && !emailRegex.test(emailVal)) {
           feedback.className = 'pn-cm-funnel-form-feedback pn-cm-funnel-form-error';
-          feedback.textContent = i18n.invalidEmail || 'Introduce un correo electr\u00f3nico v\u00e1lido.';
+          feedback.textContent = i18n.invalidEmail || 'Please enter a valid email address.';
           return;
         }
       }
@@ -142,19 +142,19 @@
         var backBtn = document.createElement('button');
         backBtn.type = 'button';
         backBtn.className = 'pn-cm-funnel-form-nav-btn';
-        backBtn.textContent = i18n.back || 'Atrás';
+        backBtn.textContent = i18n.back || 'Back';
 
         var nextBtn = document.createElement('button');
         nextBtn.type = 'button';
         nextBtn.className = 'pn-cm-funnel-form-nav-btn';
-        nextBtn.textContent = i18n.next || 'Siguiente';
+        nextBtn.textContent = i18n.next || 'Next';
 
         // Clone the original submit button for the last step
         var origSubmitBtn = form.querySelector('button[type="submit"]');
         var navSubmitBtn = document.createElement('button');
         navSubmitBtn.type = 'submit';
         navSubmitBtn.className = 'pn-customers-manager-btn pn-cm-funnel-form-nav-submit';
-        navSubmitBtn.textContent = origSubmitBtn ? origSubmitBtn.textContent : 'Enviar';
+        navSubmitBtn.textContent = origSubmitBtn ? origSubmitBtn.textContent : 'Submit';
 
         navBar.appendChild(backBtn);
         navBar.appendChild(nextBtn);
@@ -183,7 +183,7 @@
           nextBtn.style.display = currentStep === totalSteps - 1 ? 'none' : '';
           navSubmitBtn.style.display = currentStep === totalSteps - 1 ? '' : 'none';
           progressBar.style.width = ((currentStep + 1) / totalSteps * 100) + '%';
-          progressText.textContent = (currentStep + 1) + ' ' + (i18n.stepOf || 'de') + ' ' + totalSteps;
+          progressText.textContent = (currentStep + 1) + ' ' + (i18n.stepOf || 'of') + ' ' + totalSteps;
         }
 
         function validateCurrentStep() {
@@ -193,7 +193,7 @@
               var feedbackMsg = form.querySelector('.pn-cm-funnel-form-feedback');
               if (feedbackMsg) {
                 feedbackMsg.className = 'pn-cm-funnel-form-feedback pn-cm-funnel-form-error';
-                feedbackMsg.textContent = i18n.requiredFields || 'Por favor, completa todos los campos obligatorios.';
+                feedbackMsg.textContent = i18n.requiredFields || 'Please complete all required fields.';
               }
               currentFields[vi].focus();
               return false;
@@ -208,7 +208,7 @@
               var feedbackMsg2 = form.querySelector('.pn-cm-funnel-form-feedback');
               if (feedbackMsg2) {
                 feedbackMsg2.className = 'pn-cm-funnel-form-feedback pn-cm-funnel-form-error';
-                feedbackMsg2.textContent = i18n.invalidEmail || 'Introduce un correo electrónico válido.';
+                feedbackMsg2.textContent = i18n.invalidEmail || 'Please enter a valid email address.';
               }
               emailFields[efi].focus();
               return false;
@@ -268,7 +268,7 @@
           closeBtn.type = 'button';
           closeBtn.className = 'pn-cm-funnel-form-fullscreen-close';
           closeBtn.innerHTML = '<span style="font-size:28px;line-height:1">&times;</span>';
-          closeBtn.setAttribute('title', i18n.closeForm || 'Cerrar');
+          closeBtn.setAttribute('title', i18n.closeForm || 'Close');
           fsOverlay.appendChild(closeBtn);
 
           // Container inside overlay

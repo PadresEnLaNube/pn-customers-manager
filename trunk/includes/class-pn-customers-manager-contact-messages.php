@@ -158,7 +158,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
         <?php if ($view === 'spam'): ?>
           <?php esc_html_e('No hay mensajes marcados como spam.', 'pn-customers-manager'); ?>
         <?php else: ?>
-          <?php esc_html_e('No hay mensajes de contacto todavía.', 'pn-customers-manager'); ?>
+          <?php esc_html_e('No contact messages yet.', 'pn-customers-manager'); ?>
         <?php endif; ?>
       </p>
     <?php else: ?>
@@ -169,7 +169,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
             <th><?php esc_html_e('Nombre', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Email', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Asunto', 'pn-customers-manager'); ?></th>
-            <th><?php esc_html_e('Página', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Page', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Fecha', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Acciones', 'pn-customers-manager'); ?></th>
           </tr>
@@ -179,9 +179,9 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
             <tr class="pn-customers-manager-message-row <?php echo $msg->is_read ? 'pn-customers-manager-message-read' : 'pn-customers-manager-message-unread'; ?><?php echo !empty($msg->is_spam) ? ' pn-customers-manager-message-spam' : ''; ?>" data-id="<?php echo esc_attr($msg->id); ?>">
               <td class="pn-customers-manager-messages-col-status">
                 <?php if ($msg->is_read): ?>
-                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-read" title="<?php esc_attr_e('Leído', 'pn-customers-manager'); ?>"></span>
+                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-read" title="<?php esc_attr_e('Read', 'pn-customers-manager'); ?>"></span>
                 <?php else: ?>
-                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-unread" title="<?php esc_attr_e('No leído', 'pn-customers-manager'); ?>"></span>
+                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-unread" title="<?php esc_attr_e('Unread', 'pn-customers-manager'); ?>"></span>
                 <?php endif; ?>
               </td>
               <td><?php echo esc_html($msg->contact_name); ?></td>
@@ -202,7 +202,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
                   <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">expand_more</span>
                 </a>
                 <?php if (!$msg->is_read && empty($msg->is_spam)): ?>
-                  <a href="#" class="pn-customers-manager-msg-mark-read" data-id="<?php echo esc_attr($msg->id); ?>" title="<?php esc_attr_e('Marcar como leído', 'pn-customers-manager'); ?>">
+                  <a href="#" class="pn-customers-manager-msg-mark-read" data-id="<?php echo esc_attr($msg->id); ?>" title="<?php esc_attr_e('Mark as read', 'pn-customers-manager'); ?>">
                     <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">done</span>
                   </a>
                 <?php endif; ?>
@@ -226,7 +226,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
                   <p><strong><?php esc_html_e('De:', 'pn-customers-manager'); ?></strong> <?php echo esc_html($msg->contact_name); ?> &lt;<?php echo esc_html($msg->contact_email); ?>&gt;</p>
                   <p><strong><?php esc_html_e('Para:', 'pn-customers-manager'); ?></strong> <?php echo esc_html($msg->recipient_email); ?></p>
                   <?php if (!empty($msg->source_url)): ?>
-                    <p><strong><?php esc_html_e('Página de origen:', 'pn-customers-manager'); ?></strong> <a href="<?php echo esc_url($msg->source_url); ?>" target="_blank"><?php echo esc_html($msg->source_url); ?></a></p>
+                    <p><strong><?php esc_html_e('Source page:', 'pn-customers-manager'); ?></strong> <a href="<?php echo esc_url($msg->source_url); ?>" target="_blank"><?php echo esc_html($msg->source_url); ?></a></p>
                   <?php endif; ?>
                   <p><strong><?php esc_html_e('IP:', 'pn-customers-manager'); ?></strong> <?php echo esc_html($msg->ip_address); ?></p>
                   <hr>
@@ -286,7 +286,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
     ob_start();
     ?>
     <?php if (empty($submissions)): ?>
-      <p><?php esc_html_e('No hay formularios enviados todavía.', 'pn-customers-manager'); ?></p>
+      <p><?php esc_html_e('No form submissions yet.', 'pn-customers-manager'); ?></p>
     <?php else: ?>
       <table class="pn-customers-manager-messages-table">
         <thead>
@@ -295,7 +295,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
             <th><?php esc_html_e('Formulario', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Email', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Usuario', 'pn-customers-manager'); ?></th>
-            <th><?php esc_html_e('Página', 'pn-customers-manager'); ?></th>
+            <th><?php esc_html_e('Page', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Fecha', 'pn-customers-manager'); ?></th>
             <th><?php esc_html_e('Acciones', 'pn-customers-manager'); ?></th>
           </tr>
@@ -315,9 +315,9 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
             <tr class="pn-customers-manager-message-row <?php echo $sub->is_read ? 'pn-customers-manager-message-read' : 'pn-customers-manager-message-unread'; ?>" data-id="<?php echo esc_attr($sub->id); ?>">
               <td class="pn-customers-manager-messages-col-status">
                 <?php if ($sub->is_read): ?>
-                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-read" title="<?php esc_attr_e('Leído', 'pn-customers-manager'); ?>"></span>
+                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-read" title="<?php esc_attr_e('Read', 'pn-customers-manager'); ?>"></span>
                 <?php else: ?>
-                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-unread" title="<?php esc_attr_e('No leído', 'pn-customers-manager'); ?>"></span>
+                  <span class="pn-customers-manager-status-dot pn-customers-manager-status-unread" title="<?php esc_attr_e('Unread', 'pn-customers-manager'); ?>"></span>
                 <?php endif; ?>
               </td>
               <td><?php echo esc_html(!empty($sub->form_title) ? $sub->form_title : __('Formulario', 'pn-customers-manager')); ?></td>
@@ -344,7 +344,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
                   <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">expand_more</span>
                 </a>
                 <?php if (!$sub->is_read): ?>
-                  <a href="#" class="pn-customers-manager-form-mark-read" data-id="<?php echo esc_attr($sub->id); ?>" title="<?php esc_attr_e('Marcar como leído', 'pn-customers-manager'); ?>">
+                  <a href="#" class="pn-customers-manager-form-mark-read" data-id="<?php echo esc_attr($sub->id); ?>" title="<?php esc_attr_e('Mark as read', 'pn-customers-manager'); ?>">
                     <span class="material-icons-outlined" style="font-size:18px;vertical-align:middle;">done</span>
                   </a>
                 <?php endif; ?>
@@ -407,7 +407,7 @@ class PN_CUSTOMERS_MANAGER_Contact_Messages {
    */
   public static function render_page() {
     if (!current_user_can('manage_options')) {
-      wp_die(esc_html__('No tienes permiso para acceder a esta página.', 'pn-customers-manager'));
+      wp_die(esc_html__('You do not have permission to access this page.', 'pn-customers-manager'));
     }
 
     $view         = self::normalize_view(isset($_GET['view']) ? $_GET['view'] : '');

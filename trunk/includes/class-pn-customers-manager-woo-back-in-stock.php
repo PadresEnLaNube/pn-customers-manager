@@ -79,6 +79,19 @@ class PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock
 			defined('PN_CUSTOMERS_MANAGER_VERSION') ? PN_CUSTOMERS_MANAGER_VERSION : '1.0.0'
 		);
 
+		// Inject corporate identity CSS custom properties for global button/input classes
+		$corporate_defaults = [
+			'color_main' => '#0000aa', 'bg_color_main' => '#0000aa', 'border_color_main' => '#0000aa',
+			'color_main_alt' => '#232323', 'bg_color_main_alt' => '#232323',
+		];
+		$css_vars = ':root{';
+		foreach ($corporate_defaults as $key => $default) {
+			$val = sanitize_hex_color(get_option('pn_customers_manager_' . $key, $default)) ?: $default;
+			$css_vars .= '--pn-customers-manager-' . str_replace('_', '-', $key) . ':' . $val . ';';
+		}
+		$css_vars .= '}';
+		wp_add_inline_style('pn-cm-bis-styles', $css_vars);
+
 		// Load Material Icons for the admin panel toggle
 		if (current_user_can('manage_options') && !wp_style_is('wph-material-icons-outlined', 'enqueued')) {
 			wp_enqueue_style(
@@ -316,14 +329,14 @@ class PN_CUSTOMERS_MANAGER_Woo_Back_In_Stock
 		}
 		?>
 		<div class="pn-cm-bis-admin pn-cm-bis-admin--collapsed" id="pn-cm-bis-admin">
-			<div class="pn-cm-bis-admin__header" id="pn-cm-bis-admin-toggle" style="cursor:pointer;">
+			<div class="pn-cm-bis-admin__header" id="pn-cm-bis-admin-toggle">
 				<h4 class="pn-cm-bis-admin__title">
 					<i class="material-icons-outlined pn-cm-bis-admin__toggle-icon">expand_more</i>
 					<?php echo esc_html__('Subscribers', 'pn-customers-manager'); ?>
 					<span class="pn-cm-bis-admin__count"><?php echo esc_html($pending); ?> <?php echo esc_html__('pending', 'pn-customers-manager'); ?></span>
 				</h4>
 				<?php if ($count > 0) : ?>
-				<button type="button" class="pn-cm-bis-admin__export" id="pn-cm-bis-export">
+				<button type="button" class="pn-cm-bis-admin__export pn-customers-manager-btn pn-customers-manager-btn-transparent pn-customers-manager-btn-mini" id="pn-cm-bis-export">
 					<?php echo esc_html__('Export CSV', 'pn-customers-manager'); ?>
 				</button>
 				<?php endif; ?>

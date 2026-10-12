@@ -1,3 +1,4 @@
+.pn-customers-manager-tooltip-box,
 .hostpn-tooltip-box {
     position: fixed;
     z-index: 9997;
@@ -14,9 +15,11 @@
     box-sizing: border-box;
     word-wrap: break-word;
 }
+.pn-customers-manager-tooltip-box--visible,
 .hostpn-tooltip-box--visible {
     opacity: 1;
 }
+.pn-customers-manager-tooltip-box::after,
 .hostpn-tooltip-box::after {
     content: '';
     position: absolute;
@@ -26,6 +29,7 @@
     border: 6px solid transparent;
     border-top-color: #232323;
 }
+.pn-customers-manager-tooltip-box--bottom::after,
 .hostpn-tooltip-box--bottom::after {
     top: auto;
     bottom: 100%;

@@ -129,12 +129,11 @@
 			var hmfIndex = $list.find('.pn-cm-html-multi-field-item').length;
 
 			var $newField = $('<div class="pn-cm-html-multi-field-item">' +
-				'<div style="display: flex; gap: 10px; margin-bottom: 5px; align-items: center;">' +
-				'<input type="text" ' +
+				'<div class="pn-cm-html-multi-field-item__row">' +
+				'<input type="text" class="pn-cm-html-multi-field-item__label" ' +
 				'name="_pn_cm_checkout_fields[' + fieldIndex + '][html_multi_fields][' + hmfIndex + '][label]" ' +
-				'placeholder="Field Label" style="flex: 2;" />' +
-				'<select name="_pn_cm_checkout_fields[' + fieldIndex + '][html_multi_fields][' + hmfIndex + '][type]" ' +
-				'style="flex: 1;">' +
+				'placeholder="Field Label" />' +
+				'<select class="pn-cm-html-multi-field-item__type" name="_pn_cm_checkout_fields[' + fieldIndex + '][html_multi_fields][' + hmfIndex + '][type]">' +
 				'<option value="text">Text</option>' +
 				'<option value="email">Email</option>' +
 				'<option value="tel">Phone</option>' +
@@ -142,7 +141,7 @@
 				'<option value="date">Date</option>' +
 				'<option value="textarea">Textarea</option>' +
 				'</select>' +
-				'<label style="margin: 0; display: flex; align-items: center; gap: 5px; white-space: nowrap;">' +
+				'<label class="pn-cm-html-multi-field-item__required">' +
 				'<input type="checkbox" ' +
 				'name="_pn_cm_checkout_fields[' + fieldIndex + '][html_multi_fields][' + hmfIndex + '][required]" ' +
 				'value="1" />' +

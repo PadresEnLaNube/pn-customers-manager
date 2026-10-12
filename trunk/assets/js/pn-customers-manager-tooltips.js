@@ -7,7 +7,7 @@
 
     function createTooltipBox() {
         if (!$tooltipBox) {
-            $tooltipBox = $('<div class="hostpn-tooltip-box"></div>');
+            $tooltipBox = $('<div class="pn-customers-manager-tooltip-box hostpn-tooltip-box"></div>');
             $('body').append($tooltipBox);
         }
         return $tooltipBox;
@@ -25,22 +25,22 @@
         if (left + boxWidth > window.innerWidth - 4) left = window.innerWidth - boxWidth - 4;
 
         if (spaceAbove >= boxHeight + 10) {
-            box.removeClass('hostpn-tooltip-box--bottom');
+            box.removeClass('pn-customers-manager-tooltip-box--bottom hostpn-tooltip-box--bottom');
             box.css({ top: rect.top - boxHeight - 8, left: left });
         } else {
-            box.addClass('hostpn-tooltip-box--bottom');
+            box.addClass('pn-customers-manager-tooltip-box--bottom hostpn-tooltip-box--bottom');
             box.css({ top: rect.bottom + 8, left: left });
         }
     }
 
     function getTooltipContent(el) {
         var $el = $(el);
-        var contentSelector = $el.attr('data-hostpn-tooltip-content');
+        var contentSelector = $el.attr('data-pn-customers-manager-tooltip-content') || $el.attr('data-hostpn-tooltip-content');
         if (contentSelector) {
             var $source = $(contentSelector);
             if ($source.length) return $source.html();
         }
-        var text = $el.attr('data-hostpn-tooltip');
+        var text = $el.attr('data-pn-customers-manager-tooltip') || $el.attr('data-hostpn-tooltip');
         if (text) return $('<span>').text(text).html();
         return null;
     }
@@ -52,14 +52,14 @@
         if (!content) return;
         var box = createTooltipBox();
         box.html(content);
-        box.addClass('hostpn-tooltip-box--visible');
+        box.addClass('pn-customers-manager-tooltip-box--visible hostpn-tooltip-box--visible');
         positionTooltip(el);
     }
 
     function hideTooltip() {
         clearTimeout(touchTimeout);
         if ($tooltipBox) {
-            $tooltipBox.removeClass('hostpn-tooltip-box--visible hostpn-tooltip-box--bottom');
+            $tooltipBox.removeClass('pn-customers-manager-tooltip-box--visible hostpn-tooltip-box--visible pn-customers-manager-tooltip-box--bottom hostpn-tooltip-box--bottom');
         }
     }
 
@@ -68,8 +68,8 @@
             selector = selector || '.pn-customers-manager-tooltip';
             $(selector).each(function() {
                 var $el = $(this);
-                if ($el.attr('title') && !$el.attr('data-hostpn-tooltip')) {
-                    $el.attr('data-hostpn-tooltip', $el.attr('title'));
+                if ($el.attr('title') && !$el.attr('data-pn-customers-manager-tooltip')) {
+                    $el.attr('data-pn-customers-manager-tooltip', $el.attr('title'));
                     $el.removeAttr('title');
                 }
             });
@@ -83,8 +83,8 @@
 
     $(document).on('mouseenter', '.pn-customers-manager-tooltip', function() {
         var $el = $(this);
-        if ($el.attr('title') && !$el.attr('data-hostpn-tooltip')) {
-            $el.attr('data-hostpn-tooltip', $el.attr('title'));
+        if ($el.attr('title') && !$el.attr('data-pn-customers-manager-tooltip')) {
+            $el.attr('data-pn-customers-manager-tooltip', $el.attr('title'));
             $el.removeAttr('title');
         }
         showTooltip(this);
@@ -92,8 +92,8 @@
     $(document).on('mouseleave', '.pn-customers-manager-tooltip', function() { hideTooltip(); });
     $(document).on('focusin', '.pn-customers-manager-tooltip', function() {
         var $el = $(this);
-        if ($el.attr('title') && !$el.attr('data-hostpn-tooltip')) {
-            $el.attr('data-hostpn-tooltip', $el.attr('title'));
+        if ($el.attr('title') && !$el.attr('data-pn-customers-manager-tooltip')) {
+            $el.attr('data-pn-customers-manager-tooltip', $el.attr('title'));
             $el.removeAttr('title');
         }
         showTooltip(this);
@@ -101,8 +101,8 @@
     $(document).on('focusout', '.pn-customers-manager-tooltip', function() { hideTooltip(); });
     $(document).on('touchstart', '.pn-customers-manager-tooltip', function(e) {
         var $el = $(this);
-        if ($el.attr('title') && !$el.attr('data-hostpn-tooltip')) {
-            $el.attr('data-hostpn-tooltip', $el.attr('title'));
+        if ($el.attr('title') && !$el.attr('data-pn-customers-manager-tooltip')) {
+            $el.attr('data-pn-customers-manager-tooltip', $el.attr('title'));
             $el.removeAttr('title');
         }
         showTooltip(this);

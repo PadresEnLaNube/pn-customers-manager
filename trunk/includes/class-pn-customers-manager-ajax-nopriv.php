@@ -105,7 +105,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (empty($referral_email) || !is_email($referral_email)) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_invalid_email',
-              'error_content' => esc_html__('Introduce un correo electrónico válido.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Please enter a valid email address.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -126,7 +126,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if ($attempts >= 5) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_qr_referral_rate_limit',
-              'error_content' => esc_html__('Demasiados intentos. Inténtalo de nuevo más tarde.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Too many attempts. Please try again later.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -195,7 +195,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (!is_email($contact_email)) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_invalid_email',
-              'error_content' => esc_html__('Introduce un correo electrónico válido.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Please enter a valid email address.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -336,7 +336,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           if (!$sent) {
             echo wp_json_encode([
               'error_key'     => 'pn_cm_contact_send_failed',
-              'error_content' => esc_html__('No se pudo enviar el mensaje. Inténtalo de nuevo más tarde.', 'pn-customers-manager'),
+              'error_content' => esc_html__('Could not send the message. Please try again later.', 'pn-customers-manager'),
             ]);
             exit;
           }
@@ -350,6 +350,23 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
 
         case 'pn_cm_funnel_form_submit':
           PN_CUSTOMERS_MANAGER_Funnel_Form::handle_submission();
+          break;
+
+        case 'pn_cm_mockup_flow_get_comments':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_get_comments();
+          break;
+        case 'pn_cm_mockup_flow_get_image_urls':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_get_image_urls();
+          break;
+        case 'pn_cm_mockup_flow_download_all':
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_download_all_images();
+          break;
+        case 'pn_cm_mockup_flow_add_comment':
+          if (!is_user_logged_in()) {
+            echo wp_json_encode(['error_key' => 'pn_cm_mf_login_required', 'error_content' => esc_html__('You must be logged in to add comments.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Mockup_Flow::ajax_add_comment();
           break;
 
         case 'cm_pn_form_save':
@@ -553,6 +570,9 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
                     $update_html = $plugin_post_type_budget->pn_cm_budget_list();
                     break;
+                  case 'pn_cm_mockup_flow':
+                    $update_html = PN_CUSTOMERS_MANAGER_Mockup_Flow::mockup_flow_list();
+                    break;
                 }
               }else{
                 $update_html = '';
@@ -657,6 +677,51 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           ]);
           exit;
 
+        case 'pn_cm_budget_toggle_alternative':
+          $budget_id    = isset($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
+          $budget_token = isset($_POST['budget_token']) ? sanitize_text_field(wp_unslash($_POST['budget_token'])) : '';
+          $item_id      = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
+
+          if (empty($budget_id) || empty($budget_token) || empty($item_id)) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid request.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $stored_token = get_post_meta($budget_id, 'pn_cm_budget_token', true);
+          if (empty($stored_token) || $stored_token !== $budget_token) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid token.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $status = get_post_meta($budget_id, 'pn_cm_budget_status', true);
+          if ($status !== 'sent') {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('This budget cannot be modified.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $item = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_item($budget_id, $item_id);
+          if (!$item) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Item not found.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $current = !empty($item['alt_active']) ? $item['alt_active'] : 'original';
+          $new_state = ($current === 'original') ? 'alternative' : 'original';
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_budget_item($budget_id, $item_id, ['alt_active' => $new_state]);
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($budget_id);
+
+          echo wp_json_encode([
+            'success'    => true,
+            'alt_active' => $new_state,
+            'data' => [
+              'subtotal' => get_post_meta($budget_id, 'pn_cm_budget_subtotal', true),
+              'discount' => get_post_meta($budget_id, 'pn_cm_budget_discount_amount', true),
+              'tax'      => get_post_meta($budget_id, 'pn_cm_budget_tax_amount', true),
+              'total'    => get_post_meta($budget_id, 'pn_cm_budget_total', true),
+            ],
+          ]);
+          exit;
+
         case 'pn_cm_budget_accept':
           $budget_id    = isset($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           $budget_token = isset($_POST['budget_token']) ? sanitize_text_field(wp_unslash($_POST['budget_token'])) : '';
@@ -681,10 +746,52 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           update_post_meta($budget_id, 'pn_cm_budget_status', 'accepted');
           update_post_meta($budget_id, 'pn_cm_budget_accepted_at', current_time('mysql'));
 
-          // Store acceptor email if provided (non-logged-in users).
+          // Store acceptor email.
           $acceptor_email = isset($_POST['acceptor_email']) ? sanitize_email(wp_unslash($_POST['acceptor_email'])) : '';
           if (!empty($acceptor_email)) {
             update_post_meta($budget_id, 'pn_cm_budget_accepted_by_email', $acceptor_email);
+          }
+
+          // Store acceptor name.
+          $acceptor_name = isset($_POST['acceptor_name']) ? sanitize_text_field(wp_unslash($_POST['acceptor_name'])) : '';
+          if (!empty($acceptor_name)) {
+            update_post_meta($budget_id, 'pn_cm_budget_accepted_by_name', $acceptor_name);
+          }
+
+          // Save signature image as attachment.
+          $signature_data = isset($_POST['signature_data']) ? wp_unslash($_POST['signature_data']) : '';
+          if (!empty($signature_data) && strpos($signature_data, 'data:image/png;base64,') === 0) {
+            $base64 = str_replace('data:image/png;base64,', '', $signature_data);
+            $decoded = base64_decode($base64);
+
+            if ($decoded !== false) {
+              $upload_dir = wp_upload_dir();
+              $sig_dir = $upload_dir['basedir'] . '/pn-cm-budget-signatures';
+              if (!file_exists($sig_dir)) {
+                wp_mkdir_p($sig_dir);
+              }
+
+              $filename = 'signature-budget-' . $budget_id . '-' . time() . '.png';
+              $filepath = $sig_dir . '/' . $filename;
+
+              if (file_put_contents($filepath, $decoded) !== false) {
+                $file_url = $upload_dir['baseurl'] . '/pn-cm-budget-signatures/' . $filename;
+                $attachment = array(
+                  'post_mime_type' => 'image/png',
+                  'post_title'    => 'Signature - Budget #' . get_post_meta($budget_id, 'pn_cm_budget_number', true),
+                  'post_content'  => '',
+                  'post_status'   => 'inherit',
+                  'post_parent'   => $budget_id,
+                );
+                $attach_id = wp_insert_attachment($attachment, $filepath, $budget_id);
+                if (!is_wp_error($attach_id)) {
+                  require_once ABSPATH . 'wp-admin/includes/image.php';
+                  $attach_data = wp_generate_attachment_metadata($attach_id, $filepath);
+                  wp_update_attachment_metadata($attach_id, $attach_data);
+                  update_post_meta($budget_id, 'pn_cm_budget_signature_attachment_id', $attach_id);
+                }
+              }
+            }
           }
 
           // --- Send acceptance notification emails ---
@@ -834,11 +941,30 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
     if ( ! empty( $org_name ) ) {
       $html_body .= '<p><strong>' . esc_html__( 'Client', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $org_name ) . '</p>';
     }
+    $acceptor_name  = get_post_meta( $budget_id, 'pn_cm_budget_accepted_by_name', true );
     $acceptor_email = get_post_meta( $budget_id, 'pn_cm_budget_accepted_by_email', true );
-    if ( ! empty( $acceptor_email ) ) {
+    if ( ! empty( $acceptor_name ) ) {
+      $html_body .= '<p><strong>' . esc_html__( 'Signed by', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $acceptor_name );
+      if ( ! empty( $acceptor_email ) ) {
+        $html_body .= ' (' . esc_html( $acceptor_email ) . ')';
+      }
+      $html_body .= '</p>';
+    } elseif ( ! empty( $acceptor_email ) ) {
       $html_body .= '<p><strong>' . esc_html__( 'Accepted by', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $acceptor_email ) . '</p>';
     }
     $html_body .= '<p><strong>' . esc_html__( 'Accepted on', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $accepted_at ) . '</p>';
+
+    // Signature image.
+    $signature_id = get_post_meta( $budget_id, 'pn_cm_budget_signature_attachment_id', true );
+    if ( ! empty( $signature_id ) ) {
+      $signature_url = wp_get_attachment_url( intval( $signature_id ) );
+      if ( $signature_url ) {
+        $html_body .= '<div style="margin:16px 0;text-align:center;">';
+        $html_body .= '<img src="' . esc_url( $signature_url ) . '" alt="' . esc_attr__( 'Signature', 'pn-customers-manager' ) . '" style="max-width:300px;height:auto;border-bottom:2px solid #333;padding-bottom:8px;" />';
+        $html_body .= '</div>';
+      }
+    }
+
     $html_body .= '<h3>' . esc_html__( 'Items detail', 'pn-customers-manager' ) . '</h3>';
     $html_body .= $items_html;
     $html_body .= $totals_html;

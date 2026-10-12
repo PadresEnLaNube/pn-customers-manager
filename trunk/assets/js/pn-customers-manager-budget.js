@@ -53,12 +53,18 @@
          */
         function recalculateTotals() {
             var subtotal = 0;
+            var recurringByPeriod = {};
 
             $('.pn-cm-budget-item-row').each(function () {
                 var $row = $(this);
 
-                // Skip phase rows — they are section headers with no price.
-                if ($row.hasClass('pn-cm-budget-item-phase')) {
+                // Skip phase, image and image_compare rows — they have no price.
+                if ($row.hasClass('pn-cm-budget-item-phase') || $row.hasClass('pn-cm-budget-item-image') || $row.hasClass('pn-cm-budget-item-image-compare')) {
+                    return;
+                }
+
+                // Skip inactive alternative items or items inside inactive alternative phases.
+                if ($row.hasClass('pn-cm-budget-alt-hidden') || $row.closest('.pn-cm-budget-phase-group').hasClass('pn-cm-budget-alt-hidden')) {
                     return;
                 }
 
@@ -68,7 +74,14 @@
                 // or if its checkbox is checked
                 if (!$checkbox.length || $checkbox.is(':checked')) {
                     var rowTotal = parseFloat($row.data('item-total')) || 0;
-                    subtotal += rowTotal;
+                    var isRecurring = parseInt($row.attr('data-item-recurring'), 10) || 0;
+                    var period = $row.attr('data-item-recurring-period') || '';
+
+                    if (isRecurring && period) {
+                        recurringByPeriod[period] = (recurringByPeriod[period] || 0) + rowTotal;
+                    } else {
+                        subtotal += rowTotal;
+                    }
                 }
             });
 
@@ -80,9 +93,85 @@
             var total          = subtotal - discountAmount + taxAmount;
 
             $('#pn-cm-budget-subtotal').text(formatCurrency(subtotal));
+
+            // Update recurring totals rows.
+            $('.pn-cm-budget-totals-recurring').remove();
+            var labels = (typeof pnCmBudget !== 'undefined' && pnCmBudget.recurringLabels) ? pnCmBudget.recurringLabels : {};
+            var $subtotalRow = $('#pn-cm-budget-subtotal').closest('.pn-cm-budget-totals-row');
+            $.each(recurringByPeriod, function (p, amt) {
+                var lbl = labels[p] || p;
+                $('<div class="pn-cm-budget-totals-row pn-cm-budget-totals-recurring" data-recurring-period="' + p + '">'
+                    + '<span>Recurring ' + lbl + '</span>'
+                    + '<span>' + formatCurrency(amt) + '</span>'
+                    + '</div>').insertAfter($subtotalRow);
+            });
+
             $('#pn-cm-budget-discount').text(formatCurrency(discountAmount));
             $('#pn-cm-budget-tax').text(formatCurrency(taxAmount));
             $('#pn-cm-budget-total').text(formatCurrency(total));
+
+            // Sync sticky bar recurring items.
+            syncStickyRecurring(recurringByPeriod, labels);
+
+            // Update phase subtotals.
+            updatePhaseTotals();
+        }
+
+        /**
+         * Recalculate and display the total for each phase group header.
+         */
+        function updatePhaseTotals() {
+            $('.pn-cm-budget-phase-group').each(function () {
+                var $group = $(this);
+                if ($group.hasClass('pn-cm-budget-alt-hidden')) return;
+
+                var phaseTotal = 0;
+                $group.find('.pn-cm-budget-phase-items > .pn-cm-budget-item-row').each(function () {
+                    var $row = $(this);
+                    if ($row.hasClass('pn-cm-budget-item-deselected') || $row.hasClass('pn-cm-budget-item-image') || $row.hasClass('pn-cm-budget-item-image-compare')) return;
+                    if ($row.hasClass('pn-cm-budget-alt-hidden')) return;
+                    
+                    var $checkbox = $row.find('.pn-cm-budget-toggle-item');
+                    if (!$checkbox.length || $checkbox.is(':checked')) {
+                        phaseTotal += parseFloat($row.attr('data-item-total')) || 0;
+                    }
+                });
+                var $label = $group.find('.pn-cm-budget-phase-total');
+                if ($label.length) {
+                    $label.text(formatCurrency(phaseTotal));
+                }
+            });
+        }
+
+        /**
+         * Rebuild the sticky bar recurring section from the computed map.
+         */
+        function syncStickyRecurring(recurringByPeriod, labels) {
+            var $stickyRecurring = $('#pn-cm-budget-sticky-recurring');
+            var $stickyTotalItem = $('#pn-cm-budget-sticky-total').closest('.pn-cm-budget-sticky-item');
+
+            var hasItems = false;
+            for (var k in recurringByPeriod) { if (recurringByPeriod.hasOwnProperty(k)) { hasItems = true; break; } }
+
+            if (!hasItems) {
+                $stickyRecurring.remove();
+                return;
+            }
+
+            if (!$stickyRecurring.length) {
+                $stickyRecurring = $('<div class="pn-cm-budget-sticky-recurring" id="pn-cm-budget-sticky-recurring"></div>');
+                $stickyTotalItem.before($stickyRecurring);
+            }
+            $stickyRecurring.empty();
+            $.each(recurringByPeriod, function (p, amt) {
+                var lbl = labels[p] || p;
+                $stickyRecurring.append(
+                    '<div class="pn-cm-budget-sticky-item pn-cm-budget-sticky-item-recurring" data-recurring-period="' + p + '">'
+                    + '<span class="pn-cm-budget-sticky-label">Recurring ' + lbl + '</span>'
+                    + '<span class="pn-cm-budget-sticky-value">' + formatCurrency(amt) + '</span>'
+                    + '</div>'
+                );
+            });
         }
 
         // -------------------------------------------------------
@@ -139,20 +228,112 @@
         });
 
         // -------------------------------------------------------
-        // 2. Accept budget
+        // 2. Signature canvas
         // -------------------------------------------------------
 
-        function sendAcceptRequest(acceptorEmail) {
+        var signatureCanvas = document.getElementById('pn-cm-budget-signature-canvas');
+        var signatureCtx = signatureCanvas ? signatureCanvas.getContext('2d') : null;
+        var isDrawing = false;
+        var hasDrawn = false;
+
+        if (signatureCanvas && signatureCtx) {
+            // Set up high-DPI canvas.
+            function resizeCanvas() {
+                var rect = signatureCanvas.getBoundingClientRect();
+                var dpr = window.devicePixelRatio || 1;
+                signatureCanvas.width = rect.width * dpr;
+                signatureCanvas.height = rect.height * dpr;
+                signatureCtx.scale(dpr, dpr);
+                signatureCtx.lineCap = 'round';
+                signatureCtx.lineJoin = 'round';
+                signatureCtx.lineWidth = 2;
+                signatureCtx.strokeStyle = '#000';
+                hasDrawn = false;
+            }
+            resizeCanvas();
+
+            function getPos(e) {
+                var rect = signatureCanvas.getBoundingClientRect();
+                var clientX, clientY;
+                if (e.touches && e.touches.length) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
+
+            function startDrawing(e) {
+                e.preventDefault();
+                isDrawing = true;
+                var pos = getPos(e);
+                signatureCtx.beginPath();
+                signatureCtx.moveTo(pos.x, pos.y);
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                var pos = getPos(e);
+                signatureCtx.lineTo(pos.x, pos.y);
+                signatureCtx.stroke();
+                hasDrawn = true;
+            }
+
+            function stopDrawing(e) {
+                if (isDrawing) {
+                    e.preventDefault();
+                    isDrawing = false;
+                }
+            }
+
+            // Mouse events.
+            signatureCanvas.addEventListener('mousedown', startDrawing);
+            signatureCanvas.addEventListener('mousemove', draw);
+            signatureCanvas.addEventListener('mouseup', stopDrawing);
+            signatureCanvas.addEventListener('mouseleave', stopDrawing);
+
+            // Touch events.
+            signatureCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+            signatureCanvas.addEventListener('touchmove', draw, { passive: false });
+            signatureCanvas.addEventListener('touchend', stopDrawing);
+            signatureCanvas.addEventListener('touchcancel', stopDrawing);
+
+            // Clear button.
+            $(document).on('click', '#pn-cm-budget-signature-clear', function (e) {
+                e.preventDefault();
+                var rect = signatureCanvas.getBoundingClientRect();
+                signatureCtx.clearRect(0, 0, rect.width, rect.height);
+                hasDrawn = false;
+            });
+        }
+
+        function isSignatureEmpty() {
+            return !hasDrawn;
+        }
+
+        function getSignatureData() {
+            if (!signatureCanvas) return '';
+            return signatureCanvas.toDataURL('image/png');
+        }
+
+        // -------------------------------------------------------
+        // 3. Accept budget (with signature)
+        // -------------------------------------------------------
+
+        function sendAcceptRequest(email, name, signatureData) {
             var data = {
                 action: 'pn_customers_manager_ajax_nopriv',
                 pn_customers_manager_ajax_nopriv_type: 'pn_cm_budget_accept',
                 pn_customers_manager_ajax_nopriv_nonce: pnCmBudget.nonce,
                 budget_id: pnCmBudget.budgetId,
                 budget_token: pnCmBudget.budgetToken,
+                acceptor_email: email,
+                acceptor_name: name,
+                signature_data: signatureData,
             };
-            if (acceptorEmail) {
-                data.acceptor_email = acceptorEmail;
-            }
 
             $.post(pnCmBudget.ajaxUrl, data, function (response) {
                 if (response.success) {
@@ -169,59 +350,45 @@
         $(document).on('click', '#pn-cm-budget-accept', function (e) {
             e.preventDefault();
 
+            var $nameInput  = $('#pn-cm-budget-acceptor-name');
+            var $emailInput = $('#pn-cm-budget-acceptor-email');
+            var name  = $.trim($nameInput.val());
+            var email = $.trim($emailInput.val());
+
+            // Validate name.
+            if (!name) {
+                alert(pnCmBudget.i18n.nameRequired);
+                $nameInput.focus();
+                return;
+            }
+
+            // Validate email.
+            if (!email) {
+                alert(pnCmBudget.i18n.emailRequired);
+                $emailInput.focus();
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert(pnCmBudget.i18n.emailInvalid);
+                $emailInput.focus();
+                return;
+            }
+
+            // Validate signature.
+            if (isSignatureEmpty()) {
+                alert(pnCmBudget.i18n.signatureRequired);
+                return;
+            }
+
             if (!confirm(pnCmBudget.i18n.confirmAccept)) {
                 return;
             }
 
-            // Logged-in users: accept directly.
-            if (pnCmBudget.isLoggedIn) {
-                sendAcceptRequest('');
-                return;
-            }
-
-            // Non-logged-in users: show email prompt first.
-            var $prompt = $('#pn-cm-budget-email-prompt');
-            if ($prompt.length) {
-                $prompt.slideDown(200);
-                $('#pn-cm-budget-acceptor-email').focus();
-            } else {
-                // Fallback if HTML not present.
-                sendAcceptRequest('');
-            }
-        });
-
-        // Confirm accept with email.
-        $(document).on('click', '#pn-cm-budget-confirm-accept', function (e) {
-            e.preventDefault();
-            var $input = $('#pn-cm-budget-acceptor-email');
-            var email  = $.trim($input.val());
-
-            if (!email) {
-                alert(pnCmBudget.i18n.emailRequired);
-                $input.focus();
-                return;
-            }
-
-            // Basic email validation.
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                alert(pnCmBudget.i18n.emailInvalid);
-                $input.focus();
-                return;
-            }
-
-            sendAcceptRequest(email);
-        });
-
-        // Allow pressing Enter in the email input.
-        $(document).on('keydown', '#pn-cm-budget-acceptor-email', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                $('#pn-cm-budget-confirm-accept').trigger('click');
-            }
+            sendAcceptRequest(email, name, getSignatureData());
         });
 
         // -------------------------------------------------------
-        // 3. Reject budget
+        // 4. Reject budget
         // -------------------------------------------------------
 
         $(document).on('click', '#pn-cm-budget-reject', function (e) {
@@ -343,19 +510,61 @@
         });
 
         // -------------------------------------------------------
-        // 7. Sticky totals bar — mirror values from main totals
+        // 7. Before/After image comparison sliders
+        // -------------------------------------------------------
+
+        function initCompareSliders() {
+            $('.pn-cm-budget-compare-slider').each(function () {
+                var $slider = $(this);
+                if ($slider.data('pn-compare-init')) return;
+                $slider.data('pn-compare-init', true);
+
+                var $after = $slider.find('.pn-cm-budget-compare-after');
+                var $handle = $slider.find('.pn-cm-budget-compare-handle');
+                var dragging = false;
+
+                function updatePosition(x) {
+                    var rect = $slider[0].getBoundingClientRect();
+                    var pct = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+                    $after.css('clip-path', 'inset(0 0 0 ' + (pct * 100) + '%)');
+                    $handle.css('left', (pct * 100) + '%');
+                }
+
+                $handle.on('mousedown touchstart', function (e) {
+                    e.preventDefault();
+                    dragging = true;
+                });
+
+                $(document).on('mousemove touchmove', function (e) {
+                    if (!dragging) return;
+                    var x = e.pageX || (e.originalEvent.touches && e.originalEvent.touches[0].pageX);
+                    if (typeof x !== 'undefined') updatePosition(x);
+                });
+
+                $(document).on('mouseup touchend', function () {
+                    dragging = false;
+                });
+
+                $slider.on('click', function (e) {
+                    if ($(e.target).closest('.pn-cm-budget-col-actions').length) return;
+                    updatePosition(e.pageX);
+                });
+            });
+        }
+
+        initCompareSliders();
+
+        // -------------------------------------------------------
+        // 8. Sticky totals bar — mirror values from main totals
         // -------------------------------------------------------
 
         (function () {
-            var mainSub    = document.getElementById('pn-cm-budget-subtotal');
             var mainTotal  = document.getElementById('pn-cm-budget-total');
-            var stickySub  = document.getElementById('pn-cm-budget-sticky-subtotal');
             var stickyTotal = document.getElementById('pn-cm-budget-sticky-total');
 
             if (!mainTotal || !stickyTotal) return;
 
             function sync() {
-                if (stickySub && mainSub) stickySub.textContent = mainSub.textContent;
                 stickyTotal.textContent = mainTotal.textContent;
             }
 
@@ -364,7 +573,6 @@
             var cfg = { childList: true, characterData: true, subtree: true };
             var obs = new MutationObserver(sync);
             obs.observe(mainTotal, cfg);
-            if (mainSub) obs.observe(mainSub, cfg);
         })();
 
     });

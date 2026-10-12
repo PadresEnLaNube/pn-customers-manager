@@ -775,13 +775,13 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 									</div>
 								</div>
 								<div class="pn-cm-page-actions pn-customers-manager-display-flex pn-customers-manager-gap-10">
-									<a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('Edit', 'pn-customers-manager'); ?>">
+									<a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Edit', 'pn-customers-manager'); ?>">
 										<span class="material-icons-outlined">edit</span>
 									</a>
-									<a href="<?php echo esc_url(get_permalink($page_id)); ?>" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent pn-customers-manager-tooltip" data-hostpn-tooltip="<?php esc_attr_e('View', 'pn-customers-manager'); ?>" target="_blank">
+									<a href="<?php echo esc_url(get_permalink($page_id)); ?>" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('View', 'pn-customers-manager'); ?>" target="_blank">
 										<span class="material-icons-outlined">visibility</span>
 									</a>
-									<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent pn-customers-manager-tooltip pn-cm-delete-offer-page" data-page-id="<?php echo esc_attr($page_id); ?>" data-hostpn-tooltip="<?php esc_attr_e('Delete', 'pn-customers-manager'); ?>">
+									<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent pn-customers-manager-tooltip pn-cm-delete-offer-page" data-page-id="<?php echo esc_attr($page_id); ?>" data-pn-customers-manager-tooltip="<?php esc_attr_e('Delete', 'pn-customers-manager'); ?>">
 										<span class="material-icons-outlined">delete</span>
 									</button>
 								</div>
@@ -810,9 +810,9 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 				});
 
 				// Simple tooltip functionality
-				$('[data-hostpn-tooltip]').hover(
+				$('[data-pn-customers-manager-tooltip], [data-hostpn-tooltip]').hover(
 					function() {
-						var tooltipText = $(this).attr('data-hostpn-tooltip');
+						var tooltipText = $(this).attr('data-pn-customers-manager-tooltip') || $(this).attr('data-hostpn-tooltip');
 						var $tooltip = $('<div class="pn-cm-tooltip">' + tooltipText + '</div>');
 						$('body').append($tooltip);
 

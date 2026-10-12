@@ -1278,7 +1278,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'input'       => 'editor',
         'label'       => __('Error fallback message', 'pn-customers-manager'),
         'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
-        'placeholder' => esc_attr__('Lo siento, en este momento no puedo responder. Por favor, inténtalo de nuevo más tarde.', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Sorry, I cannot respond right now. Please try again later.', 'pn-customers-manager'),
       ];
     }
 
@@ -1547,7 +1547,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'input'       => 'editor',
         'label'       => __('Error fallback message', 'pn-customers-manager'),
         'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
-        'placeholder' => esc_attr__('Lo siento, en este momento no puedo responder. Por favor, inténtalo de nuevo más tarde.', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Sorry, I cannot respond right now. Please try again later.', 'pn-customers-manager'),
       ];
     }
 

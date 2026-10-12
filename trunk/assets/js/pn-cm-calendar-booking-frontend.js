@@ -8,19 +8,24 @@
   var availability = data.availability || {};
   var selectedDates = [];
   var selectedWeeks = [];
+  var selectedGroups = {}; // { blockId: { groupId: qty, ... } }
   var isMember = false;
   var adminMode = false;
+  var qty = 1;
 
   // Normalizar: asegurar que todas las fechas e IDs son strings únicos
   var usedIds = {};
   weeks.forEach(function (w, idx) {
     w.id = String(w.id || '');
-    // Si el ID está vacío o duplicado, generar uno único
     if (!w.id || usedIds[w.id]) {
       w.id = 'week-' + idx;
     }
     usedIds[w.id] = true;
     w.dates = (w.dates || []).map(function (d) { return String(d); });
+    // Ensure new fields have defaults
+    if (typeof w.discount === 'undefined') w.discount = 0;
+    if (!w.discount_type) w.discount_type = 'percent';
+    if (!w.groups) w.groups = [];
   });
 
   var weekMap = {};
@@ -33,11 +38,28 @@
 
   /* ─── Precios activos según toggle ─── */
   function activeDayPrice() {
-    return parseFloat(isMember ? data.memberDayPrice : data.dayPrice) || 0;
+    var mdp = parseFloat(data.memberDayPrice);
+    if (isMember && !isNaN(mdp) && mdp > 0) {
+      return mdp;
+    }
+    return parseFloat(data.dayPrice) || 0;
   }
 
   function activeWeekPrice(w) {
-    return parseFloat(isMember ? w.member_price : w.price) || 0;
+    var mp = parseFloat(w.member_price);
+    if (isMember && !isNaN(mp) && mp > 0) {
+      return mp;
+    }
+    return parseFloat(w.price) || 0;
+  }
+
+  function applyDiscount(price, discount, discountType) {
+    discount = parseFloat(discount) || 0;
+    if (discount <= 0) return price;
+    if (discountType === 'fixed') {
+      return Math.max(0, price - discount);
+    }
+    return Math.max(0, price * (1 - discount / 100));
   }
 
   /* ─── Inicializar ─── */
@@ -52,10 +74,19 @@
 
   /* ─── Checkbox socio ─── */
   function renderMemberToggle() {
-    var html = '<label class="pn-cm-calendar-member-toggle">';
-    html += '<input type="checkbox" id="pn-cm-calendar-member-checkbox"' + (isMember ? ' checked' : '') + ' />';
-    html += '<span class="pn-cm-calendar-member-toggle-label">' + data.i18n.memberLabel + '</span>';
-    html += '</label>';
+    if (!data.enableMemberDiscount && !data.isAdmin) {
+      $('#pn-cm-calendar-member-toggle').empty().hide();
+      return;
+    }
+    $('#pn-cm-calendar-member-toggle').show();
+
+    var html = '';
+    if (data.enableMemberDiscount) {
+      html += '<label class="pn-cm-calendar-member-toggle">';
+      html += '<input type="checkbox" id="pn-cm-calendar-member-checkbox"' + (isMember ? ' checked' : '') + ' />';
+      html += '<span class="pn-cm-calendar-member-toggle-label">' + escHtml(data.i18n.memberLabel) + '</span>';
+      html += '</label>';
+    }
 
     if (data.isAdmin) {
       html += '<button type="button" class="pn-cm-calendar-admin-btn" id="pn-cm-calendar-admin-toggle">';
@@ -113,7 +144,6 @@
   }
 
   function getActiveMonths() {
-    // Obtener el rango de meses con fechas de calendario de productos
     var minYear = 9999, minMonth = 13, maxYear = 0, maxMonth = 0;
     Object.keys(allDates).forEach(function (d) {
       var parts = d.split('-');
@@ -123,7 +153,6 @@
       if (y > maxYear || (y === maxYear && m > maxMonth)) { maxYear = y; maxMonth = m; }
     });
 
-    // Generar TODOS los meses entre el primero y el último (incluye meses sin fechas)
     var arr = [];
     if (minYear > maxYear) return arr;
     var y = minYear, m = minMonth;
@@ -161,7 +190,6 @@
       var isFull = avail !== null && avail <= 0;
 
       if (adminMode && isCamp) {
-        // Admin mode: show occupancy info
         var capacity = getDateCapacity(dateStr);
         var booked = capacity - (avail !== null ? avail : capacity);
         var pct = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
@@ -173,7 +201,6 @@
         html += '<span class="pn-cm-calendar-day-bar"><span class="pn-cm-calendar-day-bar-fill pn-cm-calendar-day-bar--' + occCls + '" style="width:' + pct + '%"></span></span>';
         html += '</div>';
       } else {
-        // Normal mode
         var cls = 'pn-cm-calendar-day';
         if (!isCamp) {
           cls += ' pn-cm-calendar-day--inactive';
@@ -201,6 +228,13 @@
   function getDateCapacity(dateStr) {
     for (var i = 0; i < weeks.length; i++) {
       if (weeks[i].dates.indexOf(dateStr) !== -1) {
+        if (weeks[i].groups && weeks[i].groups.length > 0) {
+          var total = 0;
+          for (var g = 0; g < weeks[i].groups.length; g++) {
+            total += parseInt(weeks[i].groups[g].capacity) || 0;
+          }
+          return total;
+        }
         return weeks[i].capacity;
       }
     }
@@ -222,7 +256,7 @@
     }
   }
 
-  /* ─── Botones de semana ─── */
+  /* ─── Botones de bloque ─── */
   function renderWeekButtons() {
     var html = '<div class="pn-cm-calendar-week-btns">';
     weeks.forEach(function (w) {
@@ -232,13 +266,24 @@
       if (isSelected) cls += ' pn-cm-calendar-week-btn--selected';
       if (isDisabled && !isSelected) cls += ' pn-cm-calendar-week-btn--disabled';
 
+      var basePrice = activeWeekPrice(w);
+      var discountedPrice = applyDiscount(basePrice, w.discount, w.discount_type);
+      var hasDiscount = parseFloat(w.discount) > 0 && discountedPrice < basePrice;
+
       html += '<button type="button" class="' + cls + '" data-week="' + w.id + '"' +
         (isDisabled && !isSelected ? ' disabled' : '') + '>';
       html += '<span class="pn-cm-calendar-week-btn-label">' + escHtml(w.label || formatWeekRange(w.dates)) + '</span>';
       if (w.label) {
         html += '<span class="pn-cm-calendar-week-btn-range">' + formatWeekRange(w.dates) + '</span>';
       }
-      html += '<span class="pn-cm-calendar-week-btn-price">' + formatPrice(activeWeekPrice(w)) + '</span>';
+      if (hasDiscount) {
+        html += '<span class="pn-cm-calendar-week-btn-price">';
+        html += '<span class="pn-cm-calendar-price-original">' + formatPrice(basePrice) + '</span> ';
+        html += '<span class="pn-cm-calendar-price-discounted">' + formatPrice(discountedPrice) + '</span>';
+        html += '</span>';
+      } else {
+        html += '<span class="pn-cm-calendar-week-btn-price">' + formatPrice(basePrice) + '</span>';
+      }
       html += '</button>';
     });
     html += '</div>';
@@ -255,6 +300,24 @@
   }
 
   function isWeekFull(week) {
+    if (week.groups && week.groups.length > 0) {
+      // A block with groups is full only if ALL groups are full on at least one date
+      for (var i = 0; i < week.dates.length; i++) {
+        var dateStr = week.dates[i];
+        var allGroupsFull = true;
+        for (var g = 0; g < week.groups.length; g++) {
+          var compositeKey = dateStr + '__' + week.groups[g].id;
+          var avail = availability[compositeKey];
+          if (typeof avail === 'undefined' || avail > 0) {
+            allGroupsFull = false;
+            break;
+          }
+        }
+        if (allGroupsFull) return true;
+      }
+      return false;
+    }
+    // No groups: full if any date has no availability
     for (var i = 0; i < week.dates.length; i++) {
       var avail = availability[week.dates[i]];
       if (typeof avail !== 'undefined' && avail <= 0) return true;
@@ -262,7 +325,7 @@
     return false;
   }
 
-  /* ─── Helpers de arrays (siempre string) ─── */
+  /* ─── Helpers de arrays ─── */
   function addUnique(arr, val) {
     val = String(val);
     if (arr.indexOf(val) === -1) arr.push(val);
@@ -284,8 +347,17 @@
     } else {
       addUnique(selectedDates, date);
     }
-    // syncWeeksWithDates() en refresh() recalcula las semanas activas
     refresh();
+  }
+
+  /**
+   * Find the block that contains a given date
+   */
+  function findBlockForDate(date) {
+    for (var i = 0; i < weeks.length; i++) {
+      if (weeks[i].dates.indexOf(date) !== -1) return weeks[i];
+    }
+    return null;
   }
 
   function toggleWeek(weekId) {
@@ -294,14 +366,90 @@
     if (!week) return;
 
     if (hasVal(selectedWeeks, weekId)) {
-      // Deseleccionar semana: quitar todos sus días
       week.dates.forEach(function (d) { removeFrom(selectedDates, d); });
+      delete selectedGroups[weekId];
     } else {
-      // Seleccionar semana: añadir todos sus días
       week.dates.forEach(function (d) { addUnique(selectedDates, d); });
     }
-    // syncWeeksWithDates() en refresh() recalcula las semanas activas
     refresh();
+  }
+
+  /* ─── Selector de plazas (qty) ─── */
+  function renderQtySelector() {
+    var html = '<div class="pn-cm-calendar-qty-selector">';
+    html += '<span class="pn-cm-calendar-qty-label">' + data.i18n.plazas + ':</span>';
+    html += '<button type="button" class="pn-cm-calendar-qty-btn pn-cm-calendar-qty-minus" id="pn-cm-calendar-qty-minus">−</button>';
+    html += '<input type="number" class="pn-cm-calendar-qty-value" id="pn-cm-calendar-qty-value" value="' + qty + '" min="1" max="100" />';
+    html += '<button type="button" class="pn-cm-calendar-qty-btn pn-cm-calendar-qty-plus" id="pn-cm-calendar-qty-plus">+</button>';
+    html += '</div>';
+    return html;
+  }
+
+  function bindQtyEvents() {
+    $('#pn-cm-calendar-summary').off('click.qtyplus click.qtyminus change.qtyinput');
+
+    $('#pn-cm-calendar-summary').on('click.qtyplus', '#pn-cm-calendar-qty-plus', function () {
+      setQty(qty + 1);
+    });
+
+    $('#pn-cm-calendar-summary').on('click.qtyminus', '#pn-cm-calendar-qty-minus', function () {
+      setQty(qty - 1);
+    });
+
+    $('#pn-cm-calendar-summary').on('change.qtyinput', '#pn-cm-calendar-qty-value', function () {
+      setQty(parseInt($(this).val()) || 1);
+    });
+  }
+
+  function setQty(newQty) {
+    newQty = Math.max(1, Math.min(100, newQty));
+    if (newQty === qty) return;
+    qty = newQty;
+    $('#pn-cm-calendar-qty-input').val(qty);
+    renderSummary();
+  }
+
+  /**
+   * Get sum of group distribution for a block
+   */
+  function getDistributionSum(weekId) {
+    if (!selectedGroups[weekId]) return 0;
+    var sum = 0;
+    var dist = selectedGroups[weekId];
+    for (var gid in dist) {
+      if (dist.hasOwnProperty(gid)) {
+        sum += parseInt(dist[gid]) || 0;
+      }
+    }
+    return sum;
+  }
+
+  /**
+   * Check if group distribution is valid for all blocks
+   */
+  function isDistributionValid() {
+    var blockIds = getBlocksNeedingGroups();
+    for (var i = 0; i < blockIds.length; i++) {
+      var wid = blockIds[i];
+      if (getDistributionSum(wid) !== qty) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Get all block IDs that need group selection (blocks with groups that have selected dates)
+   */
+  function getBlocksNeedingGroups() {
+    var result = [];
+    var allActiveBlocks = selectedWeeks.concat(partialGroupBlockIds);
+    for (var i = 0; i < allActiveBlocks.length; i++) {
+      var wid = allActiveBlocks[i];
+      var w = weekMap[wid];
+      if (w && w.groups && w.groups.length > 0) {
+        if (result.indexOf(wid) === -1) result.push(wid);
+      }
+    }
+    return result;
   }
 
   /* ─── Resumen y precio ─── */
@@ -314,48 +462,229 @@
     selectedWeeks.forEach(function (wid) {
       var w = weekMap[wid];
       if (!w) return;
-      var wp = activeWeekPrice(w);
+      var basePrice = activeWeekPrice(w);
+      var discountedPrice = applyDiscount(basePrice, w.discount, w.discount_type);
+      var hasDiscount = parseFloat(w.discount) > 0 && discountedPrice < basePrice;
       coveredDates = coveredDates.concat(w.dates);
       var weekLabel = w.label ? w.label + ' (' + formatWeekRange(w.dates) + ')' : formatWeekRange(w.dates);
-      lines.push({ label: weekLabel, price: wp });
-      total += wp;
+
+      var line = { label: weekLabel, price: discountedPrice, originalPrice: hasDiscount ? basePrice : null, weekId: wid, groups: w.groups || [] };
+      lines.push(line);
+      total += discountedPrice;
     });
 
     var looseDays = selectedDates.filter(function (d) {
       return coveredDates.indexOf(d) === -1;
     });
     looseDays.sort();
+
+    // Group loose days by block (for blocks with groups, so we can show the group selector)
+    var looseDaysByBlock = {}; // blockId -> [dates]
+    var trulyLooseDays = [];
     looseDays.forEach(function (d) {
-      lines.push({ label: formatDateShort(d), price: dp });
-      total += dp;
+      var block = findBlockForDate(d);
+      if (block && block.groups && block.groups.length > 0) {
+        if (!looseDaysByBlock[block.id]) looseDaysByBlock[block.id] = [];
+        looseDaysByBlock[block.id].push(d);
+      } else {
+        trulyLooseDays.push(d);
+      }
     });
+
+    // Add grouped loose days (with group selector)
+    Object.keys(looseDaysByBlock).forEach(function (blockId) {
+      var w = weekMap[blockId];
+      if (!w) return;
+      var dates = looseDaysByBlock[blockId];
+      var effectiveDayPrice = dp;
+      if (effectiveDayPrice <= 0) {
+        var baseWeekPrice = activeWeekPrice(w);
+        if (baseWeekPrice > 0 && w.dates.length > 0) {
+          effectiveDayPrice = baseWeekPrice / w.dates.length;
+        }
+      }
+      var dayTotal = effectiveDayPrice * dates.length;
+      var datesLabel = dates.map(function (d) { return formatDateShort(d); }).join(', ');
+      var blockLabel = (w.label ? w.label + ': ' : '') + datesLabel;
+      lines.push({ label: blockLabel, price: dayTotal, originalPrice: null, weekId: blockId, groups: w.groups });
+      total += dayTotal;
+    });
+
+    // Add truly loose days (no groups)
+    trulyLooseDays.forEach(function (d) {
+      var effectiveDayPrice = dp;
+      if (effectiveDayPrice <= 0) {
+        var parentBlock = findBlockForDate(d);
+        if (parentBlock) {
+          var baseWeekPrice = activeWeekPrice(parentBlock);
+          if (baseWeekPrice > 0 && parentBlock.dates.length > 0) {
+            effectiveDayPrice = baseWeekPrice / parentBlock.dates.length;
+          }
+        }
+      }
+      lines.push({ label: formatDateShort(d), price: effectiveDayPrice, originalPrice: null, weekId: null, groups: [] });
+      total += effectiveDayPrice;
+    });
+
+    // Multiply total by qty
+    var totalWithQty = total * qty;
 
     var html = '';
     if (lines.length === 0) {
       html = '<div class="pn-cm-calendar-summary-empty">' + data.i18n.noSelection + '</div>';
     } else {
-      html = '<div class="pn-cm-calendar-summary-title">' + data.i18n.yourSelection + ':</div>';
+      // Qty selector
+      html += renderQtySelector();
+
+      html += '<div class="pn-cm-calendar-summary-title">' + data.i18n.yourSelection + ':</div>';
       html += '<div class="pn-cm-calendar-summary-lines">';
       lines.forEach(function (l) {
         html += '<div class="pn-cm-calendar-summary-line">';
         html += '<span class="pn-cm-calendar-summary-label">' + escHtml(l.label) + '</span>';
-        html += '<span class="pn-cm-calendar-summary-price">' + formatPrice(l.price) + '</span>';
+        if (l.originalPrice !== null) {
+          html += '<span class="pn-cm-calendar-summary-price">';
+          html += '<span class="pn-cm-calendar-price-original">' + formatPrice(l.originalPrice) + '</span> ';
+          html += '<span class="pn-cm-calendar-price-discounted">' + formatPrice(l.price) + '</span>';
+          html += '</span>';
+        } else {
+          html += '<span class="pn-cm-calendar-summary-price">' + formatPrice(l.price) + '</span>';
+        }
         html += '</div>';
+
+        // Group distribution for blocks with groups
+        if (l.groups.length > 0 && l.weekId) {
+          html += renderGroupDistribution(l.weekId, l.groups);
+        }
       });
       html += '</div>';
+
+      // Qty line (show "N plazas × price = total" when qty > 1)
+      if (qty > 1) {
+        html += '<div class="pn-cm-calendar-qty-line">';
+        html += qty + ' ' + data.i18n.plazasLine + ' &times; ' + formatPrice(total) + ' = ' + formatPrice(totalWithQty);
+        html += '</div>';
+      }
+
       html += '<div class="pn-cm-calendar-summary-total">';
       html += '<span>' + data.i18n.total + ':</span>';
-      html += '<span>' + formatPrice(total) + '</span>';
+      html += '<span>' + formatPrice(totalWithQty) + '</span>';
       html += '</div>';
     }
 
     $('#pn-cm-calendar-summary').html(html);
+
+    bindQtyEvents();
+
+    // Bind group distribution input changes
+    $('#pn-cm-calendar-summary').off('change.campgroup input.campgroup').on('input.campgroup', '.pn-cm-calendar-group-dist-input', function () {
+      var weekId = $(this).closest('.pn-cm-calendar-group-distribution').attr('data-week-id');
+      var groupId = $(this).attr('data-group-id');
+      var val = Math.max(0, parseInt($(this).val()) || 0);
+
+      if (!selectedGroups[weekId]) selectedGroups[weekId] = {};
+      selectedGroups[weekId][groupId] = val;
+
+      // Update the distribution status display
+      updateDistributionStatus(weekId);
+      updateHiddenInputs();
+    });
+
     updateHiddenInputs();
+  }
+
+  /**
+   * Render group distribution inputs for a block
+   */
+  function renderGroupDistribution(weekId, groups) {
+    var html = '<div class="pn-cm-calendar-group-distribution" data-week-id="' + weekId + '">';
+    html += '<div class="pn-cm-calendar-group-distribution-label">' + data.i18n.distributeSpots + ':</div>';
+
+    var currentDist = selectedGroups[weekId] || {};
+    var distSum = 0;
+
+    groups.forEach(function (g) {
+      var groupAvail = getGroupMinAvailability(weekId, g.id);
+      var isGroupFull = groupAvail <= 0;
+      var currentVal = parseInt(currentDist[g.id]) || 0;
+      distSum += currentVal;
+
+      var optCls = 'pn-cm-calendar-group-dist-row';
+      if (isGroupFull) optCls += ' pn-cm-calendar-group-dist-row--full';
+
+      html += '<div class="' + optCls + '">';
+      html += '<span class="pn-cm-calendar-group-dist-name">' + escHtml(g.label) + '</span>';
+      html += '<input type="number" class="pn-cm-calendar-group-dist-input" data-group-id="' + g.id + '" ';
+      html += 'value="' + currentVal + '" min="0" max="' + groupAvail + '"';
+      if (isGroupFull) html += ' disabled';
+      html += ' />';
+      html += '<span class="pn-cm-calendar-group-dist-avail">(' + groupAvail + ' ' + data.i18n.spotsLeft + ')</span>';
+      html += '</div>';
+    });
+
+    // Distribution status
+    var statusCls = 'pn-cm-calendar-group-dist-status';
+    if (distSum === qty) {
+      statusCls += ' pn-cm-calendar-group-dist-status--ok';
+    } else {
+      statusCls += ' pn-cm-calendar-group-dist-status--error';
+    }
+    html += '<div class="' + statusCls + '" id="pn-cm-calendar-dist-status-' + weekId + '">';
+    html += distSum + ' / ' + qty;
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  /**
+   * Update distribution status display after input change
+   */
+  function updateDistributionStatus(weekId) {
+    var sum = getDistributionSum(weekId);
+    var $status = $('#pn-cm-calendar-dist-status-' + weekId);
+    $status.text(sum + ' / ' + qty);
+    $status.removeClass('pn-cm-calendar-group-dist-status--ok pn-cm-calendar-group-dist-status--error');
+    if (sum === qty) {
+      $status.addClass('pn-cm-calendar-group-dist-status--ok');
+    } else {
+      $status.addClass('pn-cm-calendar-group-dist-status--error');
+    }
+  }
+
+  /**
+   * Get minimum availability for a group across all dates in a block.
+   * Falls back to the group's defined capacity when no availability data exists.
+   */
+  function getGroupMinAvailability(weekId, groupId) {
+    var w = weekMap[weekId];
+    if (!w) return 0;
+
+    // Find group capacity as fallback
+    var groupCapacity = 0;
+    for (var g = 0; g < w.groups.length; g++) {
+      if (w.groups[g].id === groupId) {
+        groupCapacity = parseInt(w.groups[g].capacity) || 0;
+        break;
+      }
+    }
+
+    var min = Infinity;
+    for (var i = 0; i < w.dates.length; i++) {
+      var compositeKey = w.dates[i] + '__' + groupId;
+      var avail = availability[compositeKey];
+      if (typeof avail !== 'undefined') {
+        if (avail < min) min = avail;
+      }
+    }
+    // If no composite keys found, fall back to group capacity (no bookings yet)
+    return min === Infinity ? groupCapacity : min;
   }
 
   function updateHiddenInputs() {
     $('#pn-cm-calendar-dates-input').val(JSON.stringify(selectedDates.slice().sort()));
     $('#pn-cm-calendar-weeks-input').val(JSON.stringify(selectedWeeks));
+    $('#pn-cm-calendar-groups-input').val(JSON.stringify(selectedGroups));
+    $('#pn-cm-calendar-qty-input').val(qty);
   }
 
   function refresh() {
@@ -380,11 +709,6 @@
     }
   }
 
-  /**
-   * Recalcular selectedWeeks basándose únicamente en selectedDates.
-   * Una semana está activa si y solo si TODOS sus días están seleccionados.
-   * Esto garantiza consistencia absoluta entre días y semanas.
-   */
   function syncWeeksWithDates() {
     var newWeeks = [];
     weeks.forEach(function (w) {
@@ -392,8 +716,48 @@
       var allSelected = w.dates.every(function (d) { return hasVal(selectedDates, d); });
       if (allSelected) newWeeks.push(w.id);
     });
+    // Also track blocks with groups that have ANY date selected (for group selector on loose days)
+    var partialGroupBlocks = [];
+    weeks.forEach(function (w) {
+      if (w.dates.length === 0 || !w.groups || w.groups.length === 0) return;
+      if (newWeeks.indexOf(w.id) !== -1) return; // already fully selected
+      var anySelected = w.dates.some(function (d) { return hasVal(selectedDates, d); });
+      if (anySelected) partialGroupBlocks.push(w.id);
+    });
+    // Clean up groups for deselected weeks (keep groups for both full and partial blocks)
+    var activeBlockIds = newWeeks.concat(partialGroupBlocks);
+    var newGroups = {};
+    activeBlockIds.forEach(function (wid) {
+      if (selectedGroups[wid]) {
+        newGroups[wid] = selectedGroups[wid];
+      }
+    });
     selectedWeeks = newWeeks;
+    selectedGroups = newGroups;
+    partialGroupBlockIds = partialGroupBlocks;
   }
+
+  // Track partially-selected blocks with groups (for group selector on loose days)
+  var partialGroupBlockIds = [];
+
+  /* ─── Validación antes de add to cart ─── */
+  $(document).on('click', '.single_add_to_cart_button', function (e) {
+    var blocksMissingGroup = getBlocksNeedingGroups();
+    for (var i = 0; i < blocksMissingGroup.length; i++) {
+      var wid = blocksMissingGroup[i];
+      var distSum = getDistributionSum(wid);
+      if (distSum !== qty) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        alert(data.i18n.invalidDistribution);
+        var $summary = $('#pn-cm-calendar-summary');
+        if ($summary.length) {
+          $summary[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return false;
+      }
+    }
+  });
 
   /* ─── Formato ─── */
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -404,12 +768,15 @@
 
   function formatDateShort(dateStr) {
     var parts = dateStr.split('-');
-    var monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return parseInt(parts[2]) + ' ' + monthNames[parseInt(parts[1]) - 1];
   }
 
   function formatWeekRange(dates) {
     if (!dates || dates.length === 0) return '';
+    if (dates.length === 1 || dates[0] === dates[dates.length - 1]) {
+      return formatDateShort(dates[0]);
+    }
     return formatDateShort(dates[0]) + ' - ' + formatDateShort(dates[dates.length - 1]);
   }
 
@@ -421,7 +788,6 @@
 
   /* ─── Admin: popup de reservas ─── */
   function openAdminPopup(dateStr) {
-    // Show loading overlay
     var loadingHtml = '<div class="pn-cm-calendar-admin-overlay" id="pn-cm-calendar-admin-overlay">';
     loadingHtml += '<div class="pn-cm-calendar-admin-modal">';
     loadingHtml += '<div class="pn-cm-calendar-admin-modal-loading">' + data.i18n.adminLoading + '</div>';
@@ -451,6 +817,7 @@
     var booked = resData.booked;
     var pct = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
     var reservations = resData.reservations || [];
+    var groupsBreakdown = resData.groups_breakdown || [];
 
     var html = '<div class="pn-cm-calendar-admin-overlay" id="pn-cm-calendar-admin-overlay">';
     html += '<div class="pn-cm-calendar-admin-modal">';
@@ -468,6 +835,22 @@
     html += '<div class="pn-cm-calendar-admin-modal-bar"><span class="pn-cm-calendar-admin-modal-bar-fill pn-cm-calendar-day-bar--' + occCls + '" style="width:' + pct + '%"></span></div>';
     html += '</div>';
 
+    // Groups breakdown
+    if (groupsBreakdown.length > 0) {
+      html += '<div class="pn-cm-calendar-admin-modal-groups">';
+      html += '<div class="pn-cm-calendar-admin-modal-groups-title">' + data.i18n.group + ':</div>';
+      groupsBreakdown.forEach(function (g) {
+        var gPct = g.capacity > 0 ? Math.round((g.booked / g.capacity) * 100) : 0;
+        var gCls = gPct > 80 ? 'high' : (gPct >= 50 ? 'mid' : 'low');
+        html += '<div class="pn-cm-calendar-admin-modal-group-item">';
+        html += '<span class="pn-cm-calendar-admin-modal-group-label">' + escHtml(g.label) + '</span>';
+        html += '<span class="pn-cm-calendar-admin-modal-group-occ">' + g.booked + '/' + g.capacity + '</span>';
+        html += '<div class="pn-cm-calendar-admin-modal-group-bar"><span class="pn-cm-calendar-day-bar-fill pn-cm-calendar-day-bar--' + gCls + '" style="width:' + gPct + '%"></span></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
     // Reservations table
     if (reservations.length === 0) {
       html += '<div class="pn-cm-calendar-admin-modal-empty">' + data.i18n.adminNoBookings + '</div>';
@@ -478,6 +861,10 @@
       html += '<th>' + data.i18n.adminName + '</th>';
       html += '<th>' + data.i18n.adminEmail + '</th>';
       html += '<th>' + data.i18n.adminPhone + '</th>';
+      html += '<th>' + data.i18n.plazas + '</th>';
+      if (groupsBreakdown.length > 0) {
+        html += '<th>' + data.i18n.group + '</th>';
+      }
       html += '<th>' + data.i18n.adminNotes + '</th>';
       html += '<th>' + data.i18n.adminOrder + '</th>';
       html += '</tr></thead><tbody>';
@@ -487,6 +874,10 @@
         html += '<td data-label="' + data.i18n.adminName + '">' + escHtml(r.first_name + ' ' + r.last_name) + '</td>';
         html += '<td data-label="' + data.i18n.adminEmail + '"><a href="mailto:' + escHtml(r.email) + '">' + escHtml(r.email) + '</a></td>';
         html += '<td data-label="' + data.i18n.adminPhone + '">' + (r.phone ? '<a href="tel:' + escHtml(r.phone) + '">' + escHtml(r.phone) + '</a>' : '-') + '</td>';
+        html += '<td data-label="' + data.i18n.plazas + '">' + (r.qty || 1) + '</td>';
+        if (groupsBreakdown.length > 0) {
+          html += '<td data-label="' + data.i18n.group + '">' + (r.group ? escHtml(r.group) : '-') + '</td>';
+        }
         html += '<td data-label="' + data.i18n.adminNotes + '">' + (r.notes ? escHtml(r.notes) : '-') + '</td>';
         html += '<td data-label="' + data.i18n.adminOrder + '"><a href="' + escHtml(r.edit_url) + '" target="_blank">#' + r.order_id + '</a><br><small>' + escHtml(r.order_date) + '</small></td>';
         html += '</tr>';
@@ -499,7 +890,6 @@
     html += '</div></div>';
     $('body').append(html);
 
-    // Bind close
     function closeModal() {
       $('#pn-cm-calendar-admin-overlay').remove();
       $(document).off('keydown.admincampmodal');
@@ -515,10 +905,10 @@
 
   function formatDateLong(dateStr) {
     var parts = dateStr.split('-');
-    var dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    var monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var dt = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-    return dayNames[dt.getDay()] + ' ' + parseInt(parts[2]) + ' de ' + monthNames[parseInt(parts[1]) - 1] + ' de ' + parts[0];
+    return dayNames[dt.getDay()] + ' ' + monthNames[parseInt(parts[1]) - 1] + ' ' + parseInt(parts[2]) + ', ' + parts[0];
   }
 
   /* ─── Admin: resumen de facturación ─── */
@@ -553,7 +943,6 @@
     var html = '<div class="pn-cm-calendar-admin-sum">';
     html += '<div class="pn-cm-calendar-admin-sum-title">' + data.i18n.adminSummaryTitle + '</div>';
 
-    // KPI cards
     html += '<div class="pn-cm-calendar-admin-sum-kpis">';
     html += '<div class="pn-cm-calendar-admin-sum-kpi">';
     html += '<span class="pn-cm-calendar-admin-sum-kpi-val">' + sumData.total_orders + '</span>';
@@ -569,7 +958,6 @@
     html += '</div>';
     html += '</div>';
 
-    // Week breakdown table
     if (sumData.weeks && sumData.weeks.length > 0) {
       html += '<div class="pn-cm-calendar-admin-sum-weeks-title">' + data.i18n.adminWeekSummary + '</div>';
       html += '<table class="pn-cm-calendar-admin-sum-table">';

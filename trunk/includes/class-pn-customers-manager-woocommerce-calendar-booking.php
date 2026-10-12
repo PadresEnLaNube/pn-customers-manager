@@ -80,7 +80,24 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	private function get_weeks($product_id)
 	{
 		$weeks = get_post_meta($product_id, '_pn_cm_woo_calendar_weeks', true);
-		return is_array($weeks) ? $weeks : [];
+		if (!is_array($weeks)) return [];
+		// Ensure backwards compatibility: add default values for new fields
+		foreach ($weeks as &$w) {
+			if (!isset($w['price'])) $w['price'] = 0;
+			$p = (float) $w['price'];
+			if (!isset($w['member_price']) || (float) $w['member_price'] <= 0) {
+				$w['member_price'] = $p;
+			} else {
+				$w['member_price'] = (float) $w['member_price'];
+			}
+			$w['price'] = $p;
+			if (!isset($w['capacity'])) $w['capacity'] = 25;
+			if (!isset($w['discount'])) $w['discount'] = 0;
+			if (!isset($w['discount_type'])) $w['discount_type'] = 'percent';
+			if (!isset($w['groups'])) $w['groups'] = [];
+		}
+		unset($w);
+		return $weeks;
 	}
 
 	private function get_day_price($product_id)
@@ -90,14 +107,15 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 	private function get_member_day_price($product_id)
 	{
-		return (float) get_post_meta($product_id, '_pn_cm_woo_calendar_member_day_price', true);
+		$mp = get_post_meta($product_id, '_pn_cm_woo_calendar_member_day_price', true);
+		if ($mp === '' || $mp === false || (float) $mp <= 0) {
+			return $this->get_day_price($product_id);
+		}
+		return (float) $mp;
 	}
 
 	/**
 	 * Check if current user has member role for this product
-	 *
-	 * @param int $product_id Product ID
-	 * @return bool
 	 */
 	private function is_current_user_member($product_id)
 	{
@@ -129,32 +147,94 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		$bookings = $this->get_bookings($product_id);
 		$availability = [];
 		foreach ($weeks as $week) {
-			$capacity = (int) $week['capacity'];
+			$has_groups = !empty($week['groups']);
+			$block_capacity = (int) $week['capacity'];
+
 			foreach ($week['dates'] as $date) {
-				$booked = isset($bookings[$date]) ? (int) $bookings[$date] : 0;
-				$availability[$date] = max(0, $capacity - $booked);
+				if ($has_groups) {
+					// With groups: compute per-group availability + total day availability
+					$day_total_capacity = 0;
+					$day_total_booked = 0;
+					foreach ($week['groups'] as $group) {
+						$group_capacity = (int) $group['capacity'];
+						$composite_key = $date . '__' . $group['id'];
+						$group_booked = isset($bookings[$composite_key]) ? (int) $bookings[$composite_key] : 0;
+						$availability[$composite_key] = max(0, $group_capacity - $group_booked);
+						$day_total_capacity += $group_capacity;
+						$day_total_booked += $group_booked;
+					}
+					// Day-level availability = sum of all groups
+					$availability[$date] = max(0, $day_total_capacity - $day_total_booked);
+				} else {
+					// No groups: simple capacity
+					$booked = isset($bookings[$date]) ? (int) $bookings[$date] : 0;
+					$availability[$date] = max(0, $block_capacity - $booked);
+				}
 			}
 		}
 		return $availability;
 	}
 
+	/**
+	 * Apply block discount to a price
+	 */
+	private function apply_discount($price, $discount, $discount_type)
+	{
+		$discount = (float) $discount;
+		if ($discount <= 0) return $price;
+
+		if ($discount_type === 'fixed') {
+			return max(0, $price - $discount);
+		}
+		// percent
+		return max(0, $price * (1 - $discount / 100));
+	}
+
+	/**
+	 * Normalize groups from old format { blockId: "groupId" } to new format { blockId: { groupId: qty } }
+	 */
+	private function normalize_groups($groups)
+	{
+		if (!is_array($groups)) return [];
+		$normalized = [];
+		foreach ($groups as $block_id => $value) {
+			if (is_string($value)) {
+				$normalized[$block_id] = [$value => 1];
+			} elseif (is_array($value)) {
+				$normalized[$block_id] = array_map('intval', $value);
+			}
+		}
+		return $normalized;
+	}
+
 	private function calculate_price($product_id, $selected_dates, $selected_weeks, $is_member = false)
 	{
-		$weeks     = $this->get_weeks($product_id);
-		$day_price = $is_member ? $this->get_member_day_price($product_id) : $this->get_day_price($product_id);
-		$total     = 0;
+		$enable_member = get_post_meta($product_id, '_pn_cm_woo_calendar_enable_member_discount', true) === 'yes';
+		$is_member     = $is_member && $enable_member;
 
+		$weeks            = $this->get_weeks($product_id);
+		$base_day_price   = (float) $this->get_day_price($product_id);
+		$member_day_price = (float) $this->get_member_day_price($product_id);
+
+		$active_day_price = ($is_member && $member_day_price > 0) ? $member_day_price : $base_day_price;
+
+		$total = 0;
 		$week_map = [];
 		foreach ($weeks as $week) {
 			$week_map[$week['id']] = $week;
 		}
 
-		// Semanas completas
+		// Bloques completos
 		$covered_dates = [];
 		foreach ($selected_weeks as $week_id) {
 			if (isset($week_map[$week_id])) {
 				$w = $week_map[$week_id];
-				$week_price = $is_member && isset($w['member_price']) ? (float) $w['member_price'] : (float) $w['price'];
+				$week_price = (float) $w['price'];
+				if ($is_member && isset($w['member_price']) && (float) $w['member_price'] > 0) {
+					$week_price = (float) $w['member_price'];
+				}
+				// Apply block discount
+				$week_price = $this->apply_discount($week_price, $w['discount'], $w['discount_type']);
 				$total += $week_price;
 				foreach ($w['dates'] as $d) {
 					$covered_dates[] = $d;
@@ -164,8 +244,29 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		// Días sueltos
 		foreach ($selected_dates as $date) {
-			if (!in_array($date, $covered_dates)) {
-				$total += $day_price;
+			if (!in_array($date, $covered_dates, true)) {
+				$dp = $active_day_price;
+				// Si no hay precio de día suelto configurado, buscar precio prorrateado del bloque
+				if ($dp <= 0) {
+					foreach ($weeks as $w) {
+						if (!empty($w['dates']) && in_array($date, $w['dates'], true)) {
+							$w_price = ($is_member && isset($w['member_price']) && (float) $w['member_price'] > 0) ? (float) $w['member_price'] : (float) $w['price'];
+							$cnt = count($w['dates']);
+							if ($cnt > 0) {
+								$dp = $w_price / $cnt;
+							}
+							break;
+						}
+					}
+				}
+				// Si sigue siendo 0, usar el precio regular del producto de WooCommerce
+				if ($dp <= 0) {
+					$wc_prod = wc_get_product($product_id);
+					if ($wc_prod && (float) $wc_prod->get_price() > 0) {
+						$dp = (float) $wc_prod->get_price();
+					}
+				}
+				$total += $dp;
 			}
 		}
 
@@ -208,11 +309,16 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	public function product_data_panel()
 	{
 		global $post;
-		$product_id       = $post->ID;
-		$day_price        = get_post_meta($product_id, '_pn_cm_woo_calendar_day_price', true);
-		$member_day_price = get_post_meta($product_id, '_pn_cm_woo_calendar_member_day_price', true);
-		$schedule         = get_post_meta($product_id, '_pn_cm_woo_calendar_schedule', true);
-		$weeks            = $this->get_weeks($product_id);
+		$product_id            = $post->ID;
+		$day_price             = get_post_meta($product_id, '_pn_cm_woo_calendar_day_price', true);
+		$member_day_price      = get_post_meta($product_id, '_pn_cm_woo_calendar_member_day_price', true);
+		$schedule              = get_post_meta($product_id, '_pn_cm_woo_calendar_schedule', true);
+		$enable_member         = get_post_meta($product_id, '_pn_cm_woo_calendar_enable_member_discount', true) === 'yes';
+		$member_label          = get_post_meta($product_id, '_pn_cm_woo_calendar_member_label', true);
+		if (empty($member_label)) {
+			$member_label = __('We are a member family', 'pn-customers-manager');
+		}
+		$weeks                 = $this->get_weeks($product_id);
 		?>
 		<div id="pn_cm_woo_calendar_data" class="panel woocommerce_options_panel">
 
@@ -230,26 +336,44 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 						'label'       => __('Mostrar plazas', 'pn-customers-manager'),
 						'description' => __('Mostrar plazas restantes en cada día del calendario', 'pn-customers-manager'),
 					]);
+					woocommerce_wp_checkbox([
+						'id'          => '_pn_cm_woo_calendar_enable_member_discount',
+						'label'       => __('Activar tarifa / descuento especial', 'pn-customers-manager'),
+						'description' => __('Habilitar precio especial para familias asociadas, socios o colectivos.', 'pn-customers-manager'),
+					]);
 				}
 				if (function_exists('woocommerce_wp_text_input')) {
 					woocommerce_wp_text_input([
 						'id'          => '_pn_cm_woo_calendar_schedule',
-						'label'       => __('Horario', 'pn-customers-manager'),
+						'label'       => __('Schedule', 'pn-customers-manager'),
 						'placeholder' => '9:00 - 14:30 (madrugadores desde 8:30)',
 					]);
 				}
 				?>
+				<div class="pn-cm-member-only-field" <?php echo !$enable_member ? 'style="display:none;"' : ''; ?>>
+					<?php
+					if (function_exists('woocommerce_wp_text_input')) {
+						woocommerce_wp_text_input([
+							'id'          => '_pn_cm_woo_calendar_member_label',
+							'label'       => __('Etiqueta de la opción especial', 'pn-customers-manager'),
+							'placeholder' => __('We are a member family', 'pn-customers-manager'),
+							'description' => __('Texto que se mostrará junto a la casilla para activar esta tarifa especial.', 'pn-customers-manager'),
+							'value'       => $member_label,
+						]);
+					}
+					?>
+				</div>
 			</div>
 
-			<!-- Roles con descuento de socio -->
-			<div class="options_group">
+			<!-- Roles con descuento especial -->
+			<div class="options_group pn-cm-member-only-field" <?php echo !$enable_member ? 'style="display:none;"' : ''; ?>>
 				<?php
 				$all_roles = wp_roles()->get_names();
 				$selected_roles = get_post_meta($post->ID, '_pn_cm_woo_calendar_member_roles', true);
 				if (!is_array($selected_roles)) $selected_roles = [];
 				?>
 				<p class="form-field">
-					<label><?php _e('Roles con descuento de socio', 'pn-customers-manager'); ?></label>
+					<label class="pn-cm-admin-main-label"><?php _e('Roles with special / member discount', 'pn-customers-manager'); ?></label>
 					<select name="_pn_cm_woo_calendar_member_roles[]" multiple style="width:100%;min-height:100px;">
 						<?php foreach ($all_roles as $role_key => $role_name): ?>
 							<option value="<?php echo esc_attr($role_key); ?>" <?php echo in_array($role_key, $selected_roles) ? 'selected' : ''; ?>>
@@ -257,37 +381,43 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<span class="description"><?php _e('Selecciona qué roles de usuario obtienen el precio de socio. Mantén Ctrl/Cmd para seleccionar múltiples.', 'pn-customers-manager'); ?></span>
+					<span class="description"><?php _e('Select which user roles automatically get the special rate when logged in. Hold Ctrl/Cmd to select multiple.', 'pn-customers-manager'); ?></span>
 				</p>
 			</div>
 
-			<!-- Precios por día -->
+			<!-- Precios por día suelto -->
 			<div class="options_group">
-				<p class="form-field _pn_cm_woo_calendar_day_price_field">
-					<label><?php _e('Precio por día suelto', 'pn-customers-manager'); ?></label>
-					<span class="wrap">
-						<span class="pn-cm-calendar-admin-price-pair">
-							<span class="pn-cm-calendar-admin-price-label"><?php _e('No socios', 'pn-customers-manager'); ?></span>
-							<input type="number" id="_pn_cm_woo_calendar_day_price" name="_pn_cm_woo_calendar_day_price"
-							       value="<?php echo esc_attr($day_price); ?>"
-							       placeholder="25.00" step="0.01" min="0" class="short" />
-							<span class="pn-cm-calendar-admin-price-currency">&euro;</span>
-						</span>
-						<span class="pn-cm-calendar-admin-price-pair">
-							<span class="pn-cm-calendar-admin-price-label"><?php _e('Socios', 'pn-customers-manager'); ?></span>
-							<input type="number" id="_pn_cm_woo_calendar_member_day_price" name="_pn_cm_woo_calendar_member_day_price"
-							       value="<?php echo esc_attr($member_day_price); ?>"
-							       placeholder="20.00" step="0.01" min="0" class="short" />
-							<span class="pn-cm-calendar-admin-price-currency">&euro;</span>
-						</span>
-					</span>
+				<p class="form-field pn-cm-admin-field-group">
+					<label class="pn-cm-admin-main-label"><?php _e('Single day price', 'pn-customers-manager'); ?></label>
+					<div class="pn-cm-admin-price-row">
+						<div class="pn-cm-admin-price-item">
+							<label class="pn-cm-admin-sub-label"><?php _e('Standard rate', 'pn-customers-manager'); ?></label>
+							<div class="pn-cm-calendar-input-with-suffix">
+								<input type="number" id="_pn_cm_woo_calendar_day_price" name="_pn_cm_woo_calendar_day_price"
+								       value="<?php echo esc_attr($day_price); ?>"
+								       placeholder="25.00" step="0.01" min="0" class="short" />
+								<span class="pn-cm-calendar-suffix">&euro;</span>
+							</div>
+						</div>
+						<div class="pn-cm-admin-price-item pn-cm-member-only-field" <?php echo !$enable_member ? 'style="display:none;"' : ''; ?>>
+							<label class="pn-cm-admin-sub-label pn-cm-member-price-title">
+								<?php _e('Single day price', 'pn-customers-manager'); ?> (<span class="pn-cm-member-label-text"><?php echo esc_html($member_label); ?></span>)
+							</label>
+							<div class="pn-cm-calendar-input-with-suffix">
+								<input type="number" id="_pn_cm_woo_calendar_member_day_price" name="_pn_cm_woo_calendar_member_day_price"
+								       value="<?php echo esc_attr($member_day_price); ?>"
+								       placeholder="20.00" step="0.01" min="0" class="short" />
+								<span class="pn-cm-calendar-suffix">&euro;</span>
+							</div>
+						</div>
+					</div>
 				</p>
 			</div>
 
-			<!-- Semanas -->
+			<!-- Bloques -->
 			<div class="options_group pn-cm-calendar-weeks-section">
 				<p class="form-field">
-					<label class="pn-cm-calendar-section-title"><?php _e('Semanas del calendario de productos', 'pn-customers-manager'); ?></label>
+					<label class="pn-cm-calendar-section-title"><?php _e('Product calendar blocks', 'pn-customers-manager'); ?></label>
 				</p>
 				<div id="pn-cm-calendar-weeks-repeater">
 					<?php
@@ -301,7 +431,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				<div class="pn-cm-calendar-add-wrap">
 					<button type="button" class="button button-primary" id="pn-cm-calendar-add-week">
 						<span class="dashicons dashicons-plus-alt2"></span>
-						<?php _e('Añadir semana', 'pn-customers-manager'); ?>
+						<?php _e('Add block', 'pn-customers-manager'); ?>
 					</button>
 				</div>
 			</div>
@@ -311,66 +441,72 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 	private function render_week_row($index, $week = [])
 	{
+		global $post;
+		$enable_member = $post ? get_post_meta($post->ID, '_pn_cm_woo_calendar_enable_member_discount', true) === 'yes' : false;
+		$member_label  = $post ? get_post_meta($post->ID, '_pn_cm_woo_calendar_member_label', true) : '';
+		if (empty($member_label)) {
+			$member_label = __('We are a member family', 'pn-customers-manager');
+		}
 		$defaults = [
 			'id' => '', 'label' => '', 'dates' => [],
 			'price' => '', 'member_price' => '', 'capacity' => 25,
+			'discount' => 0, 'discount_type' => 'percent', 'groups' => [],
 		];
 		$week = wp_parse_args($week, $defaults);
-		$date_start = !empty($week['dates']) ? $week['dates'][0] : '';
-		$date_end   = !empty($week['dates']) ? end($week['dates']) : '';
+		$dates_json = !empty($week['dates']) ? wp_json_encode($week['dates']) : '[]';
 		$n = $index + 1;
+		$has_groups = !empty($week['groups']);
 		?>
 		<div class="pn-cm-calendar-week-row" data-index="<?php echo esc_attr($index); ?>">
 			<div class="pn-cm-calendar-week-header">
 				<span class="pn-cm-calendar-week-handle dashicons dashicons-move"></span>
 				<span class="pn-cm-calendar-week-number">#<?php echo $n; ?></span>
 				<span class="pn-cm-calendar-week-header-label">
-					<?php echo !empty($week['label']) ? esc_html($week['label']) : __('Nueva semana', 'pn-customers-manager'); ?>
+					<?php echo !empty($week['label']) ? esc_html($week['label']) : __('New block', 'pn-customers-manager'); ?>
 				</span>
-				<button type="button" class="pn-cm-calendar-remove-week" title="<?php esc_attr_e('Eliminar', 'pn-customers-manager'); ?>">
+				<button type="button" class="pn-cm-calendar-remove-week" title="<?php esc_attr_e('Delete', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-trash"></span>
 				</button>
 			</div>
 			<div class="pn-cm-calendar-week-body">
-				<!-- Fila 1: ID + Etiqueta -->
+				<!-- ID + Etiqueta -->
 				<div class="pn-cm-calendar-row">
 					<div class="pn-cm-calendar-field">
-						<label><?php _e('Identificador', 'pn-customers-manager'); ?></label>
+						<label class="pn-cm-admin-sub-label"><?php _e('Identifier', 'pn-customers-manager'); ?></label>
 						<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][id]"
 						       value="<?php echo esc_attr($week['id']); ?>"
-						       placeholder="semana-1" />
-						<span class="pn-cm-calendar-field-hint"><?php _e('Uso interno, sin espacios', 'pn-customers-manager'); ?></span>
+						       placeholder="bloque-1" />
+						<span class="pn-cm-calendar-field-hint"><?php _e('Internal use, no spaces', 'pn-customers-manager'); ?></span>
 					</div>
 					<div class="pn-cm-calendar-field">
-						<label><?php _e('Nombre visible', 'pn-customers-manager'); ?></label>
+						<label class="pn-cm-admin-sub-label"><?php _e('Display name', 'pn-customers-manager'); ?></label>
 						<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][label]"
 						       value="<?php echo esc_attr($week['label']); ?>"
-						       placeholder="Semana 1" class="pn-cm-calendar-label-input" />
+						       placeholder="Bloque 1" class="pn-cm-calendar-label-input" />
 					</div>
 				</div>
-				<!-- Fila 2: Fecha inicio + Fecha fin + Aforo -->
-				<div class="pn-cm-calendar-row">
-					<div class="pn-cm-calendar-field">
-						<label><?php _e('Fecha inicio', 'pn-customers-manager'); ?></label>
-						<input type="date" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][date_start]"
-						       value="<?php echo esc_attr($date_start); ?>" class="pn-cm-calendar-date-input" />
-					</div>
-					<div class="pn-cm-calendar-field">
-						<label><?php _e('Fecha fin', 'pn-customers-manager'); ?></label>
-						<input type="date" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][date_end]"
-						       value="<?php echo esc_attr($date_end); ?>" class="pn-cm-calendar-date-input" />
-					</div>
-					<div class="pn-cm-calendar-field pn-cm-calendar-field--narrow">
-						<label><?php _e('Aforo/día', 'pn-customers-manager'); ?></label>
-						<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][capacity]"
-						       value="<?php echo esc_attr($week['capacity']); ?>"
-						       placeholder="25" min="1" />
-					</div>
+				<!-- Calendario interactivo -->
+				<div class="pn-cm-calendar-picker-section">
+					<label class="pn-cm-admin-sub-label"><?php _e('Dates', 'pn-customers-manager'); ?></label>
+					<span class="pn-cm-calendar-picker-hint"><?php _e('Click = select/deselect &middot; Shift+click = range &middot; Ctrl+click = add individual', 'pn-customers-manager'); ?></span>
+					<div class="pn-cm-calendar-block-picker" data-dates="<?php echo esc_attr($dates_json); ?>"></div>
+					<input type="hidden" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][dates_json]"
+					       class="pn-cm-calendar-dates-json" value="<?php echo esc_attr($dates_json); ?>" />
+					<div class="pn-cm-calendar-dates-preview"></div>
 				</div>
-				<!-- Fila 3: Precios -->
-				<div class="pn-cm-calendar-row">
+				<!-- Configuración: Aforo + Precios + Descuento -->
+				<div class="pn-cm-calendar-config-grid">
+					<div class="pn-cm-calendar-field pn-cm-calendar-capacity-field" <?php echo $has_groups ? 'style="display:none;"' : ''; ?>>
+						<label class="pn-cm-admin-sub-label"><?php _e('Capacity/day', 'pn-customers-manager'); ?></label>
+						<div class="pn-cm-calendar-input-with-suffix">
+							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][capacity]"
+							       value="<?php echo esc_attr($week['capacity']); ?>"
+							       placeholder="25" min="1" />
+							<span class="pn-cm-calendar-suffix"><?php _e('spots', 'pn-customers-manager'); ?></span>
+						</div>
+					</div>
 					<div class="pn-cm-calendar-field">
-						<label><?php _e('Precio semana - No socios', 'pn-customers-manager'); ?></label>
+						<label class="pn-cm-admin-sub-label"><?php _e('Standard price', 'pn-customers-manager'); ?></label>
 						<div class="pn-cm-calendar-input-with-suffix">
 							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][price]"
 							       value="<?php echo esc_attr($week['price']); ?>"
@@ -378,8 +514,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 							<span class="pn-cm-calendar-suffix">&euro;</span>
 						</div>
 					</div>
-					<div class="pn-cm-calendar-field">
-						<label><?php _e('Precio semana - Socios', 'pn-customers-manager'); ?></label>
+					<div class="pn-cm-calendar-field pn-cm-member-only-field" <?php echo !$enable_member ? 'style="display:none;"' : ''; ?>>
+						<label class="pn-cm-admin-sub-label pn-cm-member-price-title">
+							<?php _e('Price', 'pn-customers-manager'); ?> (<span class="pn-cm-member-label-text"><?php echo esc_html($member_label); ?></span>)
+						</label>
 						<div class="pn-cm-calendar-input-with-suffix">
 							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][member_price]"
 							       value="<?php echo esc_attr($week['member_price']); ?>"
@@ -387,9 +525,55 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 							<span class="pn-cm-calendar-suffix">&euro;</span>
 						</div>
 					</div>
+					<div class="pn-cm-calendar-field">
+						<label class="pn-cm-admin-sub-label"><?php _e('Discount', 'pn-customers-manager'); ?></label>
+						<div class="pn-cm-calendar-discount-inputs">
+							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][discount]"
+							       value="<?php echo esc_attr($week['discount']); ?>"
+							       placeholder="0" step="0.01" min="0" class="pn-cm-calendar-discount-amount" />
+							<select name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][discount_type]" class="pn-cm-calendar-discount-type">
+								<option value="percent" <?php selected($week['discount_type'], 'percent'); ?>>%</option>
+								<option value="fixed" <?php selected($week['discount_type'], 'fixed'); ?>>&euro;</option>
+							</select>
+						</div>
+					</div>
 				</div>
-				<!-- Preview de días generados -->
-				<div class="pn-cm-calendar-dates-preview"></div>
+				<?php if ($has_groups): ?>
+					<div class="pn-cm-calendar-capacity-note">
+						<span class="pn-cm-calendar-field-hint"><?php _e('Capacity is defined in each group', 'pn-customers-manager'); ?></span>
+					</div>
+				<?php endif; ?>
+				<!-- Grupos -->
+				<div class="pn-cm-calendar-groups-section">
+					<label class="pn-cm-calendar-groups-title"><?php _e('Activity groups', 'pn-customers-manager'); ?></label>
+					<div class="pn-cm-calendar-groups-repeater">
+						<?php if (!empty($week['groups'])): ?>
+							<?php foreach ($week['groups'] as $gi => $group): ?>
+								<div class="pn-cm-calendar-group-row" data-group-index="<?php echo $gi; ?>">
+									<input type="hidden" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][groups][<?php echo $gi; ?>][id]"
+									       value="<?php echo esc_attr($group['id']); ?>" class="pn-cm-calendar-group-id" />
+									<div class="pn-cm-calendar-field">
+										<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][groups][<?php echo $gi; ?>][label]"
+										       value="<?php echo esc_attr($group['label']); ?>"
+										       placeholder="<?php esc_attr_e('Group name', 'pn-customers-manager'); ?>" class="pn-cm-calendar-group-label" />
+									</div>
+									<div class="pn-cm-calendar-field pn-cm-calendar-field--narrow">
+										<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][groups][<?php echo $gi; ?>][capacity]"
+										       value="<?php echo esc_attr($group['capacity']); ?>"
+										       placeholder="15" min="1" class="pn-cm-calendar-group-capacity" />
+									</div>
+									<button type="button" class="pn-cm-calendar-remove-group" title="<?php esc_attr_e('Delete group', 'pn-customers-manager'); ?>">
+										<span class="dashicons dashicons-no-alt"></span>
+									</button>
+								</div>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</div>
+					<button type="button" class="button pn-cm-calendar-add-group">
+						<span class="dashicons dashicons-plus-alt2"></span>
+						<?php _e('Add group', 'pn-customers-manager'); ?>
+					</button>
+				</div>
 			</div>
 		</div>
 		<?php
@@ -402,6 +586,13 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		$show_avail = isset($_POST['_pn_cm_woo_calendar_show_availability']) ? 'yes' : 'no';
 		update_post_meta($product_id, '_pn_cm_woo_calendar_show_availability', $show_avail);
+
+		$enable_member = isset($_POST['_pn_cm_woo_calendar_enable_member_discount']) ? 'yes' : 'no';
+		update_post_meta($product_id, '_pn_cm_woo_calendar_enable_member_discount', $enable_member);
+
+		if (isset($_POST['_pn_cm_woo_calendar_member_label'])) {
+			update_post_meta($product_id, '_pn_cm_woo_calendar_member_label', sanitize_text_field($_POST['_pn_cm_woo_calendar_member_label']));
+		}
 
 		if (isset($_POST['_pn_cm_woo_calendar_day_price'])) {
 			update_post_meta($product_id, '_pn_cm_woo_calendar_day_price', sanitize_text_field($_POST['_pn_cm_woo_calendar_day_price']));
@@ -421,25 +612,35 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			delete_post_meta($product_id, '_pn_cm_woo_calendar_member_roles');
 		}
 
-		// Semanas
+		// Bloques
 		$weeks = [];
 		$used_ids = [];
 		if (isset($_POST['_pn_cm_woo_calendar_weeks']) && is_array($_POST['_pn_cm_woo_calendar_weeks'])) {
 			$index = 0;
 			foreach ($_POST['_pn_cm_woo_calendar_weeks'] as $week_data) {
-				$date_start = isset($week_data['date_start']) ? sanitize_text_field($week_data['date_start']) : '';
-				$date_end   = isset($week_data['date_end']) ? sanitize_text_field($week_data['date_end']) : '';
-
-				// Generar días laborables (L-V) entre las dos fechas
+				// Read dates from dates_json (primary) or fallback to date range
 				$dates = [];
-				if ($date_start && $date_end && $date_end >= $date_start) {
-					$dates = $this->generate_weekday_dates($date_start, $date_end);
+				if (!empty($week_data['dates_json'])) {
+					$decoded = json_decode(stripslashes($week_data['dates_json']), true);
+					if (is_array($decoded)) {
+						$dates = array_map('sanitize_text_field', $decoded);
+						sort($dates);
+					}
+				}
+
+				// Fallback: generate from date range if dates_json is empty
+				if (empty($dates)) {
+					$date_start = isset($week_data['date_start']) ? sanitize_text_field($week_data['date_start']) : '';
+					$date_end   = isset($week_data['date_end']) ? sanitize_text_field($week_data['date_end']) : '';
+					if ($date_start && $date_end && $date_end >= $date_start) {
+						$dates = $this->generate_weekday_dates($date_start, $date_end);
+					}
 				}
 
 				// Auto-generar ID si está vacío y garantizar unicidad
 				$id = sanitize_title($week_data['id']);
 				if (empty($id)) {
-					$id = 'semana-' . ($index + 1);
+					$id = 'bloque-' . ($index + 1);
 				}
 				$base_id = $id;
 				$suffix = 2;
@@ -449,13 +650,47 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				}
 				$used_ids[] = $id;
 
+				// Parse groups
+				$groups = [];
+				if (isset($week_data['groups']) && is_array($week_data['groups'])) {
+					$group_used_ids = [];
+					$gi = 0;
+					foreach ($week_data['groups'] as $group_data) {
+						$group_id = sanitize_title($group_data['id']);
+						if (empty($group_id)) {
+							$group_id = 'grupo-' . ($gi + 1);
+						}
+						$base_gid = $group_id;
+						$gsuffix = 2;
+						while (in_array($group_id, $group_used_ids, true)) {
+							$group_id = $base_gid . '-' . $gsuffix;
+							$gsuffix++;
+						}
+						$group_used_ids[] = $group_id;
+
+						$groups[] = [
+							'id'       => $group_id,
+							'label'    => sanitize_text_field($group_data['label']),
+							'capacity' => max(1, (int) $group_data['capacity']),
+						];
+						$gi++;
+					}
+				}
+
+				$price_val = (float) $week_data['price'];
+				$member_price_raw = isset($week_data['member_price']) ? trim($week_data['member_price']) : '';
+				$member_price_val = ($member_price_raw !== '' && (float) $member_price_raw > 0) ? (float) $member_price_raw : $price_val;
+
 				$weeks[] = [
-					'id'           => $id,
-					'label'        => sanitize_text_field($week_data['label']),
-					'dates'        => $dates,
-					'price'        => (float) $week_data['price'],
-					'member_price' => (float) $week_data['member_price'],
-					'capacity'     => max(1, (int) $week_data['capacity']),
+					'id'            => $id,
+					'label'         => sanitize_text_field($week_data['label']),
+					'dates'         => $dates,
+					'price'         => $price_val,
+					'member_price'  => $member_price_val,
+					'capacity'      => max(1, (int) $week_data['capacity']),
+					'discount'      => max(0, (float) $week_data['discount']),
+					'discount_type' => in_array($week_data['discount_type'], ['percent', 'fixed']) ? $week_data['discount_type'] : 'percent',
+					'groups'        => $groups,
 				];
 				$index++;
 			}
@@ -519,77 +754,105 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		);
 
 		$weeks = $this->get_weeks($post->ID);
+		$enable_member = get_post_meta($post->ID, '_pn_cm_woo_calendar_enable_member_discount', true) === 'yes';
+		$member_label  = get_post_meta($post->ID, '_pn_cm_woo_calendar_member_label', true);
+		if (empty($member_label)) {
+			$member_label = __('We are a member family', 'pn-customers-manager');
+		}
 
 		// Enviar ambos sets de precios al frontend
 		$weeks_for_js = [];
 		foreach ($weeks as $w) {
+			$price_val = (float) $w['price'];
+			$member_price_val = (isset($w['member_price']) && (float) $w['member_price'] > 0) ? (float) $w['member_price'] : $price_val;
 			$weeks_for_js[] = [
-				'id'           => $w['id'],
-				'label'        => $w['label'],
-				'dates'        => $w['dates'],
-				'price'        => (float) $w['price'],
-				'member_price' => isset($w['member_price']) ? (float) $w['member_price'] : (float) $w['price'],
-				'capacity'     => (int) $w['capacity'],
+				'id'            => $w['id'],
+				'label'         => $w['label'],
+				'dates'         => $w['dates'],
+				'price'         => $price_val,
+				'member_price'  => $member_price_val,
+				'capacity'      => (int) $w['capacity'],
+				'discount'      => (float) $w['discount'],
+				'discount_type' => $w['discount_type'],
+				'groups'        => $w['groups'],
 			];
+		}
+
+		$day_price_val = (float) $this->get_day_price($post->ID);
+		$member_day_price_val = (float) $this->get_member_day_price($post->ID);
+		if ($member_day_price_val <= 0) {
+			$member_day_price_val = $day_price_val;
 		}
 
 		// Usar wp_add_inline_script con JSON nativo para preservar tipos de datos
 		$camp_data = [
-			'ajaxUrl'          => admin_url('admin-ajax.php'),
-			'nonce'            => wp_create_nonce('pn_cm_calendar_nonce'),
-			'productId'        => $post->ID,
-			'showAvailability' => get_post_meta($post->ID, '_pn_cm_woo_calendar_show_availability', true) === 'yes',
-			'weeks'          => $weeks_for_js,
-			'dayPrice'       => (float) $this->get_day_price($post->ID),
-			'memberDayPrice' => (float) $this->get_member_day_price($post->ID),
-			'schedule'       => get_post_meta($post->ID, '_pn_cm_woo_calendar_schedule', true),
-			'availability'   => $this->get_availability($post->ID),
-			'isAdmin'        => current_user_can('manage_woocommerce'),
-			'isMember'       => $this->is_current_user_member($post->ID),
-			'currency'       => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '€',
-			'i18n'           => [
-				'schedule'      => __('Horario', 'pn-customers-manager'),
-				'available'     => __('Disponible', 'pn-customers-manager'),
-				'selected'      => __('Seleccionado', 'pn-customers-manager'),
-				'full'          => __('Completo', 'pn-customers-manager'),
-				'yourSelection' => __('Tu selección', 'pn-customers-manager'),
+			'ajaxUrl'              => admin_url('admin-ajax.php'),
+			'nonce'                => wp_create_nonce('pn_cm_calendar_nonce'),
+			'productId'            => $post->ID,
+			'showAvailability'     => get_post_meta($post->ID, '_pn_cm_woo_calendar_show_availability', true) === 'yes',
+			'enableMemberDiscount' => $enable_member,
+			'weeks'                => $weeks_for_js,
+			'dayPrice'             => $day_price_val,
+			'memberDayPrice'       => $member_day_price_val,
+			'schedule'             => get_post_meta($post->ID, '_pn_cm_woo_calendar_schedule', true),
+			'availability'         => $this->get_availability($post->ID),
+			'isAdmin'              => current_user_can('manage_woocommerce'),
+			'isMember'             => $this->is_current_user_member($post->ID),
+			'currency'             => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '€',
+			'i18n'                 => [
+				'schedule'      => __('Schedule', 'pn-customers-manager'),
+				'available'     => __('Available', 'pn-customers-manager'),
+				'selected'      => __('Selected', 'pn-customers-manager'),
+				'full'          => __('Full', 'pn-customers-manager'),
+				'yourSelection' => __('Your selection', 'pn-customers-manager'),
 				'total'         => __('Total', 'pn-customers-manager'),
-				'looseDays'     => __('Días sueltos', 'pn-customers-manager'),
-				'noSelection'   => __('Selecciona días o semanas del calendario', 'pn-customers-manager'),
-				'memberLabel'   => __('Somos familia asociada', 'pn-customers-manager'),
-				'memberBadge'   => __('Precio socio aplicado', 'pn-customers-manager'),
-				'adminPanel'    => __('Panel Admin', 'pn-customers-manager'),
-				'adminBack'     => __('Volver a compra', 'pn-customers-manager'),
-				'adminOccupancy' => __('Ocupación', 'pn-customers-manager'),
-				'adminBookings' => __('Reservas', 'pn-customers-manager'),
-				'adminNoBookings' => __('No hay reservas para este día', 'pn-customers-manager'),
-				'adminName'     => __('Nombre', 'pn-customers-manager'),
+				'looseDays'     => __('Individual days', 'pn-customers-manager'),
+				'noSelection'   => __('Select days or calendar blocks', 'pn-customers-manager'),
+				'memberLabel'   => $member_label,
+				'memberBadge'   => __('Member price applied', 'pn-customers-manager'),
+				'adminPanel'    => __('Admin panel', 'pn-customers-manager'),
+				'adminBack'     => __('Back to purchase', 'pn-customers-manager'),
+				'adminOccupancy' => __('Occupancy', 'pn-customers-manager'),
+				'adminBookings' => __('Bookings', 'pn-customers-manager'),
+				'adminNoBookings' => __('No bookings for this day', 'pn-customers-manager'),
+				'adminName'     => __('Name', 'pn-customers-manager'),
 				'adminEmail'    => __('Email', 'pn-customers-manager'),
-				'adminPhone'    => __('Teléfono', 'pn-customers-manager'),
-				'adminNotes'    => __('Notas', 'pn-customers-manager'),
-				'adminOrder'    => __('Pedido', 'pn-customers-manager'),
-				'adminDate'     => __('Fecha pedido', 'pn-customers-manager'),
-				'adminClose'    => __('Cerrar', 'pn-customers-manager'),
-				'adminLoading'  => __('Cargando...', 'pn-customers-manager'),
-				'adminError'    => __('Error al cargar las reservas', 'pn-customers-manager'),
-				'adminSummaryTitle'  => __('Resumen de facturación', 'pn-customers-manager'),
-				'adminTotalOrders'   => __('Pedidos totales', 'pn-customers-manager'),
-				'adminTotalBookings' => __('Reservas (plazas·día)', 'pn-customers-manager'),
-				'adminTotalRevenue'  => __('Facturación total', 'pn-customers-manager'),
-				'adminWeekSummary'   => __('Desglose por semana', 'pn-customers-manager'),
-				'adminWeekLabel'     => __('Semana', 'pn-customers-manager'),
-				'adminWeekBookings'  => __('Reservas', 'pn-customers-manager'),
-				'adminWeekRevenue'   => __('Facturación', 'pn-customers-manager'),
+				'adminPhone'    => __('Phone', 'pn-customers-manager'),
+				'adminNotes'    => __('Notes', 'pn-customers-manager'),
+				'adminOrder'    => __('Order', 'pn-customers-manager'),
+				'adminDate'     => __('Order date', 'pn-customers-manager'),
+				'adminClose'    => __('Close', 'pn-customers-manager'),
+				'adminLoading'  => __('Loading...', 'pn-customers-manager'),
+				'adminError'    => __('Error loading bookings', 'pn-customers-manager'),
+				'adminSummaryTitle'  => __('Billing summary', 'pn-customers-manager'),
+				'adminTotalOrders'   => __('Total orders', 'pn-customers-manager'),
+				'adminTotalBookings' => __('Bookings (spots·day)', 'pn-customers-manager'),
+				'adminTotalRevenue'  => __('Total revenue', 'pn-customers-manager'),
+				'adminWeekSummary'   => __('Breakdown by block', 'pn-customers-manager'),
+				'adminWeekLabel'     => __('Block', 'pn-customers-manager'),
+				'adminWeekBookings'  => __('Bookings', 'pn-customers-manager'),
+				'adminWeekRevenue'   => __('Revenue', 'pn-customers-manager'),
+				'selectGroup'        => __('Select group', 'pn-customers-manager'),
+				'group'              => __('Group', 'pn-customers-manager'),
+				'discountLabel'      => __('Discount', 'pn-customers-manager'),
+				'spotsLeft'          => __('spots', 'pn-customers-manager'),
+				'selectGroupError'   => __('Please select a group for each block with activity groups.', 'pn-customers-manager'),
+				'plazas'             => __('Spots', 'pn-customers-manager'),
+				'plazasLine'         => __('spots', 'pn-customers-manager'),
+				'distributeSpots'    => __('Distribute spots', 'pn-customers-manager'),
+				'invalidDistribution' => __('The spot distribution does not match the selected total.', 'pn-customers-manager'),
+				'groupFull'          => __('Not enough spots in the selected group.', 'pn-customers-manager'),
+				'notEnoughSpots'     => __('Not enough spots available for the selected quantity.', 'pn-customers-manager'),
 			],
 			'months' => [
-				__('Enero', 'pn-customers-manager'), __('Febrero', 'pn-customers-manager'), __('Marzo', 'pn-customers-manager'),
-				__('Abril', 'pn-customers-manager'), __('Mayo', 'pn-customers-manager'), __('Junio', 'pn-customers-manager'),
-				__('Julio', 'pn-customers-manager'), __('Agosto', 'pn-customers-manager'), __('Septiembre', 'pn-customers-manager'),
-				__('Octubre', 'pn-customers-manager'), __('Noviembre', 'pn-customers-manager'), __('Diciembre', 'pn-customers-manager'),
+				__('January', 'pn-customers-manager'), __('February', 'pn-customers-manager'), __('March', 'pn-customers-manager'),
+				__('April', 'pn-customers-manager'), __('May', 'pn-customers-manager'), __('June', 'pn-customers-manager'),
+				__('July', 'pn-customers-manager'), __('August', 'pn-customers-manager'), __('September', 'pn-customers-manager'),
+				__('October', 'pn-customers-manager'), __('November', 'pn-customers-manager'), __('December', 'pn-customers-manager'),
 			],
 			'weekDays' => [
-				__('L', 'pn-customers-manager'), __('M', 'pn-customers-manager'), __('X', 'pn-customers-manager'),
-				__('J', 'pn-customers-manager'), __('V', 'pn-customers-manager'), __('S', 'pn-customers-manager'), __('D', 'pn-customers-manager'),
+				__('M', 'pn-customers-manager'), __('T', 'pn-customers-manager'), __('W', 'pn-customers-manager'),
+				__('T', 'pn-customers-manager'), __('F', 'pn-customers-manager'), __('S', 'pn-customers-manager'), __('S', 'pn-customers-manager'),
 			],
 		];
 		wp_add_inline_script(
@@ -615,6 +878,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			<input type="hidden" name="pn_cm_calendar_dates" id="pn-cm-calendar-dates-input" value="" />
 			<input type="hidden" name="pn_cm_calendar_weeks" id="pn-cm-calendar-weeks-input" value="" />
 			<input type="hidden" name="pn_cm_calendar_is_member" id="pn-cm-calendar-is-member-input" value="0" />
+			<input type="hidden" name="pn_cm_calendar_groups" id="pn-cm-calendar-groups-input" value="" />
+			<input type="hidden" name="pn_cm_calendar_qty" id="pn-cm-calendar-qty-input" value="1" />
 		</div>
 		<?php
 	}
@@ -649,6 +914,15 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			return false;
 		}
 
+		// Read qty (plazas)
+		$qty = isset($_POST['pn_cm_calendar_qty']) ? max(1, (int) $_POST['pn_cm_calendar_qty']) : 1;
+		if ($qty > 100) {
+			if (function_exists('wc_add_notice')) {
+				wc_add_notice(__('La cantidad máxima de plazas es 100.', 'pn-customers-manager'), 'error');
+			}
+			return false;
+		}
+
 		$today = wp_date('Y-m-d');
 		foreach ($dates as $date) {
 			if ($date < $today) {
@@ -659,16 +933,103 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			}
 		}
 
+		// Parse groups selection (new format: { blockId: { groupId: qty } })
+		$groups_json = isset($_POST['pn_cm_calendar_groups']) ? sanitize_text_field(wp_unslash($_POST['pn_cm_calendar_groups'])) : '';
+		$selected_groups = json_decode($groups_json, true);
+		if (!is_array($selected_groups)) $selected_groups = [];
+		$selected_groups = $this->normalize_groups($selected_groups);
+
+		// Parse selected weeks/blocks
+		$weeks_json = isset($_POST['pn_cm_calendar_weeks']) ? sanitize_text_field(wp_unslash($_POST['pn_cm_calendar_weeks'])) : '';
+		$selected_weeks = json_decode($weeks_json, true);
+		if (!is_array($selected_weeks)) $selected_weeks = [];
+
+		$weeks = $this->get_weeks($product_id);
+		$week_map = [];
+		foreach ($weeks as $w) {
+			$week_map[$w['id']] = $w;
+		}
+
+		// Find all blocks with groups that have any selected date (full or partial selection)
+		$blocks_needing_group = [];
+		foreach ($weeks as $w) {
+			if (empty($w['groups'])) continue;
+			foreach ($w['dates'] as $d) {
+				if (in_array($d, $dates)) {
+					$blocks_needing_group[$w['id']] = $w;
+					break;
+				}
+			}
+		}
+
+		// Validate groups: blocks with groups must have a valid group distribution
+		foreach ($blocks_needing_group as $week_id => $week_data) {
+			if (empty($selected_groups[$week_id])) {
+				if (function_exists('wc_add_notice')) {
+					wc_add_notice(__('Please select a group for each block with activity groups.', 'pn-customers-manager'), 'error');
+				}
+				return false;
+			}
+
+			$distribution = $selected_groups[$week_id];
+			$valid_group_ids = array_column($week_data['groups'], 'id');
+
+			// Validate all group IDs exist
+			foreach ($distribution as $gid => $gqty) {
+				if (!in_array($gid, $valid_group_ids, true)) {
+					if (function_exists('wc_add_notice')) {
+						wc_add_notice(__('El grupo seleccionado no es válido.', 'pn-customers-manager'), 'error');
+					}
+					return false;
+				}
+			}
+
+			// Validate distribution sum equals qty
+			$dist_sum = array_sum($distribution);
+			if ($dist_sum !== $qty) {
+				if (function_exists('wc_add_notice')) {
+					wc_add_notice(__('The spot distribution does not match the selected total.', 'pn-customers-manager'), 'error');
+				}
+				return false;
+			}
+		}
+
 		$availability = $this->get_availability($product_id);
+
+		// Validate availability: each date must have >= qty spots
 		foreach ($dates as $date) {
-			if (!isset($availability[$date]) || $availability[$date] <= 0) {
+			if (!isset($availability[$date]) || $availability[$date] < $qty) {
 				if (function_exists('wc_add_notice')) {
 					wc_add_notice(
-						sprintf(__('La fecha %s no tiene plazas disponibles.', 'pn-customers-manager'), $date),
+						sprintf(__('La fecha %s no tiene suficientes plazas disponibles.', 'pn-customers-manager'), $date),
 						'error'
 					);
 				}
 				return false;
+			}
+		}
+
+		// Validate group-level availability for blocks with groups
+		foreach ($blocks_needing_group as $week_id => $week_data) {
+			if (!empty($selected_groups[$week_id])) {
+				$distribution = $selected_groups[$week_id];
+				foreach ($distribution as $group_id => $group_qty) {
+					if ($group_qty <= 0) continue;
+					foreach ($week_data['dates'] as $date) {
+						if (!in_array($date, $dates)) continue;
+						$composite_key = $date . '__' . $group_id;
+						$group_avail = isset($availability[$composite_key]) ? $availability[$composite_key] : 0;
+						if ($group_avail < $group_qty) {
+							if (function_exists('wc_add_notice')) {
+								wc_add_notice(
+									sprintf(__('La fecha %s no tiene suficientes plazas disponibles en el grupo seleccionado.', 'pn-customers-manager'), $date),
+									'error'
+								);
+							}
+							return false;
+						}
+					}
+				}
 			}
 		}
 
@@ -685,19 +1046,29 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		$dates_json = isset($_POST['pn_cm_calendar_dates']) ? sanitize_text_field(wp_unslash($_POST['pn_cm_calendar_dates'])) : '';
 		$weeks_json = isset($_POST['pn_cm_calendar_weeks']) ? sanitize_text_field(wp_unslash($_POST['pn_cm_calendar_weeks'])) : '';
+		$groups_json = isset($_POST['pn_cm_calendar_groups']) ? sanitize_text_field(wp_unslash($_POST['pn_cm_calendar_groups'])) : '';
 
 		$dates = json_decode($dates_json, true);
 		$weeks = json_decode($weeks_json, true);
+		$groups = json_decode($groups_json, true);
 
 		if (!is_array($dates)) $dates = [];
 		if (!is_array($weeks)) $weeks = [];
+		if (!is_array($groups)) $groups = [];
 
+		$groups = $this->normalize_groups($groups);
+
+		$qty = isset($_POST['pn_cm_calendar_qty']) ? max(1, (int) $_POST['pn_cm_calendar_qty']) : 1;
 		$is_member = !empty($_POST['pn_cm_calendar_is_member']) && $_POST['pn_cm_calendar_is_member'] === '1';
+
+		$base_price = $this->calculate_price($product_id, $dates, $weeks, $is_member);
 
 		$cart_item_data['pn_cm_calendar_dates']     = $dates;
 		$cart_item_data['pn_cm_calendar_weeks']     = $weeks;
+		$cart_item_data['pn_cm_calendar_groups']    = $groups;
 		$cart_item_data['pn_cm_calendar_is_member'] = $is_member;
-		$cart_item_data['pn_cm_calendar_price']     = $this->calculate_price($product_id, $dates, $weeks, $is_member);
+		$cart_item_data['pn_cm_calendar_qty']       = $qty;
+		$cart_item_data['pn_cm_calendar_price']     = $base_price * $qty;
 		$cart_item_data['unique_key']           = md5(microtime() . wp_rand());
 
 		return $cart_item_data;
@@ -711,10 +1082,25 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	{
 		if (empty($cart_item['pn_cm_calendar_dates'])) return $item_data;
 
+		$qty = isset($cart_item['pn_cm_calendar_qty']) ? (int) $cart_item['pn_cm_calendar_qty'] : 1;
+		if ($qty < 1) $qty = 1;
+
+		// Show plazas if more than 1
+		if ($qty > 1) {
+			$item_data[] = [
+				'key'   => __('Spots', 'pn-customers-manager'),
+				'value' => $qty,
+			];
+		}
+
 		if (!empty($cart_item['pn_cm_calendar_is_member'])) {
+			$member_label = get_post_meta($product_id, '_pn_cm_woo_calendar_member_label', true);
+			if (empty($member_label)) {
+				$member_label = __('We are a member family', 'pn-customers-manager');
+			}
 			$item_data[] = [
 				'key'   => __('Tarifa', 'pn-customers-manager'),
-				'value' => __('Familia asociada', 'pn-customers-manager'),
+				'value' => $member_label,
 			];
 		}
 
@@ -725,18 +1111,37 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		}
 
 		$selected_weeks = isset($cart_item['pn_cm_calendar_weeks']) ? $cart_item['pn_cm_calendar_weeks'] : [];
+		$selected_groups = isset($cart_item['pn_cm_calendar_groups']) ? $cart_item['pn_cm_calendar_groups'] : [];
+		$selected_groups = $this->normalize_groups($selected_groups);
+
 		if (!empty($selected_weeks)) {
 			$labels = [];
 			foreach ($selected_weeks as $wid) {
 				if (isset($week_map[$wid])) {
 					$w = $week_map[$wid];
 					$label = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+					// Add group distribution info
+					if (!empty($w['groups']) && !empty($selected_groups[$wid])) {
+						$group_labels = [];
+						foreach ($selected_groups[$wid] as $gid => $gqty) {
+							if ($gqty <= 0) continue;
+							foreach ($w['groups'] as $g) {
+								if ($g['id'] === $gid) {
+									$group_labels[] = $g['label'] . ' × ' . $gqty;
+									break;
+								}
+							}
+						}
+						if (!empty($group_labels)) {
+							$label .= ' — ' . implode(', ', $group_labels);
+						}
+					}
 					$labels[] = $label;
 				}
 			}
 			if (!empty($labels)) {
 				$item_data[] = [
-					'key'   => __('Semanas', 'pn-customers-manager'),
+					'key'   => __('Bloques', 'pn-customers-manager'),
 					'value' => implode(', ', $labels),
 				];
 			}
@@ -749,10 +1154,54 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			}
 		}
 		$loose_days = array_diff($cart_item['pn_cm_calendar_dates'], $covered);
-		if (!empty($loose_days)) {
-			$formatted = array_map([$this, 'format_date_short'], array_values($loose_days));
+
+		// Group loose days by block with groups (show group info)
+		$loose_by_block = [];
+		$truly_loose = [];
+		foreach ($loose_days as $day) {
+			$found_block = null;
+			foreach ($week_map as $wid => $w) {
+				if (!empty($w['groups']) && in_array($day, $w['dates'], true)) {
+					$found_block = $wid;
+					break;
+				}
+			}
+			if ($found_block) {
+				$loose_by_block[$found_block][] = $day;
+			} else {
+				$truly_loose[] = $day;
+			}
+		}
+
+		// Show loose days with group distribution info
+		foreach ($loose_by_block as $wid => $days) {
+			$w = $week_map[$wid];
+			$label = (!empty($w['label']) ? $w['label'] . ': ' : '') . implode(', ', array_map([$this, 'format_date_short'], $days));
+			if (!empty($selected_groups[$wid])) {
+				$group_labels = [];
+				foreach ($selected_groups[$wid] as $gid => $gqty) {
+					if ($gqty <= 0) continue;
+					foreach ($w['groups'] as $g) {
+						if ($g['id'] === $gid) {
+							$group_labels[] = $g['label'] . ' × ' . $gqty;
+							break;
+						}
+					}
+				}
+				if (!empty($group_labels)) {
+					$label .= ' — ' . implode(', ', $group_labels);
+				}
+			}
 			$item_data[] = [
-				'key'   => __('Días sueltos', 'pn-customers-manager'),
+				'key'   => __('Días', 'pn-customers-manager'),
+				'value' => $label,
+			];
+		}
+
+		if (!empty($truly_loose)) {
+			$formatted = array_map([$this, 'format_date_short'], array_values($truly_loose));
+			$item_data[] = [
+				'key'   => __('Individual days', 'pn-customers-manager'),
 				'value' => implode(', ', $formatted),
 			];
 		}
@@ -761,7 +1210,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	}
 
 	/**
-	 * Formatea "2026-07-03" → "3 jul"
+	 * Formatea "2026-07-03" -> "3 jul"
 	 */
 	private function format_date_short($date_str)
 	{
@@ -772,13 +1221,16 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	}
 
 	/**
-	 * Formatea un rango de fechas de semana: "25 jun - 3 jul"
+	 * Formatea un rango de fechas: "25 jun - 3 jul"
 	 */
 	private function format_week_range($dates)
 	{
 		if (empty($dates)) return '';
 		$first = reset($dates);
 		$last  = end($dates);
+		if ($first === $last || count($dates) === 1) {
+			return $this->format_date_short($first);
+		}
 		return $this->format_date_short($first) . ' - ' . $this->format_date_short($last);
 	}
 
@@ -806,28 +1258,94 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	{
 		if (empty($values['pn_cm_calendar_dates'])) return;
 
+		$qty = isset($values['pn_cm_calendar_qty']) ? max(1, (int) $values['pn_cm_calendar_qty']) : 1;
+		$selected_groups = isset($values['pn_cm_calendar_groups']) ? $this->normalize_groups($values['pn_cm_calendar_groups']) : [];
+
 		$item->add_meta_data(__('Fechas calendario de productos', 'pn-customers-manager'), implode(', ', $values['pn_cm_calendar_dates']));
 
+		if ($qty > 1) {
+			$item->add_meta_data(__('Spots', 'pn-customers-manager'), $qty);
+		}
+
+		$product_id = $values['product_id'];
+		$week_map = [];
+		foreach ($this->get_weeks($product_id) as $w) {
+			$week_map[$w['id']] = $w;
+		}
+
 		if (!empty($values['pn_cm_calendar_weeks'])) {
-			$product_id = $values['product_id'];
-			$week_map = [];
-			foreach ($this->get_weeks($product_id) as $w) {
-				$week_map[$w['id']] = $w;
-			}
 			$labels = [];
 			foreach ($values['pn_cm_calendar_weeks'] as $wid) {
 				if (isset($week_map[$wid])) {
 					$w = $week_map[$wid];
-					$labels[] = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+					$label = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+					if (!empty($w['groups']) && !empty($selected_groups[$wid])) {
+						$group_labels = [];
+						foreach ($selected_groups[$wid] as $gid => $gqty) {
+							if ($gqty <= 0) continue;
+							foreach ($w['groups'] as $g) {
+								if ($g['id'] === $gid) {
+									$group_labels[] = $g['label'] . ' × ' . $gqty;
+									break;
+								}
+							}
+						}
+						if (!empty($group_labels)) {
+							$label .= ' — ' . implode(', ', $group_labels);
+						}
+					}
+					$labels[] = $label;
 				}
 			}
 			if (!empty($labels)) {
-				$item->add_meta_data(__('Semanas', 'pn-customers-manager'), implode(', ', $labels));
+				$item->add_meta_data(__('Bloques', 'pn-customers-manager'), implode(', ', $labels));
 			}
+		}
+
+		// Show group info for partial blocks (dates not covered by full blocks)
+		$covered_dates = [];
+		foreach (($values['pn_cm_calendar_weeks'] ?? []) as $wid) {
+			if (isset($week_map[$wid])) {
+				$covered_dates = array_merge($covered_dates, $week_map[$wid]['dates']);
+			}
+		}
+		$loose_dates = array_diff($values['pn_cm_calendar_dates'], $covered_dates);
+		$partial_blocks = [];
+		foreach ($loose_dates as $day) {
+			foreach ($week_map as $wid => $w) {
+				if (!empty($w['groups']) && in_array($day, $w['dates'], true)) {
+					$partial_blocks[$wid][] = $day;
+					break;
+				}
+			}
+		}
+		foreach ($partial_blocks as $wid => $days) {
+			$w = $week_map[$wid];
+			$label = (!empty($w['label']) ? $w['label'] . ': ' : '') . implode(', ', array_map([$this, 'format_date_short'], $days));
+			if (!empty($selected_groups[$wid])) {
+				$group_labels = [];
+				foreach ($selected_groups[$wid] as $gid => $gqty) {
+					if ($gqty <= 0) continue;
+					foreach ($w['groups'] as $g) {
+						if ($g['id'] === $gid) {
+							$group_labels[] = $g['label'] . ' × ' . $gqty;
+							break;
+						}
+					}
+				}
+				if (!empty($group_labels)) {
+					$label .= ' — ' . implode(', ', $group_labels);
+				}
+			}
+			$item->add_meta_data(__('Días', 'pn-customers-manager') . ' (' . ($w['label'] ?: $wid) . ')', $label);
 		}
 
 		$item->add_meta_data('_pn_cm_woo_calendar_dates', $values['pn_cm_calendar_dates']);
 		$item->add_meta_data('_pn_cm_woo_calendar_weeks', $values['pn_cm_calendar_weeks']);
+		$item->add_meta_data('_pn_cm_woo_calendar_qty', $qty);
+		if (!empty($selected_groups)) {
+			$item->add_meta_data('_pn_cm_woo_calendar_groups', $selected_groups);
+		}
 	}
 
 	/* ───────────────────────────────────────────
@@ -863,14 +1381,53 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			$dates = $item->get_meta('_pn_cm_woo_calendar_dates');
 			if (empty($dates) || !is_array($dates)) continue;
 
+			$qty = $item->get_meta('_pn_cm_woo_calendar_qty');
+			$qty = $qty ? max(1, (int) $qty) : 1;
+
+			$item_groups = $item->get_meta('_pn_cm_woo_calendar_groups');
+			if (!is_array($item_groups)) $item_groups = [];
+			$item_groups = $this->normalize_groups($item_groups);
+
+			$item_weeks = $item->get_meta('_pn_cm_woo_calendar_weeks');
+			if (!is_array($item_weeks)) $item_weeks = [];
+
+			$weeks = $this->get_weeks($product_id);
+			$week_map = [];
+			foreach ($weeks as $w) {
+				$week_map[$w['id']] = $w;
+			}
+
 			$bookings = $this->get_bookings($product_id);
 
+			// Build list of block IDs that have group selections (both full and partial)
+			$blocks_with_group_selection = array_unique(array_merge($item_weeks, array_keys($item_groups)));
+
 			foreach ($dates as $date) {
+				// Update day-level booking by qty
 				if (!isset($bookings[$date])) $bookings[$date] = 0;
 				if ($action === 'increment') {
-					$bookings[$date]++;
+					$bookings[$date] += $qty;
 				} else {
-					$bookings[$date] = max(0, $bookings[$date] - 1);
+					$bookings[$date] = max(0, $bookings[$date] - $qty);
+				}
+
+				// Update group-level bookings by distribution
+				foreach ($blocks_with_group_selection as $wid) {
+					if (isset($week_map[$wid]) && !empty($week_map[$wid]['groups']) && !empty($item_groups[$wid])) {
+						$w = $week_map[$wid];
+						if (in_array($date, $w['dates'], true)) {
+							foreach ($item_groups[$wid] as $group_id => $group_qty) {
+								if ($group_qty <= 0) continue;
+								$composite_key = $date . '__' . $group_id;
+								if (!isset($bookings[$composite_key])) $bookings[$composite_key] = 0;
+								if ($action === 'increment') {
+									$bookings[$composite_key] += $group_qty;
+								} else {
+									$bookings[$composite_key] = max(0, $bookings[$composite_key] - $group_qty);
+								}
+							}
+						}
+					}
 				}
 			}
 
@@ -918,18 +1475,42 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			wp_send_json_error(['message' => 'Parámetros inválidos']);
 		}
 
-		// Obtener capacidad del día
+		// Obtener capacidad del día y grupos
 		$weeks    = $this->get_weeks($product_id);
 		$capacity = 0;
+		$block_groups = [];
 		foreach ($weeks as $week) {
 			if (in_array($date, $week['dates'], true)) {
-				$capacity = (int) $week['capacity'];
+				if (!empty($week['groups'])) {
+					$block_groups = $week['groups'];
+					$capacity = 0;
+					foreach ($week['groups'] as $g) {
+						$capacity += (int) $g['capacity'];
+					}
+				} else {
+					$capacity = (int) $week['capacity'];
+				}
 				break;
 			}
 		}
 
 		$bookings_count = $this->get_bookings($product_id);
 		$booked         = isset($bookings_count[$date]) ? (int) $bookings_count[$date] : 0;
+
+		// Group breakdown
+		$groups_breakdown = [];
+		if (!empty($block_groups)) {
+			foreach ($block_groups as $g) {
+				$composite_key = $date . '__' . $g['id'];
+				$group_booked = isset($bookings_count[$composite_key]) ? (int) $bookings_count[$composite_key] : 0;
+				$groups_breakdown[] = [
+					'id'       => $g['id'],
+					'label'    => $g['label'],
+					'capacity' => (int) $g['capacity'],
+					'booked'   => $group_booked,
+				];
+			}
+		}
 
 		// Buscar pedidos con este producto y fecha
 		if (!function_exists('wc_get_orders')) {
@@ -949,6 +1530,33 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				$item_dates = $item->get_meta('_pn_cm_woo_calendar_dates');
 				if (!is_array($item_dates) || !in_array($date, $item_dates, true)) continue;
 
+				$item_groups = $item->get_meta('_pn_cm_woo_calendar_groups');
+				if (!is_array($item_groups)) $item_groups = [];
+				$item_groups = $this->normalize_groups($item_groups);
+
+				$item_qty = $item->get_meta('_pn_cm_woo_calendar_qty');
+				$item_qty = $item_qty ? max(1, (int) $item_qty) : 1;
+
+				$group_label = '';
+				foreach ($item_groups as $wid => $distribution) {
+					foreach ($weeks as $w) {
+						if ($w['id'] === $wid && in_array($date, $w['dates'], true)) {
+							$parts = [];
+							foreach ($distribution as $gid => $gqty) {
+								if ($gqty <= 0) continue;
+								foreach ($w['groups'] as $g) {
+									if ($g['id'] === $gid) {
+										$parts[] = $g['label'] . ($gqty > 1 ? ' × ' . $gqty : '');
+										break;
+									}
+								}
+							}
+							$group_label = implode(', ', $parts);
+							break 2;
+						}
+					}
+				}
+
 				$reservations[] = [
 					'order_id'    => $order->get_id(),
 					'order_date'  => $order->get_date_created() ? $order->get_date_created()->date('Y-m-d H:i') : '',
@@ -959,15 +1567,18 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 					'phone'       => $order->get_billing_phone(),
 					'notes'       => $order->get_customer_note(),
 					'edit_url'    => admin_url('post.php?post=' . $order->get_id() . '&action=edit'),
+					'group'       => $group_label,
+					'qty'         => $item_qty,
 				];
 			}
 		}
 
 		wp_send_json_success([
-			'date'         => $date,
-			'capacity'     => $capacity,
-			'booked'       => $booked,
-			'reservations' => $reservations,
+			'date'             => $date,
+			'capacity'         => $capacity,
+			'booked'           => $booked,
+			'reservations'     => $reservations,
+			'groups_breakdown' => $groups_breakdown,
 		]);
 	}
 
@@ -994,7 +1605,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		$weeks = $this->get_weeks($product_id);
 
-		// Mapa de fecha → week index para asignar revenue por semana
+		// Mapa de fecha -> week index para asignar revenue por bloque
 		$date_to_week = [];
 		foreach ($weeks as $i => $week) {
 			foreach ($week['dates'] as $d) {
@@ -1008,12 +1619,12 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		]);
 
 		$total_revenue    = 0;
-		$total_bookings   = 0; // plazas·día
+		$total_bookings   = 0;
 		$order_ids        = [];
 		$week_stats       = [];
 		foreach ($weeks as $i => $week) {
 			$week_stats[$i] = [
-				'label'    => $week['label'] ?: ('Semana ' . ($i + 1)),
+				'label'    => $week['label'] ?: ('Bloque ' . ($i + 1)),
 				'bookings' => 0,
 				'revenue'  => 0,
 			];
@@ -1031,7 +1642,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				$total_revenue  += $line_total;
 				$total_bookings += count($item_dates);
 
-				// Distribuir revenue proporcionalmente por día a cada semana
 				$per_day = count($item_dates) > 0 ? $line_total / count($item_dates) : 0;
 				foreach ($item_dates as $d) {
 					if (isset($date_to_week[$d])) {
@@ -1043,7 +1653,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			}
 		}
 
-		// Redondear revenues
 		foreach ($week_stats as &$ws) {
 			$ws['revenue'] = round($ws['revenue'], 2);
 		}
@@ -1062,9 +1671,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	 *  Admin: edición de fechas en pedidos
 	 * ─────────────────────────────────────────── */
 
-	/**
-	 * Registra meta box para edición de fechas de calendario en pedidos
-	 */
 	public function add_order_calendar_meta_box()
 	{
 		if (!current_user_can('manage_woocommerce')) return;
@@ -1084,9 +1690,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		);
 	}
 
-	/**
-	 * Renderiza meta box de edición de fechas de calendario en pedidos
-	 */
 	public function render_order_calendar_meta_box($post_or_order)
 	{
 		$order = $post_or_order instanceof WP_Post
@@ -1105,8 +1708,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			$has_calendar_items = true;
 			$dates = $item->get_meta('_pn_cm_woo_calendar_dates');
 			$weeks_ids = $item->get_meta('_pn_cm_woo_calendar_weeks');
+			$item_groups = $item->get_meta('_pn_cm_woo_calendar_groups');
 
 			if (empty($dates) || !is_array($dates)) continue;
+			if (!is_array($item_groups)) $item_groups = [];
 
 			$product = wc_get_product($product_id);
 			$product_name = $product ? $product->get_name() : __('Producto', 'pn-customers-manager');
@@ -1118,12 +1723,15 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			$weeks_for_js = [];
 			foreach ($weeks as $w) {
 				$weeks_for_js[] = [
-					'id'           => $w['id'],
-					'label'        => $w['label'],
-					'dates'        => $w['dates'],
-					'price'        => (float) $w['price'],
-					'member_price' => isset($w['member_price']) ? (float) $w['member_price'] : (float) $w['price'],
-					'capacity'     => (int) $w['capacity'],
+					'id'            => $w['id'],
+					'label'         => $w['label'],
+					'dates'         => $w['dates'],
+					'price'         => (float) $w['price'],
+					'member_price'  => isset($w['member_price']) ? (float) $w['member_price'] : (float) $w['price'],
+					'capacity'      => (int) $w['capacity'],
+					'discount'      => (float) $w['discount'],
+					'discount_type' => $w['discount_type'],
+					'groups'        => $w['groups'],
 				];
 			}
 
@@ -1136,14 +1744,18 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			$items_html .= 'data-order-id="' . esc_attr($order->get_id()) . '" ';
 			$items_html .= 'data-current-dates="' . esc_attr(wp_json_encode($dates)) . '" ';
 			$items_html .= 'data-current-weeks="' . esc_attr(wp_json_encode($weeks_ids ?: [])) . '" ';
+			$items_html .= 'data-current-groups="' . esc_attr(wp_json_encode($item_groups)) . '" ';
 			$items_html .= 'data-weeks="' . esc_attr(wp_json_encode($weeks_for_js)) . '" ';
 			$items_html .= 'data-day-price="' . esc_attr($this->get_day_price($product_id)) . '" ';
-			$items_html .= 'data-availability="' . esc_attr(wp_json_encode($availability)) . '">';
+			$items_html .= 'data-availability="' . esc_attr(wp_json_encode($availability)) . '" ';
+			$item_qty = $item->get_meta('_pn_cm_woo_calendar_qty');
+			$item_qty = $item_qty ? max(1, (int) $item_qty) : 1;
+			$items_html .= 'data-qty="' . esc_attr($item_qty) . '">';
 			$items_html .= __('Editar Fechas', 'pn-customers-manager');
 			$items_html .= '</button>';
 			$items_html .= '</div>';
 			$items_html .= '<div class="pn-cm-calendar-dates-display" id="pn-cm-calendar-dates-display-' . esc_attr($item_id) . '">';
-			$items_html .= $this->render_dates_pills($dates, $weeks_ids, $weeks);
+			$items_html .= $this->render_dates_pills($dates, $weeks_ids, $weeks, $item_groups);
 			$items_html .= '</div>';
 			$items_html .= '</div>';
 		}
@@ -1156,12 +1768,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		echo $items_html;
 	}
 
-	/**
-	 * Carga scripts para edición de fechas en pedidos
-	 */
 	public function order_edit_scripts($hook)
 	{
-		// Verificar si estamos en página de edición de pedido
 		$is_order_edit = in_array($hook, ['post.php', 'post-new.php']) ||
 			(class_exists('Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController') &&
 				wc_get_container()->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled() &&
@@ -1169,7 +1777,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		if (!$is_order_edit) return;
 
-		// Verificar si es un pedido
 		global $post;
 		$order = null;
 
@@ -1181,7 +1788,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		if (!$order) return;
 
-		// Verificar si tiene items de calendario
 		$has_calendar = false;
 		foreach ($order->get_items() as $item) {
 			if ($this->is_camp_product($item->get_product_id())) {
@@ -1195,7 +1801,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		$plugin_url = PN_CUSTOMERS_MANAGER_URL;
 		$plugin_dir = PN_CUSTOMERS_MANAGER_DIR;
 
-		// CSS
 		wp_enqueue_style(
 			'pn-cm-calendar-booking-css',
 			$plugin_url . 'assets/css/pn-cm-calendar-booking.css',
@@ -1203,7 +1808,6 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			filemtime($plugin_dir . 'assets/css/pn-cm-calendar-booking.css')
 		);
 
-		// JS
 		wp_enqueue_script(
 			'pn-cm-calendar-order-edit',
 			$plugin_url . 'assets/js/pn-cm-calendar-order-edit.js',
@@ -1226,29 +1830,32 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				'save'            => __('Guardar Cambios', 'pn-customers-manager'),
 				'cancel'          => __('Cancelar', 'pn-customers-manager'),
 				'total'           => __('Total', 'pn-customers-manager'),
-				'available'       => __('Disponible', 'pn-customers-manager'),
-				'selected'        => __('Seleccionado', 'pn-customers-manager'),
-				'full'            => __('Completo', 'pn-customers-manager'),
+				'available'       => __('Available', 'pn-customers-manager'),
+				'selected'        => __('Selected', 'pn-customers-manager'),
+				'full'            => __('Full', 'pn-customers-manager'),
 				'noAvailability'  => __('No hay disponibilidad para las fechas seleccionadas', 'pn-customers-manager'),
 				'selectAtLeast'   => __('Selecciona al menos una fecha', 'pn-customers-manager'),
+				'group'           => __('Group', 'pn-customers-manager'),
+				'selectGroup'     => __('Select group', 'pn-customers-manager'),
+				'spotsLeft'       => __('spots', 'pn-customers-manager'),
+				'plazas'          => __('Spots', 'pn-customers-manager'),
+				'distributeSpots' => __('Distribute spots', 'pn-customers-manager'),
+				'invalidDistribution' => __('The spot distribution does not match the selected total.', 'pn-customers-manager'),
 			],
 			'months' => [
-				__('Enero', 'pn-customers-manager'), __('Febrero', 'pn-customers-manager'), __('Marzo', 'pn-customers-manager'),
-				__('Abril', 'pn-customers-manager'), __('Mayo', 'pn-customers-manager'), __('Junio', 'pn-customers-manager'),
-				__('Julio', 'pn-customers-manager'), __('Agosto', 'pn-customers-manager'), __('Septiembre', 'pn-customers-manager'),
-				__('Octubre', 'pn-customers-manager'), __('Noviembre', 'pn-customers-manager'), __('Diciembre', 'pn-customers-manager'),
+				__('January', 'pn-customers-manager'), __('February', 'pn-customers-manager'), __('March', 'pn-customers-manager'),
+				__('April', 'pn-customers-manager'), __('May', 'pn-customers-manager'), __('June', 'pn-customers-manager'),
+				__('July', 'pn-customers-manager'), __('August', 'pn-customers-manager'), __('September', 'pn-customers-manager'),
+				__('October', 'pn-customers-manager'), __('November', 'pn-customers-manager'), __('December', 'pn-customers-manager'),
 			],
 			'weekDays' => [
-				__('L', 'pn-customers-manager'), __('M', 'pn-customers-manager'), __('X', 'pn-customers-manager'),
-				__('J', 'pn-customers-manager'), __('V', 'pn-customers-manager'), __('S', 'pn-customers-manager'), __('D', 'pn-customers-manager'),
+				__('M', 'pn-customers-manager'), __('T', 'pn-customers-manager'), __('W', 'pn-customers-manager'),
+				__('T', 'pn-customers-manager'), __('F', 'pn-customers-manager'), __('S', 'pn-customers-manager'), __('S', 'pn-customers-manager'),
 			],
 			'currency' => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '€',
 		]);
 	}
 
-	/**
-	 * AJAX: actualizar fechas de un item de pedido
-	 */
 	public function ajax_update_order_dates()
 	{
 		check_ajax_referer('pn_cm_calendar_order_edit', 'nonce');
@@ -1261,6 +1868,9 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		$item_id    = isset($_POST['item_id']) ? absint($_POST['item_id']) : 0;
 		$new_dates  = isset($_POST['dates']) ? json_decode(stripslashes($_POST['dates']), true) : [];
 		$new_weeks  = isset($_POST['weeks']) ? json_decode(stripslashes($_POST['weeks']), true) : [];
+		$new_groups = isset($_POST['groups']) ? json_decode(stripslashes($_POST['groups']), true) : [];
+		$new_qty    = isset($_POST['qty']) ? max(1, (int) $_POST['qty']) : 1;
+		$new_groups = $this->normalize_groups($new_groups);
 
 		if (!$order_id || !$item_id || empty($new_dates) || !is_array($new_dates)) {
 			wp_send_json_error(['message' => __('Parámetros inválidos', 'pn-customers-manager')]);
@@ -1281,63 +1891,80 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			wp_send_json_error(['message' => __('Este no es un producto de calendario', 'pn-customers-manager')]);
 		}
 
-		// Obtener fechas actuales
+		// Obtener fechas y grupos actuales
 		$old_dates = $item->get_meta('_pn_cm_woo_calendar_dates');
 		$old_weeks = $item->get_meta('_pn_cm_woo_calendar_weeks');
+		$old_groups = $item->get_meta('_pn_cm_woo_calendar_groups');
+		$old_qty = $item->get_meta('_pn_cm_woo_calendar_qty');
 		if (!is_array($old_dates)) $old_dates = [];
 		if (!is_array($old_weeks)) $old_weeks = [];
+		if (!is_array($old_groups)) $old_groups = [];
+		$old_groups = $this->normalize_groups($old_groups);
+		$old_qty = $old_qty ? max(1, (int) $old_qty) : 1;
 
 		// Validar disponibilidad simulada (excluyendo las fechas actuales del item)
-		$simulated_availability = $this->get_simulated_availability($product_id, $old_dates);
+		$simulated_availability = $this->get_simulated_availability($product_id, $old_dates, $old_groups, $old_weeks, $old_qty);
 
 		foreach ($new_dates as $date) {
-			if (!isset($simulated_availability[$date]) || $simulated_availability[$date] <= 0) {
+			if (!isset($simulated_availability[$date]) || $simulated_availability[$date] < $new_qty) {
 				wp_send_json_error([
 					'message' => sprintf(
-						__('La fecha %s no tiene plazas disponibles', 'pn-customers-manager'),
+						__('La fecha %s no tiene suficientes plazas disponibles', 'pn-customers-manager'),
 						$date
 					)
 				]);
 			}
 		}
 
-		// Actualización atómica: decrementar viejas, incrementar nuevas
-		$this->update_booking_dates_atomic($product_id, $old_dates, $new_dates, $order);
+		// Actualización atómica
+		$this->update_booking_dates_atomic($product_id, $old_dates, $new_dates, $old_groups, $new_groups, $old_weeks, $new_weeks, $order, $old_qty, $new_qty);
 
 		// Actualizar meta del item
 		$item->update_meta_data('_pn_cm_woo_calendar_dates', $new_dates);
 		$item->update_meta_data('_pn_cm_woo_calendar_weeks', $new_weeks);
+		$item->update_meta_data('_pn_cm_woo_calendar_qty', $new_qty);
+		if (!empty($new_groups)) {
+			$item->update_meta_data('_pn_cm_woo_calendar_groups', $new_groups);
+		}
 
 		// Actualizar meta visible
 		$item->update_meta_data(__('Fechas calendario de productos', 'pn-customers-manager'), implode(', ', $new_dates));
 
+		$weeks = $this->get_weeks($product_id);
 		if (!empty($new_weeks)) {
 			$week_map = [];
-			foreach ($this->get_weeks($product_id) as $w) {
+			foreach ($weeks as $w) {
 				$week_map[$w['id']] = $w;
 			}
 			$labels = [];
 			foreach ($new_weeks as $wid) {
 				if (isset($week_map[$wid])) {
 					$w = $week_map[$wid];
-					$labels[] = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+					$label = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+					if (!empty($w['groups']) && !empty($new_groups[$wid])) {
+						foreach ($w['groups'] as $g) {
+							if ($g['id'] === $new_groups[$wid]) {
+								$label .= ' — ' . $g['label'];
+								break;
+							}
+						}
+					}
+					$labels[] = $label;
 				}
 			}
 			if (!empty($labels)) {
-				$item->update_meta_data(__('Semanas', 'pn-customers-manager'), implode(', ', $labels));
+				$item->update_meta_data(__('Bloques', 'pn-customers-manager'), implode(', ', $labels));
 			}
 		}
 
-		// Recalcular precio
-		$new_price = $this->calculate_price($product_id, $new_dates, $new_weeks, false);
+		// Recalcular precio (base × qty)
+		$new_price = $this->calculate_price($product_id, $new_dates, $new_weeks, false) * $new_qty;
 		$item->set_subtotal($new_price);
 		$item->set_total($new_price);
 		$item->save();
 
-		// Recalcular totales del pedido
 		$order->calculate_totals();
 
-		// Agregar nota al pedido
 		$old_dates_str = implode(', ', $old_dates);
 		$new_dates_str = implode(', ', $new_dates);
 		$note = sprintf(
@@ -1350,9 +1977,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		$order->add_order_note($note);
 		$order->save();
 
-		// Renderizar nuevo HTML de fechas
-		$weeks = $this->get_weeks($product_id);
-		$dates_html = $this->render_dates_pills($new_dates, $new_weeks, $weeks);
+		$dates_html = $this->render_dates_pills($new_dates, $new_weeks, $weeks, $new_groups);
 
 		wp_send_json_success([
 			'message'    => __('Fechas actualizadas correctamente', 'pn-customers-manager'),
@@ -1362,25 +1987,54 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	}
 
 	/**
-	 * Obtener disponibilidad simulada excluyendo fechas específicas
+	 * Obtener disponibilidad simulada excluyendo fechas y grupos específicos
 	 */
-	private function get_simulated_availability($product_id, $exclude_dates)
+	private function get_simulated_availability($product_id, $exclude_dates, $exclude_groups = [], $exclude_weeks = [], $exclude_qty = 1)
 	{
 		$weeks    = $this->get_weeks($product_id);
 		$bookings = $this->get_bookings($product_id);
 		$availability = [];
+		$exclude_groups = $this->normalize_groups($exclude_groups);
+
+		$week_map = [];
+		foreach ($weeks as $week) {
+			$week_map[$week['id']] = $week;
+		}
 
 		foreach ($weeks as $week) {
-			$capacity = (int) $week['capacity'];
+			$has_groups = !empty($week['groups']);
+			$block_capacity = (int) $week['capacity'];
+
 			foreach ($week['dates'] as $date) {
-				$booked = isset($bookings[$date]) ? (int) $bookings[$date] : 0;
+				if ($has_groups) {
+					$day_total_capacity = 0;
+					$day_total_booked = 0;
+					foreach ($week['groups'] as $group) {
+						$group_capacity = (int) $group['capacity'];
+						$composite_key = $date . '__' . $group['id'];
+						$group_booked = isset($bookings[$composite_key]) ? (int) $bookings[$composite_key] : 0;
 
-				// Si la fecha está en exclude_dates, liberar una plaza
-				if (in_array($date, $exclude_dates, true)) {
-					$booked = max(0, $booked - 1);
+						// If excluding this date+group combination, free spots by distribution qty
+						if (in_array($date, $exclude_dates, true)) {
+							foreach ($exclude_weeks as $ewid) {
+								if ($ewid === $week['id'] && !empty($exclude_groups[$ewid]) && isset($exclude_groups[$ewid][$group['id']])) {
+									$group_booked = max(0, $group_booked - (int) $exclude_groups[$ewid][$group['id']]);
+								}
+							}
+						}
+
+						$availability[$composite_key] = max(0, $group_capacity - $group_booked);
+						$day_total_capacity += $group_capacity;
+						$day_total_booked += $group_booked;
+					}
+					$availability[$date] = max(0, $day_total_capacity - $day_total_booked);
+				} else {
+					$booked = isset($bookings[$date]) ? (int) $bookings[$date] : 0;
+					if (in_array($date, $exclude_dates, true)) {
+						$booked = max(0, $booked - $exclude_qty);
+					}
+					$availability[$date] = max(0, $block_capacity - $booked);
 				}
-
-				$availability[$date] = max(0, $capacity - $booked);
 			}
 		}
 
@@ -1388,31 +2042,62 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	}
 
 	/**
-	 * Actualizar bookings de forma atómica
+	 * Actualizar bookings de forma atómica (with group support)
 	 */
-	private function update_booking_dates_atomic($product_id, $old_dates, $new_dates, $order)
+	private function update_booking_dates_atomic($product_id, $old_dates, $new_dates, $old_groups, $new_groups, $old_weeks, $new_weeks, $order, $old_qty = 1, $new_qty = 1)
 	{
-		// Solo actualizar si el pedido ya fue contado
 		$counted = $order->get_meta('_pn_cm_woo_calendar_bookings_counted');
-		if ($counted !== 'yes') {
-			return; // No hacer nada si el pedido aún no ha sido contado
+		if ($counted !== 'yes') return;
+
+		$weeks = $this->get_weeks($product_id);
+		$week_map = [];
+		foreach ($weeks as $w) {
+			$week_map[$w['id']] = $w;
 		}
+
+		$old_groups = $this->normalize_groups($old_groups);
+		$new_groups = $this->normalize_groups($new_groups);
 
 		$bookings = $this->get_bookings($product_id);
 
-		// Decrementar fechas viejas
+		// Decrementar fechas viejas by old_qty
 		foreach ($old_dates as $date) {
 			if (isset($bookings[$date])) {
-				$bookings[$date] = max(0, $bookings[$date] - 1);
+				$bookings[$date] = max(0, $bookings[$date] - $old_qty);
+			}
+			// Decrementar grupo viejo by distribution
+			foreach ($old_weeks as $wid) {
+				if (isset($week_map[$wid]) && !empty($week_map[$wid]['groups']) && !empty($old_groups[$wid])) {
+					if (in_array($date, $week_map[$wid]['dates'], true)) {
+						foreach ($old_groups[$wid] as $group_id => $group_qty) {
+							if ($group_qty <= 0) continue;
+							$composite_key = $date . '__' . $group_id;
+							if (isset($bookings[$composite_key])) {
+								$bookings[$composite_key] = max(0, $bookings[$composite_key] - $group_qty);
+							}
+						}
+					}
+				}
 			}
 		}
 
-		// Incrementar fechas nuevas
+		// Incrementar fechas nuevas by new_qty
 		foreach ($new_dates as $date) {
-			if (!isset($bookings[$date])) {
-				$bookings[$date] = 0;
+			if (!isset($bookings[$date])) $bookings[$date] = 0;
+			$bookings[$date] += $new_qty;
+			// Incrementar grupo nuevo by distribution
+			foreach ($new_weeks as $wid) {
+				if (isset($week_map[$wid]) && !empty($week_map[$wid]['groups']) && !empty($new_groups[$wid])) {
+					if (in_array($date, $week_map[$wid]['dates'], true)) {
+						foreach ($new_groups[$wid] as $group_id => $group_qty) {
+							if ($group_qty <= 0) continue;
+							$composite_key = $date . '__' . $group_id;
+							if (!isset($bookings[$composite_key])) $bookings[$composite_key] = 0;
+							$bookings[$composite_key] += $group_qty;
+						}
+					}
+				}
 			}
-			$bookings[$date]++;
 		}
 
 		update_post_meta($product_id, '_pn_cm_woo_calendar_bookings', $bookings);
@@ -1421,11 +2106,14 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 	/**
 	 * Renderizar pills de fechas para display
 	 */
-	private function render_dates_pills($dates, $weeks_ids, $weeks)
+	private function render_dates_pills($dates, $weeks_ids, $weeks, $item_groups = [])
 	{
 		if (empty($dates)) {
 			return '<p style="color: #999; font-size: 13px;">' . __('Sin fechas', 'pn-customers-manager') . '</p>';
 		}
+
+		if (!is_array($weeks_ids)) $weeks_ids = [];
+		if (!is_array($item_groups)) $item_groups = [];
 
 		$week_map = [];
 		foreach ($weeks as $w) {
@@ -1434,14 +2122,22 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		$html = '';
 
-		// Mostrar semanas
+		// Mostrar bloques
 		if (!empty($weeks_ids)) {
 			$html .= '<div style="margin-bottom: 8px;">';
-			$html .= '<strong style="font-size: 12px; color: #666;">' . __('Semanas:', 'pn-customers-manager') . '</strong><br>';
+			$html .= '<strong style="font-size: 12px; color: #666;">' . __('Bloques:', 'pn-customers-manager') . '</strong><br>';
 			foreach ($weeks_ids as $wid) {
 				if (isset($week_map[$wid])) {
 					$w = $week_map[$wid];
 					$label = !empty($w['label']) ? $w['label'] : $this->format_week_range($w['dates']);
+					if (!empty($w['groups']) && !empty($item_groups[$wid])) {
+						foreach ($w['groups'] as $g) {
+							if ($g['id'] === $item_groups[$wid]) {
+								$label .= ' — ' . $g['label'];
+								break;
+							}
+						}
+					}
 					$html .= '<span style="display: inline-block; background: #e3f2fd; color: #1976d2; padding: 4px 10px; border-radius: 12px; font-size: 12px; margin: 2px 4px 2px 0;">';
 					$html .= esc_html($label);
 					$html .= '</span>';
@@ -1450,7 +2146,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			$html .= '</div>';
 		}
 
-		// Mostrar días sueltos (los que no están en semanas)
+		// Mostrar días sueltos
 		$covered = [];
 		foreach ($weeks_ids as $wid) {
 			if (isset($week_map[$wid])) {

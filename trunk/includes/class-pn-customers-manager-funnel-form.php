@@ -362,7 +362,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Form {
     if (empty($funnel_id) || empty($node_id)) {
       echo wp_json_encode([
         'error_key'     => 'pn_cm_ff_missing_ids',
-        'error_content' => esc_html__('Formulario no válido.', 'pn-customers-manager'),
+        'error_content' => esc_html__('Invalid form.', 'pn-customers-manager'),
       ]);
       exit;
     }
@@ -522,7 +522,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Form {
     if (!empty($sender_email) && !is_email($sender_email)) {
       echo wp_json_encode([
         'error_key'     => 'pn_cm_ff_invalid_email',
-        'error_content' => esc_html__('Introduce un correo electrónico válido.', 'pn-customers-manager'),
+        'error_content' => esc_html__('Please enter a valid email address.', 'pn-customers-manager'),
       ]);
       exit;
     }
@@ -634,7 +634,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Form {
     }
 
     if (!empty($source_url)) {
-      $html_body  .= sprintf('<p><strong>%s:</strong> %s</p>', esc_html__('Página', 'pn-customers-manager'), esc_html($source_url));
+      $html_body  .= sprintf('<p><strong>%s:</strong> %s</p>', esc_html__('Page', 'pn-customers-manager'), esc_html($source_url));
       $plain_body .= sprintf("%s: %s\n", __('Página', 'pn-customers-manager'), $source_url);
     }
 
@@ -657,7 +657,7 @@ class PN_CUSTOMERS_MANAGER_Funnel_Form {
     if (!$sent) {
       echo wp_json_encode([
         'error_key'     => 'pn_cm_ff_send_failed',
-        'error_content' => esc_html__('No se pudo enviar el mensaje. Inténtalo de nuevo más tarde.', 'pn-customers-manager'),
+        'error_content' => esc_html__('Could not send the message. Please try again later.', 'pn-customers-manager'),
       ]);
       exit;
     }
