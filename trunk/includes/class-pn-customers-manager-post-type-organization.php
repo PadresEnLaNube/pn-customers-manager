@@ -156,6 +156,21 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
   private static function pn_customers_manager_get_funnel_status_options($include_placeholder = true) {
     $options = $include_placeholder ? ['' => esc_html__('Select a funnel status', 'pn-customers-manager')] : [];
 
+    // Read from the editable funnel states config if available.
+    if ( class_exists( 'PN_CUSTOMERS_MANAGER_Settings' ) && method_exists( 'PN_CUSTOMERS_MANAGER_Settings', 'pn_customers_manager_get_funnel_states_config' ) ) {
+      $config = PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_get_funnel_states_config();
+      $statuses = [];
+      foreach ( $config as $state ) {
+        if ( ! empty( $state['enabled'] ) ) {
+          $statuses[ $state['id'] ] = esc_html( $state['name'] );
+        }
+      }
+      if ( ! empty( $statuses ) ) {
+        return $options + $statuses;
+      }
+    }
+
+    // Fallback defaults.
     $statuses = [
       'not_started' => esc_html__('Not started', 'pn-customers-manager'),
       'in_progress' => esc_html__('In progress', 'pn-customers-manager'),
@@ -298,6 +313,31 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @param int $organization_id
    * @return array
    */
+  /**
+   * Convert a country code to its localized display name.
+   */
+  public static function pn_cm_organization_get_country_name( $code ) {
+    if ( empty( $code ) ) {
+      return '';
+    }
+    $code = strtoupper( trim( $code ) );
+    // Use PHP Intl to get the country name in the site language.
+    if ( class_exists( 'Locale' ) && function_exists( 'locale_get_display_region' ) ) {
+      $locale = get_locale();
+      $name = locale_get_display_region( '-' . $code, $locale );
+      if ( ! empty( $name ) && $name !== '-' . $code && $name !== $code ) {
+        return $name;
+      }
+    }
+    // Fallback to English name from the options array.
+    $instance = new self();
+    $fields = $instance->pn_cm_organization_get_fields_meta();
+    if ( isset( $fields['pn_cm_organization_country']['options'][ $code ] ) ) {
+      return $fields['pn_cm_organization_country']['options'][ $code ];
+    }
+    return $code;
+  }
+
   public function pn_cm_organization_get_fields_meta($organization_id = 0) {
     $pn_customers_manager_fields_meta = [];
       $pn_customers_manager_fields_meta['pn_cm_organization_section_basic_start'] = [
@@ -424,10 +464,208 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
       $pn_customers_manager_fields_meta['pn_cm_organization_country'] = [
         'id' => 'pn_cm_organization_country',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'input',
-        'type' => 'text',
+        'input' => 'select',
         'label' => esc_html__('Country', 'pn-customers-manager'),
-        'placeholder' => esc_html__('e.g. United States', 'pn-customers-manager'),
+        'options' => [
+          ''   => esc_html__('— Select country —', 'pn-customers-manager'),
+          'AF' => 'Afghanistan',
+          'AL' => 'Albania',
+          'DZ' => 'Algeria',
+          'AD' => 'Andorra',
+          'AO' => 'Angola',
+          'AG' => 'Antigua and Barbuda',
+          'AR' => 'Argentina',
+          'AM' => 'Armenia',
+          'AU' => 'Australia',
+          'AT' => 'Austria',
+          'AZ' => 'Azerbaijan',
+          'BS' => 'Bahamas',
+          'BH' => 'Bahrain',
+          'BD' => 'Bangladesh',
+          'BB' => 'Barbados',
+          'BY' => 'Belarus',
+          'BE' => 'Belgium',
+          'BZ' => 'Belize',
+          'BJ' => 'Benin',
+          'BT' => 'Bhutan',
+          'BO' => 'Bolivia',
+          'BA' => 'Bosnia and Herzegovina',
+          'BW' => 'Botswana',
+          'BR' => 'Brazil',
+          'BN' => 'Brunei',
+          'BG' => 'Bulgaria',
+          'BF' => 'Burkina Faso',
+          'BI' => 'Burundi',
+          'CV' => 'Cabo Verde',
+          'KH' => 'Cambodia',
+          'CM' => 'Cameroon',
+          'CA' => 'Canada',
+          'CF' => 'Central African Republic',
+          'TD' => 'Chad',
+          'CL' => 'Chile',
+          'CN' => 'China',
+          'CO' => 'Colombia',
+          'KM' => 'Comoros',
+          'CG' => 'Congo',
+          'CD' => 'Congo (DRC)',
+          'CR' => 'Costa Rica',
+          'CI' => "Côte d'Ivoire",
+          'HR' => 'Croatia',
+          'CU' => 'Cuba',
+          'CY' => 'Cyprus',
+          'CZ' => 'Czechia',
+          'DK' => 'Denmark',
+          'DJ' => 'Djibouti',
+          'DM' => 'Dominica',
+          'DO' => 'Dominican Republic',
+          'EC' => 'Ecuador',
+          'EG' => 'Egypt',
+          'SV' => 'El Salvador',
+          'GQ' => 'Equatorial Guinea',
+          'ER' => 'Eritrea',
+          'EE' => 'Estonia',
+          'SZ' => 'Eswatini',
+          'ET' => 'Ethiopia',
+          'FJ' => 'Fiji',
+          'FI' => 'Finland',
+          'FR' => 'France',
+          'GA' => 'Gabon',
+          'GM' => 'Gambia',
+          'GE' => 'Georgia',
+          'DE' => 'Germany',
+          'GH' => 'Ghana',
+          'GR' => 'Greece',
+          'GD' => 'Grenada',
+          'GT' => 'Guatemala',
+          'GN' => 'Guinea',
+          'GW' => 'Guinea-Bissau',
+          'GY' => 'Guyana',
+          'HT' => 'Haiti',
+          'HN' => 'Honduras',
+          'HU' => 'Hungary',
+          'IS' => 'Iceland',
+          'IN' => 'India',
+          'ID' => 'Indonesia',
+          'IR' => 'Iran',
+          'IQ' => 'Iraq',
+          'IE' => 'Ireland',
+          'IL' => 'Israel',
+          'IT' => 'Italy',
+          'JM' => 'Jamaica',
+          'JP' => 'Japan',
+          'JO' => 'Jordan',
+          'KZ' => 'Kazakhstan',
+          'KE' => 'Kenya',
+          'KI' => 'Kiribati',
+          'KP' => 'North Korea',
+          'KR' => 'South Korea',
+          'KW' => 'Kuwait',
+          'KG' => 'Kyrgyzstan',
+          'LA' => 'Laos',
+          'LV' => 'Latvia',
+          'LB' => 'Lebanon',
+          'LS' => 'Lesotho',
+          'LR' => 'Liberia',
+          'LY' => 'Libya',
+          'LI' => 'Liechtenstein',
+          'LT' => 'Lithuania',
+          'LU' => 'Luxembourg',
+          'MG' => 'Madagascar',
+          'MW' => 'Malawi',
+          'MY' => 'Malaysia',
+          'MV' => 'Maldives',
+          'ML' => 'Mali',
+          'MT' => 'Malta',
+          'MH' => 'Marshall Islands',
+          'MR' => 'Mauritania',
+          'MU' => 'Mauritius',
+          'MX' => 'Mexico',
+          'FM' => 'Micronesia',
+          'MD' => 'Moldova',
+          'MC' => 'Monaco',
+          'MN' => 'Mongolia',
+          'ME' => 'Montenegro',
+          'MA' => 'Morocco',
+          'MZ' => 'Mozambique',
+          'MM' => 'Myanmar',
+          'NA' => 'Namibia',
+          'NR' => 'Nauru',
+          'NP' => 'Nepal',
+          'NL' => 'Netherlands',
+          'NZ' => 'New Zealand',
+          'NI' => 'Nicaragua',
+          'NE' => 'Niger',
+          'NG' => 'Nigeria',
+          'MK' => 'North Macedonia',
+          'NO' => 'Norway',
+          'OM' => 'Oman',
+          'PK' => 'Pakistan',
+          'PW' => 'Palau',
+          'PS' => 'Palestine',
+          'PA' => 'Panama',
+          'PG' => 'Papua New Guinea',
+          'PY' => 'Paraguay',
+          'PE' => 'Peru',
+          'PH' => 'Philippines',
+          'PL' => 'Poland',
+          'PT' => 'Portugal',
+          'PR' => 'Puerto Rico',
+          'QA' => 'Qatar',
+          'RO' => 'Romania',
+          'RU' => 'Russia',
+          'RW' => 'Rwanda',
+          'KN' => 'Saint Kitts and Nevis',
+          'LC' => 'Saint Lucia',
+          'VC' => 'Saint Vincent and the Grenadines',
+          'WS' => 'Samoa',
+          'SM' => 'San Marino',
+          'ST' => 'São Tomé and Príncipe',
+          'SA' => 'Saudi Arabia',
+          'SN' => 'Senegal',
+          'RS' => 'Serbia',
+          'SC' => 'Seychelles',
+          'SL' => 'Sierra Leone',
+          'SG' => 'Singapore',
+          'SK' => 'Slovakia',
+          'SI' => 'Slovenia',
+          'SB' => 'Solomon Islands',
+          'SO' => 'Somalia',
+          'ZA' => 'South Africa',
+          'SS' => 'South Sudan',
+          'ES' => 'Spain',
+          'LK' => 'Sri Lanka',
+          'SD' => 'Sudan',
+          'SR' => 'Suriname',
+          'SE' => 'Sweden',
+          'CH' => 'Switzerland',
+          'SY' => 'Syria',
+          'TW' => 'Taiwan',
+          'TJ' => 'Tajikistan',
+          'TZ' => 'Tanzania',
+          'TH' => 'Thailand',
+          'TL' => 'Timor-Leste',
+          'TG' => 'Togo',
+          'TO' => 'Tonga',
+          'TT' => 'Trinidad and Tobago',
+          'TN' => 'Tunisia',
+          'TR' => 'Turkey',
+          'TM' => 'Turkmenistan',
+          'TV' => 'Tuvalu',
+          'UG' => 'Uganda',
+          'UA' => 'Ukraine',
+          'AE' => 'United Arab Emirates',
+          'GB' => 'United Kingdom',
+          'US' => 'United States',
+          'UY' => 'Uruguay',
+          'UZ' => 'Uzbekistan',
+          'VU' => 'Vanuatu',
+          'VA' => 'Vatican City',
+          'VE' => 'Venezuela',
+          'VN' => 'Vietnam',
+          'YE' => 'Yemen',
+          'ZM' => 'Zambia',
+          'ZW' => 'Zimbabwe',
+        ],
       ];
       $pn_customers_manager_fields_meta['pn_cm_organization_region'] = [
         'id' => 'pn_cm_organization_region',
@@ -808,7 +1046,9 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
    * @since    1.0.0
    */
   public function pn_cm_organization_meta_box_function($post) {
-    foreach (self::pn_cm_organization_get_fields_meta($post->ID) as $pn_customers_manager_field) {
+    $fields = self::pn_cm_organization_get_fields_meta($post->ID);
+    $fields = PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_filter_cpt_fields($fields, 'pn_cm_organization');
+    foreach ($fields as $pn_customers_manager_field) {
       if (!is_null(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_field, 'post', $post->ID))) {
         echo wp_kses(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_field, 'post', $post->ID), PN_CUSTOMERS_MANAGER_KSES);
       }
@@ -1095,7 +1335,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
 
     ob_start();
     ?>
-      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_organization-list pn-customers-manager-mb-50">
+      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_organization-list pn-customers-manager-mb-100 pn-customers-manager-pb-100">
         <div class="pn-customers-manager-cpt-search-container pn-customers-manager-mb-20 pn-customers-manager-text-align-right">
           <div class="pn-customers-manager-cpt-search-wrapper">
             <?php if (current_user_can('edit_pn_cm_organization')): ?>
@@ -1267,7 +1507,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_organization {
             $org_city    = get_post_meta($organization_id, 'pn_cm_organization_city', true);
             $org_region  = get_post_meta($organization_id, 'pn_cm_organization_region', true);
             $org_postal  = get_post_meta($organization_id, 'pn_cm_organization_postal_code', true);
-            $org_country = get_post_meta($organization_id, 'pn_cm_organization_country', true);
+            $org_country = self::pn_cm_organization_get_country_name( get_post_meta($organization_id, 'pn_cm_organization_country', true) );
             $org_full_address = implode(', ', array_filter([$org_address, $org_postal, $org_city, $org_region, $org_country]));
           ?>
             <li class="pn-customers-manager-organization pn-customers-manager-pn_cm_organization-list-item pn-customers-manager-mb-10" data-pn_cm_organization-id="<?php echo esc_attr($organization_id); ?>">

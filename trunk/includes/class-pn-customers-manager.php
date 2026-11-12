@@ -54,7 +54,7 @@ class PN_CUSTOMERS_MANAGER
 		if (defined('PN_CUSTOMERS_MANAGER_VERSION')) {
 			$this->pn_customers_manager_version = PN_CUSTOMERS_MANAGER_VERSION;
 		} else {
-			$this->pn_customers_manager_version = '1.2.95';
+			$this->pn_customers_manager_version = '1.2.165';
 		}
 
 		$this->pn_customers_manager_plugin_name = 'pn-customers-manager';
@@ -84,6 +84,9 @@ class PN_CUSTOMERS_MANAGER
 		self::pn_customers_manager_define_budget_csv_hooks();
 		self::pn_customers_manager_define_whatsapp_ai_hooks();
 		self::pn_customers_manager_define_instagram_ai_hooks();
+		self::pn_customers_manager_define_ghl_hooks();
+		self::pn_customers_manager_define_zoho_hooks();
+		self::pn_customers_manager_define_clients_hooks();
 		self::pn_customers_manager_define_projections_hooks();
 		self::pn_customers_manager_define_cta_hooks();
 		self::pn_customers_manager_define_recurring_invoices_hooks();
@@ -224,6 +227,21 @@ class PN_CUSTOMERS_MANAGER
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-settings.php';
 
+		// Sync the transcription OpenAI key mirror with the main OpenAI key.
+		add_filter('pre_option_pn_customers_manager_transcription_openai_key', function () {
+			return get_option('pn_customers_manager_whatsapp_openai_key', '');
+		});
+		add_action('update_option_pn_customers_manager_transcription_openai_key', function ($old, $new) {
+			if ($new !== get_option('pn_customers_manager_whatsapp_openai_key', '')) {
+				update_option('pn_customers_manager_whatsapp_openai_key', $new);
+			}
+		}, 10, 2);
+		add_action('add_option_pn_customers_manager_transcription_openai_key', function ($option, $value) {
+			if ($value !== get_option('pn_customers_manager_whatsapp_openai_key', '')) {
+				update_option('pn_customers_manager_whatsapp_openai_key', $value);
+			}
+		}, 10, 2);
+
 		/**
 		 * The class defining form management.
 		 */
@@ -335,9 +353,29 @@ class PN_CUSTOMERS_MANAGER
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-instagram-ai.php';
 
 		/**
+		 * The class providing Go High Level CRM integration.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-ghl.php';
+
+		/**
+		 * The class providing Zoho CRM integration.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-zoho.php';
+
+		/**
+		 * The class providing the CRM Clients dashboard.
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-clients.php';
+
+		/**
 		 * The class providing business projections.
 		 */
 		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-projections.php';
+
+		/**
+		 * The class providing the Activity Log (audit trail).
+		 */
+		require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-activity-log.php';
 
 		/**
 		 * The class providing MailPn statistics dashboard.
@@ -435,6 +473,16 @@ class PN_CUSTOMERS_MANAGER
 
 		// One-time migration: budget items from custom table to post meta.
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_maybe_migrate_budget_items');
+
+		// Database version check — show admin notice if DB needs updating.
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_notices', $this, 'pn_customers_manager_db_update_notice');
+
+		// Activity Log: hook into save_post for all CPTs
+		foreach (array_keys(PN_CUSTOMERS_MANAGER_CPTS) as $cpt_slug) {
+			$this->pn_customers_manager_loader->pn_customers_manager_add_action('save_post_' . $cpt_slug, 'PN_CUSTOMERS_MANAGER_Activity_Log', 'on_save_post', 999, 3);
+		}
+		// Activity Log: hook into trashed_post
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('trashed_post', 'PN_CUSTOMERS_MANAGER_Activity_Log', 'on_trash_post');
 	}
 
 	/**
@@ -445,6 +493,305 @@ class PN_CUSTOMERS_MANAGER
 		if (get_option('pn_cm_budget_items_migrated') !== '1') {
 			PN_CUSTOMERS_MANAGER_Migration::migrate_budget_items_to_meta();
 		}
+	}
+
+	/**
+	 * Show an admin notice when the database version is outdated.
+	 */
+	public function pn_customers_manager_db_update_notice() {
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+
+		$installed_version = get_option('pn_customers_manager_db_version', '0');
+
+		if (version_compare($installed_version, PN_CUSTOMERS_MANAGER_DB_VERSION, '>=')) {
+			return;
+		}
+
+		$nonce = wp_create_nonce('pn-customers-manager-nonce');
+		$main_color = sanitize_hex_color(get_option('pn_customers_manager_color_main', '#0000aa'));
+		?>
+		<style>
+			.pn-cm-db-notice {
+				margin: 20px 20px 20px 2px;
+				padding: 0;
+				border: none;
+				border-radius: 12px;
+				background: #fff;
+				box-shadow: 0 2px 12px rgba(0,0,0,.08);
+				overflow: hidden;
+			}
+			.pn-cm-db-notice-inner {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+				padding: 24px 28px;
+			}
+			.pn-cm-db-notice-icon {
+				width: 48px;
+				height: 48px;
+				border-radius: 12px;
+				background: <?php echo esc_attr($main_color); ?>;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+			}
+			.pn-cm-db-notice-icon svg {
+				width: 24px;
+				height: 24px;
+				fill: #fff;
+			}
+			.pn-cm-db-notice-body {
+				flex: 1;
+				min-width: 0;
+			}
+			.pn-cm-db-notice-title {
+				font-size: 15px;
+				font-weight: 600;
+				color: #1d2327;
+				margin: 0 0 4px;
+			}
+			.pn-cm-db-notice-desc {
+				font-size: 13px;
+				color: #646970;
+				margin: 0;
+				line-height: 1.5;
+			}
+			.pn-cm-db-notice-desc code {
+				background: #f0f0f1;
+				padding: 1px 6px;
+				border-radius: 3px;
+				font-size: 12px;
+			}
+			.pn-cm-db-notice-action {
+				flex-shrink: 0;
+			}
+			#pn-cm-db-update-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 10px 24px;
+				border: none;
+				border-radius: 8px;
+				background: <?php echo esc_attr($main_color); ?>;
+				color: #fff;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: opacity .2s, transform .1s;
+				line-height: 1;
+			}
+			#pn-cm-db-update-btn:hover {
+				opacity: .9;
+				transform: translateY(-1px);
+			}
+			#pn-cm-db-update-btn:disabled {
+				opacity: .6;
+				cursor: default;
+				transform: none;
+			}
+			.pn-cm-db-progress-wrap {
+				display: none;
+				padding: 0 28px 24px;
+			}
+			.pn-cm-db-progress-track {
+				width: 100%;
+				height: 6px;
+				background: #f0f0f1;
+				border-radius: 3px;
+				overflow: hidden;
+			}
+			.pn-cm-db-progress-bar {
+				height: 100%;
+				width: 0%;
+				border-radius: 3px;
+				background: <?php echo esc_attr($main_color); ?>;
+				transition: width .3s ease;
+			}
+			.pn-cm-db-progress-label {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-top: 8px;
+				font-size: 12px;
+				color: #646970;
+			}
+			.pn-cm-db-notice-success {
+				display: none;
+				padding: 24px 28px;
+				text-align: center;
+			}
+			.pn-cm-db-notice-success svg {
+				width: 40px;
+				height: 40px;
+				fill: #00a32a;
+				margin-bottom: 8px;
+			}
+			.pn-cm-db-notice-success p {
+				margin: 0;
+				font-size: 14px;
+				font-weight: 600;
+				color: #1d2327;
+			}
+		</style>
+		<div class="notice pn-cm-db-notice" id="pn-cm-db-update-notice">
+			<div class="pn-cm-db-notice-inner" id="pn-cm-db-main">
+				<div class="pn-cm-db-notice-icon">
+					<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+				</div>
+				<div class="pn-cm-db-notice-body">
+					<p class="pn-cm-db-notice-title"><?php esc_html_e('Database update available', 'pn-customers-manager'); ?></p>
+					<p class="pn-cm-db-notice-desc">
+						<?php
+							printf(
+								/* translators: 1: installed DB version, 2: required DB version */
+								esc_html__('PN Customers Manager needs to update the database from version %1$s to %2$s. This process runs in the background.', 'pn-customers-manager'),
+								'<code>' . esc_html($installed_version) . '</code>',
+								'<code>' . esc_html(PN_CUSTOMERS_MANAGER_DB_VERSION) . '</code>'
+							);
+						?>
+					</p>
+				</div>
+				<div class="pn-cm-db-notice-action">
+					<button type="button" id="pn-cm-db-update-btn">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+						<?php esc_html_e('Update database', 'pn-customers-manager'); ?>
+					</button>
+				</div>
+			</div>
+			<div class="pn-cm-db-progress-wrap" id="pn-cm-db-progress">
+				<div class="pn-cm-db-progress-track">
+					<div class="pn-cm-db-progress-bar" id="pn-cm-db-bar"></div>
+				</div>
+				<div class="pn-cm-db-progress-label">
+					<span id="pn-cm-db-step"><?php esc_html_e('Updating tables...', 'pn-customers-manager'); ?></span>
+					<span id="pn-cm-db-pct">0%</span>
+				</div>
+			</div>
+			<div class="pn-cm-db-notice-success" id="pn-cm-db-success">
+				<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+				<p><?php esc_html_e('Database updated successfully!', 'pn-customers-manager'); ?></p>
+			</div>
+		</div>
+		<script>
+		(function() {
+			var btn       = document.getElementById('pn-cm-db-update-btn');
+			var main      = document.getElementById('pn-cm-db-main');
+			var progress  = document.getElementById('pn-cm-db-progress');
+			var bar       = document.getElementById('pn-cm-db-bar');
+			var step      = document.getElementById('pn-cm-db-step');
+			var pct       = document.getElementById('pn-cm-db-pct');
+			var success   = document.getElementById('pn-cm-db-success');
+			var notice    = document.getElementById('pn-cm-db-update-notice');
+			if (!btn) return;
+
+			var MIN_DURATION = 10000;
+			var steps = [
+				<?php echo wp_json_encode(__('Checking schema...', 'pn-customers-manager')); ?>,
+				<?php echo wp_json_encode(__('Creating tables...', 'pn-customers-manager')); ?>,
+				<?php echo wp_json_encode(__('Updating indexes...', 'pn-customers-manager')); ?>,
+				<?php echo wp_json_encode(__('Verifying integrity...', 'pn-customers-manager')); ?>,
+				<?php echo wp_json_encode(__('Finalizing...', 'pn-customers-manager')); ?>
+			];
+
+			btn.addEventListener('click', function() {
+				btn.disabled = true;
+				progress.style.display = 'block';
+
+				var startTime  = Date.now();
+				var ajaxDone   = false;
+				var ajaxOk     = false;
+				var ajaxError  = '';
+				var currentPct = 0;
+				var targetPct  = 0;
+				var stepIdx    = 0;
+
+				// Fire AJAX request.
+				var formData = new FormData();
+				formData.append('action', 'pn_customers_manager_ajax');
+				formData.append('pn_customers_manager_ajax_nonce', '<?php echo esc_js($nonce); ?>');
+				formData.append('pn_customers_manager_ajax_type', 'pn_cm_db_update');
+
+				fetch('<?php echo esc_js(admin_url('admin-ajax.php')); ?>', {
+					method: 'POST',
+					credentials: 'same-origin',
+					body: formData
+				})
+				.then(function(r) { return r.json(); })
+				.then(function(res) {
+					ajaxDone = true;
+					ajaxOk   = (res.error_key === '');
+					if (!ajaxOk) ajaxError = res.error_content || <?php echo wp_json_encode(__('Update failed.', 'pn-customers-manager')); ?>;
+				})
+				.catch(function() {
+					ajaxDone = true;
+					ajaxOk   = false;
+					ajaxError = <?php echo wp_json_encode(__('Update failed. Please try again.', 'pn-customers-manager')); ?>;
+				});
+
+				// Animate progress bar.
+				var interval = setInterval(function() {
+					var elapsed = Date.now() - startTime;
+					var timePct = Math.min(elapsed / MIN_DURATION, 1);
+
+					// Phase targets: climb to 85% over the minimum duration,
+					// then jump to 100% once AJAX is done and time is met.
+					if (!ajaxDone) {
+						targetPct = Math.min(timePct * 85, 85);
+					} else if (ajaxOk && timePct >= 1) {
+						targetPct = 100;
+					} else if (ajaxOk) {
+						targetPct = Math.max(85, timePct * 95);
+					} else {
+						// Error — freeze and show error.
+						clearInterval(interval);
+						step.textContent = ajaxError;
+						step.style.color = '#d63638';
+						pct.textContent  = '';
+						btn.disabled     = false;
+						return;
+					}
+
+					// Smooth easing toward target.
+					currentPct += (targetPct - currentPct) * 0.15;
+					if (targetPct - currentPct < 0.5) currentPct = targetPct;
+
+					var rounded = Math.round(currentPct);
+					bar.style.width = rounded + '%';
+					pct.textContent = rounded + '%';
+
+					// Update step label.
+					var newIdx = Math.min(Math.floor(rounded / 20), steps.length - 1);
+					if (newIdx !== stepIdx) {
+						stepIdx = newIdx;
+						step.textContent = steps[stepIdx];
+					}
+
+					// Done.
+					if (currentPct >= 100) {
+						clearInterval(interval);
+						setTimeout(function() {
+							main.style.display     = 'none';
+							progress.style.display = 'none';
+							success.style.display  = 'block';
+							setTimeout(function() {
+								notice.style.transition = 'opacity .5s, margin .5s';
+								notice.style.opacity    = '0';
+								notice.style.margin     = '0';
+								notice.style.overflow   = 'hidden';
+								notice.style.maxHeight  = notice.scrollHeight + 'px';
+								setTimeout(function() { notice.style.maxHeight = '0'; }, 50);
+								setTimeout(function() { notice.style.display = 'none'; }, 600);
+							}, 2500);
+						}, 400);
+					}
+				}, 60);
+			});
+		})();
+		</script>
+		<?php
 	}
 
 	/**
@@ -606,6 +953,12 @@ class PN_CUSTOMERS_MANAGER
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('template_redirect', $plugin_post_type_invoice, 'pn_cm_invoice_template_redirect');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('query_vars', $plugin_post_type_invoice, 'pn_cm_invoice_query_vars');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-invoice-list', $plugin_post_type_invoice, 'pn_cm_invoice_list_wrapper');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('manage_pn_cm_invoice_posts_columns', $plugin_post_type_invoice, 'pn_cm_invoice_admin_columns');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('manage_pn_cm_invoice_posts_custom_column', $plugin_post_type_invoice, 'pn_cm_invoice_admin_column_content', 10, 2);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_filter('manage_edit-pn_cm_invoice_sortable_columns', $plugin_post_type_invoice, 'pn_cm_invoice_admin_sortable_columns');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pre_get_posts', $plugin_post_type_invoice, 'pn_cm_invoice_admin_sort_columns');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_enqueue_scripts', $plugin_post_type_invoice, 'pn_cm_invoice_admin_list_styles');
+
 	}
 
 	/**
@@ -721,6 +1074,7 @@ class PN_CUSTOMERS_MANAGER
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-mockup-flow', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'shortcode_handler');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-mockup-flow-list', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'list_wrapper');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Mockup_Flow', 'register_block');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_shortcode('pn-customers-manager-clients', 'PN_CUSTOMERS_MANAGER_Clients', 'shortcode_handler');
 	}
 
 	/**
@@ -774,6 +1128,7 @@ class PN_CUSTOMERS_MANAGER
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Commercial', 'register_block');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_ensure_commercial_role');
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_ensure_crm_cap');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', $this, 'pn_customers_manager_ensure_cpt_caps');
 	}
 
 	/**
@@ -803,6 +1158,43 @@ class PN_CUSTOMERS_MANAGER
 		$admin = get_role('administrator');
 		if ($admin instanceof \WP_Role && !$admin->has_cap('pn_cm_manage_crm')) {
 			$admin->add_cap('pn_cm_manage_crm');
+		}
+	}
+
+	/**
+	 * Ensure all CPT capabilities exist on admin and manager roles
+	 * (upgrade path for existing installs when new CPTs are added).
+	 */
+	public function pn_customers_manager_ensure_cpt_caps()
+	{
+		$admin = get_role('administrator');
+		$manager = get_role('pn_customers_manager_role_manager');
+
+		if (!$admin instanceof \WP_Role) {
+			return;
+		}
+
+		foreach (PN_CUSTOMERS_MANAGER_CPTS as $cpt_key => $cpt_name) {
+			$constant_name = 'PN_CUSTOMERS_MANAGER_ROLE_' . strtoupper($cpt_key) . '_CAPABILITIES';
+			if (!defined($constant_name)) {
+				continue;
+			}
+			$capabilities = constant($constant_name);
+			foreach ($capabilities as $cap) {
+				if (!$admin->has_cap($cap)) {
+					$admin->add_cap($cap);
+				}
+				if ($manager instanceof \WP_Role && !$manager->has_cap($cap)) {
+					$manager->add_cap($cap);
+				}
+			}
+			$manage_cap = 'manage_' . $cpt_key . '_options';
+			if (!$admin->has_cap($manage_cap)) {
+				$admin->add_cap($manage_cap);
+			}
+			if ($manager instanceof \WP_Role && !$manager->has_cap($manage_cap)) {
+				$manager->add_cap($manage_cap);
+			}
 		}
 	}
 
@@ -938,6 +1330,13 @@ class PN_CUSTOMERS_MANAGER
 	private function pn_customers_manager_define_whatsapp_ai_hooks()
 	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'register_routes');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'early_webhook_verify', 1);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_whatsapp_queue_cron', 'PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'process_message_queue');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('pn_cm_send_scheduled_wa_template', 'PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'send_scheduled_template', 10, 8);
+		// Fallback: process overdue scheduled templates on every page load.
+		// Lightweight check (reads WP cron option) that ensures templates fire
+		// even when DISABLE_WP_CRON is true or WP Cron is unreliable.
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_WhatsApp_AI', 'process_pending_template_events', 20);
 	}
 
 	/**
@@ -946,6 +1345,35 @@ class PN_CUSTOMERS_MANAGER
 	private function pn_customers_manager_define_instagram_ai_hooks()
 	{
 		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_Instagram_AI', 'register_routes');
+	}
+
+	/**
+	 * Register hooks for GHL webhook integration.
+	 */
+	private function pn_customers_manager_define_ghl_hooks()
+	{
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_GHL', 'register_routes');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('updated_post_meta', 'PN_CUSTOMERS_MANAGER_GHL', 'on_funnel_status_changed', 10, 4);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('added_post_meta', 'PN_CUSTOMERS_MANAGER_GHL', 'on_funnel_status_changed', 10, 4);
+	}
+
+	/**
+	 * Register hooks for Zoho CRM integration.
+	 */
+	private function pn_customers_manager_define_zoho_hooks()
+	{
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('rest_api_init', 'PN_CUSTOMERS_MANAGER_Zoho', 'register_routes');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('admin_init', 'PN_CUSTOMERS_MANAGER_Zoho', 'maybe_handle_oauth_callback');
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('updated_post_meta', 'PN_CUSTOMERS_MANAGER_Zoho', 'on_funnel_status_changed', 10, 4);
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('added_post_meta', 'PN_CUSTOMERS_MANAGER_Zoho', 'on_funnel_status_changed', 10, 4);
+	}
+
+	/**
+	 * Register hooks for CRM Clients dashboard.
+	 */
+	private function pn_customers_manager_define_clients_hooks()
+	{
+		$this->pn_customers_manager_loader->pn_customers_manager_add_action('init', 'PN_CUSTOMERS_MANAGER_Clients', 'register_block');
 	}
 
 	/**

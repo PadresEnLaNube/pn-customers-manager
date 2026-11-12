@@ -36,14 +36,23 @@ class PN_CUSTOMERS_MANAGER_CTA
 			return $content;
 		}
 
-		// Get CTA content
-		$cta_content = get_option('pn_customers_manager_cta_content', '');
+		// Get CTA content (language-specific with fallback to default)
+		$cta_content = '';
+		if (function_exists('pll_current_language')) {
+			$lang = pll_current_language('slug');
+			if ($lang) {
+				$cta_content = get_option('pn_customers_manager_cta_content_' . $lang, '');
+			}
+		}
+		if (empty(trim($cta_content))) {
+			$cta_content = get_option('pn_customers_manager_cta_content', '');
+		}
 		if (empty(trim($cta_content))) {
 			return $content;
 		}
 
 		// Wrap CTA in a container div
-		$cta_html = '<div class="pn-customers-manager-cta">' . $cta_content . '</div>';
+		$cta_html = '<div class="pn-customers-manager-cta" style="margin: 2em 0;">' . $cta_content . '</div>';
 
 		// Get position
 		$position = get_option('pn_customers_manager_cta_position', 'after');

@@ -216,7 +216,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Product_Calendar_Block
 			return '';
 		}
 
-		$today = date('Y-m-d');
+		$today = gmdate('Y-m-d');
 		$products_data = [];
 		$all_dates_map = []; // 'YYYY-MM-DD' => [ 'pids' => [123, 456], 'titles' => ['Title 1', 'Title 2'], 'tooltip' => 'Title 1, Title 2' ]
 
@@ -319,8 +319,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Product_Calendar_Block
 		});
 
 		// Determine initial month to display on calendar
-		$initial_year  = (int) date('Y');
-		$initial_month = (int) date('n');
+		$initial_year  = (int) gmdate('Y');
+		$initial_month = (int) gmdate('n');
 
 		if (!empty($all_dates_map)) {
 			$sorted_active_dates = array_keys($all_dates_map);
@@ -421,7 +421,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Product_Calendar_Block
 									$pids_str = implode(',', $info['pids']);
 									$tooltip_str = esc_attr($info['tooltip']);
 									$cls = 'pn-cm-calendar-day pn-cm-calendar-day--available pn-customers-manager-tooltip';
-									echo '<div class="' . esc_attr($cls) . '" data-date="' . esc_attr($date_str) . '" data-product-ids="' . esc_attr($pids_str) . '" data-pn-customers-manager-tooltip="' . $tooltip_str . '">';
+									echo '<div class="' . esc_attr($cls) . '" data-date="' . esc_attr($date_str) . '" data-product-ids="' . esc_attr($pids_str) . '" data-pn-customers-manager-tooltip="' . esc_attr($tooltip_str) . '">';
 								} else {
 									echo '<div class="pn-cm-calendar-day pn-cm-calendar-day--inactive" data-date="' . esc_attr($date_str) . '">';
 								}

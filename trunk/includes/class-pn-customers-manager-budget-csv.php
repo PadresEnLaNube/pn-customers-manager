@@ -269,6 +269,7 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
     fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
     fputcsv($output, $header);
     fputcsv($output, $example_row);
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Writing CSV to php://output stream.
     fclose($output);
     exit;
   }
@@ -361,6 +362,7 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
       fputcsv($output, $row);
     }
 
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Writing CSV to php://output stream.
     fclose($output);
     exit;
   }
@@ -391,12 +393,14 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
       wp_send_json_error(__('Invalid file type. Please upload a CSV file.', 'pn-customers-manager'));
     }
 
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading uploaded CSV temp file.
     $handle = fopen($file, 'r');
     if ($handle === false) {
       wp_send_json_error(__('Could not open the file.', 'pn-customers-manager'));
     }
 
     // Skip BOM
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Reading BOM bytes from CSV stream.
     $bom = fread($handle, 3);
     if ($bom !== "\xEF\xBB\xBF") {
       rewind($handle);
@@ -404,6 +408,7 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
 
     $csv_header = fgetcsv($handle);
     if (!$csv_header) {
+      // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle on error.
       fclose($handle);
       wp_send_json_error(__('Could not read CSV headers.', 'pn-customers-manager'));
     }
@@ -419,6 +424,7 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
     unset($col);
 
     if (!in_array('post_title', $csv_header, true)) {
+      // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle on validation error.
       fclose($handle);
       wp_send_json_error(__('Missing required column: Title', 'pn-customers-manager'));
     }
@@ -433,6 +439,7 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
         $rows[] = array_combine($csv_header, $data);
       }
     }
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle after reading rows.
     fclose($handle);
 
     $key_to_label = self::pn_customers_manager_get_budget_csv_key_to_label_map();
@@ -476,6 +483,7 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
 
       $title = isset($row['post_title']) ? sanitize_text_field(trim($row['post_title'])) : '';
       if (empty($title)) {
+        // translators: %d is the CSV row number
         $results['errors'][] = sprintf(__('Row %d: Title is empty, skipped.', 'pn-customers-manager'), $row_num);
         continue;
       }
@@ -489,8 +497,9 @@ class PN_CUSTOMERS_MANAGER_Budget_Csv {
       $post_id = wp_insert_post($post_data, true);
 
       if (is_wp_error($post_id)) {
+        // translators: %1$d is the CSV row number, %2$s is the error message
         $results['errors'][] = sprintf(
-          __('Row %d: Error creating budget — %s', 'pn-customers-manager'),
+          __('Row %1$d: Error creating budget — %2$s', 'pn-customers-manager'),
           $row_num,
           $post_id->get_error_message()
         );

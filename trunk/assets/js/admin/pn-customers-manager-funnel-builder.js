@@ -16,10 +16,12 @@
 
   /* -------- API requirements per subtype -------- */
   var API_REQUIREMENTS = {
-    whatsapp:      ['whatsapp'],
-    whatsapp_ai:   ['whatsapp', 'openai'],
-    instagram_ai:  ['instagram', 'openai'],
-    chatbot:       ['openai'],
+    whatsapp:         ['whatsapp'],
+    whatsapp_ai:      ['whatsapp', 'openai'],
+    instagram_ai:     ['instagram', 'openai'],
+    chatbot:          ['openai'],
+    ghl_new_contact:  ['ghl'],
+    zoho_new_contact: ['zoho'],
   };
 
   /* -------- State -------- */
@@ -45,14 +47,29 @@
   var MAX_ZOOM = 3;
   var ZOOM_STEP = 0.1;
 
+  /* -------- Multi-select state -------- */
+  var multiSelectMode = false;
+  var selectedNodes = {};          // Object used as a set of selected node IDs
+  var selectedNodesCount = 0;
+  var isMarquee = false;
+  var marqueeStartX, marqueeStartY;
+  var marqueeEl = null;
+
+  /* -------- Undo / Redo state -------- */
+  var undoStack = [];
+  var redoStack = [];
+  var MAX_UNDO = 50;
+  var btnUndo, btnRedo;
+
   /* -------- DOM refs -------- */
   var canvas, canvasWrap, svg, propsPanel, propsEmpty;
-  var funnelSelect, btnSave, btnDeleteNode, btnDeleteFunnel, btnCreate, inputNewFunnelName;
+  var funnelSelect, btnSave, btnDeleteNode, btnDeleteFunnel, btnCreate, btnRename;
   var propLabel;
   var waChatBtnWrap, waChatBtn;
   var igChatBtnWrap, igChatBtn;
   var btnSettings;
   var propsShortcodeWrap, propsShortcodeInput, propsShortcodeCopy;
+  var propsWebhookWrap, propsWebhookUrlInput, propsWebhookCopy;
   var formSubmissionsBtnWrap, formSubmissionsBtn;
   var zoomLayer, zoomLevelEl, sidebarLeft, sidebarToggle;
 
@@ -89,6 +106,8 @@
     form: 'assignment',
     button: 'smart_button',
     cta: 'touch_app',
+    ghl_new_contact: 'webhook',
+    zoho_new_contact: 'webhook',
   };
 
   var TYPE_LABELS = {
@@ -114,7 +133,7 @@
     btnDeleteNode = document.getElementById('pn-cm-fb-btn-delete-node');
     btnDeleteFunnel = document.getElementById('pn-cm-fb-btn-delete');
     btnCreate = document.getElementById('pn-cm-fb-btn-create');
-    inputNewFunnelName = document.getElementById('pn-cm-fb-new-funnel-name');
+    btnRename = document.getElementById('pn-cm-fb-btn-rename');
     propLabel = document.getElementById('pn-cm-fb-prop-label');
     waChatBtnWrap = document.getElementById('pn-cm-fb-wa-chat-btn-wrap');
     waChatBtn = document.getElementById('pn-cm-fb-wa-chat-btn');
@@ -124,6 +143,9 @@
     propsShortcodeWrap  = document.getElementById('pn-cm-fb-props-shortcode-wrap');
     propsShortcodeInput = document.getElementById('pn-cm-fb-props-shortcode');
     propsShortcodeCopy  = document.getElementById('pn-cm-fb-props-shortcode-copy');
+    propsWebhookWrap    = document.getElementById('pn-cm-fb-props-webhook-wrap');
+    propsWebhookUrlInput = document.getElementById('pn-cm-fb-props-webhook-url');
+    propsWebhookCopy    = document.getElementById('pn-cm-fb-props-webhook-copy');
     formSubmissionsBtnWrap = document.getElementById('pn-cm-fb-form-submissions-btn-wrap');
     formSubmissionsBtn     = document.getElementById('pn-cm-fb-form-submissions-btn');
 
@@ -131,6 +153,8 @@
     zoomLevelEl = document.getElementById('pn-cm-fb-zoom-level');
     sidebarLeft = document.getElementById('pn-cm-fb-sidebar-left');
     sidebarToggle = document.getElementById('pn-cm-fb-sidebar-toggle');
+    btnUndo = document.getElementById('pn-cm-fb-undo');
+    btnRedo = document.getElementById('pn-cm-fb-redo');
 
     if (!canvas || !canvasWrap || !svg || !zoomLayer || !funnelSelect || !btnSave || !btnDeleteNode || !propLabel) return;
 
@@ -206,17 +230,41 @@
       btnCreate.addEventListener('click', createNewFunnel);
     }
 
-    // Allow Enter key in funnel name input
-    if (inputNewFunnelName) {
-      inputNewFunnelName.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-          createNewFunnel();
-        }
-      });
+    // Rename funnel button
+    if (btnRename) {
+      btnRename.addEventListener('click', renameFunnel);
     }
 
     // Delete node
     btnDeleteNode.addEventListener('click', deleteSelectedNode);
+
+    // Undo / Redo buttons
+    if (btnUndo) btnUndo.addEventListener('click', undo);
+    if (btnRedo) btnRedo.addEventListener('click', redo);
+
+    // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z or Ctrl+Y (redo)
+    document.addEventListener('keydown', function (e) {
+      // Don't intercept when typing in inputs/textareas.
+      var tag = (e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+        if (e.key === 'z' || e.key === 'Z') {
+          if (e.shiftKey) {
+            e.preventDefault();
+            redo();
+          } else {
+            e.preventDefault();
+            undo();
+          }
+        } else if (e.key === 'y' || e.key === 'Y') {
+          if (!e.shiftKey) {
+            e.preventDefault();
+            redo();
+          }
+        }
+      }
+    });
 
     // Property inputs
     propLabel.addEventListener('input', onPropChange);
@@ -238,25 +286,57 @@
     canvasWrap.addEventListener('dragleave', onCanvasDragLeave);
     canvasWrap.addEventListener('drop', onCanvasDrop);
 
-    // ── Pan: mousedown on empty canvas area ──
+    // ── Pan / Marquee: mousedown on empty canvas area ──
     canvasWrap.addEventListener('mousedown', function (e) {
       // Ignore clicks on UI controls inside canvasWrap
       if (e.target.closest('.pn-cm-fb-zoom-controls') || e.target.closest('.pn-cm-fb-sidebar-toggle')) return;
-      // Only start pan if clicking on empty canvas / zoom layer / svg
+      // Only start pan/marquee if clicking on empty canvas / zoom layer / svg
       var onEmpty = (e.target === canvas || e.target === canvasWrap || e.target === zoomLayer || e.target === svg);
       if (!onEmpty) return;
       if (e.button !== 0) return;
 
-      isPanning = true;
-      panStartX = e.clientX;
-      panStartY = e.clientY;
-      panOrigX = panX;
-      panOrigY = panY;
-      canvasWrap.classList.add('pn-cm-fb-panning');
+      if (multiSelectMode) {
+        // Start marquee selection
+        var rect = canvasWrap.getBoundingClientRect();
+        marqueeStartX = (e.clientX - rect.left - panX) / zoom;
+        marqueeStartY = (e.clientY - rect.top - panY) / zoom;
+        isMarquee = true;
+
+        // Create marquee div inside the zoom layer
+        marqueeEl = document.createElement('div');
+        marqueeEl.id = 'pn-cm-fb-marquee';
+        marqueeEl.style.left = marqueeStartX + 'px';
+        marqueeEl.style.top = marqueeStartY + 'px';
+        marqueeEl.style.width = '0px';
+        marqueeEl.style.height = '0px';
+        zoomLayer.appendChild(marqueeEl);
+      } else {
+        // Normal panning
+        isPanning = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        panOrigX = panX;
+        panOrigY = panY;
+        canvasWrap.classList.add('pn-cm-fb-panning');
+      }
       e.preventDefault();
     });
 
     document.addEventListener('mousemove', function (e) {
+      if (isMarquee && marqueeEl) {
+        var rect = canvasWrap.getBoundingClientRect();
+        var curX = (e.clientX - rect.left - panX) / zoom;
+        var curY = (e.clientY - rect.top - panY) / zoom;
+        var x = Math.min(marqueeStartX, curX);
+        var y = Math.min(marqueeStartY, curY);
+        var w = Math.abs(curX - marqueeStartX);
+        var h = Math.abs(curY - marqueeStartY);
+        marqueeEl.style.left = x + 'px';
+        marqueeEl.style.top = y + 'px';
+        marqueeEl.style.width = w + 'px';
+        marqueeEl.style.height = h + 'px';
+        return;
+      }
       if (!isPanning) return;
       panX = panOrigX + (e.clientX - panStartX);
       panY = panOrigY + (e.clientY - panStartY);
@@ -264,12 +344,59 @@
     });
 
     document.addEventListener('mouseup', function (e) {
+      if (isMarquee) {
+        var rect = canvasWrap.getBoundingClientRect();
+        var curX = (e.clientX - rect.left - panX) / zoom;
+        var curY = (e.clientY - rect.top - panY) / zoom;
+        var moved = Math.abs(curX - marqueeStartX) + Math.abs(curY - marqueeStartY);
+        isMarquee = false;
+
+        if (marqueeEl) {
+          // Only do selection if there was meaningful movement
+          if (moved >= 5) {
+            var mx1 = Math.min(marqueeStartX, curX);
+            var my1 = Math.min(marqueeStartY, curY);
+            var mx2 = Math.max(marqueeStartX, curX);
+            var my2 = Math.max(marqueeStartY, curY);
+
+            // Find all nodes whose bounding box intersects the marquee rect
+            state.nodes.forEach(function (n) {
+              var nodeEl = canvas.querySelector('[data-node-id="' + n.id + '"]');
+              if (!nodeEl) return;
+              var nw = nodeEl.offsetWidth;
+              var nh = nodeEl.offsetHeight;
+              var nx1 = n.x;
+              var ny1 = n.y;
+              var nx2 = n.x + nw;
+              var ny2 = n.y + nh;
+
+              // Check intersection
+              if (nx1 < mx2 && nx2 > mx1 && ny1 < my2 && ny2 > my1) {
+                selectedNodes[n.id] = true;
+                selectedNodesCount++;
+                nodeEl.classList.add('pn-cm-fb-node-multi-selected');
+              }
+            });
+          } else {
+            // Small movement = click on empty area → clear selection
+            clearMultiSelection();
+          }
+
+          marqueeEl.remove();
+          marqueeEl = null;
+        }
+        return;
+      }
+
       if (!isPanning) return;
-      var moved = Math.abs(e.clientX - panStartX) + Math.abs(e.clientY - panStartY);
+      var movedPan = Math.abs(e.clientX - panStartX) + Math.abs(e.clientY - panStartY);
       isPanning = false;
       canvasWrap.classList.remove('pn-cm-fb-panning');
       // If barely moved, treat as click → deselect
-      if (moved < 5) {
+      if (movedPan < 5) {
+        if (multiSelectMode) {
+          clearMultiSelection();
+        }
         selectNode(null);
       }
     });
@@ -358,6 +485,28 @@
       panY = 0;
       applyTransform();
       updateZoomDisplay();
+    });
+
+    // ── Multi-select toggle ──
+    var btnMultiSelect = document.getElementById('pn-cm-fb-multi-select');
+    if (btnMultiSelect) btnMultiSelect.addEventListener('click', function () {
+      multiSelectMode = !multiSelectMode;
+      if (multiSelectMode) {
+        btnMultiSelect.classList.add('pn-cm-fb-multi-select-active');
+      } else {
+        btnMultiSelect.classList.remove('pn-cm-fb-multi-select-active');
+        clearMultiSelection();
+      }
+    });
+
+    // ── Keyboard: Delete / Backspace to remove selected nodes ──
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+      // Don't intercept when typing in an input/textarea
+      var tag = (e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) return;
+      e.preventDefault();
+      deleteSelectedNode();
     });
 
     // SVG click to delete connections
@@ -475,6 +624,8 @@
     state.funnelId = newId;
     state.dirty = false;
     btnSave.disabled = !newId;
+    if (btnDeleteFunnel) btnDeleteFunnel.disabled = !newId;
+    if (btnRename) btnRename.disabled = !newId;
 
     if (newId) {
       // Navigate to the URL with funnel_id
@@ -491,8 +642,18 @@
     try {
       data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
     } catch (e) {
-      initDefaultNodes();
-      return;
+      if (typeof jsonStr === 'string') {
+        try {
+          var repaired = jsonStr.replace(/[\r\n\t]/g, function (c) {
+            return c === '\n' ? '\\n' : (c === '\r' ? '\\r' : '\\t');
+          });
+          data = JSON.parse(repaired);
+        } catch (e2) {}
+      }
+      if (!data || !data.nodes) {
+        initDefaultNodes();
+        return;
+      }
     }
 
     if (!data || !data.nodes) {
@@ -522,6 +683,11 @@
 
     // Render all connections
     redrawConnections();
+
+    // Initialize undo stack with the loaded state.
+    undoStack = [];
+    redoStack = [];
+    updateUndoRedoButtons();
   }
 
   function initDefaultNodes() {
@@ -583,18 +749,13 @@
   }
 
   function createNewFunnel() {
-    if (!inputNewFunnelName) return;
-
-    var funnelName = inputNewFunnelName.value.trim();
-    if (!funnelName) {
-      pn_customers_manager_get_main_message(i18n.funnelNameRequired || 'El nombre del funnel es obligatorio', 'error');
-      inputNewFunnelName.focus();
+    var funnelName = prompt(i18n.newFunnelPrompt || 'Enter the name for the new funnel:');
+    if (!funnelName || !funnelName.trim()) {
       return;
     }
+    funnelName = funnelName.trim();
 
-    // Disable button during creation
     if (btnCreate) btnCreate.disabled = true;
-    if (inputNewFunnelName) inputNewFunnelName.disabled = true;
 
     var formData = new FormData();
     formData.append('action', 'pn_customers_manager_ajax');
@@ -610,22 +771,66 @@
       .then(function (response) { return response.json(); })
       .then(function (res) {
         if (btnCreate) btnCreate.disabled = false;
-        if (inputNewFunnelName) inputNewFunnelName.disabled = false;
 
         if (res.error_key) {
-          pn_customers_manager_get_main_message(res.error_content || i18n.createError || 'Error al crear el funnel', 'error');
+          pn_customers_manager_get_main_message(res.error_content || i18n.createError || 'Error creating funnel', 'error');
           return;
         }
 
-        // Success - redirect to the new funnel
         if (res.funnel_url) {
           window.location.href = res.funnel_url;
         }
       })
-      .catch(function (error) {
+      .catch(function () {
         if (btnCreate) btnCreate.disabled = false;
-        if (inputNewFunnelName) inputNewFunnelName.disabled = false;
-        pn_customers_manager_get_main_message(i18n.createError || 'Error al crear el funnel', 'error');
+        pn_customers_manager_get_main_message(i18n.createError || 'Error creating funnel', 'error');
+      });
+  }
+
+  function renameFunnel() {
+    if (!state.funnelId) return;
+
+    var currentName = funnelSelect.options[funnelSelect.selectedIndex]
+      ? funnelSelect.options[funnelSelect.selectedIndex].text
+      : '';
+    var newName = prompt(i18n.renamePrompt || 'Enter the new funnel name:', currentName);
+    if (!newName || !newName.trim() || newName.trim() === currentName) {
+      return;
+    }
+    newName = newName.trim();
+
+    if (btnRename) btnRename.disabled = true;
+
+    var formData = new FormData();
+    formData.append('action', 'pn_customers_manager_ajax');
+    formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+    formData.append('pn_customers_manager_ajax_type', 'pn_cm_funnel_builder_rename');
+    formData.append('funnel_id', state.funnelId);
+    formData.append('funnel_name', newName);
+
+    fetch(cfg.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData,
+    })
+      .then(function (response) { return response.json(); })
+      .then(function (res) {
+        if (btnRename) btnRename.disabled = false;
+
+        if (res.error_key) {
+          pn_customers_manager_get_main_message(res.error_content || i18n.renameError || 'Error renaming funnel', 'error');
+          return;
+        }
+
+        // Update the select option text
+        var opt = funnelSelect.querySelector('option[value="' + state.funnelId + '"]');
+        if (opt) opt.textContent = newName;
+
+        pn_customers_manager_get_main_message(i18n.renameSuccess || 'Funnel renamed successfully.');
+      })
+      .catch(function () {
+        if (btnRename) btnRename.disabled = false;
+        pn_customers_manager_get_main_message(i18n.renameError || 'Error renaming funnel', 'error');
       });
   }
 
@@ -675,6 +880,66 @@
       });
   }
 
+  /* ======== Undo / Redo ======== */
+  function getStateSnapshot() {
+    return JSON.stringify({
+      nodes: state.nodes,
+      connections: state.connections,
+      nextId: state.nextId,
+    });
+  }
+
+  function pushUndoState() {
+    undoStack.push(getStateSnapshot());
+    if (undoStack.length > MAX_UNDO) {
+      undoStack.shift();
+    }
+    // Clear redo stack on new action.
+    redoStack = [];
+    updateUndoRedoButtons();
+  }
+
+  function restoreSnapshot(snapshot) {
+    var data = JSON.parse(snapshot);
+
+    clearCanvas();
+
+    state.nodes = data.nodes || [];
+    state.connections = data.connections || [];
+    state.nextId = data.nextId || 1;
+
+    state.nodes.forEach(function (node) {
+      renderNode(node);
+    });
+
+    redrawConnections();
+    selectNode(null);
+    clearMultiSelection();
+    state.dirty = true;
+    updateUndoRedoButtons();
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    // Save current state to redo before restoring.
+    redoStack.push(getStateSnapshot());
+    var snapshot = undoStack.pop();
+    restoreSnapshot(snapshot);
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+    // Save current state to undo before restoring.
+    undoStack.push(getStateSnapshot());
+    var snapshot = redoStack.pop();
+    restoreSnapshot(snapshot);
+  }
+
+  function updateUndoRedoButtons() {
+    if (btnUndo) btnUndo.disabled = undoStack.length === 0;
+    if (btnRedo) btnRedo.disabled = redoStack.length === 0;
+  }
+
   function saveCanvas() {
     if (!state.funnelId) return;
 
@@ -685,6 +950,10 @@
       viewport: { zoom: zoom, panX: panX, panY: panY },
     };
 
+    console.log('[DEBUG saveCanvas] Saving canvas');
+    console.log('[DEBUG saveCanvas] Nodes:', state.nodes);
+    console.log('[DEBUG saveCanvas] Canvas data being sent:', data);
+
     btnSave.disabled = true;
 
     var formData = new FormData();
@@ -693,6 +962,8 @@
     formData.append('pn_customers_manager_ajax_type', 'pn_cm_funnel_builder_save');
     formData.append('pn_cm_funnel_id', state.funnelId);
     formData.append('canvas_data', JSON.stringify(data));
+
+    console.log('[DEBUG saveCanvas] JSON being sent:', JSON.stringify(data));
 
     fetch(cfg.ajaxUrl, {
       method: 'POST',
@@ -717,6 +988,7 @@
 
   /* ======== Node CRUD ======== */
   function addNode(nodeData) {
+    pushUndoState();
     if (!nodeData.id) {
       nodeData.id = 'node_' + state.nextId++;
     }
@@ -764,6 +1036,19 @@
     // Click to select
     el.addEventListener('mousedown', function (e) {
       if (e.target.classList.contains('pn-cm-fb-port')) return;
+      if (multiSelectMode) {
+        // Toggle node in/out of multi-selection
+        if (selectedNodes[node.id]) {
+          delete selectedNodes[node.id];
+          selectedNodesCount--;
+          el.classList.remove('pn-cm-fb-node-multi-selected');
+        } else {
+          selectedNodes[node.id] = true;
+          selectedNodesCount++;
+          el.classList.add('pn-cm-fb-node-multi-selected');
+        }
+        return;
+      }
       selectNode(node.id);
     });
 
@@ -773,13 +1058,57 @@
     canvas.appendChild(el);
   }
 
+  function clearMultiSelection() {
+    selectedNodes = {};
+    selectedNodesCount = 0;
+    var els = canvas.querySelectorAll('.pn-cm-fb-node-multi-selected');
+    for (var i = 0; i < els.length; i++) {
+      els[i].classList.remove('pn-cm-fb-node-multi-selected');
+    }
+  }
+
   function deleteSelectedNode() {
+    // Multi-delete: if in multi-select mode with selected nodes
+    if (multiSelectMode && selectedNodesCount > 0) {
+      var msg = (i18n.confirmDeleteMulti || 'Delete %d selected elements?').replace('%d', selectedNodesCount);
+      if (!confirm(msg)) return;
+
+      pushUndoState();
+      var idsToDelete = {};
+      for (var sid in selectedNodes) {
+        if (selectedNodes.hasOwnProperty(sid)) idsToDelete[sid] = true;
+      }
+
+      // Remove connections involving any deleted node
+      state.connections = state.connections.filter(function (c) {
+        return !idsToDelete[c.from] && !idsToDelete[c.to];
+      });
+
+      // Remove from state
+      state.nodes = state.nodes.filter(function (n) { return !idsToDelete[n.id]; });
+
+      // Remove DOM elements
+      for (var delId in idsToDelete) {
+        if (!idsToDelete.hasOwnProperty(delId)) continue;
+        var delEl = canvas.querySelector('[data-node-id="' + delId + '"]');
+        if (delEl) delEl.remove();
+      }
+
+      clearMultiSelection();
+      selectNode(null);
+      redrawConnections();
+      state.dirty = true;
+      return;
+    }
+
+    // Single delete
     if (!state.selectedNode) return;
 
     var nodeId = state.selectedNode;
 
-    // Don't allow deleting if it's market/conversion? Optional – allow it.
     if (!confirm(i18n.confirmDelete)) return;
+
+    pushUndoState();
 
     // Remove connections involving this node
     state.connections = state.connections.filter(function (c) {
@@ -813,11 +1142,23 @@
       if (e.target.classList.contains('pn-cm-fb-port')) return;
       if (e.button !== 0) return;
 
+      pushUndoState();
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
       origX = node.x;
       origY = node.y;
+
+      // If this node is in multi-selection, record original positions of all selected nodes
+      var multiDrag = multiSelectMode && selectedNodes[node.id];
+      var origPositions = {};
+      if (multiDrag) {
+        state.nodes.forEach(function (n) {
+          if (selectedNodes[n.id]) {
+            origPositions[n.id] = { x: n.x, y: n.y };
+          }
+        });
+      }
 
       e.preventDefault();
 
@@ -825,10 +1166,25 @@
         if (!dragging) return;
         var dx = (ev.clientX - startX) / zoom;
         var dy = (ev.clientY - startY) / zoom;
-        node.x = Math.max(0, snapToGrid(origX + dx));
-        node.y = Math.max(0, snapToGrid(origY + dy));
-        el.style.left = node.x + 'px';
-        el.style.top = node.y + 'px';
+
+        if (multiDrag) {
+          // Move all selected nodes by the same delta
+          state.nodes.forEach(function (n) {
+            if (!origPositions[n.id]) return;
+            n.x = Math.max(0, snapToGrid(origPositions[n.id].x + dx));
+            n.y = Math.max(0, snapToGrid(origPositions[n.id].y + dy));
+            var nodeEl = canvas.querySelector('[data-node-id="' + n.id + '"]');
+            if (nodeEl) {
+              nodeEl.style.left = n.x + 'px';
+              nodeEl.style.top = n.y + 'px';
+            }
+          });
+        } else {
+          node.x = Math.max(0, snapToGrid(origX + dx));
+          node.y = Math.max(0, snapToGrid(origY + dy));
+          el.style.left = node.x + 'px';
+          el.style.top = node.y + 'px';
+        }
         redrawConnections();
         state.dirty = true;
       }
@@ -894,6 +1250,7 @@
                   return c.from === connectingFrom && c.to === targetId;
                 });
                 if (!exists) {
+                  pushUndoState();
                   state.connections.push({ from: connectingFrom, to: targetId });
                   redrawConnections();
                   state.dirty = true;
@@ -963,6 +1320,7 @@
     var from = path.getAttribute('data-from');
     var to = path.getAttribute('data-to');
 
+    pushUndoState();
     state.connections = state.connections.filter(function (c) {
       return !(c.from === from && c.to === to);
     });
@@ -1027,6 +1385,9 @@
 
   /* ======== Node selection & properties ======== */
   function selectNode(nodeId) {
+    // Reset label undo tracking on node switch.
+    propChangeUndoPushed = false;
+
     // Deselect previous
     var prev = canvas.querySelector('.pn-cm-fb-node-selected');
     if (prev) prev.classList.remove('pn-cm-fb-node-selected');
@@ -1072,6 +1433,19 @@
       if (isShortcodeNode) updatePropsShortcode(node);
     }
 
+    // Show/hide webhook URL quick-copy
+    var webhookUrls = cfg.webhookUrls || {};
+    var isWebhookNode = node.subtype === 'ghl_new_contact' || node.subtype === 'zoho_new_contact';
+    if (propsWebhookWrap) {
+      propsWebhookWrap.style.display = isWebhookNode ? 'block' : 'none';
+      if (isWebhookNode) {
+        var webhookKey = node.subtype === 'ghl_new_contact' ? 'ghl' : 'zoho';
+        var webhookUrl = webhookUrls[webhookKey] || '';
+        if (propsWebhookUrlInput) propsWebhookUrlInput.value = webhookUrl;
+        if (propsWebhookCopy) propsWebhookCopy.setAttribute('data-pn-customers-manager-copy-text', webhookUrl);
+      }
+    }
+
     // Show/hide form submissions button
     if (formSubmissionsBtnWrap) {
       formSubmissionsBtnWrap.style.display = node.subtype === 'form' ? 'block' : 'none';
@@ -1107,10 +1481,17 @@
     propsEmpty.style.display = 'flex';
   }
 
+  var propChangeUndoPushed = false;
   function onPropChange() {
     if (!state.selectedNode) return;
     var node = findNode(state.selectedNode);
     if (!node) return;
+
+    // Push undo only once per editing session (reset on blur or node switch).
+    if (!propChangeUndoPushed) {
+      pushUndoState();
+      propChangeUndoPushed = true;
+    }
 
     node.label = propLabel.value;
 
@@ -1160,7 +1541,7 @@
     var required = API_REQUIREMENTS[subtype];
     if (!required) return [];
 
-    var labels = { whatsapp: 'WhatsApp', openai: 'OpenAI', instagram: 'Instagram' };
+    var labels = { whatsapp: 'WhatsApp', openai: 'OpenAI', instagram: 'Instagram', ghl: 'GHL', zoho: 'Zoho' };
     var missing = [];
 
     for (var i = 0; i < required.length; i++) {
@@ -1630,6 +2011,12 @@
 
     window.pn_customers_manager_Popups.open(SETTINGS_POPUP_ID);
 
+    // Update popup title with node name
+    var titleEl = document.getElementById('pn-cm-fb-settings-popup-title');
+    if (titleEl && node) {
+      titleEl.textContent = (i18n.settings || 'Settings') + ' — ' + (node.label || node.subtype || '');
+    }
+
     var popupContent = getSettingsPopupContent();
     if (!popupContent) return;
 
@@ -1703,7 +2090,7 @@
 
     $editors.each(function () {
       var $el = jQuery(this);
-      var key = $el.attr('name');
+      var key = normaliseFieldKey($el.attr('name'));
 
       $el.trumbowyg({
         btns: [
@@ -1726,17 +2113,64 @@
     });
   }
 
+  function syncAllPopupFields(node, container) {
+    if (!node.config) node.config = {};
+
+    var wrappers = container.querySelectorAll('.pn-customers-manager-html-multi-wrapper');
+    for (var w = 0; w < wrappers.length; w++) {
+      var key = getHtmlMultiKey(wrappers[w]);
+      if (key) {
+        node.config[key] = readHtmlMultiValues(wrappers[w]);
+      }
+    }
+
+    var fields = container.querySelectorAll('input[name], select[name], textarea[name]');
+    for (var i = 0; i < fields.length; i++) {
+      var el = fields[i];
+      if (el.closest && el.closest('.pn-customers-manager-html-multi-wrapper')) continue;
+      var rawName = el.getAttribute('name');
+      if (!rawName) continue;
+      var cfgKey = normaliseFieldKey(rawName);
+
+      if (el.type === 'checkbox') {
+        node.config[cfgKey] = el.checked;
+      } else if (el.tagName === 'SELECT' && el.multiple) {
+        var out = [];
+        for (var oi = 0; oi < el.options.length; oi++) {
+          if (el.options[oi].selected) out.push(el.options[oi].value);
+        }
+        node.config[cfgKey] = out;
+      } else {
+        node.config[cfgKey] = el.value;
+      }
+    }
+
+    if (typeof jQuery !== 'undefined' && jQuery.fn.trumbowyg) {
+      jQuery(container).find('.pn-customers-manager-wysiwyg').each(function () {
+        var $el = jQuery(this);
+        var key = normaliseFieldKey($el.attr('name'));
+        if (key && $el.data('trumbowyg')) {
+          node.config[key] = $el.trumbowyg('html');
+        }
+      });
+    }
+
+    state.dirty = true;
+  }
+
   function bindPopupSaveButton(popupContent) {
     var saveBtn = popupContent.querySelector('#pn-cm-fb-settings-popup-save');
     if (!saveBtn) return;
     saveBtn.addEventListener('click', function (e) {
       e.preventDefault();
+      var sel = state.selectedNode ? findNode(state.selectedNode) : null;
+      if (sel) {
+        syncAllPopupFields(sel, popupContent);
+        updatePropsShortcode(sel);
+      }
       if (typeof window.pn_customers_manager_Popups !== 'undefined') {
         window.pn_customers_manager_Popups.close();
       }
-      // Refresh props shortcode after settings changes
-      var sel = state.selectedNode ? findNode(state.selectedNode) : null;
-      if (sel) updatePropsShortcode(sel);
       // Persist to server so the user doesn't lose changes
       if (state.dirty) saveCanvas();
     });
@@ -1796,7 +2230,9 @@
 
   /**
    * Read the values of an html_multi wrapper as an array (by row).
-   * Assumes a single field per row (one input name shared across rows).
+   * For single-field wrappers returns a flat array of values.
+   * For multi-field wrappers returns the first field's values (other fields
+   * are synced separately by syncHtmlMultiAll).
    */
   function readHtmlMultiValues(wrapper) {
     var values = [];
@@ -1818,6 +2254,78 @@
     return normaliseFieldKey(probe.getAttribute('name'));
   }
 
+  /**
+   * Get all distinct field keys inside an html_multi wrapper.
+   */
+  function getHtmlMultiAllKeys(wrapper) {
+    var firstGroup = wrapper.querySelector('.pn-customers-manager-html-multi-group');
+    if (!firstGroup) return [];
+    var inputs = firstGroup.querySelectorAll('input[name], select[name], textarea[name]');
+    var keys = [];
+    for (var i = 0; i < inputs.length; i++) {
+      var k = normaliseFieldKey(inputs[i].getAttribute('name'));
+      if (k && keys.indexOf(k) === -1) keys.push(k);
+    }
+    return keys;
+  }
+
+  /**
+   * Sync all field arrays from an html_multi wrapper into node.config.
+   * Each distinct field name stores its own parallel array.
+   */
+  function syncHtmlMultiAll(wrapper, config) {
+    var groups = wrapper.querySelectorAll('.pn-customers-manager-html-multi-group');
+    var keys = getHtmlMultiAllKeys(wrapper);
+
+    console.log('[DEBUG syncHtmlMultiAll] Starting sync');
+    console.log('[DEBUG syncHtmlMultiAll] Groups found:', groups.length);
+    console.log('[DEBUG syncHtmlMultiAll] Keys:', keys);
+
+    if (!keys.length) return;
+
+    // Initialise arrays for each key.
+    var arrays = {};
+    for (var k = 0; k < keys.length; k++) arrays[keys[k]] = [];
+
+    for (var g = 0; g < groups.length; g++) {
+      var inputs = groups[g].querySelectorAll('input[name], select[name], textarea[name]');
+      console.log('[DEBUG syncHtmlMultiAll] Group', g, '- Inputs found:', inputs.length);
+
+      var seen = {};
+      for (var i = 0; i < inputs.length; i++) {
+        var key = normaliseFieldKey(inputs[i].getAttribute('name'));
+        if (!key || seen[key]) continue;
+        seen[key] = true;
+        if (!arrays[key]) arrays[key] = [];
+
+        var value;
+        // Handle checkboxes specially - read 'checked' state instead of value
+        if (inputs[i].type === 'checkbox') {
+          value = inputs[i].checked ? 'on' : '';
+          arrays[key].push(value);
+          console.log('[DEBUG syncHtmlMultiAll] Checkbox', key, '=', value, '(checked:', inputs[i].checked + ')');
+        } else {
+          value = inputs[i].value || '';
+          arrays[key].push(value);
+          console.log('[DEBUG syncHtmlMultiAll] Field', key, '=', value, '(tagName:', inputs[i].tagName, ', type:', inputs[i].type + ')');
+        }
+      }
+      // Fill missing keys with empty string to keep parallel arrays aligned.
+      for (var kk = 0; kk < keys.length; kk++) {
+        if (!seen[keys[kk]]) arrays[keys[kk]].push('');
+      }
+    }
+
+    console.log('[DEBUG syncHtmlMultiAll] Final arrays:', arrays);
+
+    for (var ak in arrays) {
+      if (arrays.hasOwnProperty(ak)) {
+        config[ak] = arrays[ak];
+        console.log('[DEBUG syncHtmlMultiAll] Setting config[' + ak + '] =', arrays[ak]);
+      }
+    }
+  }
+
   function populateSettingsFields(node, container) {
     // Populate html_multi wrappers first (row count must match saved array)
     var wrappers = container.querySelectorAll('.pn-customers-manager-html-multi-wrapper');
@@ -1830,11 +2338,29 @@
         stored = (stored === '' || stored === null || stored === undefined) ? [] : [stored];
       }
       setHtmlMultiRowCount(wrapper, stored.length || 1);
+
+      // Populate ALL fields per group (not just the first).
+      var allKeys = getHtmlMultiAllKeys(wrapper);
       var groups = wrapper.querySelectorAll('.pn-customers-manager-html-multi-group');
+
       for (var gi = 0; gi < groups.length; gi++) {
-        var input = groups[gi].querySelector('input[name], select[name], textarea[name]');
-        if (!input) continue;
-        input.value = (stored[gi] !== undefined && stored[gi] !== null) ? stored[gi] : '';
+        var inputs = groups[gi].querySelectorAll('input[name], select[name], textarea[name]');
+
+        for (var fi = 0; fi < inputs.length; fi++) {
+          var fKey = normaliseFieldKey(inputs[fi].getAttribute('name'));
+          var fArr = (node.config && node.config[fKey] !== undefined) ? node.config[fKey] : [];
+          if (!Array.isArray(fArr)) {
+            fArr = (fArr === '' || fArr === null || fArr === undefined) ? [] : [fArr];
+          }
+          var val = (fArr[gi] !== undefined && fArr[gi] !== null) ? fArr[gi] : '';
+
+          // Handle checkboxes specially - set 'checked' state instead of value
+          if (inputs[fi].type === 'checkbox') {
+            inputs[fi].checked = (val === 'on' || val === true || val === 'true');
+          } else {
+            inputs[fi].value = val;
+          }
+        }
       }
     }
 
@@ -1885,32 +2411,142 @@
     if (typeof window.cm_pn_form_update === 'function') {
       window.cm_pn_form_update();
     }
+
+    // Populate schedule grid from node config
+    populateScheduleGrid(node, container);
+  }
+
+  /**
+   * Populate the schedule days grid from node.config.[prefix]_schedule_days.
+   * Supports both wa_ and ig_ prefixes via the data-prefix attribute on the grid.
+   */
+  function populateScheduleGrid(node, container) {
+    var grids = container.querySelectorAll('.pn-cm-schedule-grid');
+    for (var gi = 0; gi < grids.length; gi++) {
+      var grid = grids[gi];
+      var prefix = grid.getAttribute('data-prefix') || 'wa';
+      var configKey = prefix + '_schedule_days';
+
+      var data = (node.config && node.config[configKey]) ? node.config[configKey] : null;
+      if (typeof data === 'string' && data) {
+        try { data = JSON.parse(data); } catch (e) { data = null; }
+      }
+
+      // Default: Mon-Fri 09:00-20:00 enabled, Sat-Sun disabled
+      var defaults = {
+        mon: { enabled: true, from: '09:00', to: '20:00' },
+        tue: { enabled: true, from: '09:00', to: '20:00' },
+        wed: { enabled: true, from: '09:00', to: '20:00' },
+        thu: { enabled: true, from: '09:00', to: '20:00' },
+        fri: { enabled: true, from: '09:00', to: '20:00' },
+        sat: { enabled: false, from: '09:00', to: '20:00' },
+        sun: { enabled: false, from: '09:00', to: '20:00' }
+      };
+
+      if (!data || typeof data !== 'object') {
+        data = defaults;
+      }
+
+      var dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+      for (var d = 0; d < dayKeys.length; d++) {
+        var key = dayKeys[d];
+        var dayData = data[key] || defaults[key] || { enabled: false, from: '09:00', to: '20:00' };
+
+        var toggle = grid.querySelector('.pn-cm-schedule-day-toggle[data-day="' + key + '"]');
+        var fromInput = grid.querySelector('.pn-cm-schedule-from[data-day="' + key + '"]');
+        var toInput = grid.querySelector('.pn-cm-schedule-to[data-day="' + key + '"]');
+
+        if (toggle) toggle.checked = !!dayData.enabled;
+        if (fromInput) fromInput.value = dayData.from || '09:00';
+        if (toInput) toInput.value = dayData.to || '20:00';
+      }
+
+      // Sync to hidden input
+      syncScheduleGridSingle(node, grid, prefix);
+    }
+  }
+
+  /**
+   * Read schedule grid state and sync to hidden input + node.config.
+   * Works on a single grid element with a known prefix.
+   */
+  function syncScheduleGridSingle(node, grid, prefix) {
+    if (!grid) return;
+
+    var dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    var result = {};
+
+    for (var d = 0; d < dayKeys.length; d++) {
+      var key = dayKeys[d];
+      var toggle = grid.querySelector('.pn-cm-schedule-day-toggle[data-day="' + key + '"]');
+      var fromInput = grid.querySelector('.pn-cm-schedule-from[data-day="' + key + '"]');
+      var toInput = grid.querySelector('.pn-cm-schedule-to[data-day="' + key + '"]');
+
+      result[key] = {
+        enabled: toggle ? toggle.checked : false,
+        from: fromInput ? fromInput.value : '09:00',
+        to: toInput ? toInput.value : '20:00'
+      };
+    }
+
+    var configKey = prefix + '_schedule_days';
+    var jsonStr = JSON.stringify(result);
+    var hiddenInput = grid.querySelector('#' + configKey);
+    if (hiddenInput) hiddenInput.value = jsonStr;
+
+    if (!node.config) node.config = {};
+    node.config[configKey] = jsonStr;
+  }
+
+  /**
+   * Backwards-compatible wrapper: sync all schedule grids in the container.
+   */
+  function syncScheduleGrid(node, container) {
+    var grids = container.querySelectorAll('.pn-cm-schedule-grid');
+    for (var gi = 0; gi < grids.length; gi++) {
+      var prefix = grids[gi].getAttribute('data-prefix') || 'wa';
+      syncScheduleGridSingle(node, grids[gi], prefix);
+    }
   }
 
   function bindSettingsFieldEvents(node, container) {
-    // Helper: sync an html_multi wrapper's values back into node.config
+    // Helper: sync an html_multi wrapper's values back into node.config.
+    // Handles multi-field wrappers by storing each field as a parallel array.
     function syncHtmlMulti(wrapper) {
-      var key = getHtmlMultiKey(wrapper);
-      if (!key) return;
+      console.log('[DEBUG syncHtmlMulti] Triggered');
       if (!node.config) node.config = {};
-      node.config[key] = readHtmlMultiValues(wrapper);
+      syncHtmlMultiAll(wrapper, node.config);
       state.dirty = true;
+      console.log('[DEBUG syncHtmlMulti] After sync, node.config:', node.config);
     }
 
     // Bind inputs inside html_multi wrappers (delegated so dynamically cloned rows also fire)
     var wrappers = container.querySelectorAll('.pn-customers-manager-html-multi-wrapper');
+    console.log('[DEBUG bindSettingsFieldEvents] Found', wrappers.length, 'html_multi wrappers');
+
     for (var w = 0; w < wrappers.length; w++) {
       (function (wrapper) {
         wrapper.addEventListener('input', function (e) {
           if (e.target && e.target.matches && e.target.matches('input[name], textarea[name]')) {
+            console.log('[DEBUG] Native INPUT event on', e.target.getAttribute('name'));
             syncHtmlMulti(wrapper);
           }
         });
         wrapper.addEventListener('change', function (e) {
           if (e.target && e.target.matches && e.target.matches('input[name], select[name], textarea[name]')) {
+            console.log('[DEBUG] Native CHANGE event on', e.target.getAttribute('name'), '- value:', e.target.value);
             syncHtmlMulti(wrapper);
           }
         });
+
+        // jQuery-delegated change (fires for the custom Selector plugin).
+        // The pn_customers_manager_Selector plugin triggers jQuery events, not native ones.
+        if (window.jQuery) {
+          jQuery(wrapper).on('change', 'select[name]', function () {
+            console.log('[DEBUG] jQuery CHANGE event on', jQuery(this).attr('name'), '- value:', jQuery(this).val());
+            syncHtmlMulti(wrapper);
+          });
+        }
 
         // Local click handlers for add/remove row buttons (do not rely on the
         // global forms.js delegated handlers, which only bind if an html_multi
@@ -2051,6 +2687,231 @@
         }
       }
       toggleBgField();
+    }
+
+    // Toggle delay fields visibility inside wa_meta_templates html_multi rows
+    // based on the trigger select value (only after_delay and on_inactivity need delay).
+    (function initTemplateDelayToggle() {
+      var templateWrapper = container.querySelector('.pn-customers-manager-html-multi-wrapper');
+      if (!templateWrapper) return;
+      var probe = templateWrapper.querySelector('select[name="wa_meta_template_trigger"]');
+      if (!probe) return;
+
+      // Show or hide an element AND its custom Selector wrapper (if any) and preceding label.
+      function setFieldVisible(el, visible) {
+        var display = visible ? '' : 'none';
+        el.style.display = display;
+        // The preceding sibling is the <label> rendered by html_multi.
+        var prev = el.previousElementSibling;
+        if (prev && prev.tagName === 'LABEL') prev.style.display = display;
+        // The custom Selector plugin inserts a .pn-customers-manager-selector div
+        // immediately after the native <select>. Hide it too.
+        var next = el.nextElementSibling;
+        if (next && next.classList && next.classList.contains('pn-customers-manager-selector')) {
+          next.style.display = display;
+        }
+      }
+
+      function toggleDelayFieldsInGroup(group) {
+        var triggerSel = group.querySelector('select[name="wa_meta_template_trigger"]');
+        if (!triggerSel) return;
+        var show = (triggerSel.value === 'after_delay' || triggerSel.value === 'on_inactivity');
+        var targets = group.querySelectorAll(
+          '[name="wa_meta_template_delay"], [name="wa_meta_template_delay_unit"]'
+        );
+        for (var d = 0; d < targets.length; d++) setFieldVisible(targets[d], show);
+      }
+
+      function toggleAllGroups() {
+        var groups = templateWrapper.querySelectorAll('.pn-customers-manager-html-multi-group');
+        for (var g = 0; g < groups.length; g++) toggleDelayFieldsInGroup(groups[g]);
+      }
+
+      // Delegated native change (fires for plain selects).
+      templateWrapper.addEventListener('change', function (e) {
+        if (e.target && e.target.name === 'wa_meta_template_trigger') {
+          toggleDelayFieldsInGroup(e.target.closest('.pn-customers-manager-html-multi-group'));
+        }
+      });
+      // jQuery-delegated change (fires for the custom Selector plugin).
+      if (window.jQuery) {
+        jQuery(templateWrapper).on('change', 'select[name="wa_meta_template_trigger"]', function () {
+          toggleDelayFieldsInGroup(jQuery(this).closest('.pn-customers-manager-html-multi-group')[0]);
+        });
+      }
+
+      // Re-apply toggle whenever rows are added (observe DOM mutations).
+      var observer = new MutationObserver(function () { toggleAllGroups(); });
+      observer.observe(templateWrapper, { childList: true, subtree: true });
+
+      // Initial toggle.
+      toggleAllGroups();
+    })();
+
+    // Initialize select_multi_ordered inputs
+    initSelectMultiOrdered(container);
+
+    // Initialize template variables builder
+    initTemplateVarsBuilder(container);
+
+    // Bind schedule grid events for whatsapp_ai nodes
+    bindScheduleGridEvents(node, container);
+  }
+
+  /**
+   * Initialize template variables builder for dynamic variable management.
+   */
+  function initTemplateVarsBuilder(container) {
+    var builders = container.querySelectorAll('.pn-customers-manager-template-vars-builder');
+    for (var b = 0; b < builders.length; b++) {
+      (function(builder) {
+        var hidden = builder.querySelector('.pn-cm-vars-hidden');
+        if (!hidden) return;
+
+        function syncToHidden() {
+          var rows = builder.querySelectorAll('.pn-cm-var-row');
+          var data = [];
+          for (var i = 0; i < rows.length; i++) {
+            var key = rows[i].querySelector('.pn-cm-var-key').value.trim();
+            var field = rows[i].querySelector('.pn-cm-var-field').value;
+            if (key && field) {
+              data.push({key: key, field: field});
+            }
+          }
+          hidden.value = JSON.stringify(data);
+        }
+
+        function addRow() {
+          var rowsContainer = builder.querySelector('.pn-cm-vars-rows');
+          var newRow = document.createElement('div');
+          newRow.className = 'pn-cm-var-row';
+          newRow.innerHTML = rowsContainer.querySelector('.pn-cm-var-row').innerHTML;
+          // Clear values
+          newRow.querySelector('.pn-cm-var-key').value = '';
+          newRow.querySelector('.pn-cm-var-field').value = '';
+          rowsContainer.appendChild(newRow);
+          bindRowEvents(newRow);
+          syncToHidden();
+        }
+
+        function removeRow(row) {
+          var rowsContainer = builder.querySelector('.pn-cm-vars-rows');
+          if (rowsContainer.querySelectorAll('.pn-cm-var-row').length > 1) {
+            row.parentNode.removeChild(row);
+            syncToHidden();
+          }
+        }
+
+        function moveRow(row, direction) {
+          var sibling = direction === 'up' ? row.previousElementSibling : row.nextElementSibling;
+          if (sibling && sibling.classList.contains('pn-cm-var-row')) {
+            if (direction === 'up') {
+              row.parentNode.insertBefore(row, sibling);
+            } else {
+              row.parentNode.insertBefore(sibling, row);
+            }
+            syncToHidden();
+          }
+        }
+
+        function bindRowEvents(row) {
+          row.querySelector('.pn-cm-var-key').addEventListener('input', syncToHidden);
+          row.querySelector('.pn-cm-var-field').addEventListener('change', syncToHidden);
+          row.querySelector('.pn-cm-var-remove').addEventListener('click', function() {
+            removeRow(row);
+          });
+          row.querySelector('.pn-cm-var-move-up').addEventListener('click', function() {
+            moveRow(row, 'up');
+          });
+          row.querySelector('.pn-cm-var-move-down').addEventListener('click', function() {
+            moveRow(row, 'down');
+          });
+        }
+
+        // Bind existing rows
+        var existingRows = builder.querySelectorAll('.pn-cm-var-row');
+        for (var i = 0; i < existingRows.length; i++) {
+          bindRowEvents(existingRows[i]);
+        }
+
+        // Bind add button
+        builder.querySelector('.pn-cm-var-add').addEventListener('click', addRow);
+      })(builders[b]);
+    }
+  }
+
+  /**
+   * Initialize select_multi_ordered inputs to sync selected values to hidden field as JSON.
+   */
+  function initSelectMultiOrdered(container) {
+    var selects = container.querySelectorAll('.pn-customers-manager-select-multi-ordered-display');
+    for (var s = 0; s < selects.length; s++) {
+      (function(select) {
+        function syncToHidden() {
+          var target = select.getAttribute('data-target');
+          if (!target) return;
+          var hidden = container.querySelector('#' + target);
+          if (!hidden) return;
+
+          var selectedValues = [];
+          for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].selected) {
+              selectedValues.push(select.options[i].value);
+            }
+          }
+          hidden.value = JSON.stringify(selectedValues);
+        }
+
+        select.addEventListener('change', syncToHidden);
+        // Sync initial state
+        syncToHidden();
+      })(selects[s]);
+    }
+  }
+
+  /**
+   * Bind change events on the schedule days grid(s) to sync back to node.config.
+   */
+  function bindScheduleGridEvents(node, container) {
+    var grids = container.querySelectorAll('.pn-cm-schedule-grid');
+    for (var gi = 0; gi < grids.length; gi++) {
+      (function (grid) {
+        var prefix = grid.getAttribute('data-prefix') || 'wa';
+
+        grid.addEventListener('change', function () {
+          syncScheduleGridSingle(node, grid, prefix);
+          state.dirty = true;
+        });
+        grid.addEventListener('input', function (e) {
+          if (e.target && (e.target.classList.contains('pn-cm-schedule-from') || e.target.classList.contains('pn-cm-schedule-to'))) {
+            syncScheduleGridSingle(node, grid, prefix);
+            state.dirty = true;
+          }
+        });
+      })(grids[gi]);
+    }
+
+    // Mutual exclusion: off-hours message vs allow-client-initiated
+    var prefixes = ['wa', 'ig'];
+    for (var pi = 0; pi < prefixes.length; pi++) {
+      (function (px) {
+        var offhoursCheckbox = container.querySelector('[name="' + px + '_schedule_offhours_message_enabled"]');
+        var clientCheckbox   = container.querySelector('[name="' + px + '_schedule_allow_client_initiated"]');
+        if (!offhoursCheckbox || !clientCheckbox) return;
+
+        offhoursCheckbox.addEventListener('change', function () {
+          if (offhoursCheckbox.checked && clientCheckbox.checked) {
+            clientCheckbox.checked = false;
+            clientCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+        clientCheckbox.addEventListener('change', function () {
+          if (clientCheckbox.checked && offhoursCheckbox.checked) {
+            offhoursCheckbox.checked = false;
+            offhoursCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+      })(prefixes[pi]);
     }
   }
 

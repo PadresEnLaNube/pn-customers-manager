@@ -272,9 +272,52 @@ class PN_CUSTOMERS_MANAGER_Activator {
       KEY mockup_id (mockup_id)
     ) {$charset_collate};";
 
+    $table_wa_queue = $wpdb->prefix . 'pn_cm_whatsapp_message_queue';
+
+    $sql .= "\nCREATE TABLE {$table_wa_queue} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      phone_number VARCHAR(20) NOT NULL,
+      message_text LONGTEXT NOT NULL,
+      message_images LONGTEXT DEFAULT NULL,
+      conversation_id BIGINT(20) UNSIGNED DEFAULT 0,
+      funnel_id BIGINT(20) UNSIGNED DEFAULT 0,
+      node_id VARCHAR(255) DEFAULT '',
+      scheduled_for DATETIME NOT NULL,
+      status VARCHAR(10) DEFAULT 'pending',
+      attempts TINYINT UNSIGNED DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      sent_at DATETIME DEFAULT NULL,
+      error_message TEXT DEFAULT NULL,
+      PRIMARY KEY  (id),
+      KEY phone_number (phone_number),
+      KEY status_scheduled (status, scheduled_for),
+      KEY conversation_id (conversation_id)
+    ) {$charset_collate};";
+
+    $table_activity_log = $wpdb->prefix . 'pn_cm_activity_log';
+
+    $sql .= "\nCREATE TABLE {$table_activity_log} (
+      id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      user_id BIGINT(20) UNSIGNED DEFAULT 0,
+      user_name VARCHAR(255) DEFAULT '',
+      action_type VARCHAR(50) NOT NULL,
+      object_type VARCHAR(50) DEFAULT '',
+      object_id BIGINT(20) UNSIGNED DEFAULT 0,
+      object_title VARCHAR(255) DEFAULT '',
+      description TEXT NOT NULL,
+      ip_address VARCHAR(45) DEFAULT '',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY  (id),
+      KEY action_type (action_type),
+      KEY object_type (object_type),
+      KEY user_id (user_id),
+      KEY created_at (created_at)
+    ) {$charset_collate};";
+
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
 
     update_option('pn_customers_manager_db_version', PN_CUSTOMERS_MANAGER_DB_VERSION);
   }
+
 }

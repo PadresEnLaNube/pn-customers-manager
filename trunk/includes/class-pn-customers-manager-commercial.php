@@ -113,7 +113,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 			</div>
 			<?php
 		} elseif ($status === 'approved') {
-			echo self::render_commercial_dashboard();
+			echo wp_kses_post(self::render_commercial_dashboard());
 		}
 
 		return ob_get_clean();
@@ -172,7 +172,7 @@ class PN_CUSTOMERS_MANAGER_Commercial {
 
 			<div class="pn-cm-commercial-referrals-section">
 				<h3><?php esc_html_e('My Referrals', 'pn-customers-manager'); ?></h3>
-				<?php echo PN_CUSTOMERS_MANAGER_Referral::render_referrals_shortcode(); ?>
+				<?php echo wp_kses_post(PN_CUSTOMERS_MANAGER_Referral::render_referrals_shortcode()); ?>
 			</div>
 		</div>
 		<?php

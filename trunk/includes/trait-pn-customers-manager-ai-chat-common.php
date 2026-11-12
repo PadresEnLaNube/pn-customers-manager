@@ -505,16 +505,16 @@ trait PN_CM_AI_Chat_Common {
         . "You MUST activate this flow when the customer requests:\n"
         . "  • A budget or quote (\"quiero un presupuesto\", \"necesito una cotización\", \"cuánto costaría\")\n"
         . "  • A service not in the catalog (gardening, landscaping, event decoration, corporate services)\n"
-        . "  • A product or variation that does NOT exist in your catalog (e.g. \"blue peonies\" when you only have pink)\n"
+        . "  • A product or variation that does NOT exist in your catalog (e.g. a specific variant when you only have a different one)\n"
         . "  • Bulk/wholesale orders, B2B proposals, or custom arrangements\n"
-        . "  • ANY personalized/custom product with specific quantities or characteristics not listed in the catalog (e.g. \"15 sunflowers\", \"custom bouquet with roses and lilies\", \"arrangement with specific flowers\")\n"
+        . "  • ANY personalized/custom product with specific quantities or characteristics not listed in the catalog (e.g. \"15 units of X\", \"custom combination of products A and B\", \"something specific not in the catalog\")\n"
         . "\n"
         . "OFFERING ALTERNATIVES:\n"
         . "When a customer requests a specific product that does NOT exist in the catalog but you have similar alternatives:\n"
         . "  1. Show the available alternatives from the catalog with their details\n"
         . "  2. ALWAYS include this message: \"Si no es exactamente lo que buscas, dímelo y aviso al equipo de tienda para que puedan atenderte directamente.\"\n"
         . "  3. This lets customers know they can get exactly what they want even if it's not in the catalog\n"
-        . "  Example: Customer asks for yellow peonies (not in catalog), you show pink peonies and add: \"Si no es exactamente lo que buscas, dímelo y aviso al equipo de tienda para que puedan atenderte directamente.\"\n"
+        . "  Example: Customer asks for a specific variant (not in catalog), you show available alternatives and add: \"Si no es exactamente lo que buscas, dímelo y aviso al equipo de tienda para que puedan atenderte directamente.\"\n"
         . "\n"
         . "CRITICAL — PRICE ESTIMATES:\n"
         . "If you have provided a price estimate for a custom product and the customer accepts it (\"sí por favor\", \"adelante\", \"perfecto\", \"si, esa\"), you MUST activate the special order flow. Do NOT just give them a generic store link. The customer has already agreed to the custom order — now collect their information to forward it to the team.\n"
@@ -531,16 +531,16 @@ trait PN_CM_AI_Chat_Common {
         . "     CRITICAL — NO LOOPING: Do NOT ask \"what are you looking for?\" again. Do NOT offer catalog alternatives. Do NOT say \"we don't have it\" again. You already know what they want — they told you. They've accepted your offer to forward the request. Now collect their information:\n"
         . "\n"
         . "     a) Collect basic information: their name and contact (email or phone).
-        Example: \"Perfecto. Para trasladar tu solicitud de peonías azules al equipo, ¿podrías darme tu nombre y un teléfono o email de contacto?\"\n"
+        Example: \"Perfecto. Para trasladar tu solicitud al equipo, ¿podrías darme tu nombre y un teléfono o email de contacto?\"\n"
         . "\n"
         . "     b) IMPORTANT — FOR EVENTS: If the request is for an event (wedding, party, corporate event, celebration), ALSO collect event details to help the team provide an accurate quote:\n"
         . "        • Event date (approximate if not confirmed)\n"
         . "        • Number of guests/attendees\n"
         . "        • Event location or city\n"
-        . "        • Type of service needed (centerpieces, bridal bouquet, ceremony decoration, full venue decoration, etc.)\n"
+        . "        • Type of service needed (specific requirements, setup style, service level, etc.)\n"
         . "        • Approximate budget if they have one\n"
         . "        Ask for these details naturally in conversation, not as a numbered list.\n"
-        . "        Example: \"Para poder darte un presupuesto más ajustado, ¿podrías darme algunos detalles? ¿Para qué fecha sería, cuántos invitados aproximadamente, y qué tipo de decoración floral necesitas?\"\n"
+        . "        Example: \"Para poder darte un presupuesto más ajustado, ¿podrías darme algunos detalles? ¿Para qué fecha sería, cuántos invitados aproximadamente, y qué tipo de servicio necesitas?\"\n"
         . "\n"
         . "     c) Once you have name, contact, and event details (if applicable), present a brief summary and ask them to confirm.\n"
         . "        Example: \"Perfecto, [Name]. He anotado tu solicitud de [what they want] para [event details if applicable] y tu contacto [contact]. ¿Es correcto?\"\n"
@@ -638,6 +638,18 @@ trait PN_CM_AI_Chat_Common {
       return trim($text);
     };
 
+    // Assistant personality
+    $personality = '';
+    if (!empty($node_config[$prefix . 'assistant_personality'])) {
+      $personality = trim($node_config[$prefix . 'assistant_personality']);
+    }
+    if (empty($personality)) {
+      $personality = trim(get_option('pn_customers_manager_whatsapp_assistant_personality', ''));
+    }
+    if (!empty($personality)) {
+      $parts[] = "ASSISTANT PERSONALITY AND TONE:\n" . $personality;
+    }
+
     $company_info = isset($node_config[$prefix . 'company_info']) ? $strip_html($node_config[$prefix . 'company_info']) : '';
     if (!empty($company_info)) {
       $parts[] = "COMPANY INFORMATION:\n" . $company_info;
@@ -690,7 +702,7 @@ trait PN_CM_AI_Chat_Common {
       $parts[] = "REFERENCE INFORMATION:\n" . $knowledge;
     }
 
-    // 7. WooCommerce products
+    // Helper to resolve checkbox/boolean node flags
     $resolve_node_flag = function ($key) use ($node_config) {
       if (!array_key_exists($key, $node_config)) {
         return false;
@@ -699,6 +711,91 @@ trait PN_CM_AI_Chat_Common {
       return $v === true || $v === 'on' || $v === '1' || $v === 1;
     };
 
+    // 6b. Follow-up tracking
+    $followup_enabled = $resolve_node_flag($prefix . 'enable_followup_tracking');
+    if ($followup_enabled && !empty($node_config[$prefix . 'followup_listeners'])) {
+      $raw_listeners = $node_config[$prefix . 'followup_listeners'];
+      if (is_string($raw_listeners)) {
+        $raw_listeners = json_decode($raw_listeners, true);
+      }
+      if (is_array($raw_listeners) && !empty($raw_listeners)) {
+        $listener_lines = [];
+        foreach ($raw_listeners as $listener) {
+          $key   = trim($listener[$prefix . 'followup_key'] ?? '');
+          $label = trim($listener[$prefix . 'followup_label'] ?? '');
+          $delay = intval($listener[$prefix . 'followup_delay'] ?? 24);
+          $unit  = $listener[$prefix . 'followup_delay_unit'] ?? 'hours';
+          if (empty($key) || empty($label)) {
+            continue;
+          }
+          $listener_lines[] = "- Key: \"{$key}\" — {$label} (reminder after {$delay} {$unit})";
+        }
+        if (!empty($listener_lines)) {
+          $parts[] = "FOLLOW-UP TRACKING SYSTEM:\n"
+            . "You MUST monitor the conversation for situations where the customer commits to or is asked to perform an action that requires a follow-up reminder. "
+            . "When you detect one of the following patterns, include the hidden tag [FOLLOWUP:{key}] at the END of your response message (the system will strip it before the customer sees it).\n"
+            . "\n"
+            . "Registered listeners:\n"
+            . implode("\n", $listener_lines) . "\n"
+            . "\n"
+            . "RULES:\n"
+            . "- Include the tag ONLY when the customer explicitly agrees to perform the action or when you recommend the action and they acknowledge it.\n"
+            . "- Use the exact key as defined above inside the tag.\n"
+            . "- You may include multiple [FOLLOWUP:key] tags in the same message if several actions apply.\n"
+            . "- NEVER mention the follow-up system, reminders, or tags to the customer. The tracking is completely invisible to them.\n"
+            . "- Place the tag(s) at the very end of your message, after all visible text.\n"
+            . "- When a follow-up is triggered, the system will automatically create a task in the CRM linked to this customer, scheduled for the configured delay. Admins will see it in the client's profile under Tasks.";
+          self::log('build_enriched_system_prompt — added follow-up tracking (' . count($listener_lines) . ' listeners)');
+        }
+      }
+    }
+
+    // 6c. Human support escalation
+    $escalation_enabled = get_option('pn_customers_manager_wa_escalation_enabled', '') === 'on';
+    if ($escalation_enabled) {
+      $esc_titles        = get_option('pn_customers_manager_wa_escalation_titles', []);
+      $esc_descriptions  = get_option('pn_customers_manager_wa_escalation_descriptions', []);
+      $esc_instructions  = get_option('pn_customers_manager_wa_escalation_instructions', []);
+      if (!is_array($esc_titles))        { $esc_titles = []; }
+      if (!is_array($esc_descriptions))  { $esc_descriptions = []; }
+      if (!is_array($esc_instructions))  { $esc_instructions = []; }
+
+      $situation_lines = [];
+      foreach ($esc_titles as $idx => $title) {
+        $title = trim($title);
+        $desc  = isset($esc_descriptions[$idx]) ? trim($esc_descriptions[$idx]) : '';
+        $instr = isset($esc_instructions[$idx]) ? trim($esc_instructions[$idx]) : '';
+        if ($title === '') {
+          continue;
+        }
+        $line = ($idx + 1) . '. "' . $title . '"';
+        if ($desc !== '') {
+          $line .= ' — ' . $desc;
+        }
+        if ($instr !== '') {
+          $line .= ' | Instructions: ' . $instr;
+        }
+        $situation_lines[] = $line;
+      }
+
+      if (!empty($situation_lines)) {
+        $escalation_block = "HUMAN SUPPORT ESCALATION:\n"
+          . "When the conversation matches any of the following situations, you MUST include the hidden tag [SOPORTE_HUMANO:title] at the END of your message. The system will automatically send an email to the support team.\n"
+          . "\n"
+          . "Situations:\n"
+          . implode("\n", $situation_lines) . "\n"
+          . "\n"
+          . "RULES:\n"
+          . "- Include [SOPORTE_HUMANO:exact_title] exactly ONCE when the situation is detected.\n"
+          . "- In the SAME message, tell the customer that their case has been forwarded to the team.\n"
+          . "- Place the tag at the very end of your message, after all visible text.\n"
+          . "- NEVER include the tag without a genuine match to one of the defined situations.";
+        $parts[] = $escalation_block;
+        self::log('build_enriched_system_prompt — added human support escalation (' . count($situation_lines) . ' situations)');
+      }
+    }
+
+    // 7. WooCommerce products
     $include_woo = $resolve_node_flag($prefix . 'include_woo');
     if ($include_woo) {
       $include_variations  = $resolve_node_flag($prefix . 'include_woo_variations');
@@ -762,15 +859,15 @@ trait PN_CM_AI_Chat_Common {
         $parts[] = "CRITICAL — CATALOG ACCURACY RULES:\n"
           . "- ONLY mention products that appear EXACTLY in the PRODUCT CATALOG above with their exact IDs, names, and prices.\n"
           . "- NEVER invent, assume, or hallucinate product names, IDs, prices, or availability.\n"
-          . "- NEVER modify product names (e.g., if catalog says \"Ramo de rosas rojas\", do NOT say \"Ramo colorido con rosas\").\n"
+          . "- NEVER modify product names (e.g., if catalog says \"Product Premium A\", do NOT say \"Product A special edition\").\n"
           . "- When using [PRODUCT_IMAGES:ID], the ID MUST match exactly the ID shown in the PRODUCT CATALOG for that product name.\n"
           . "- If a customer asks for a product type and you find matches, list them with their EXACT names and IDs from the catalog.\n"
           . "- If a customer asks for a specific product (#2, #5, \"the second one\", etc.), use the EXACT ID of that product from your list.\n"
           . "- EXAMPLE OF CORRECT BEHAVIOR:\n"
-          . "  Catalog shows: \"Product: Ramo de rosas rojas, ID: 123, Price: 50€\"\n"
-          . "  Customer asks: \"show me the roses\"\n"
-          . "  ✓ CORRECT: \"Ramo de rosas rojas - 50€\" with [PRODUCT_IMAGES:123]\n"
-          . "  ❌ WRONG: \"Ramo colorido con rosas - 50€\" with [PRODUCT_IMAGES:456]\n"
+          . "  Catalog shows: \"Product: Product Premium A, ID: 123, Price: 50€\"\n"
+          . "  Customer asks: \"show me the premium options\"\n"
+          . "  ✓ CORRECT: \"Product Premium A - 50€\" with [PRODUCT_IMAGES:123]\n"
+          . "  ❌ WRONG: \"Premium Special A - 50€\" with [PRODUCT_IMAGES:456]\n"
           . "- Double-check that the product ID in [PRODUCT_IMAGES:ID] matches the product name you just mentioned.\n";
 
         $image_rules = static::get_image_rules($include_woo_images);
@@ -825,10 +922,10 @@ trait PN_CM_AI_Chat_Common {
       . "  • STRICTLY FORBIDDEN: Do NOT use phrases like \"¿En qué puedo ayudarte?\", \"¿Cómo puedo ayudarte?\", \"How can I help?\", \"¿En qué te puedo ayudar?\" at the start or end of your messages.\n"
       . "  • Simply answer their question DIRECTLY. Start with the actual information they need.\n"
       . "  • EXAMPLES:\n"
-      . "    Customer: \"quiero un ramo\"\n"
-      . "    ❌ WRONG: \"¡Hola! Claro, ¿qué tipo de ramo buscas?\"\n"
+      . "    Customer: \"quiero información\"\n"
+      . "    ❌ WRONG: \"¡Hola! Claro, ¿qué te gustaría saber?\"\n"
       . "    ❌ WRONG: \"¡Buenos días! ¿En qué puedo ayudarte?\"\n"
-      . "    ✓ CORRECT: \"Claro, ¿qué tipo de ramo buscas?\"\n"
+      . "    ✓ CORRECT: \"Claro, ¿qué te gustaría saber?\"\n"
       . "    \n"
       . "    Customer: \"Quiero pedir algo\"\n"
       . "    ❌ WRONG: \"¡Buenos días! ¿En qué puedo ayudarte hoy?\"\n"
@@ -904,17 +1001,17 @@ trait PN_CM_AI_Chat_Common {
         $max_price = $product->get_variation_price('max', true);
         if ($min_price) {
           if ($min_price !== $max_price) {
-            $block .= 'Min. price: ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
+            $block .= 'Min. price: ' . html_entity_decode(wp_strip_all_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
           } else {
-            $block .= 'Price: ' . html_entity_decode(strip_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
+            $block .= 'Price: ' . html_entity_decode(wp_strip_all_tags(wc_price($min_price)), ENT_QUOTES, 'UTF-8') . "\n";
           }
         }
       } else {
         $price = $product->get_price();
         if ($price) {
-          $block .= 'Price: ' . html_entity_decode(strip_tags(wc_price($price)), ENT_QUOTES, 'UTF-8');
+          $block .= 'Price: ' . html_entity_decode(wp_strip_all_tags(wc_price($price)), ENT_QUOTES, 'UTF-8');
           if ($product->is_on_sale()) {
-            $block .= ' (before: ' . html_entity_decode(strip_tags(wc_price($product->get_regular_price())), ENT_QUOTES, 'UTF-8') . ')';
+            $block .= ' (before: ' . html_entity_decode(wp_strip_all_tags(wc_price($product->get_regular_price())), ENT_QUOTES, 'UTF-8') . ')';
           }
           $block .= "\n";
         }
@@ -965,7 +1062,7 @@ trait PN_CM_AI_Chat_Common {
             $var_url = get_permalink($product_id);
           }
 
-          $var_price = !empty($v['display_price']) ? html_entity_decode(strip_tags(wc_price($v['display_price'])), ENT_QUOTES, 'UTF-8') : '';
+          $var_price = !empty($v['display_price']) ? html_entity_decode(wp_strip_all_tags(wc_price($v['display_price'])), ENT_QUOTES, 'UTF-8') : '';
           $block .= '  Variation ID ' . $var_id . ' — ' . implode(', ', $attrs);
           if ($var_price) {
             $block .= ' — ' . $var_price;
@@ -1071,7 +1168,7 @@ trait PN_CM_AI_Chat_Common {
     $lines[] = 'IMPORTANT: This protocol OVERRIDES any other product-link or image instructions when it applies.';
     $lines[] = 'When the customer asks a GENERIC product question, follow these steps IN ORDER. Do NOT skip steps.';
     $lines[] = 'A question is GENERIC when it refers to a product category, type, occasion, or general intent — NOT a specific product by its exact name.';
-    $lines[] = 'Examples of GENERIC questions: "what do you have?", "I\'m looking for a gift", "show me seasonal flowers", "I want a bouquet", "send me photos of your products", "what flowers do you recommend?".';
+    $lines[] = 'Examples of GENERIC questions: "what do you have?", "I\'m looking for a gift", "show me your products", "I want to buy something", "send me photos of your products", "what do you recommend?".';
     $lines[] = 'Even if the customer says "send photos" or "show me images" in their first message, you MUST follow the steps below first.';
     $lines[] = '';
 
@@ -1114,7 +1211,7 @@ trait PN_CM_AI_Chat_Common {
     $lines[] = '';
 
     // Exception
-    $lines[] = 'EXCEPTION: If the customer asks about a SPECIFIC product using its EXACT NAME from the catalog (e.g. "how much is JARRON CUERDA CON FLORES?", "tell me about CESTON CON FLORES DE TEMPORADA"), answer directly with the product information and link. Do NOT start the guided flow. Asking for a product CATEGORY (e.g. "seasonal flowers", "bouquets") is NOT a specific product name — that is a GENERIC query and must follow the protocol.';
+    $lines[] = 'EXCEPTION: If the customer asks about a SPECIFIC product using its EXACT NAME from the catalog, answer directly with the product information and link. Do NOT start the guided flow. Asking for a product CATEGORY or general type is NOT a specific product name — that is a GENERIC query and must follow the protocol.';
     $lines[] = '';
 
     // Rules
@@ -1295,7 +1392,7 @@ trait PN_CM_AI_Chat_Common {
             if (!empty($req_label)) {
               $line .= ' (requires ' . $req_label;
               if (in_array($requires, ['min_amount', 'both', 'either'], true) && !empty($min_amount)) {
-                $line .= ' of ' . html_entity_decode(strip_tags(wc_price($min_amount)), ENT_QUOTES, 'UTF-8');
+                $line .= ' of ' . html_entity_decode(wp_strip_all_tags(wc_price($min_amount)), ENT_QUOTES, 'UTF-8');
               }
               $line .= ')';
             }
@@ -1303,7 +1400,7 @@ trait PN_CM_AI_Chat_Common {
         } elseif ($method_type === 'flat_rate') {
           $cost = $settings['cost'] ?? '';
           if ($cost !== '') {
-            $line .= ': ' . html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
+            $line .= ': ' . html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
           }
           if (!empty($settings)) {
             $class_costs = [];
@@ -1312,7 +1409,7 @@ trait PN_CM_AI_Chat_Common {
                 $class_id   = str_replace('class_cost_', '', $key);
                 $term       = get_term((int) $class_id, 'product_shipping_class');
                 $class_name = ($term && !is_wp_error($term)) ? $term->name : $class_id;
-                $class_costs[] = $class_name . ': ' . html_entity_decode(strip_tags(wc_price($val)), ENT_QUOTES, 'UTF-8');
+                $class_costs[] = $class_name . ': ' . html_entity_decode(wp_strip_all_tags(wc_price($val)), ENT_QUOTES, 'UTF-8');
               }
             }
             if (!empty($class_costs)) {
@@ -1321,17 +1418,17 @@ trait PN_CM_AI_Chat_Common {
           }
           $no_class_cost = $settings['no_class_cost'] ?? '';
           if ($no_class_cost !== '' && $no_class_cost !== ($settings['cost'] ?? '')) {
-            $line .= ' [no class: ' . html_entity_decode(strip_tags(wc_price($no_class_cost)), ENT_QUOTES, 'UTF-8') . ']';
+            $line .= ' [no class: ' . html_entity_decode(wp_strip_all_tags(wc_price($no_class_cost)), ENT_QUOTES, 'UTF-8') . ']';
           }
         } elseif ($method_type === 'local_pickup') {
           $cost = $settings['cost'] ?? '';
           $line .= $cost !== '' && (float) $cost > 0
-            ? ': ' . html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8')
+            ? ': ' . html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8')
             : ': FREE';
         } else {
           $cost = $settings['cost'] ?? '';
           if ($cost !== '') {
-            $line .= ': ' . html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
+            $line .= ': ' . html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
           }
         }
 
@@ -1570,21 +1667,21 @@ trait PN_CM_AI_Chat_Common {
     if ($type === 'local_pickup') {
       $cost = $settings['cost'] ?? '';
       return $title . ($cost !== '' && (float) $cost > 0
-        ? ': ' . html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8')
+        ? ': ' . html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8')
         : ': FREE');
     }
 
     if ($type === 'flat_rate') {
       $cost = $settings['cost'] ?? '';
       if ($cost !== '') {
-        return $title . ': ' . html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
+        return $title . ': ' . html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
       }
       return $title;
     }
 
     $cost = $settings['cost'] ?? '';
     if ($cost !== '') {
-      return $title . ': ' . html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
+      return $title . ': ' . html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
     }
     return $title;
   }
@@ -2101,7 +2198,7 @@ trait PN_CM_AI_Chat_Common {
       if ($cost <= 0) {
         $lines[] = '- ' . $label . ': ' . ($lang === 'en' ? 'FREE' : 'GRATIS');
       } else {
-        $priced = html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
+        $priced = html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8');
         $lines[] = '- ' . $label . ': ' . $priced;
       }
     }
@@ -2299,6 +2396,222 @@ trait PN_CM_AI_Chat_Common {
       . ' raw_body=' . mb_substr($body_raw, 0, 500));
 
     return false;
+  }
+
+  /* ================================================================
+   * AUDIO TRANSCRIPTION
+   * ================================================================ */
+
+  /**
+   * Registry of supported audio transcription providers.
+   *
+   * @return array
+   */
+  public static function get_transcription_providers() {
+    return [
+      'openai' => [
+        'label'      => 'OpenAI Whisper',
+        'url'        => 'https://api.openai.com/v1/audio/transcriptions',
+        'key_option' => 'pn_customers_manager_whatsapp_openai_key',
+        'model'      => 'whisper-1',
+      ],
+      'groq' => [
+        'label'      => 'Groq',
+        'url'        => 'https://api.groq.com/openai/v1/audio/transcriptions',
+        'key_option' => 'pn_customers_manager_groq_api_key',
+        'model'      => 'whisper-large-v3-turbo',
+      ],
+      'deepgram' => [
+        'label'      => 'Deepgram',
+        'url'        => 'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true',
+        'key_option' => 'pn_customers_manager_deepgram_api_key',
+        'format'     => 'deepgram',
+      ],
+    ];
+  }
+
+  /**
+   * Download media from WhatsApp via Meta Graph API (two-step process).
+   *
+   * @param string $media_id WhatsApp media ID.
+   * @return string|false Binary audio data or false on failure.
+   */
+  private static function download_whatsapp_media($media_id) {
+    $access_token = get_option('pn_customers_manager_whatsapp_access_token', '');
+    if (empty($access_token)) {
+      self::log('download_whatsapp_media — missing access token');
+      return false;
+    }
+
+    // Step 1: Get download URL
+    $meta_url = 'https://graph.facebook.com/v21.0/' . $media_id;
+    $response = wp_remote_get($meta_url, [
+      'timeout' => 15,
+      'headers' => [
+        'Authorization' => 'Bearer ' . $access_token,
+      ],
+    ]);
+
+    if (is_wp_error($response)) {
+      self::log('download_whatsapp_media — step 1 WP_Error: ' . $response->get_error_message());
+      return false;
+    }
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (empty($body['url'])) {
+      self::log('download_whatsapp_media — step 1 no url in response: ' . wp_json_encode($body));
+      return false;
+    }
+
+    $download_url = $body['url'];
+
+    // Step 2: Download the binary data
+    $response = wp_remote_get($download_url, [
+      'timeout' => 30,
+      'headers' => [
+        'Authorization' => 'Bearer ' . $access_token,
+      ],
+    ]);
+
+    if (is_wp_error($response)) {
+      self::log('download_whatsapp_media — step 2 WP_Error: ' . $response->get_error_message());
+      return false;
+    }
+
+    $http_code = wp_remote_retrieve_response_code($response);
+    if ($http_code < 200 || $http_code >= 300) {
+      self::log('download_whatsapp_media — step 2 HTTP ' . $http_code);
+      return false;
+    }
+
+    $audio_data = wp_remote_retrieve_body($response);
+    if (empty($audio_data)) {
+      self::log('download_whatsapp_media — step 2 empty body');
+      return false;
+    }
+
+    self::log('download_whatsapp_media — OK, ' . strlen($audio_data) . ' bytes');
+    return $audio_data;
+  }
+
+  /**
+   * Transcribe audio data using the configured provider.
+   *
+   * @param string $audio_data Raw binary audio data.
+   * @param string $mime_type  MIME type of the audio (e.g. audio/ogg).
+   * @param string $language   Optional ISO 639-1 language code.
+   * @return string|false Transcribed text or false on failure.
+   */
+  private static function transcribe_audio($audio_data, $mime_type = 'audio/ogg', $language = '', $provider_override = null) {
+    $provider_key = $provider_override ?: get_option('pn_customers_manager_transcription_provider', 'openai');
+    $providers    = self::get_transcription_providers();
+
+    if (!isset($providers[$provider_key])) {
+      self::log('transcribe_audio — unknown provider: ' . $provider_key);
+      return false;
+    }
+
+    $provider = $providers[$provider_key];
+    $api_key  = get_option($provider['key_option'], '');
+
+    if (empty($api_key)) {
+      self::log('transcribe_audio — missing API key for provider ' . $provider['label']);
+      return false;
+    }
+
+    // Map mime type to file extension
+    $ext_map = [
+      'audio/ogg'  => 'ogg',
+      'audio/mpeg' => 'mp3',
+      'audio/mp4'  => 'm4a',
+      'audio/wav'  => 'wav',
+      'audio/webm' => 'webm',
+      'audio/amr'  => 'amr',
+    ];
+    $ext = isset($ext_map[$mime_type]) ? $ext_map[$mime_type] : 'ogg';
+
+    self::log('transcribe_audio — provider=' . $provider['label'] . ' mime=' . $mime_type . ' size=' . strlen($audio_data) . ' language=' . ($language ?: '(auto)'));
+
+    if (!empty($provider['format']) && $provider['format'] === 'deepgram') {
+      // Deepgram: raw binary body
+      $url = $provider['url'];
+      if (!empty($language)) {
+        $url .= '&language=' . urlencode($language);
+      }
+
+      $response = wp_remote_post($url, [
+        'timeout' => 60,
+        'headers' => [
+          'Authorization' => 'Token ' . $api_key,
+          'Content-Type'  => $mime_type,
+        ],
+        'body' => $audio_data,
+      ]);
+    } else {
+      // OpenAI / Groq: multipart form data
+      $boundary = wp_generate_password(24, false);
+      $body = '';
+
+      $body .= '--' . $boundary . "\r\n";
+      $body .= 'Content-Disposition: form-data; name="model"' . "\r\n\r\n";
+      $body .= $provider['model'] . "\r\n";
+
+      $body .= '--' . $boundary . "\r\n";
+      $body .= 'Content-Disposition: form-data; name="file"; filename="audio.' . $ext . '"' . "\r\n";
+      $body .= 'Content-Type: ' . $mime_type . "\r\n\r\n";
+      $body .= $audio_data . "\r\n";
+
+      if (!empty($language)) {
+        $body .= '--' . $boundary . "\r\n";
+        $body .= 'Content-Disposition: form-data; name="language"' . "\r\n\r\n";
+        $body .= $language . "\r\n";
+      }
+
+      $body .= '--' . $boundary . '--' . "\r\n";
+
+      $response = wp_remote_post($provider['url'], [
+        'timeout' => 60,
+        'headers' => [
+          'Content-Type'  => 'multipart/form-data; boundary=' . $boundary,
+          'Authorization' => 'Bearer ' . $api_key,
+        ],
+        'body' => $body,
+      ]);
+    }
+
+    if (is_wp_error($response)) {
+      self::log('transcribe_audio — WP_Error (' . $provider['label'] . '): ' . $response->get_error_message());
+      return false;
+    }
+
+    $http_code = wp_remote_retrieve_response_code($response);
+    $body_raw  = wp_remote_retrieve_body($response);
+    $body      = json_decode($body_raw, true);
+
+    if ($http_code < 200 || $http_code >= 300) {
+      self::log('transcribe_audio — FAILED provider=' . $provider['label'] . ' http=' . $http_code . ' body=' . mb_substr($body_raw, 0, 500));
+      return false;
+    }
+
+    // Extract text based on provider format
+    $text = '';
+    if (!empty($provider['format']) && $provider['format'] === 'deepgram') {
+      $text = isset($body['results']['channels'][0]['alternatives'][0]['transcript'])
+        ? $body['results']['channels'][0]['alternatives'][0]['transcript']
+        : '';
+    } else {
+      $text = isset($body['text']) ? $body['text'] : '';
+    }
+
+    $text = trim($text);
+
+    if (empty($text)) {
+      self::log('transcribe_audio — empty transcription result from ' . $provider['label']);
+      return false;
+    }
+
+    self::log('transcribe_audio — OK provider=' . $provider['label'] . ' text=' . mb_substr($text, 0, 200));
+    return $text;
   }
 
   /* ================================================================
@@ -2664,6 +2977,27 @@ trait PN_CM_AI_Chat_Common {
    * @param string $text Raw AI response.
    * @return string      Cleaned response without think blocks.
    */
+  /**
+   * Extract [FOLLOWUP:key] tags from AI response.
+   *
+   * @param  string $text AI response text.
+   * @return array  List of follow-up keys found.
+   */
+  protected static function extract_followup_tags($text) {
+    preg_match_all('/\[FOLLOWUP:([a-zA-Z0-9_]+)\]/', $text, $matches);
+    return $matches[1] ?? [];
+  }
+
+  /**
+   * Strip [FOLLOWUP:key] tags from AI response so the customer never sees them.
+   *
+   * @param  string $text AI response text.
+   * @return string Cleaned text.
+   */
+  protected static function strip_followup_tags($text) {
+    return trim(preg_replace('/\s*\[FOLLOWUP:[a-zA-Z0-9_]+\]\s*/', '', $text));
+  }
+
   private static function strip_deepseek_think_tags($text) {
     $cleaned = preg_replace('/<think>[\s\S]*?<\/think>/i', '', $text);
     $cleaned = trim($cleaned);
@@ -2792,7 +3126,7 @@ trait PN_CM_AI_Chat_Common {
         $methods[] = [
           'title' => $title,
           'cost'  => ($cost > 0)
-            ? html_entity_decode(strip_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8')
+            ? html_entity_decode(wp_strip_all_tags(wc_price($cost)), ENT_QUOTES, 'UTF-8')
             : __('Free', 'pn-customers-manager'),
         ];
       }
@@ -2984,7 +3318,7 @@ trait PN_CM_AI_Chat_Common {
           $products[] = [
             'id'    => $cid,
             'name'  => $product->get_name(),
-            'price' => strip_tags(wc_price($product->get_price())),
+            'price' => wp_strip_all_tags(wc_price($product->get_price())),
           ];
         }
       }
@@ -3012,6 +3346,7 @@ trait PN_CM_AI_Chat_Common {
     );
 
     $html  = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">';
+    /* translators: %s: messaging platform name (e.g. "WhatsApp", "Instagram") */
     $html .= '<h2 style="color:' . esc_attr($color) . ';">' . sprintf(esc_html__('New order via %s', 'pn-customers-manager'), esc_html($platform_name)) . '</h2>';
     $html .= '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;">';
     $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Customer', 'pn-customers-manager') . '</td>';
@@ -3312,6 +3647,7 @@ trait PN_CM_AI_Chat_Common {
     );
 
     $html  = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">';
+    /* translators: %s: messaging platform name (e.g. "WhatsApp", "Instagram") */
     $html .= '<h2 style="color:' . esc_attr($color) . ';">' . sprintf(esc_html__('Special order request via %s', 'pn-customers-manager'), esc_html($platform_name)) . '</h2>';
     $html .= '<p style="margin-bottom:20px;color:#555;">' . esc_html__('A customer has made a request that requires special attention (B2B, bulk, custom products, special shipping, etc.).', 'pn-customers-manager') . '</p>';
     $html .= '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;">';
@@ -3384,6 +3720,327 @@ trait PN_CM_AI_Chat_Common {
     return $ai_response;
   }
 
+  /**
+   * Detect [SOPORTE_HUMANO:title] tag in AI response, send escalation email, and strip the tag.
+   */
+  private static function detect_and_notify_escalation($ai_response, $conversation, $messages, $node_config) {
+    $tag_regex = '/\[SOPORTE_HUMANO(?::([^\]]*))?\]/';
+    if (!preg_match($tag_regex, $ai_response, $tag_match)) {
+      return $ai_response;
+    }
+
+    $situation_title = isset($tag_match[1]) ? trim($tag_match[1]) : __('General', 'pn-customers-manager');
+
+    self::log('detect_and_notify_escalation — tag detected: ' . $situation_title);
+
+    // Guard: feature must be enabled.
+    $escalation_enabled = get_option('pn_customers_manager_wa_escalation_enabled', '') === 'on';
+    if (!$escalation_enabled) {
+      self::log('detect_and_notify_escalation — SECURITY: tag found but escalation is DISABLED. Stripping tag.');
+      return trim(preg_replace($tag_regex, '', $ai_response));
+    }
+
+    // Guard: prevent duplicate emails for the same conversation + situation.
+    $situation_hash = md5(strtolower($situation_title));
+    $transient_key  = 'pn_cm_escalation_notified_' . $conversation->id . '_' . $situation_hash;
+    if (get_transient($transient_key)) {
+      self::log('detect_and_notify_escalation — SKIPPING duplicate: email already sent for conversation ' . $conversation->id . ', situation "' . $situation_title . '"');
+      return trim(preg_replace($tag_regex, '', $ai_response));
+    }
+
+    // Resolve notification recipients.
+    $recipients = [];
+
+    // 1) Platform user IDs → emails
+    $user_ids = get_option('pn_customers_manager_wa_escalation_users', []);
+    if (!empty($user_ids)) {
+      if (!is_array($user_ids)) {
+        $user_ids = [$user_ids];
+      }
+      foreach ($user_ids as $uid) {
+        $uid = (int) $uid;
+        if ($uid <= 0) {
+          continue;
+        }
+        $user = get_userdata($uid);
+        if ($user && !empty($user->user_email)) {
+          $maybe = sanitize_email($user->user_email);
+          if (!empty($maybe)) {
+            $recipients[] = $maybe;
+          }
+        }
+      }
+    }
+
+    // 2) External emails (html_multi rows)
+    $external = get_option('pn_customers_manager_wa_escalation_emails', []);
+    if (!empty($external)) {
+      if (!is_array($external)) {
+        $external = [$external];
+      }
+      foreach ($external as $ext_email) {
+        if (!is_string($ext_email)) {
+          continue;
+        }
+        $ext_email = trim($ext_email);
+        if ($ext_email === '') {
+          continue;
+        }
+        $maybe = sanitize_email($ext_email);
+        if (!empty($maybe)) {
+          $recipients[] = $maybe;
+        }
+      }
+    }
+
+    // Deduplicate (case-insensitive)
+    $seen       = [];
+    $recipients = array_filter($recipients, function ($addr) use (&$seen) {
+      $key = strtolower($addr);
+      if (isset($seen[$key])) {
+        return false;
+      }
+      $seen[$key] = true;
+      return true;
+    });
+    $recipients = array_values($recipients);
+
+    // Fallback to site admin email
+    if (empty($recipients)) {
+      $recipients[] = get_option('admin_email');
+    }
+
+    self::log('detect_and_notify_escalation — sending notification to: ' . implode(', ', $recipients));
+
+    // Build conversation excerpt from recent messages
+    $recent  = array_slice($messages, -15);
+    $excerpt = '';
+    foreach ($recent as $msg) {
+      $role    = ($msg['role'] === 'user') ? '👤 Cliente' : '🤖 Asistente';
+      $content = $msg['content'];
+      $content = preg_replace('/\[Se enviaron imágenes de:[^\]]*\]/', '', $content);
+      $content = trim($content);
+      if ($content === '') {
+        continue;
+      }
+
+      $time_marker = '';
+      if (!empty($msg['timestamp'])) {
+        $ts = strtotime($msg['timestamp']);
+        if ($ts !== false) {
+          $time_marker = '[' . date_i18n('d/m/Y H:i', $ts) . '] ';
+        }
+      }
+
+      $excerpt .= $time_marker . $role . ': ' . $content . "\n\n";
+    }
+
+    // Build email
+    $platform_name = static::platform_display_name();
+    $color         = static::brand_color();
+    $customer_name = !empty($conversation->contact_name) ? $conversation->contact_name : __('Unknown', 'pn-customers-manager');
+    $customer_id   = static::get_identifier_value($conversation) ?: __('Unknown', 'pn-customers-manager');
+    $id_label      = static::get_identifier_label();
+    $escalation_date = current_time('d/m/Y H:i');
+    $site_name     = get_bloginfo('name');
+
+    // Extract customer email from messages
+    $customer_email = '';
+    foreach ($messages as $msg) {
+      if ($msg['role'] === 'user' && !empty($msg['content'])) {
+        if (preg_match('/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/', $msg['content'], $matches)) {
+          $customer_email = $matches[0];
+          break;
+        }
+      }
+    }
+
+    // Extract customer phone from messages
+    $customer_phone = '';
+    foreach ($messages as $msg) {
+      if ($msg['role'] === 'user' && !empty($msg['content'])) {
+        if (preg_match('/\b(?:\+?\d{1,3}[\s-]?)?\(?\d{2,4}\)?[\s.-]?\d{2,4}[\s.-]?\d{2,4}\b/', $msg['content'], $matches)) {
+          $potential_phone = $matches[0];
+          if ($potential_phone !== $customer_id) {
+            $customer_phone = $potential_phone;
+            break;
+          }
+        }
+      }
+    }
+
+    $subject = sprintf(
+      /* translators: 1: site name, 2: platform name, 3: situation title */
+      __('[%1$s] Human support escalation via %2$s: %3$s', 'pn-customers-manager'),
+      $site_name,
+      $platform_name,
+      $situation_title
+    );
+
+    $html  = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">';
+    /* translators: %s: messaging platform name (e.g. "WhatsApp", "Instagram") */
+    $html .= '<h2 style="color:' . esc_attr($color) . ';">' . sprintf(esc_html__('Human support escalation via %s', 'pn-customers-manager'), esc_html($platform_name)) . '</h2>';
+    /* translators: %s: situation description that triggered the escalation */
+    $html .= '<p style="margin-bottom:20px;color:#555;">' . sprintf(esc_html__('The AI bot has detected a situation that requires human attention: %s', 'pn-customers-manager'), '<strong>' . esc_html($situation_title) . '</strong>') . '</p>';
+    $html .= '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;">';
+    $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Situation', 'pn-customers-manager') . '</td>';
+    $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($situation_title) . '</td></tr>';
+    $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Customer', 'pn-customers-manager') . '</td>';
+    $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($customer_name) . '</td></tr>';
+    $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html($id_label) . '</td>';
+    $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($customer_id) . '</td></tr>';
+    if (!empty($customer_email)) {
+      $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Email', 'pn-customers-manager') . '</td>';
+      $html .= '<td style="padding:8px;border-bottom:1px solid #eee;"><a href="mailto:' . esc_attr($customer_email) . '">' . esc_html($customer_email) . '</a></td></tr>';
+    }
+    if (!empty($customer_phone)) {
+      $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Phone', 'pn-customers-manager') . '</td>';
+      $html .= '<td style="padding:8px;border-bottom:1px solid #eee;"><a href="tel:' . esc_attr($customer_phone) . '">' . esc_html($customer_phone) . '</a></td></tr>';
+    }
+    $html .= '<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">' . esc_html__('Date', 'pn-customers-manager') . '</td>';
+    $html .= '<td style="padding:8px;border-bottom:1px solid #eee;">' . esc_html($escalation_date) . '</td></tr>';
+    $html .= '</table>';
+
+    $html .= '<h3>' . esc_html__('Conversation excerpt', 'pn-customers-manager') . '</h3>';
+    $html .= '<div style="background:#f9f9f9;padding:15px;border-radius:8px;white-space:pre-wrap;font-size:13px;line-height:1.5;">';
+    $html .= esc_html($excerpt);
+    $html .= '</div>';
+    $html .= '</div>';
+
+    // Send email
+    $mailing = class_exists('MAILPN_Mailing') ? new \MAILPN_Mailing() : null;
+    $total   = count($recipients);
+    $i       = 0;
+    self::log('detect_and_notify_escalation — dispatching to ' . $total . ' recipient(s): ' . implode(', ', $recipients));
+
+    foreach ($recipients as $recipient_email) {
+      $i++;
+      $recipient_email = sanitize_email($recipient_email);
+      if (empty($recipient_email) || !is_email($recipient_email)) {
+        self::log(sprintf('detect_and_notify_escalation — [%d/%d] SKIP invalid recipient "%s"', $i, $total, $recipient_email));
+        continue;
+      }
+
+      $sent = false;
+
+      if ($mailing !== null) {
+        try {
+          $sent = $mailing->mailpn_sender([
+            'mailpn_user_to' => $recipient_email,
+            'mailpn_subject' => $subject,
+            'mailpn_type'    => static::email_type(),
+          ], $html);
+          self::log(sprintf('detect_and_notify_escalation — [%d/%d] MAILPN to %s result=%s', $i, $total, $recipient_email, var_export($sent, true)));
+        } catch (\Exception $e) {
+          self::log(sprintf('detect_and_notify_escalation — [%d/%d] MAILPN exception for %s: %s', $i, $total, $recipient_email, $e->getMessage()));
+          $sent = false;
+        }
+      }
+
+      if (!$sent) {
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+        $sent    = wp_mail($recipient_email, $subject, $html, $headers);
+        self::log(sprintf('detect_and_notify_escalation — [%d/%d] wp_mail fallback to %s result=%s', $i, $total, $recipient_email, $sent ? 'OK' : 'FAILED'));
+      }
+    }
+
+    // Mark this conversation+situation so subsequent tags are suppressed.
+    set_transient($transient_key, time(), HOUR_IN_SECONDS);
+
+    // Pause AI for this user if the matched situation has pause enabled.
+    $esc_titles_all = get_option('pn_customers_manager_wa_escalation_titles', []);
+    $esc_pause_all  = get_option('pn_customers_manager_wa_escalation_pause', []);
+    if (!is_array($esc_titles_all)) { $esc_titles_all = []; }
+    if (!is_array($esc_pause_all))  { $esc_pause_all = []; }
+
+    $matched_idx = null;
+    foreach ($esc_titles_all as $idx => $t) {
+      if (mb_strtolower(trim($t)) === mb_strtolower($situation_title)) {
+        $matched_idx = $idx;
+        break;
+      }
+    }
+
+    if ($matched_idx !== null && isset($esc_pause_all[$matched_idx]) && $esc_pause_all[$matched_idx] === 'on') {
+      $identifier = static::get_identifier_value($conversation);
+      if ($identifier) {
+        // Resolve identifier (phone or sender_id) to a WordPress user.
+        $users = get_users([
+          'meta_key'   => 'billing_phone',
+          'meta_value' => $identifier,
+          'number'     => 1,
+          'fields'     => 'ID',
+        ]);
+        if (empty($users)) {
+          $users = get_users([
+            'meta_key'   => 'billing_phone',
+            'meta_value' => ltrim($identifier, '+'),
+            'number'     => 1,
+            'fields'     => 'ID',
+          ]);
+        }
+        if (empty($users)) {
+          $users = get_users([
+            'meta_key'   => 'phone',
+            'meta_value' => $identifier,
+            'number'     => 1,
+            'fields'     => 'ID',
+          ]);
+        }
+        if (!empty($users)) {
+          $pause_user_id = (int) $users[0];
+          update_user_meta($pause_user_id, 'pn_cm_ai_paused', 'on');
+          self::log('detect_and_notify_escalation — AI PAUSED for user ID=' . $pause_user_id . ' (identifier=' . $identifier . ', situation="' . $situation_title . '")');
+        } else {
+          self::log('detect_and_notify_escalation — pause enabled but no WP user found for identifier=' . $identifier);
+        }
+      }
+    }
+
+    // Strip tag from visible response
+    $ai_response = preg_replace($tag_regex, '', $ai_response);
+    $ai_response = trim($ai_response);
+
+    return $ai_response;
+  }
+
+  /**
+   * Check if AI is paused for a given identifier (phone number or Instagram sender_id).
+   */
+  public static function is_user_ai_paused($identifier) {
+    if (empty($identifier)) {
+      return false;
+    }
+
+    $users = get_users([
+      'meta_key'   => 'billing_phone',
+      'meta_value' => $identifier,
+      'number'     => 1,
+      'fields'     => 'ID',
+    ]);
+    if (empty($users)) {
+      $users = get_users([
+        'meta_key'   => 'billing_phone',
+        'meta_value' => ltrim($identifier, '+'),
+        'number'     => 1,
+        'fields'     => 'ID',
+      ]);
+    }
+    if (empty($users)) {
+      $users = get_users([
+        'meta_key'   => 'phone',
+        'meta_value' => $identifier,
+        'number'     => 1,
+        'fields'     => 'ID',
+      ]);
+    }
+    if (!empty($users)) {
+      return get_user_meta((int) $users[0], 'pn_cm_ai_paused', true) === 'on';
+    }
+
+    return false;
+  }
+
   private static function extract_order_details($text) {
     $products = [];
     $seen_ids = [];
@@ -3405,7 +4062,7 @@ trait PN_CM_AI_Chat_Common {
           $products[] = [
             'id'    => $product_id,
             'name'  => $product->get_name(),
-            'price' => strip_tags(wc_price($product->get_price())),
+            'price' => wp_strip_all_tags(wc_price($product->get_price())),
           ];
         }
       }
@@ -3426,7 +4083,7 @@ trait PN_CM_AI_Chat_Common {
             $products[] = [
               'id'    => $product_id,
               'name'  => $product->get_name(),
-              'price' => strip_tags(wc_price($product->get_price())),
+              'price' => wp_strip_all_tags(wc_price($product->get_price())),
             ];
           }
         }
@@ -3446,7 +4103,7 @@ trait PN_CM_AI_Chat_Common {
           $products[] = [
             'id'    => $product_id,
             'name'  => $product->get_name(),
-            'price' => strip_tags(wc_price($product->get_price())),
+            'price' => wp_strip_all_tags(wc_price($product->get_price())),
           ];
         }
       }

@@ -304,6 +304,101 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 	 * @param string $color Color for the icon (default: 'white', can be 'black' or hex color).
 	 * @return string SVG content or empty string if not found.
 	 */
+	/**
+	 * Get allowed HTML tags and attributes for SVG output sanitization.
+	 *
+	 * @return array Allowed HTML tags for wp_kses.
+	 */
+	private static function get_svg_kses_allowed()
+	{
+		return array(
+			'svg'    => array(
+				'xmlns'       => true,
+				'viewbox'     => true,
+				'width'       => true,
+				'height'      => true,
+				'fill'        => true,
+				'class'       => true,
+				'style'       => true,
+				'id'          => true,
+				'version'     => true,
+				'x'           => true,
+				'y'           => true,
+				'xml:space'   => true,
+				'aria-hidden' => true,
+				'role'        => true,
+			),
+			'path'   => array(
+				'd'         => true,
+				'fill'      => true,
+				'style'     => true,
+				'class'     => true,
+				'id'        => true,
+				'transform' => true,
+			),
+			'g'      => array(
+				'fill'      => true,
+				'style'     => true,
+				'class'     => true,
+				'id'        => true,
+				'transform' => true,
+			),
+			'circle' => array(
+				'cx'    => true,
+				'cy'    => true,
+				'r'     => true,
+				'fill'  => true,
+				'style' => true,
+				'class' => true,
+			),
+			'rect'   => array(
+				'x'      => true,
+				'y'      => true,
+				'width'  => true,
+				'height' => true,
+				'rx'     => true,
+				'ry'     => true,
+				'fill'   => true,
+				'style'  => true,
+				'class'  => true,
+			),
+			'polygon' => array(
+				'points' => true,
+				'fill'   => true,
+				'style'  => true,
+				'class'  => true,
+			),
+			'polyline' => array(
+				'points' => true,
+				'fill'   => true,
+				'style'  => true,
+				'class'  => true,
+			),
+			'line'   => array(
+				'x1'    => true,
+				'y1'    => true,
+				'x2'    => true,
+				'y2'    => true,
+				'style' => true,
+				'class' => true,
+			),
+			'ellipse' => array(
+				'cx'    => true,
+				'cy'    => true,
+				'rx'    => true,
+				'ry'    => true,
+				'fill'  => true,
+				'style' => true,
+				'class' => true,
+			),
+			'defs'   => array(),
+			'style'  => array(
+				'type' => true,
+			),
+			'title'  => array(),
+		);
+	}
+
 	private static function get_svg_icon($icon_filename, $color = 'white')
 	{
 		if (empty($icon_filename)) {
@@ -562,7 +657,7 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 				if (!empty($title)) {
 					echo esc_html($title);
 				} else {
-					echo __('Follow us', 'pn-customers-manager');
+					echo esc_html__('Follow us', 'pn-customers-manager');
 				}
 				?>
 			</h2>
@@ -593,7 +688,7 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 									<div class="pn-cm-social-media__link-main">
 										<?php if ($atts['show_icons'] === '1' || $atts['show_icons'] === true): ?>
 											<div class="pn-cm-social-media__icon">
-												<?php echo self::get_svg_icon($link['icon']); ?>
+												<?php echo wp_kses(self::get_svg_icon($link['icon']), self::get_svg_kses_allowed()); ?>
 											</div>
 										<?php endif; ?>
 										<span class="pn-cm-social-media__label"><?php echo esc_html($link['label']); ?></span>
@@ -609,7 +704,7 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 										onclick="pnCmOpenSharePopup(event, '<?php echo esc_js($link['url']); ?>', '<?php echo esc_js($link['label']); ?>', '<?php echo esc_js($unique_id); ?>')"
 										title="<?php esc_attr_e('Share', 'pn-customers-manager'); ?>">
 										<div class="pn-cm-social-media__share-icon">
-											<?php echo self::get_svg_icon('share.svg', '#444444'); ?>
+											<?php echo wp_kses(self::get_svg_icon('share.svg', '#444444'), self::get_svg_kses_allowed()); ?>
 										</div>
 									</button>
 								<?php endif; ?>
@@ -641,7 +736,7 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 									<div class="pn-cm-social-media__link-main">
 										<?php if ($atts['show_icons'] === '1' || $atts['show_icons'] === true): ?>
 											<div class="pn-cm-social-media__icon">
-												<?php echo self::get_svg_icon($link['icon']); ?>
+												<?php echo wp_kses(self::get_svg_icon($link['icon']), self::get_svg_kses_allowed()); ?>
 											</div>
 										<?php endif; ?>
 										<span class="pn-cm-social-media__label"><?php echo esc_html($link['label']); ?></span>
@@ -657,7 +752,7 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 										onclick="pnCmOpenSharePopup(event, '<?php echo esc_js($link['url']); ?>', '<?php echo esc_js($link['label']); ?>', '<?php echo esc_js($unique_id); ?>')"
 										title="<?php esc_attr_e('Share', 'pn-customers-manager'); ?>">
 										<div class="pn-cm-social-media__share-icon">
-											<?php echo self::get_svg_icon('share.svg', '#444444'); ?>
+											<?php echo wp_kses(self::get_svg_icon('share.svg', '#444444'), self::get_svg_kses_allowed()); ?>
 										</div>
 									</button>
 								<?php endif; ?>
@@ -684,7 +779,7 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 							target="<?php echo $link['network'] === 'email' ? '_self' : '_blank'; ?>" rel="noopener noreferrer"
 							title="<?php echo esc_attr($link['label']); ?>">
 							<div class="pn-cm-social-media__social-icon-svg">
-								<?php echo self::get_svg_icon($link['icon'], '#444444'); ?>
+								<?php echo wp_kses(self::get_svg_icon($link['icon'], '#444444'), self::get_svg_kses_allowed()); ?>
 							</div>
 						</a>
 					<?php endforeach; ?>
@@ -709,37 +804,37 @@ class PN_CUSTOMERS_MANAGER_Social_Media
 						<div class="pn-cm-share-popup__body">
 							<button type="button" class="pn-cm-share-option"
 								onclick="pnCmShareVia('facebook', '<?php echo esc_js($unique_id); ?>')">
-								<div class="pn-cm-share-icon"><?php echo self::get_svg_icon('facebook.svg', '#444444'); ?></div>
+								<div class="pn-cm-share-icon"><?php echo wp_kses(self::get_svg_icon('facebook.svg', '#444444'), self::get_svg_kses_allowed()); ?></div>
 								<span>Facebook</span>
 							</button>
 							<button type="button" class="pn-cm-share-option"
 								onclick="pnCmShareVia('twitter', '<?php echo esc_js($unique_id); ?>')">
-								<div class="pn-cm-share-icon"><?php echo self::get_svg_icon('twitterx.svg', '#444444'); ?></div>
+								<div class="pn-cm-share-icon"><?php echo wp_kses(self::get_svg_icon('twitterx.svg', '#444444'), self::get_svg_kses_allowed()); ?></div>
 								<span>Twitter</span>
 							</button>
 							<button type="button" class="pn-cm-share-option"
 								onclick="pnCmShareVia('linkedin', '<?php echo esc_js($unique_id); ?>')">
-								<div class="pn-cm-share-icon"><?php echo self::get_svg_icon('linkedin.svg', '#444444'); ?></div>
+								<div class="pn-cm-share-icon"><?php echo wp_kses(self::get_svg_icon('linkedin.svg', '#444444'), self::get_svg_kses_allowed()); ?></div>
 								<span>LinkedIn</span>
 							</button>
 							<button type="button" class="pn-cm-share-option"
 								onclick="pnCmShareVia('whatsapp', '<?php echo esc_js($unique_id); ?>')">
-								<div class="pn-cm-share-icon"><?php echo self::get_svg_icon('whatsapp.svg', '#444444'); ?></div>
+								<div class="pn-cm-share-icon"><?php echo wp_kses(self::get_svg_icon('whatsapp.svg', '#444444'), self::get_svg_kses_allowed()); ?></div>
 								<span>WhatsApp</span>
 							</button>
 							<button type="button" class="pn-cm-share-option"
 								onclick="pnCmShareVia('telegram', '<?php echo esc_js($unique_id); ?>')">
-								<div class="pn-cm-share-icon"><?php echo self::get_svg_icon('telegram-app.svg', '#444444'); ?></div>
+								<div class="pn-cm-share-icon"><?php echo wp_kses(self::get_svg_icon('telegram-app.svg', '#444444'), self::get_svg_kses_allowed()); ?></div>
 								<span>Telegram</span>
 							</button>
 							<button type="button" class="pn-cm-share-option"
 								onclick="pnCmShareVia('email', '<?php echo esc_js($unique_id); ?>')">
-								<div class="pn-cm-share-icon"><?php echo self::get_svg_icon('email.svg', '#444444'); ?></div>
+								<div class="pn-cm-share-icon"><?php echo wp_kses(self::get_svg_icon('email.svg', '#444444'), self::get_svg_kses_allowed()); ?></div>
 								<span>Email</span>
 							</button>
 							<button type="button" class="pn-cm-share-option"
 								onclick="pnCmCopyLink('<?php echo esc_js($unique_id); ?>')">
-								<div class="pn-cm-share-icon"><?php echo self::get_svg_icon('link.svg', '#444444'); ?></div>
+								<div class="pn-cm-share-icon"><?php echo wp_kses(self::get_svg_icon('link.svg', '#444444'), self::get_svg_kses_allowed()); ?></div>
 								<span><?php esc_html_e('Copiar enlace', 'pn-customers-manager'); ?></span>
 							</button>
 						</div>

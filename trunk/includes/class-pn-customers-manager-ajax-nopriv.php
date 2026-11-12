@@ -63,11 +63,17 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                 $unslashed_array = array($unslashed_array);
               }
 
-              $sanitized_array = array_map(function($value) use ($pn_customers_manager_key) {
+              // For multiple fields, sanitize each element as a scalar value.
+              // e.g. select-multiple → select, so the validator does not reject strings.
+              $element_type = $pn_customers_manager_key['type'];
+              if ($element_type === 'select-multiple') {
+                $element_type = 'select-one';
+              }
+              $sanitized_array = array_map(function($value) use ($pn_customers_manager_key, $element_type) {
                 return PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(
                   $value,
                   $pn_customers_manager_key['node'],
-                  $pn_customers_manager_key['type'],
+                  $element_type,
                   $pn_customers_manager_key['field_config'] ?? [],
                 );
               }, $unslashed_array);
@@ -83,15 +89,15 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           } else {
             $sanitized_key = $pn_customers_manager_key['id'];
             $unslashed_value = !empty($_POST[$sanitized_key]) ? wp_unslash($_POST[$sanitized_key]) : '';
-            
-            $pn_customers_manager_key_id = !empty($unslashed_value) ? 
+
+            $pn_customers_manager_key_id = !empty($unslashed_value) ?
               PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_sanitizer(
-                $unslashed_value, 
-                $pn_customers_manager_key['node'], 
+                $unslashed_value,
+                $pn_customers_manager_key['node'],
                 $pn_customers_manager_key['type'],
                 $pn_customers_manager_key['field_config'] ?? [],
               ) : '';
-            
+
               ${$pn_customers_manager_key['id']} = $pn_customers_manager_key_value[$pn_customers_manager_key['id']] = $pn_customers_manager_key_id;
           }
         }
@@ -486,7 +492,26 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                           // Key already has correct prefix
                         }
 
+                        // Skip invoice number and token — handled separately below
+                        if (in_array($pn_customers_manager_key, ['pn_cm_invoice_number', 'pn_cm_invoice_token'], true)) {
+                          continue;
+                        }
+
                         update_post_meta($post_id, $pn_customers_manager_key, $pn_customers_manager_value);
+                      }
+
+                      // Auto-generate invoice number and token for new invoices
+                      if (!empty($post_type) && $post_type === 'pn_cm_invoice' && $cm_pn_form_subtype === 'post_new') {
+                        $existing_number = get_post_meta($post_id, 'pn_cm_invoice_number', true);
+                        if (empty($existing_number)) {
+                          $invoice_number = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_generate_number();
+                          update_post_meta($post_id, 'pn_cm_invoice_number', $invoice_number);
+                        }
+                        $existing_token = get_post_meta($post_id, 'pn_cm_invoice_token', true);
+                        if (empty($existing_token)) {
+                          $token = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_generate_token();
+                          update_post_meta($post_id, 'pn_cm_invoice_token', $token);
+                        }
                       }
                     }
                   }
@@ -516,7 +541,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
 
                     // First, add html_multi field IDs to allowed options temporarily
                     foreach ($pn_customers_manager_options as $option_key => $option_config) {
-                      if (isset($option_config['input']) && $option_config['input'] === 'html_multi' && 
+                      if (isset($option_config['input']) && $option_config['input'] === 'html_multi' &&
                           isset($option_config['html_multi_fields']) && is_array($option_config['html_multi_fields'])) {
                         foreach ($option_config['html_multi_fields'] as $multi_field) {
                           if (isset($multi_field['id'])) {
@@ -548,6 +573,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     }
                   }
 
+                  PN_CUSTOMERS_MANAGER_Activity_Log::log('settings', 'setting', 0, 'Settings', 'Settings updated');
                   do_action('pn_customers_manager_form_save', 0, $pn_customers_manager_key_value, $cm_pn_form_type, $cm_pn_form_subtype, '');
                   break;
               }
@@ -572,6 +598,10 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
                     break;
                   case 'pn_cm_mockup_flow':
                     $update_html = PN_CUSTOMERS_MANAGER_Mockup_Flow::mockup_flow_list();
+                    break;
+                  case 'pn_cm_invoice':
+                    $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
+                    $update_html = $plugin_post_type_invoice->pn_cm_invoice_list();
                     break;
                 }
               }else{
@@ -794,6 +824,9 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
             }
           }
 
+          // Recalculate totals to ensure they reflect the final item selection.
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($budget_id);
+
           // --- Send acceptance notification emails ---
           $this->pn_cm_budget_send_acceptance_email($budget_id);
 
@@ -825,6 +858,58 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
           update_post_meta($budget_id, 'pn_cm_budget_rejected_at', current_time('mysql'));
 
           echo wp_json_encode(['success' => true]);
+          exit;
+
+        case 'pn_cm_invoice_download_file':
+          $invoice_id    = isset($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $invoice_token = isset($_POST['invoice_token']) ? sanitize_text_field(wp_unslash($_POST['invoice_token'])) : '';
+          $file_id       = isset($_POST['file_id']) ? intval($_POST['file_id']) : 0;
+
+          if (empty($invoice_id) || empty($invoice_token) || empty($file_id)) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid request.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $stored_token = get_post_meta($invoice_id, 'pn_cm_invoice_token', true);
+          if (empty($stored_token) || $stored_token !== $invoice_token) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Invalid token.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $invoice_status = get_post_meta($invoice_id, 'pn_cm_invoice_status', true);
+          if ($invoice_status === 'draft') {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('Downloads are not available for draft invoices.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $files = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files($invoice_id);
+          $target_file = null;
+          foreach ($files as $f) {
+            if (intval($f['id']) === $file_id) {
+              $target_file = $f;
+              break;
+            }
+          }
+
+          if (!$target_file) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('File not found.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          $dir = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files_dir();
+          $filepath = $dir . '/' . $target_file['stored_name'];
+
+          if (!file_exists($filepath)) {
+            echo wp_json_encode(['success' => false, 'data' => ['message' => esc_html__('File not found on disk.', 'pn-customers-manager')]]);
+            exit;
+          }
+
+          header('Content-Type: application/octet-stream');
+          header('Content-Disposition: attachment; filename="' . $target_file['filename'] . '"');
+          header('Content-Length: ' . filesize($filepath));
+          header('Cache-Control: no-store, no-cache, must-revalidate');
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Streaming file download to browser.
+          readfile($filepath);
           exit;
       }
 
@@ -874,11 +959,18 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
 
     $current_phase = '';
     foreach ( $items as $item ) {
-      if ( 'phase' === $item['item_type'] ) {
+      $item_type = isset( $item['item_type'] ) ? $item['item_type'] : '';
+
+      if ( 'phase' === $item_type ) {
         $current_phase = $item['description'];
         $items_html .= '<tr style="background:#eef2f7;">';
-        $items_html .= '<td colspan="5" style="padding:8px;border:1px solid #ddd;font-weight:bold;">' . esc_html( $item['description'] ) . '</td>';
+        $items_html .= '<td colspan="5" style="padding:8px;border:1px solid #ddd;font-weight:bold;">' . esc_html( wp_strip_all_tags( $item['description'] ) ) . '</td>';
         $items_html .= '</tr>';
+        continue;
+      }
+
+      // Skip image and image_compare items — they are not relevant in email.
+      if ( in_array( $item_type, array( 'image', 'image_compare' ), true ) ) {
         continue;
       }
 
@@ -897,8 +989,11 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
 
       $row_style = $is_optional && ! $is_selected ? 'color:#999;text-decoration:line-through;' : '';
 
+      // Strip HTML tags from description for plain-text email rendering.
+      $plain_description = wp_strip_all_tags( $item['description'] );
+
       $items_html .= '<tr style="' . $row_style . '">';
-      $items_html .= '<td style="padding:8px;border:1px solid #ddd;">' . esc_html( $item['description'] ) . '</td>';
+      $items_html .= '<td style="padding:8px;border:1px solid #ddd;">' . esc_html( $plain_description ) . '</td>';
       $items_html .= '<td style="text-align:center;padding:8px;border:1px solid #ddd;">' . esc_html( number_format( floatval( $item['quantity'] ), 2 ) ) . '</td>';
       $items_html .= '<td style="text-align:right;padding:8px;border:1px solid #ddd;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( floatval( $item['unit_price'] ) ) ) . '</td>';
       $items_html .= '<td style="text-align:right;padding:8px;border:1px solid #ddd;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $line_total ) ) . '</td>';
@@ -916,7 +1011,8 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
       $totals_html .= '<tr><td style="padding:4px 16px;text-align:right;">' . esc_html__( 'Discount', 'pn-customers-manager' ) . '</td>';
       $totals_html .= '<td style="padding:4px 16px;text-align:right;color:#c62828;">-' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $discount_amount ) ) . '</td></tr>';
     }
-    if ( $tax_amount > 0 ) {
+    $tax_rate = floatval( get_post_meta( $budget_id, 'pn_cm_budget_tax_rate', true ) );
+    if ( $tax_rate > 0 ) {
       $totals_html .= '<tr><td style="padding:4px 16px;text-align:right;">' . esc_html__( 'Tax', 'pn-customers-manager' ) . '</td>';
       $totals_html .= '<td style="padding:4px 16px;text-align:right;">' . esc_html( PN_CUSTOMERS_MANAGER_Post_Type_Budget::format_currency( $tax_amount ) ) . '</td></tr>';
     }
@@ -937,6 +1033,7 @@ class PN_CUSTOMERS_MANAGER_Ajax_Nopriv {
       $budget_number
     );
 
+    // translators: %s is the budget number (e.g. #123)
     $html_body  = '<h2>' . sprintf( esc_html__( 'Budget %s has been accepted', 'pn-customers-manager' ), '#' . esc_html( $budget_number ) ) . '</h2>';
     if ( ! empty( $org_name ) ) {
       $html_body .= '<p><strong>' . esc_html__( 'Client', 'pn-customers-manager' ) . ':</strong> ' . esc_html( $org_name ) . '</p>';

@@ -567,14 +567,51 @@
 
     if (pn_customers_manager_toggle.find('i').length) {
       if (pn_customers_manager_toggle.siblings('.pn-customers-manager-toggle-content').is(':visible')) {
-        pn_customers_manager_toggle.find('i').text('add');
+        pn_customers_manager_toggle.find('i').last().text('add');
       } else {
-        pn_customers_manager_toggle.find('i').text('clear');
+        pn_customers_manager_toggle.find('i').last().text('clear');
       }
     }
 
     pn_customers_manager_toggle.siblings('.pn-customers-manager-toggle-content').fadeToggle();
   });
+
+  // ── Auto-expand settings section from URL ?section= parameter ──
+  // Format: ?section=parent_id.child_id (dot-separated for nested sections)
+  // Example: ?page=pn_customers_manager_options&section=pn_customers_manager_accounting_parent_section_start.pn_customers_manager_budget_subsection_start
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var sectionParam = params.get('section');
+    if (!sectionParam) return;
+
+    var sectionIds = sectionParam.split('.');
+
+    setTimeout(function () {
+      var $lastSection = null;
+
+      for (var i = 0; i < sectionIds.length; i++) {
+        var $section = $('#' + sectionIds[i]);
+        if (!$section.length) continue;
+
+        // Use > (direct children) to avoid matching nested sections' elements.
+        var $toggle = $section.children('.pn-customers-manager-toggle');
+        var $content = $section.children('.pn-customers-manager-toggle-content');
+
+        if ($content.length && $content.is(':hidden')) {
+          $content.removeClass('pn-customers-manager-display-none-soft').show();
+          $toggle.find('i').first().text('clear');
+        }
+
+        $lastSection = $section;
+      }
+
+      if ($lastSection && $lastSection.length) {
+        $('html, body').animate({
+          scrollTop: $lastSection.offset().top - 40
+        }, 400);
+      }
+    }, 300);
+  })();
 
   // User Role Management - Bulk assign/remove roles
   $(document).on('click', '.pn-customers-manager-assign-role-btn, .pn-customers-manager-remove-role-btn', function (e) {

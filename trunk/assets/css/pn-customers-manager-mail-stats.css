@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────
-   PN Customers Manager — MailPn Statistics
+   PN Customers Manager — CRM Statistics
    Following UsersPn dashboard pattern
    ────────────────────────────────────────────── */
 
@@ -106,37 +106,25 @@
   line-height: 1.3;
 }
 
-/* Gradient backgrounds (like UsersPn) */
-.pn-cm-ms-bg-sent {
-  background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+/* Gradient backgrounds */
+.pn-cm-ms-bg-organizations {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
 }
 
-.pn-cm-ms-bg-opened {
+.pn-cm-ms-bg-budgets {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+}
+
+.pn-cm-ms-bg-invoices {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+}
+
+.pn-cm-ms-bg-conversations {
   background: linear-gradient(135deg, #009688 0%, #26a69a 100%);
 }
 
-.pn-cm-ms-bg-clicked {
-  background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
-}
-
-.pn-cm-ms-bg-open-rate {
-  background: linear-gradient(135deg, #7b1fa2 0%, #ab47bc 100%);
-}
-
-.pn-cm-ms-bg-click-rate {
-  background: linear-gradient(135deg, #c62828 0%, #ef5350 100%);
-}
-
-/* Rate cards are not clickable */
-.pn-cm-ms-widget[data-widget="open_rate"],
-.pn-cm-ms-widget[data-widget="click_rate"] {
-  cursor: default;
-}
-
-.pn-cm-ms-widget[data-widget="open_rate"]:hover,
-.pn-cm-ms-widget[data-widget="click_rate"]:hover {
-  transform: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.pn-cm-ms-bg-messages {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
 }
 
 /* ── Charts section ── */

@@ -12,10 +12,9 @@
  * @wordpress-plugin
  * Plugin Name:       PN Customers Manager
  * Plugin URI:        https://padresenlanube.com/plugins/pn-customers-manager/
- * Description:       A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, mockup flow viewer, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, product calendar, solidarity purchases, and WooCommerce integration for WordPress.
- * Version:           1.2.95
- * Requires at least: 3.0
- * Tested up to:      7.0
+ * Description:       A powerful CRM with AI WhatsApp/Instagram chat, audio transcription, human support escalation, sales funnels, funnel form builder, CRM clients dashboard, activity log, Go High Level & Zoho CRM sync, contact forms, email campaigns, budgets & invoices with payments tracking, mockup flow viewer, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, product calendar, solidarity purchases, and WooCommerce integration for WordPress.
+ * Version:           1.2.165
+ * Requires at least: 5.9
  * Requires PHP:      7.2
  * Author:            Padres en la Nube
  * Author URI:        https://padresenlanube.com/
@@ -35,8 +34,8 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.95');
-define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.3.0');
+define('PN_CUSTOMERS_MANAGER_VERSION', '1.2.165');
+define('PN_CUSTOMERS_MANAGER_DB_VERSION', '1.3.4');
 define('PN_CUSTOMERS_MANAGER_DIR', plugin_dir_path(__FILE__));
 define('PN_CUSTOMERS_MANAGER_URL', plugin_dir_url(__FILE__));
 define('PN_CUSTOMERS_MANAGER_CPTS', [
@@ -102,6 +101,15 @@ $pn_customers_manager_kses = [
 		'data-pn_cm_organization_alt-id' => [],
 		'data-pn_cm_budget-id' => [],
 		'data-product-id' => [],
+		'data-type' => [],
+		'data-post-id' => [],
+		'data-total-income' => [],
+		'data-total-expense' => [],
+		'data-remaining' => [],
+		'data-net-result' => [],
+		'data-expense-categories' => [],
+		'data-category-labels' => [],
+		'data-invoice-id' => [],
 	],
 	'section' => ['id' => [], 'class' => []],
 	'article' => ['id' => [], 'class' => []],
@@ -109,7 +117,7 @@ $pn_customers_manager_kses = [
 	'footer' => ['id' => [], 'class' => []],
 	'header' => ['id' => [], 'class' => []],
 	'main' => ['id' => [], 'class' => []],
-	'nav' => ['id' => [], 'class' => []],
+	'nav' => ['id' => [], 'class' => [], 'aria-label' => []],
 	'p' => ['id' => [], 'class' => [], 'style' => []],
 	'span' => ['id' => [], 'class' => [], 'style' => []],
 	'small' => ['id' => [], 'class' => [], 'style' => []],
@@ -195,6 +203,8 @@ $pn_customers_manager_kses = [
 		'max' => [],
 		'tabindex' => [],
 		'autocomplete' => [],
+		'style' => [],
+		'title' => [],
 		'data-pn-customers-manager-parent' => [],
 		'data-pn-customers-manager-parent-option' => [],
 		'data-pn-customers-manager-type' => [],
@@ -202,6 +212,9 @@ $pn_customers_manager_kses = [
 		'data-pn-customers-manager-user-id' => [],
 		'data-pn-customers-manager-post-id' => [],
 		'data-pn-customers-manager-post-type' => [],
+		'data-day' => [],
+		'data-cpt' => [],
+		'data-field' => [],
 	],
 	'select' => [
 		'name' => [],
@@ -250,7 +263,10 @@ $pn_customers_manager_kses = [
 		'type' => [],
 		'value' => [],
 		'disabled' => [],
+		'style' => [],
+		'title' => [],
 		'data-pn-customers-manager-ajax-type' => [],
+		'data-pn-customers-manager-id' => [],
 		'data-page-id' => [],
 		'data-cpt' => [],
 		'data-label' => [],
@@ -262,9 +278,10 @@ $pn_customers_manager_kses = [
 	'thead' => ['id' => [], 'class' => []],
 	'tbody' => ['id' => [], 'class' => []],
 	'tfoot' => ['id' => [], 'class' => []],
-	'tr' => ['id' => [], 'class' => [], 'style' => [], 'data-item-id' => []],
-	'th' => ['id' => [], 'class' => [], 'style' => [], 'colspan' => [], 'rowspan' => []],
-	'td' => ['id' => [], 'class' => [], 'style' => [], 'colspan' => [], 'rowspan' => []],
+	'tr' => ['id' => [], 'class' => [], 'style' => [], 'data-item-id' => [], 'data-invoice-type' => [], 'data-file-id' => [], 'data-payment-id' => [], 'data-date' => [], 'data-concept' => [], 'data-type' => [], 'data-category' => [], 'data-recipient' => [], 'data-amount' => [], 'data-method' => [], 'data-notes' => [], 'data-visible' => []],
+	'th' => ['id' => [], 'class' => [], 'style' => [], 'colspan' => [], 'rowspan' => [], 'title' => []],
+	'td' => ['id' => [], 'class' => [], 'style' => [], 'colspan' => [], 'rowspan' => [], 'data-label' => []],
+	'canvas' => ['id' => [], 'class' => [], 'width' => [], 'height' => []],
 ];
 
 foreach (PN_CUSTOMERS_MANAGER_CPTS as $pn_customers_manager_cpt_key => $pn_customers_manager_cpt_value) {
@@ -304,6 +321,11 @@ function pn_customers_manager_activation_hook()
 	// Schedule recurring invoices cron
 	if (!wp_next_scheduled('pn_cm_recurring_invoices_cron')) {
 		wp_schedule_event(time(), 'daily', 'pn_cm_recurring_invoices_cron');
+	}
+
+	// Schedule WhatsApp message queue processing cron
+	if (!wp_next_scheduled('pn_cm_whatsapp_queue_cron')) {
+		wp_schedule_event(time(), 'every_five_minutes', 'pn_cm_whatsapp_queue_cron');
 	}
 }
 
@@ -350,6 +372,7 @@ function pn_customers_manager_deactivation_cleanup()
 	wp_clear_scheduled_hook('pn_cm_referral_reminders_cron');
 	wp_clear_scheduled_hook('pn_cm_projections_snapshot_cron');
 	wp_clear_scheduled_hook('pn_cm_recurring_invoices_cron');
+	wp_clear_scheduled_hook('pn_cm_whatsapp_queue_cron');
 }
 register_deactivation_hook(__FILE__, 'pn_customers_manager_deactivation_cleanup');
 
@@ -357,6 +380,17 @@ register_deactivation_hook(__FILE__, 'pn_customers_manager_deactivation_cleanup'
  * The core plugin class that is used to define internationalization, admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path(__FILE__) . 'includes/class-pn-customers-manager.php';
+
+/**
+ * Register custom cron schedule for WhatsApp message queue processing.
+ */
+add_filter('cron_schedules', function ($schedules) {
+	$schedules['every_five_minutes'] = [
+		'interval' => 5 * MINUTE_IN_SECONDS,
+		'display'  => __('Every Five Minutes', 'pn-customers-manager'),
+	];
+	return $schedules;
+});
 
 /**
  * Begins execution of the plugin.

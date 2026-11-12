@@ -206,9 +206,9 @@ class PN_CUSTOMERS_MANAGER_Validation {
                         if (!is_array($value)) {
                             return [];
                         }
-                        return array_map('sanitize_key', $value);
+                        return array_map('sanitize_text_field', $value);
                     default:
-                        return sanitize_key($value);
+                        return sanitize_text_field($value);
                 }
 
             case 'textarea':

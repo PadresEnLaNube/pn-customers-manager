@@ -348,6 +348,36 @@
 
 			showMsg(i18n.importSuccess || 'Imported successfully. Remember to save.', 'success');
 		}
+
+		// Download all mockups as ZIP
+		$wrap.on('click', '.pn-cm-mf-btn-download-all', function () {
+			var $btn = $(this);
+			if ($btn.hasClass('pn-cm-mf-downloading')) return;
+			$btn.addClass('pn-cm-mf-downloading');
+
+			// Show plugin loader next to the button
+			var $loader = $('<span class="pn-customers-manager-waiting"><span class="pn-customers-manager-loader-circle-waiting"><div></div><div></div><div></div></span></span>');
+			$btn.after($loader);
+
+			// Use a hidden iframe as target so the page doesn't navigate away
+			var iframeName = 'pn-cm-mf-dl-frame-' + Date.now();
+			var $iframe = $('<iframe name="' + iframeName + '" style="display:none;"></iframe>');
+			var $form = $('<form method="post" action="' + cfg.ajaxUrl + '" target="' + iframeName + '" style="display:none;"></form>');
+			$form.append('<input type="hidden" name="action" value="pn_customers_manager_ajax">');
+			$form.append('<input type="hidden" name="pn_customers_manager_ajax_nonce" value="' + cfg.nonce + '">');
+			$form.append('<input type="hidden" name="pn_customers_manager_ajax_type" value="pn_cm_mockup_flow_download_all">');
+			$form.append('<input type="hidden" name="post_id" value="' + cfg.mockupFlowId + '">');
+			$('body').append($iframe).append($form);
+			$form.submit();
+
+			// Clean up after download has had time to start
+			setTimeout(function () {
+				$form.remove();
+				$iframe.remove();
+				$loader.remove();
+				$btn.removeClass('pn-cm-mf-downloading');
+			}, 5000);
+		});
 	}
 
 	function cancelConnect() {

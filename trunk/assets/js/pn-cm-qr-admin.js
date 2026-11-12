@@ -711,7 +711,7 @@
     }
 
     var $btn = $(this);
-    $btn.prop('disabled', true).html('<i class="material-icons-outlined" style="vertical-align: middle; margin-right: 5px;">hourglass_empty</i>' + pnCmQrData.i18n.completingOrders);
+    $btn.prop('disabled', true).html('<span class="pn-cm-inline-spinner" style="display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; vertical-align: middle; margin-right: 5px; animation: pn-cm-spin 0.8s linear infinite;"></span>' + pnCmQrData.i18n.completingOrders);
 
     $.ajax({
       url: pnCmQrData.ajaxUrl,

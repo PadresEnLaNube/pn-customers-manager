@@ -146,6 +146,7 @@ class PN_CUSTOMERS_MANAGER_Offer_Page_Generator {
 
 		?>
 		<div class="wrap pn-cm-offer-page-generator">
+			<?php // translators: %s is the page type label (e.g. "Landing Page"). ?>
 			<h1><?php echo esc_html(sprintf(__('%s Generator', 'pn-customers-manager'), $config['label'])); ?></h1>
 			<p class="description"><?php echo esc_html($config['description']); ?></p>
 
@@ -358,7 +359,7 @@ class PN_CUSTOMERS_MANAGER_Offer_Page_Generator {
 					type: 'POST',
 					data: {
 						action: 'pn_cm_delete_offer_page',
-						nonce: '<?php echo wp_create_nonce('pn_cm_delete_offer_page'); ?>',
+						nonce: '<?php echo esc_attr(wp_create_nonce('pn_cm_delete_offer_page')); ?>',
 						page_id: pageId,
 						page_type: pageType
 					},

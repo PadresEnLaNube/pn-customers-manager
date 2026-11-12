@@ -58,7 +58,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Accounting {
 	 */
 	public function send_monthly_report() {
 		// Only send on the 1st of the month
-		if (date('d') != '01') {
+		if (gmdate('d') != '01') {
 			return;
 		}
 
@@ -94,10 +94,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Accounting {
 		global $wpdb;
 
 		// Last month dates
-		$last_year = date('Y', strtotime('last day of previous month'));
-		$last_month = date('m', strtotime('last day of previous month'));
+		$last_year = gmdate('Y', strtotime('last day of previous month'));
+		$last_month = gmdate('m', strtotime('last day of previous month'));
 		$last_month_name = date_i18n('F', strtotime('last day of previous month'));
-		$last_day = date('d', strtotime('last day of previous month'));
+		$last_day = gmdate('d', strtotime('last day of previous month'));
 
 		// Get orders
 		$orders = wc_get_orders([
@@ -337,7 +337,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Accounting {
 							<p class="kpi-label"><?php echo esc_html__('Total Orders', 'pn-customers-manager'); ?></p>
 						</div>
 						<div class="kpi-card">
-							<p class="kpi-value"><?php echo number_format($data['total_revenue'], 2, ',', '.'); ?> <?php echo $currency; ?></p>
+							<p class="kpi-value"><?php echo number_format($data['total_revenue'], 2, ',', '.'); ?> <?php echo esc_html($currency); ?></p>
 							<p class="kpi-label"><?php echo esc_html__('Total Revenue', 'pn-customers-manager'); ?></p>
 						</div>
 					</div>
@@ -357,7 +357,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Accounting {
 								<?php foreach ($data['payment_methods'] as $method => $total): ?>
 								<tr>
 									<td><?php echo esc_html($method ?: __('Unknown', 'pn-customers-manager')); ?></td>
-									<td class="text-right"><strong><?php echo number_format($total, 2, ',', '.'); ?> <?php echo $currency; ?></strong></td>
+									<td class="text-right"><strong><?php echo number_format($total, 2, ',', '.'); ?> <?php echo esc_html($currency); ?></strong></td>
 								</tr>
 								<?php endforeach; ?>
 							</tbody>
@@ -387,7 +387,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Accounting {
 								<tr>
 									<td><?php echo esc_html($product_name); ?></td>
 									<td class="text-right"><?php echo number_format($stats['quantity']); ?></td>
-									<td class="text-right"><strong><?php echo number_format($stats['revenue'], 2, ',', '.'); ?> <?php echo $currency; ?></strong></td>
+									<td class="text-right"><strong><?php echo number_format($stats['revenue'], 2, ',', '.'); ?> <?php echo esc_html($currency); ?></strong></td>
 								</tr>
 								<?php endforeach; ?>
 							</tbody>
@@ -398,7 +398,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Accounting {
 
 				<div class="email-footer">
 					<p><?php echo esc_html__('This is an automated report from', 'pn-customers-manager'); ?> <a href="<?php echo esc_url($site_url); ?>"><?php echo esc_html($site_name); ?></a></p>
-					<p class="text-muted"><?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format')); ?></p>
+					<p class="text-muted"><?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'))); ?></p>
 				</div>
 			</div>
 		</body>
@@ -421,6 +421,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Accounting {
 		}
 
 		$last_month_name = date_i18n('F Y', strtotime('last day of previous month'));
+		/* translators: %s: month and year (e.g. "January 2024") */
 		$subject = sprintf(__('Monthly Accounting Summary - %s', 'pn-customers-manager'), $last_month_name);
 
 		// Try to use MailPn if available

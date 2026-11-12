@@ -1,10 +1,11 @@
 <?php
 /**
- * MailPn Statistics dashboard.
+ * CRM Statistics dashboard.
  *
- * Renders a full analytics dashboard for MailPn email data
- * following the same layout as the UsersPn dashboard (gradient stat cards,
- * popup tables with icons, period selector, Chart.js charts).
+ * Renders a full analytics dashboard for CRM data
+ * (organizations, budgets, invoices, conversations, messages)
+ * following the same layout as the previous MailPn dashboard
+ * (gradient stat cards, popup tables with icons, period selector, Chart.js charts).
  *
  * @link       padresenlanube.com/
  * @since      1.0.62
@@ -20,17 +21,6 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 	   ────────────────────────────────── */
 
 	private static $periods = ['day', 'week', 'month', 'year', 'all'];
-
-	/* ──────────────────────────────────
-	   Plugin detection
-	   ────────────────────────────────── */
-
-	public static function is_mailpn_active() {
-		if (!function_exists('is_plugin_active')) {
-			include_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-		return class_exists('MailPn') || is_plugin_active('mailpn/mailpn.php');
-	}
 
 	/* ──────────────────────────────────
 	   Period helpers
@@ -79,110 +69,114 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 	}
 
 	/* ──────────────────────────────────
-	   Data retrieval — Emails sent
+	   Data retrieval — Organizations
 	   ────────────────────────────────── */
 
-	private static function get_emails_sent($period) {
+	private static function get_organizations_created($period) {
+		return self::get_posts_by_type('pn_cm_organization', $period);
+	}
+
+	/* ──────────────────────────────────
+	   Data retrieval — Budgets
+	   ────────────────────────────────── */
+
+	private static function get_budgets_created($period) {
+		return self::get_posts_by_type('pn_cm_budget', $period);
+	}
+
+	/* ──────────────────────────────────
+	   Data retrieval — Invoices
+	   ────────────────────────────────── */
+
+	private static function get_invoices_created($period) {
+		return self::get_posts_by_type('pn_cm_invoice', $period);
+	}
+
+	/* ──────────────────────────────────
+	   Data retrieval — Generic CPT helper
+	   ────────────────────────────────── */
+
+	private static function get_posts_by_type($post_type, $period) {
 		global $wpdb;
 		$since = self::get_date_threshold($period);
 
 		$where_clause = $period === 'all'
-			? "WHERE post_type = 'mailpn_rec' AND post_status IN ('publish','private')"
+			? $wpdb->prepare("WHERE post_type = %s AND post_status IN ('publish','private')", $post_type)
 			: $wpdb->prepare(
-				"WHERE post_type = 'mailpn_rec' AND post_status IN ('publish','private') AND post_date >= %s",
+				"WHERE post_type = %s AND post_status IN ('publish','private') AND post_date >= %s",
+				$post_type,
 				$since
 			);
 
 		$count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} {$where_clause}");
 
 		$rows = $wpdb->get_results(
-			"SELECT ID, post_title, post_date FROM {$wpdb->posts} {$where_clause} ORDER BY post_date DESC LIMIT 50"
+			"SELECT ID, post_title, post_date, post_status FROM {$wpdb->posts} {$where_clause} ORDER BY post_date DESC LIMIT 50"
 		);
 
-		$html = self::build_emails_table($rows, 'sent');
+		$html = self::build_posts_table($rows, $post_type);
 
 		return ['count' => $count, 'html' => $html];
 	}
 
 	/* ──────────────────────────────────
-	   Data retrieval — Emails opened
+	   Data retrieval — Conversations
 	   ────────────────────────────────── */
 
-	private static function get_emails_opened($period) {
+	private static function get_conversations_count($period) {
 		global $wpdb;
-		$since = self::get_date_threshold($period);
+		$table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
 
-		$where_period = $period === 'all'
-			? ''
-			: $wpdb->prepare("AND p.post_date >= %s", $since);
-
-		$count = (int) $wpdb->get_var(
-			"SELECT COUNT(DISTINCT pm.post_id) FROM {$wpdb->postmeta} pm
-			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-			WHERE pm.meta_key = '_mailpn_opened' AND pm.meta_value = '1'
-			AND p.post_type = 'mailpn_rec' {$where_period}"
-		);
-
-		$rows = $wpdb->get_results(
-			"SELECT p.ID, p.post_title, p.post_date FROM {$wpdb->posts} p
-			INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-			WHERE pm.meta_key = '_mailpn_opened' AND pm.meta_value = '1'
-			AND p.post_type = 'mailpn_rec' {$where_period}
-			ORDER BY p.post_date DESC LIMIT 50"
-		);
-
-		$html = self::build_emails_table($rows, 'opened');
-
-		return ['count' => $count, 'html' => $html];
-	}
-
-	/* ──────────────────────────────────
-	   Data retrieval — Emails clicked
-	   ────────────────────────────────── */
-
-	private static function get_emails_clicked($period) {
-		global $wpdb;
-		$table_clicks = $wpdb->prefix . 'mailpn_click_tracking';
-		$since = self::get_date_threshold($period);
-
-		// Check if click tracking table exists
-		if ($wpdb->get_var("SHOW TABLES LIKE '{$table_clicks}'") !== $table_clicks) {
-			return ['count' => 0, 'html' => '<p>' . esc_html__('Click tracking table not available.', 'pn-customers-manager') . '</p>'];
+		$table_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
+		if (!$table_exists) {
+			return ['count' => 0, 'html' => '<p class="pn-cm-ms-empty">' . esc_html__('No data for this period.', 'pn-customers-manager') . '</p>'];
 		}
 
-		$where_period = $period === 'all'
-			? ''
-			: $wpdb->prepare("WHERE ct.clicked_at >= %s", $since);
+		$since = self::get_date_threshold($period);
 
-		$count = (int) $wpdb->get_var(
-			"SELECT COUNT(*) FROM {$table_clicks} ct {$where_period}"
-		);
+		$where_period = $period === 'all'
+			? "WHERE status = 'active'"
+			: $wpdb->prepare("WHERE status = 'active' AND created_at >= %s", $since);
+
+		$count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} {$where_period}");
 
 		$rows = $wpdb->get_results(
-			"SELECT ct.email_id, ct.url, ct.clicked_at, p.post_title
-			FROM {$table_clicks} ct
-			LEFT JOIN {$wpdb->posts} p ON p.ID = ct.email_id
-			{$where_period}
-			ORDER BY ct.clicked_at DESC LIMIT 50"
+			"SELECT id, phone, status, created_at FROM {$table} {$where_period} ORDER BY created_at DESC LIMIT 50"
 		);
 
-		$html = self::build_clicks_table($rows);
+		$html = self::build_conversations_table($rows);
 
 		return ['count' => $count, 'html' => $html];
 	}
 
 	/* ──────────────────────────────────
-	   Data retrieval — Rates
+	   Data retrieval — Contact Messages
 	   ────────────────────────────────── */
 
-	private static function get_open_rate($sent, $opened) {
-		if ($sent <= 0) return 0;
-		return round(($opened / $sent) * 100, 1);
-	}
+	private static function get_messages_received($period) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'pn_cm_contact_messages';
 
-	private static function get_click_rate($sent, $clicked) {
-		if ($sent <= 0) return 0;
-		return round(($clicked / $sent) * 100, 1);
+		$table_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
+		if (!$table_exists) {
+			return ['count' => 0, 'html' => '<p class="pn-cm-ms-empty">' . esc_html__('No data for this period.', 'pn-customers-manager') . '</p>'];
+		}
+
+		$since = self::get_date_threshold($period);
+
+		$where_clause = $period === 'all'
+			? "WHERE is_spam = 0"
+			: $wpdb->prepare("WHERE is_spam = 0 AND created_at >= %s", $since);
+
+		$count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} {$where_clause}");
+
+		$rows = $wpdb->get_results(
+			"SELECT id, name, email, message, is_read, created_at FROM {$table} {$where_clause} ORDER BY created_at DESC LIMIT 50"
+		);
+
+		$html = self::build_messages_table($rows);
+
+		return ['count' => $count, 'html' => $html];
 	}
 
 	/* ──────────────────────────────────
@@ -228,50 +222,34 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 
 		$since = self::get_date_threshold($period);
 
-		// Emails sent per period
-		$where_since = $period === 'all' ? '' : $wpdb->prepare("AND post_date >= %s", $since);
-		$sent_rows = $wpdb->get_results(
-			"SELECT DATE_FORMAT(post_date, '{$group_format}') AS period_key, COUNT(*) AS cnt
-			FROM {$wpdb->posts}
-			WHERE post_type = 'mailpn_rec' AND post_status IN ('publish','private') {$where_since}
-			GROUP BY period_key ORDER BY period_key ASC",
-			ARRAY_A
-		);
-		$sent_map = [];
-		foreach ($sent_rows as $r) { $sent_map[$r['period_key']] = (int) $r['cnt']; }
+		$post_types = [
+			'organizations' => 'pn_cm_organization',
+			'budgets'       => 'pn_cm_budget',
+			'invoices'      => 'pn_cm_invoice',
+		];
 
-		// Emails opened per period
-		$opened_rows = $wpdb->get_results(
-			"SELECT DATE_FORMAT(p.post_date, '{$group_format}') AS period_key, COUNT(DISTINCT pm.post_id) AS cnt
-			FROM {$wpdb->postmeta} pm
-			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-			WHERE pm.meta_key = '_mailpn_opened' AND pm.meta_value = '1'
-			AND p.post_type = 'mailpn_rec' {$where_since}
-			GROUP BY period_key ORDER BY period_key ASC",
-			ARRAY_A
-		);
-		$opened_map = [];
-		foreach ($opened_rows as $r) { $opened_map[$r['period_key']] = (int) $r['cnt']; }
-
-		// Clicks per period
-		$table_clicks = $wpdb->prefix . 'mailpn_click_tracking';
-		$clicked_map = [];
-		if ($wpdb->get_var("SHOW TABLES LIKE '{$table_clicks}'") === $table_clicks) {
-			$click_where = $period === 'all' ? '' : $wpdb->prepare("WHERE clicked_at >= %s", $since);
-			$click_rows = $wpdb->get_results(
-				"SELECT DATE_FORMAT(clicked_at, '{$group_format}') AS period_key, COUNT(*) AS cnt
-				FROM {$table_clicks} {$click_where}
-				GROUP BY period_key ORDER BY period_key ASC",
+		$maps = [];
+		foreach ($post_types as $key => $pt) {
+			$where_since = $period === 'all' ? '' : $wpdb->prepare("AND post_date >= %s", $since);
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT DATE_FORMAT(post_date, %s) AS period_key, COUNT(*) AS cnt
+					FROM {$wpdb->posts}
+					WHERE post_type = %s AND post_status IN ('publish','private') {$where_since}
+					GROUP BY period_key ORDER BY period_key ASC",
+					$group_format,
+					$pt
+				),
 				ARRAY_A
 			);
-			foreach ($click_rows as $r) { $clicked_map[$r['period_key']] = (int) $r['cnt']; }
+			$map = [];
+			foreach ($rows as $r) { $map[$r['period_key']] = (int) $r['cnt']; }
+			$maps[$key] = $map;
 		}
 
 		// Build labels + data arrays
 		$labels = [];
-		$data_sent = [];
-		$data_opened = [];
-		$data_clicked = [];
+		$data = ['organizations' => [], 'budgets' => [], 'invoices' => []];
 
 		$now = current_time('timestamp');
 
@@ -295,16 +273,16 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 			}
 
 			$labels[] = $label;
-			$data_sent[] = $sent_map[$key] ?? 0;
-			$data_opened[] = $opened_map[$key] ?? 0;
-			$data_clicked[] = $clicked_map[$key] ?? 0;
+			foreach ($maps as $mk => $mv) {
+				$data[$mk][] = $mv[$key] ?? 0;
+			}
 		}
 
 		return [
-			'labels'  => $labels,
-			'sent'    => $data_sent,
-			'opened'  => $data_opened,
-			'clicked' => $data_clicked,
+			'labels'        => $labels,
+			'organizations' => $data['organizations'],
+			'budgets'       => $data['budgets'],
+			'invoices'      => $data['invoices'],
 		];
 	}
 
@@ -312,39 +290,35 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 	   HTML helpers — tables
 	   ────────────────────────────────── */
 
-	private static function build_emails_table($rows, $type = 'sent') {
+	private static function build_posts_table($rows, $post_type) {
 		if (empty($rows)) {
 			return '<p class="pn-cm-ms-empty">' . esc_html__('No data for this period.', 'pn-customers-manager') . '</p>';
 		}
 
-		$icon = $type === 'opened' ? 'mark_email_read' : 'send';
+		$icons = [
+			'pn_cm_organization' => 'business',
+			'pn_cm_budget'       => 'request_quote',
+			'pn_cm_invoice'      => 'receipt_long',
+		];
+		$icon = $icons[$post_type] ?? 'article';
 
 		ob_start();
 		?>
 		<table class="pn-cm-ms-table">
 			<thead>
 				<tr>
-					<th><?php esc_html_e('Subject', 'pn-customers-manager'); ?></th>
+					<th><?php esc_html_e('Title', 'pn-customers-manager'); ?></th>
 					<th><?php esc_html_e('Date', 'pn-customers-manager'); ?></th>
-					<th><?php esc_html_e('Status', 'pn-customers-manager'); ?></th>
 					<th><?php esc_html_e('Actions', 'pn-customers-manager'); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php foreach ($rows as $row): ?>
 					<?php
-					$post_id = is_object($row) ? ($row->ID ?? 0) : 0;
-					$title   = is_object($row) ? ($row->post_title ?? '—') : '—';
-					$date    = is_object($row) ? ($row->post_date ?? '') : '';
+					$post_id  = $row->ID ?? 0;
+					$title    = $row->post_title ?: '—';
+					$date     = $row->post_date ?? '';
 					$edit_url = $post_id ? get_edit_post_link($post_id, 'raw') : '#';
-
-					// Check open/click status
-					$is_opened = $post_id ? get_post_meta($post_id, '_mailpn_opened', true) : false;
-					$status_icon = $is_opened ? 'mark_email_read' : 'mark_email_unread';
-					$status_label = $is_opened
-						? __('Opened', 'pn-customers-manager')
-						: __('Not opened', 'pn-customers-manager');
-					$status_class = $is_opened ? 'pn-cm-ms-status-opened' : 'pn-cm-ms-status-pending';
 					?>
 					<tr>
 						<td>
@@ -357,16 +331,10 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 							<i class="material-icons-outlined pn-cm-ms-icon">schedule</i>
 							<?php echo esc_html(date_i18n(get_option('date_format') . ' H:i', strtotime($date))); ?>
 						</td>
-						<td>
-							<span class="pn-cm-ms-status <?php echo esc_attr($status_class); ?>">
-								<i class="material-icons-outlined pn-cm-ms-icon"><?php echo esc_html($status_icon); ?></i>
-								<?php echo esc_html($status_label); ?>
-							</span>
-						</td>
 						<td class="pn-cm-ms-actions">
 							<?php if ($edit_url !== '#'): ?>
-								<a href="<?php echo esc_url($edit_url); ?>" target="_blank" title="<?php esc_attr_e('View', 'pn-customers-manager'); ?>">
-									<i class="material-icons-outlined">visibility</i>
+								<a href="<?php echo esc_url($edit_url); ?>" target="_blank" title="<?php esc_attr_e('Edit', 'pn-customers-manager'); ?>">
+									<i class="material-icons-outlined">edit</i>
 								</a>
 							<?php endif; ?>
 						</td>
@@ -378,7 +346,7 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 		return ob_get_clean();
 	}
 
-	private static function build_clicks_table($rows) {
+	private static function build_conversations_table($rows) {
 		if (empty($rows)) {
 			return '<p class="pn-cm-ms-empty">' . esc_html__('No data for this period.', 'pn-customers-manager') . '</p>';
 		}
@@ -388,38 +356,77 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 		<table class="pn-cm-ms-table">
 			<thead>
 				<tr>
+					<th><?php esc_html_e('Phone', 'pn-customers-manager'); ?></th>
+					<th><?php esc_html_e('Status', 'pn-customers-manager'); ?></th>
+					<th><?php esc_html_e('Date', 'pn-customers-manager'); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($rows as $row): ?>
+					<tr>
+						<td>
+							<i class="material-icons-outlined pn-cm-ms-icon">chat</i>
+							<?php echo esc_html($row->phone ?? '—'); ?>
+						</td>
+						<td>
+							<span class="pn-cm-ms-status pn-cm-ms-status-opened">
+								<i class="material-icons-outlined pn-cm-ms-icon">check_circle</i>
+								<?php echo esc_html($row->status ?? 'active'); ?>
+							</span>
+						</td>
+						<td>
+							<i class="material-icons-outlined pn-cm-ms-icon">schedule</i>
+							<?php echo esc_html(date_i18n(get_option('date_format') . ' H:i', strtotime($row->created_at ?? ''))); ?>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php
+		return ob_get_clean();
+	}
+
+	private static function build_messages_table($rows) {
+		if (empty($rows)) {
+			return '<p class="pn-cm-ms-empty">' . esc_html__('No data for this period.', 'pn-customers-manager') . '</p>';
+		}
+
+		ob_start();
+		?>
+		<table class="pn-cm-ms-table">
+			<thead>
+				<tr>
+					<th><?php esc_html_e('Name', 'pn-customers-manager'); ?></th>
 					<th><?php esc_html_e('Email', 'pn-customers-manager'); ?></th>
-					<th><?php esc_html_e('Clicked URL', 'pn-customers-manager'); ?></th>
+					<th><?php esc_html_e('Status', 'pn-customers-manager'); ?></th>
 					<th><?php esc_html_e('Date', 'pn-customers-manager'); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php foreach ($rows as $row): ?>
 					<?php
-					$title = $row->post_title ?? '—';
-					$url   = $row->url ?? '';
-					$date  = $row->clicked_at ?? '';
-
-					// Shorten URL for display
-					$display_url = $url;
-					if (strlen($display_url) > 50) {
-						$display_url = substr($display_url, 0, 47) . '...';
-					}
+					$is_read = !empty($row->is_read);
+					$status_icon = $is_read ? 'mark_email_read' : 'mark_email_unread';
+					$status_label = $is_read
+						? __('Read', 'pn-customers-manager')
+						: __('Unread', 'pn-customers-manager');
+					$status_class = $is_read ? 'pn-cm-ms-status-opened' : 'pn-cm-ms-status-pending';
 					?>
 					<tr>
 						<td>
-							<i class="material-icons-outlined pn-cm-ms-icon">email</i>
-							<?php echo esc_html($title); ?>
+							<i class="material-icons-outlined pn-cm-ms-icon">person</i>
+							<?php echo esc_html($row->name ?? '—'); ?>
 						</td>
+						<td><?php echo esc_html($row->email ?? '—'); ?></td>
 						<td>
-							<a href="<?php echo esc_url($url); ?>" target="_blank" class="pn-cm-ms-link" title="<?php echo esc_attr($url); ?>">
-								<i class="material-icons-outlined pn-cm-ms-icon">link</i>
-								<?php echo esc_html($display_url); ?>
-							</a>
+							<span class="pn-cm-ms-status <?php echo esc_attr($status_class); ?>">
+								<i class="material-icons-outlined pn-cm-ms-icon"><?php echo esc_html($status_icon); ?></i>
+								<?php echo esc_html($status_label); ?>
+							</span>
 						</td>
 						<td>
 							<i class="material-icons-outlined pn-cm-ms-icon">schedule</i>
-							<?php echo esc_html(date_i18n(get_option('date_format') . ' H:i', strtotime($date))); ?>
+							<?php echo esc_html(date_i18n(get_option('date_format') . ' H:i', strtotime($row->created_at ?? ''))); ?>
 						</td>
 					</tr>
 				<?php endforeach; ?>
@@ -440,46 +447,62 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 		}
 
 		$period_labels = self::get_period_labels();
-		$sent    = self::get_emails_sent($period);
-		$opened  = self::get_emails_opened($period);
-		$clicked = self::get_emails_clicked($period);
-		$open_rate  = self::get_open_rate($sent['count'], $opened['count']);
-		$click_rate = self::get_click_rate($sent['count'], $clicked['count']);
-		$charts  = self::get_charts_data($period);
+		$organizations = self::get_organizations_created($period);
+		$budgets       = self::get_budgets_created($period);
+		$invoices      = self::get_invoices_created($period);
+		$conversations = self::get_conversations_count($period);
+		$messages      = self::get_messages_received($period);
+		$charts        = self::get_charts_data($period);
 
 		echo wp_json_encode([
 			'error_key' => '',
 			'widgets'   => [
-				'sent'       => ['count' => $sent['count']],
-				'opened'     => ['count' => $opened['count']],
-				'clicked'    => ['count' => $clicked['count']],
-				'open_rate'  => ['count' => $open_rate . '%'],
-				'click_rate' => ['count' => $click_rate . '%'],
+				'organizations' => ['count' => $organizations['count']],
+				'budgets'       => ['count' => $budgets['count']],
+				'invoices'      => ['count' => $invoices['count']],
+				'conversations' => ['count' => $conversations['count']],
+				'messages'      => ['count' => $messages['count']],
 			],
 			'popups'    => [
-				'sent'    => [
+				'organizations' => [
 					'title' => sprintf(
 						/* translators: %s: period label */
-						__('Emails sent (%s)', 'pn-customers-manager'),
+						__('Organizations (%s)', 'pn-customers-manager'),
 						$period_labels[$period]
 					),
-					'html' => $sent['html'],
+					'html' => $organizations['html'],
 				],
-				'opened'  => [
+				'budgets'  => [
 					'title' => sprintf(
 						/* translators: %s: period label */
-						__('Emails opened (%s)', 'pn-customers-manager'),
+						__('Budgets (%s)', 'pn-customers-manager'),
 						$period_labels[$period]
 					),
-					'html' => $opened['html'],
+					'html' => $budgets['html'],
 				],
-				'clicked' => [
+				'invoices' => [
 					'title' => sprintf(
 						/* translators: %s: period label */
-						__('Clicks (%s)', 'pn-customers-manager'),
+						__('Invoices (%s)', 'pn-customers-manager'),
 						$period_labels[$period]
 					),
-					'html' => $clicked['html'],
+					'html' => $invoices['html'],
+				],
+				'conversations' => [
+					'title' => sprintf(
+						/* translators: %s: period label */
+						__('WhatsApp Conversations (%s)', 'pn-customers-manager'),
+						$period_labels[$period]
+					),
+					'html' => $conversations['html'],
+				],
+				'messages' => [
+					'title' => sprintf(
+						/* translators: %s: period label */
+						__('Contact Messages (%s)', 'pn-customers-manager'),
+						$period_labels[$period]
+					),
+					'html' => $messages['html'],
 				],
 			],
 			'charts'    => $charts,
@@ -496,14 +519,6 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 	   ────────────────────────────────── */
 
 	public static function render_page() {
-		if (!self::is_mailpn_active()) {
-			echo '<div class="wrap"><h1>' . esc_html__('Statistics', 'pn-customers-manager') . '</h1>';
-			echo '<div class="notice notice-warning"><p>';
-			esc_html_e('MailPn plugin is not installed or active. Install and activate MailPn to see email statistics.', 'pn-customers-manager');
-			echo '</p></div></div>';
-			return;
-		}
-
 		$period = isset($_GET['period']) ? sanitize_text_field(wp_unslash($_GET['period'])) : 'week';
 		if (!in_array($period, self::$periods)) {
 			$period = 'week';
@@ -514,26 +529,26 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 		$period_label = $period_labels[$period];
 
 		// Gather data
-		$sent    = self::get_emails_sent($period);
-		$opened  = self::get_emails_opened($period);
-		$clicked = self::get_emails_clicked($period);
-		$open_rate  = self::get_open_rate($sent['count'], $opened['count']);
-		$click_rate = self::get_click_rate($sent['count'], $clicked['count']);
-		$charts  = self::get_charts_data($period);
+		$organizations = self::get_organizations_created($period);
+		$budgets       = self::get_budgets_created($period);
+		$invoices      = self::get_invoices_created($period);
+		$conversations = self::get_conversations_count($period);
+		$messages      = self::get_messages_received($period);
+		$charts        = self::get_charts_data($period);
 
 		// Popup titles
 		$popup_titles = [
-			'sent'    => sprintf(__('Emails sent (%s)', 'pn-customers-manager'), $period_label),
-			'opened'  => sprintf(__('Emails opened (%s)', 'pn-customers-manager'), $period_label),
-			'clicked' => sprintf(__('Clicks (%s)', 'pn-customers-manager'), $period_label),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'organizations' => sprintf(__('Organizations (%s)', 'pn-customers-manager'), $period_label),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'budgets'       => sprintf(__('Budgets (%s)', 'pn-customers-manager'), $period_label),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'invoices'      => sprintf(__('Invoices (%s)', 'pn-customers-manager'), $period_label),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'conversations' => sprintf(__('WhatsApp Conversations (%s)', 'pn-customers-manager'), $period_label),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'messages'      => sprintf(__('Contact Messages (%s)', 'pn-customers-manager'), $period_label),
 		];
-
-		// Widget title templates (for JS replacement)
-		$widget_tpl_sent    = __('Emails sent (%s)', 'pn-customers-manager');
-		$widget_tpl_opened  = __('Emails opened (%s)', 'pn-customers-manager');
-		$widget_tpl_clicked = __('Clicks (%s)', 'pn-customers-manager');
-		$widget_tpl_open_rate  = __('Open rate (%s)', 'pn-customers-manager');
-		$widget_tpl_click_rate = __('Click rate (%s)', 'pn-customers-manager');
 		?>
 		<div class="wrap pn-cm-ms-wrap">
 			<!-- Header -->
@@ -556,48 +571,58 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 
 			<!-- Stat cards row -->
 			<div class="pn-cm-ms-widgets">
-				<!-- Sent -->
-				<div class="pn-cm-ms-widget pn-cm-ms-bg-sent" data-popup="pn-cm-ms-popup-sent" data-widget="sent">
-					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">send</i></div>
-					<div class="pn-cm-ms-widget-value"><?php echo esc_html($sent['count']); ?></div>
+				<!-- Organizations -->
+				<div class="pn-cm-ms-widget pn-cm-ms-bg-organizations" data-popup="pn-cm-ms-popup-organizations" data-widget="organizations">
+					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">business</i></div>
+					<div class="pn-cm-ms-widget-value"><?php echo esc_html($organizations['count']); ?></div>
 					<div class="pn-cm-ms-widget-title">
-						<?php printf(esc_html__('Emails sent (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
+						<?php
+						/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+						printf(esc_html__('Organizations (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
 					</div>
 				</div>
 
-				<!-- Opened -->
-				<div class="pn-cm-ms-widget pn-cm-ms-bg-opened" data-popup="pn-cm-ms-popup-opened" data-widget="opened">
-					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">mark_email_read</i></div>
-					<div class="pn-cm-ms-widget-value"><?php echo esc_html($opened['count']); ?></div>
+				<!-- Budgets -->
+				<div class="pn-cm-ms-widget pn-cm-ms-bg-budgets" data-popup="pn-cm-ms-popup-budgets" data-widget="budgets">
+					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">request_quote</i></div>
+					<div class="pn-cm-ms-widget-value"><?php echo esc_html($budgets['count']); ?></div>
 					<div class="pn-cm-ms-widget-title">
-						<?php printf(esc_html__('Emails opened (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
+						<?php
+						/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+						printf(esc_html__('Budgets (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
 					</div>
 				</div>
 
-				<!-- Clicked -->
-				<div class="pn-cm-ms-widget pn-cm-ms-bg-clicked" data-popup="pn-cm-ms-popup-clicked" data-widget="clicked">
-					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">ads_click</i></div>
-					<div class="pn-cm-ms-widget-value"><?php echo esc_html($clicked['count']); ?></div>
+				<!-- Invoices -->
+				<div class="pn-cm-ms-widget pn-cm-ms-bg-invoices" data-popup="pn-cm-ms-popup-invoices" data-widget="invoices">
+					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">receipt_long</i></div>
+					<div class="pn-cm-ms-widget-value"><?php echo esc_html($invoices['count']); ?></div>
 					<div class="pn-cm-ms-widget-title">
-						<?php printf(esc_html__('Clicks (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
+						<?php
+						/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+						printf(esc_html__('Invoices (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
 					</div>
 				</div>
 
-				<!-- Open Rate -->
-				<div class="pn-cm-ms-widget pn-cm-ms-bg-open-rate" data-widget="open_rate">
-					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">percent</i></div>
-					<div class="pn-cm-ms-widget-value"><?php echo esc_html($open_rate); ?>%</div>
+				<!-- Conversations -->
+				<div class="pn-cm-ms-widget pn-cm-ms-bg-conversations" data-popup="pn-cm-ms-popup-conversations" data-widget="conversations">
+					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">chat</i></div>
+					<div class="pn-cm-ms-widget-value"><?php echo esc_html($conversations['count']); ?></div>
 					<div class="pn-cm-ms-widget-title">
-						<?php printf(esc_html__('Open rate (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
+						<?php
+						/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+						printf(esc_html__('WhatsApp Conversations (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
 					</div>
 				</div>
 
-				<!-- Click Rate -->
-				<div class="pn-cm-ms-widget pn-cm-ms-bg-click-rate" data-widget="click_rate">
-					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">trending_up</i></div>
-					<div class="pn-cm-ms-widget-value"><?php echo esc_html($click_rate); ?>%</div>
+				<!-- Messages -->
+				<div class="pn-cm-ms-widget pn-cm-ms-bg-messages" data-popup="pn-cm-ms-popup-messages" data-widget="messages">
+					<div class="pn-cm-ms-widget-icon"><i class="material-icons-outlined">inbox</i></div>
+					<div class="pn-cm-ms-widget-value"><?php echo esc_html($messages['count']); ?></div>
 					<div class="pn-cm-ms-widget-title">
-						<?php printf(esc_html__('Click rate (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
+						<?php
+						/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+						printf(esc_html__('Contact Messages (%s)', 'pn-customers-manager'), esc_html($period_label)); ?>
 					</div>
 				</div>
 			</div>
@@ -616,36 +641,36 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 						</div>
 					</div>
 
-					<!-- Sent chart -->
+					<!-- Organizations chart -->
 					<div class="pn-cm-ms-chart-card">
 						<h3>
-							<i class="material-icons-outlined pn-cm-ms-valign">send</i>
-							<?php esc_html_e('Emails sent', 'pn-customers-manager'); ?>
+							<i class="material-icons-outlined pn-cm-ms-valign">business</i>
+							<?php esc_html_e('Organizations', 'pn-customers-manager'); ?>
 						</h3>
 						<div class="pn-cm-ms-chart-wrap">
-							<canvas id="pn-cm-ms-chart-sent"></canvas>
+							<canvas id="pn-cm-ms-chart-organizations"></canvas>
 						</div>
 					</div>
 
-					<!-- Opened chart -->
+					<!-- Budgets chart -->
 					<div class="pn-cm-ms-chart-card">
 						<h3>
-							<i class="material-icons-outlined pn-cm-ms-valign">mark_email_read</i>
-							<?php esc_html_e('Emails opened', 'pn-customers-manager'); ?>
+							<i class="material-icons-outlined pn-cm-ms-valign">request_quote</i>
+							<?php esc_html_e('Budgets', 'pn-customers-manager'); ?>
 						</h3>
 						<div class="pn-cm-ms-chart-wrap">
-							<canvas id="pn-cm-ms-chart-opened"></canvas>
+							<canvas id="pn-cm-ms-chart-budgets"></canvas>
 						</div>
 					</div>
 
-					<!-- Clicks chart -->
+					<!-- Invoices chart -->
 					<div class="pn-cm-ms-chart-card pn-cm-ms-chart-wide">
 						<h3>
-							<i class="material-icons-outlined pn-cm-ms-valign">ads_click</i>
-							<?php esc_html_e('Clicks', 'pn-customers-manager'); ?>
+							<i class="material-icons-outlined pn-cm-ms-valign">receipt_long</i>
+							<?php esc_html_e('Invoices', 'pn-customers-manager'); ?>
 						</h3>
 						<div class="pn-cm-ms-chart-wrap">
-							<canvas id="pn-cm-ms-chart-clicked"></canvas>
+							<canvas id="pn-cm-ms-chart-invoices"></canvas>
 						</div>
 					</div>
 				</div>
@@ -654,36 +679,59 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 			<!-- Popups (hidden, shown on card click) -->
 			<div class="pn-customers-manager-popup-overlay pn-cm-ms-overlay" style="display:none;"></div>
 
-			<div id="pn-cm-ms-popup-sent" class="pn-cm-ms-popup" style="display:none;" data-popup-type="sent">
+			<div id="pn-cm-ms-popup-organizations" class="pn-cm-ms-popup" style="display:none;" data-popup-type="organizations">
 				<div class="pn-cm-ms-popup-content">
 					<button class="pn-cm-ms-popup-close"><i class="material-icons-outlined">close</i></button>
 					<div class="pn-cm-ms-popup-inner">
-						<h2><?php echo esc_html($popup_titles['sent']); ?></h2>
-						<div class="pn-cm-ms-popup-body"><?php echo $sent['html']; ?></div>
+						<h2><?php echo esc_html($popup_titles['organizations']); ?></h2>
+						<div class="pn-cm-ms-popup-body"><?php echo wp_kses_post($organizations['html']); ?></div>
 					</div>
 				</div>
 			</div>
 
-			<div id="pn-cm-ms-popup-opened" class="pn-cm-ms-popup" style="display:none;" data-popup-type="opened">
+			<div id="pn-cm-ms-popup-budgets" class="pn-cm-ms-popup" style="display:none;" data-popup-type="budgets">
 				<div class="pn-cm-ms-popup-content">
 					<button class="pn-cm-ms-popup-close"><i class="material-icons-outlined">close</i></button>
 					<div class="pn-cm-ms-popup-inner">
-						<h2><?php echo esc_html($popup_titles['opened']); ?></h2>
-						<div class="pn-cm-ms-popup-body"><?php echo $opened['html']; ?></div>
+						<h2><?php echo esc_html($popup_titles['budgets']); ?></h2>
+						<div class="pn-cm-ms-popup-body"><?php echo wp_kses_post($budgets['html']); ?></div>
 					</div>
 				</div>
 			</div>
 
-			<div id="pn-cm-ms-popup-clicked" class="pn-cm-ms-popup" style="display:none;" data-popup-type="clicked">
+			<div id="pn-cm-ms-popup-invoices" class="pn-cm-ms-popup" style="display:none;" data-popup-type="invoices">
 				<div class="pn-cm-ms-popup-content">
 					<button class="pn-cm-ms-popup-close"><i class="material-icons-outlined">close</i></button>
 					<div class="pn-cm-ms-popup-inner">
-						<h2><?php echo esc_html($popup_titles['clicked']); ?></h2>
-						<div class="pn-cm-ms-popup-body"><?php echo $clicked['html']; ?></div>
+						<h2><?php echo esc_html($popup_titles['invoices']); ?></h2>
+						<div class="pn-cm-ms-popup-body"><?php echo wp_kses_post($invoices['html']); ?></div>
+					</div>
+				</div>
+			</div>
+
+			<div id="pn-cm-ms-popup-conversations" class="pn-cm-ms-popup" style="display:none;" data-popup-type="conversations">
+				<div class="pn-cm-ms-popup-content">
+					<button class="pn-cm-ms-popup-close"><i class="material-icons-outlined">close</i></button>
+					<div class="pn-cm-ms-popup-inner">
+						<h2><?php echo esc_html($popup_titles['conversations']); ?></h2>
+						<div class="pn-cm-ms-popup-body"><?php echo wp_kses_post($conversations['html']); ?></div>
+					</div>
+				</div>
+			</div>
+
+			<div id="pn-cm-ms-popup-messages" class="pn-cm-ms-popup" style="display:none;" data-popup-type="messages">
+				<div class="pn-cm-ms-popup-content">
+					<button class="pn-cm-ms-popup-close"><i class="material-icons-outlined">close</i></button>
+					<div class="pn-cm-ms-popup-inner">
+						<h2><?php echo esc_html($popup_titles['messages']); ?></h2>
+						<div class="pn-cm-ms-popup-body"><?php echo wp_kses_post($messages['html']); ?></div>
 					</div>
 				</div>
 			</div>
 		</div>
+
+		<!-- Activity Log -->
+		<?php echo wp_kses_post(PN_CUSTOMERS_MANAGER_Activity_Log::render_section()); ?>
 		<?php
 
 		self::enqueue_assets($charts, $period);
@@ -720,13 +768,40 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 			true
 		);
 
+		// Activity Log CSS
+		wp_enqueue_style(
+			'pn-cm-activity-log',
+			PN_CUSTOMERS_MANAGER_URL . 'assets/css/admin/pn-customers-manager-activity-log.css',
+			[],
+			PN_CUSTOMERS_MANAGER_VERSION
+		);
+
+		// Activity Log JS
+		wp_enqueue_script(
+			'pn-cm-activity-log',
+			PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-activity-log.js',
+			['jquery'],
+			PN_CUSTOMERS_MANAGER_VERSION,
+			true
+		);
+
+		wp_localize_script('pn-cm-activity-log', 'pnCmActivityLog', [
+			'ajaxUrl' => admin_url('admin-ajax.php'),
+			'nonce'   => wp_create_nonce('pn-customers-manager-nonce'),
+		]);
+
 		// Widget title templates for JS period-change
 		$widget_labels = [
-			'sent'       => __('Emails sent (%s)', 'pn-customers-manager'),
-			'opened'     => __('Emails opened (%s)', 'pn-customers-manager'),
-			'clicked'    => __('Clicks (%s)', 'pn-customers-manager'),
-			'open_rate'  => __('Open rate (%s)', 'pn-customers-manager'),
-			'click_rate' => __('Click rate (%s)', 'pn-customers-manager'),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'organizations' => __('Organizations (%s)', 'pn-customers-manager'),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'budgets'       => __('Budgets (%s)', 'pn-customers-manager'),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'invoices'      => __('Invoices (%s)', 'pn-customers-manager'),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'conversations' => __('WhatsApp Conversations (%s)', 'pn-customers-manager'),
+			/* translators: %s: selected time period label (e.g. "Last 30 days", "This year") */
+			'messages'      => __('Contact Messages (%s)', 'pn-customers-manager'),
 		];
 
 		wp_localize_script('pn-cm-mail-stats', 'pnCmMailStats', [
@@ -736,10 +811,10 @@ class PN_CUSTOMERS_MANAGER_Mail_Stats {
 			'period'       => $period,
 			'widgetLabels' => $widget_labels,
 			'i18n'         => [
-				'sent'     => __('Sent', 'pn-customers-manager'),
-				'opened'   => __('Opened', 'pn-customers-manager'),
-				'clicked'  => __('Clicks', 'pn-customers-manager'),
-				'loading'  => __('Loading...', 'pn-customers-manager'),
+				'organizations' => __('Organizations', 'pn-customers-manager'),
+				'budgets'       => __('Budgets', 'pn-customers-manager'),
+				'invoices'      => __('Invoices', 'pn-customers-manager'),
+				'loading'       => __('Loading...', 'pn-customers-manager'),
 			],
 		]);
 	}

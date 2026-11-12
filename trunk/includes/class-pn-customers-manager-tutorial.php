@@ -255,7 +255,9 @@ class PN_CUSTOMERS_MANAGER_Tutorial
     ?>
     <div class="pn-customers-manager-tutorial-progress">
       <span class="pn-customers-manager-tutorial-progress-text">
-        <?php echo esc_html(sprintf(__('Step %d of %d', 'pn-customers-manager'), $current, $total)); ?>
+        <?php
+        // translators: %1$d is the current step number, %2$d is the total number of steps
+        echo esc_html(sprintf(__('Step %1$d of %2$d', 'pn-customers-manager'), $current, $total)); ?>
       </span>
       <div class="pn-customers-manager-tutorial-progress-bar">
         <div class="pn-customers-manager-tutorial-progress-fill" style="width: <?php echo esc_attr($percentage); ?>%;"></div>

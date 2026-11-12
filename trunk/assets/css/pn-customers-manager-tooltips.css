@@ -1,7 +1,7 @@
 .pn-customers-manager-tooltip-box,
 .hostpn-tooltip-box {
     position: fixed;
-    z-index: 9997;
+    z-index: 100000;
     max-width: 300px;
     background: #232323;
     color: #fff;

@@ -82,6 +82,56 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * ================================================================ */
 
   /**
+   * Early webhook handler — runs at init (priority 1), before REST API processing.
+   * Intercepts GET verification requests to avoid REST API output buffering issues.
+   */
+  public static function early_webhook_verify() {
+    if (!isset($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_METHOD'] !== 'GET') {
+      return;
+    }
+
+    $request_uri = $_SERVER['REQUEST_URI'];
+
+    $is_webhook = (
+      strpos($request_uri, '/wp-json/pn-cm/v1/whatsapp/webhook') !== false ||
+      (strpos($request_uri, 'rest_route') !== false && strpos($request_uri, 'pn-cm/v1/whatsapp/webhook') !== false)
+    );
+
+    if (!$is_webhook) {
+      return;
+    }
+
+    $mode      = isset($_GET['hub_mode'])         ? sanitize_text_field(wp_unslash($_GET['hub_mode']))         : '';
+    $token     = isset($_GET['hub_verify_token'])  ? sanitize_text_field(wp_unslash($_GET['hub_verify_token']))  : '';
+    $challenge = isset($_GET['hub_challenge'])     ? sanitize_text_field(wp_unslash($_GET['hub_challenge']))     : '';
+
+    if (empty($mode)) {
+      return;
+    }
+
+    $stored_token = get_option('pn_customers_manager_whatsapp_verify_token', '');
+
+    self::log('Webhook verify — mode=' . $mode . ' token_match=' . ($token === $stored_token ? 'yes' : 'no'));
+
+    if ($mode === 'subscribe' && $token === $stored_token && !empty($stored_token)) {
+      while (ob_get_level()) { ob_end_clean(); }
+      $safe_challenge = esc_html($challenge);
+      http_response_code(200);
+      header('Content-Type: text/plain; charset=utf-8');
+      header('Content-Length: ' . strlen($safe_challenge));
+      header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+      echo $safe_challenge; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above via esc_html().
+      exit;
+    }
+
+    while (ob_get_level()) { ob_end_clean(); }
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo 'Verification failed';
+    exit;
+  }
+
+  /**
    * Register REST API routes for the WhatsApp webhook.
    */
   public static function register_routes() {
@@ -90,6 +140,11 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         'methods'             => 'GET',
         'callback'            => [__CLASS__, 'handle_webhook_verify'],
         'permission_callback' => '__return_true',
+        'args'                => [
+          'hub_mode'         => [ 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ],
+          'hub_verify_token' => [ 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ],
+          'hub_challenge'    => [ 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ],
+        ],
       ],
       [
         'methods'             => 'POST',
@@ -97,35 +152,22 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         'permission_callback' => '__return_true',
       ],
     ]);
+
   }
 
-  /* ================================================================
-   * WEBHOOK: Verification (GET)
-   * ================================================================ */
-
   /**
-   * Handle Meta webhook verification challenge.
-   *
-   * @param WP_REST_Request $request
+   * Handle Meta webhook verification challenge (REST API fallback).
    */
   public static function handle_webhook_verify($request) {
-    $mode      = isset($_GET['hub_mode'])         ? sanitize_text_field(wp_unslash($_GET['hub_mode']))         : '';
-    $token     = isset($_GET['hub_verify_token'])  ? sanitize_text_field(wp_unslash($_GET['hub_verify_token']))  : '';
-    $challenge = isset($_GET['hub_challenge'])     ? sanitize_text_field(wp_unslash($_GET['hub_challenge']))     : '';
-
-    if (empty($mode)) {
-      $mode      = isset($_GET['hub.mode'])         ? sanitize_text_field(wp_unslash($_GET['hub.mode']))         : '';
-      $token     = isset($_GET['hub.verify_token'])  ? sanitize_text_field(wp_unslash($_GET['hub.verify_token']))  : '';
-      $challenge = isset($_GET['hub.challenge'])     ? sanitize_text_field(wp_unslash($_GET['hub.challenge']))     : '';
-    }
+    $mode      = $request->get_param('hub_mode')         ?: '';
+    $token     = $request->get_param('hub_verify_token')  ?: '';
+    $challenge = $request->get_param('hub_challenge')     ?: '';
 
     $stored_token = get_option('pn_customers_manager_whatsapp_verify_token', '');
 
-    self::log('Webhook verify attempt — mode=' . $mode . ' token_match=' . ($token === $stored_token ? 'yes' : 'no'));
-
     if ($mode === 'subscribe' && $token === $stored_token && !empty($stored_token)) {
       status_header(200);
-      header('Content-Type: text/plain');
+      header('Content-Type: text/plain; charset=utf-8');
       echo esc_html($challenge);
       exit;
     }
@@ -144,6 +186,10 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * @return WP_REST_Response
    */
   public static function handle_webhook_message($request) {
+    // Process any overdue scheduled templates on every incoming webhook.
+    // This ensures templates fire even when WP Cron is unreliable.
+    self::process_pending_template_events();
+
     $body = $request->get_json_params();
 
     self::log('Webhook POST received — payload: ' . wp_json_encode($body));
@@ -172,9 +218,10 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         $contacts = isset($change['value']['contacts']) ? $change['value']['contacts'] : [];
 
         foreach ($change['value']['messages'] as $message) {
-          self::log('Webhook — message type: ' . ($message['type'] ?? 'unknown') . ' from: ' . ($message['from'] ?? 'unknown'));
+          $msg_type = isset($message['type']) ? $message['type'] : '';
+          self::log('Webhook — message type: ' . ($msg_type ?: 'unknown') . ' from: ' . ($message['from'] ?? 'unknown'));
 
-          if (!isset($message['type']) || $message['type'] !== 'text') {
+          if (!in_array($msg_type, ['text', 'audio'], true)) {
             continue;
           }
 
@@ -190,7 +237,6 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
           }
 
           $from         = sanitize_text_field($message['from']);
-          $text         = sanitize_text_field($message['text']['body']);
           $contact_name = '';
 
           foreach ($contacts as $contact) {
@@ -202,28 +248,61 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
             }
           }
 
-          $pending_messages[] = [
-            'from'         => $from,
-            'text'         => $text,
-            'contact_name' => $contact_name,
-          ];
+          if ($msg_type === 'audio') {
+            if (empty(get_option('pn_customers_manager_audio_transcription_enabled', ''))) {
+              self::log('Webhook — audio message ignored (transcription disabled)');
+              continue;
+            }
+
+            $pending_messages[] = [
+              'from'               => $from,
+              'text'               => '',
+              'contact_name'       => $contact_name,
+              'audio_media_id'     => isset($message['audio']['id']) ? sanitize_text_field($message['audio']['id']) : '',
+              'audio_mime'         => isset($message['audio']['mime_type']) ? sanitize_text_field($message['audio']['mime_type']) : 'audio/ogg',
+              'is_reply'           => !empty($message['context']),
+              'quoted_context_id'  => isset($message['context']['id']) ? sanitize_text_field($message['context']['id']) : '',
+            ];
+          } else {
+            $pending_messages[] = [
+              'from'               => $from,
+              'text'               => sanitize_text_field($message['text']['body']),
+              'contact_name'       => $contact_name,
+              'is_reply'           => !empty($message['context']),
+              'quoted_context_id'  => isset($message['context']['id']) ? sanitize_text_field($message['context']['id']) : '',
+            ];
+          }
         }
       }
     }
 
     if (!empty($pending_messages)) {
       add_action('shutdown', function () use ($pending_messages) {
+        // Ensure PHP keeps running after the client disconnects.
+        ignore_user_abort(true);
+        set_time_limit(120);
+
         if (function_exists('fastcgi_finish_request')) {
           fastcgi_finish_request();
         } elseif (function_exists('litespeed_finish_request')) {
           litespeed_finish_request();
+        } else {
+          // Flush output for non-FPM environments.
+          if (ob_get_level()) {
+            ob_end_flush();
+          }
+          flush();
         }
 
         foreach ($pending_messages as $msg) {
           PN_CUSTOMERS_MANAGER_WhatsApp_AI::deferred_process_message(
             $msg['from'],
             $msg['text'],
-            $msg['contact_name']
+            $msg['contact_name'],
+            !empty($msg['audio_media_id']) ? $msg['audio_media_id'] : '',
+            isset($msg['audio_mime']) ? $msg['audio_mime'] : '',
+            !empty($msg['is_reply']),
+            isset($msg['quoted_context_id']) ? $msg['quoted_context_id'] : ''
           );
         }
       });
@@ -232,15 +311,602 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     return new WP_REST_Response(['status' => 'ok'], 200);
   }
 
+  /* ================================================================
+   * RESPONSE DELAY & MESSAGE BUFFERING
+   *
+   * To make the bot feel more human, we introduce a 10-second delay
+   * before processing a message.  If the customer sends additional
+   * messages during this window the timer resets and all messages are
+   * processed together as a single AI request.
+   * ================================================================ */
+
+  /** Delay in seconds before processing buffered messages. */
+  private static $response_delay = 10;
+
+  /**
+   * Buffer a message for a phone number and set/reset the response deadline.
+   *
+   * Uses wp_options with direct $wpdb queries to ensure cross-process visibility.
+   *
+   * @param string $phone
+   * @param array  $msg  Message data (text, contact_name, audio_*, is_reply).
+   */
+  private static function buffer_message($phone, $msg) {
+    global $wpdb;
+
+    $hash         = md5($phone);
+    $buffer_key   = 'pn_cm_wa_buf_' . $hash;
+    $deadline_key = 'pn_cm_wa_dl_' . $hash;
+    $fallback_key = 'pn_cm_wa_fb_' . $hash;
+
+    // Read buffer directly from DB, bypassing all cache layers.
+    $raw = $wpdb->get_var($wpdb->prepare(
+      "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s",
+      $buffer_key
+    ));
+    $buffer = $raw ? maybe_unserialize($raw) : [];
+    if (!is_array($buffer)) {
+      $buffer = [];
+    }
+    $buffer[] = $msg;
+
+    // Upsert buffer.
+    $serialized = maybe_serialize($buffer);
+    $buf_result = $wpdb->query($wpdb->prepare(
+      "INSERT INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')
+       ON DUPLICATE KEY UPDATE option_value = VALUES(option_value)",
+      $buffer_key,
+      $serialized
+    ));
+
+    // Upsert deadline (reset on every new message).
+    $new_deadline = time() + self::$response_delay;
+    $dl_result = $wpdb->query($wpdb->prepare(
+      "INSERT INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')
+       ON DUPLICATE KEY UPDATE option_value = VALUES(option_value)",
+      $deadline_key,
+      $new_deadline
+    ));
+
+    // Verify the buffer was actually persisted.
+    $verify = $wpdb->get_var($wpdb->prepare(
+      "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s",
+      $buffer_key
+    ));
+    $verify_count = 0;
+    if ($verify) {
+      $verify_data = maybe_unserialize($verify);
+      $verify_count = is_array($verify_data) ? count($verify_data) : 0;
+    }
+
+    self::log('buffer_message — phone=' . $phone . ' buffer_size=' . count($buffer) . ' deadline=' . $new_deadline . ' buf_write=' . var_export($buf_result, true) . ' dl_write=' . var_export($dl_result, true) . ' verify_count=' . $verify_count);
+
+    if ($verify_count === 0) {
+      self::log('buffer_message — WARNING: buffer verification FAILED, retrying with DELETE+INSERT. option_key=' . $buffer_key . ' last_error=' . $wpdb->last_error);
+
+      // Retry strategy 1: delete any stale rows, then insert fresh.
+      $wpdb->query($wpdb->prepare(
+        "DELETE FROM {$wpdb->options} WHERE option_name = %s",
+        $buffer_key
+      ));
+      $retry_result = $wpdb->query($wpdb->prepare(
+        "INSERT INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
+        $buffer_key,
+        $serialized
+      ));
+
+      // Verify again.
+      $verify2 = $wpdb->get_var($wpdb->prepare(
+        "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s",
+        $buffer_key
+      ));
+      $v2_count = 0;
+      if ($verify2) {
+        $v2_data = maybe_unserialize($verify2);
+        $v2_count = is_array($v2_data) ? count($v2_data) : 0;
+      }
+
+      self::log('buffer_message — retry result=' . var_export($retry_result, true) . ' verify2_count=' . $v2_count);
+
+      if ($v2_count === 0) {
+        // Retry strategy 2: use WordPress update_option API as last resort.
+        self::log('buffer_message — retry also failed, using update_option fallback');
+        delete_option($buffer_key);
+        update_option($buffer_key, $buffer, false);
+      }
+    }
+
+    // Always store a fallback copy via transient so wait_and_process_buffer
+    // can recover the messages if the primary buffer is lost.
+    $existing_fb = get_transient($fallback_key);
+    $fb_buffer   = (is_array($existing_fb) && !empty($existing_fb)) ? $existing_fb : [];
+    $fb_buffer[] = $msg;
+    set_transient($fallback_key, $fb_buffer, self::$response_delay * 6);
+  }
+
+  /**
+   * Acquire a MySQL-level lock for the given phone number.
+   * Uses GET_LOCK which is truly atomic across all PHP processes.
+   *
+   * @param  string $phone
+   * @return bool   true if lock was acquired.
+   */
+  private static function acquire_buffer_lock($phone) {
+    global $wpdb;
+    $lock_name = 'pn_cm_wa_' . md5($phone);
+    // Timeout 0 = non-blocking, return immediately if lock is held.
+    $result = $wpdb->get_var($wpdb->prepare("SELECT GET_LOCK(%s, 0)", $lock_name));
+    return (int) $result === 1;
+  }
+
+  /**
+   * Release the MySQL-level lock for a phone number.
+   *
+   * @param string $phone
+   */
+  private static function release_buffer_lock($phone) {
+    global $wpdb;
+    $lock_name = 'pn_cm_wa_' . md5($phone);
+    $wpdb->query($wpdb->prepare("SELECT RELEASE_LOCK(%s)", $lock_name));
+  }
+
+  /**
+   * Wait until the deadline expires (checking every second for resets),
+   * then collect all buffered messages and process them as one.
+   *
+   * Reads the deadline directly from the database on each iteration
+   * to detect resets made by other webhook processes.
+   *
+   * @param string $phone
+   */
+  private static function wait_and_process_buffer($phone) {
+    global $wpdb;
+
+    $hash         = md5($phone);
+    $deadline_key = 'pn_cm_wa_dl_' . $hash;
+    $buffer_key   = 'pn_cm_wa_buf_' . $hash;
+
+    $max_wait = self::$response_delay * 6; // absolute safety cap
+    $waited   = 0;
+
+    self::log('wait_and_process_buffer — starting wait loop for phone=' . $phone);
+
+    while ($waited < $max_wait) {
+      // Read deadline directly from DB — no cache, no transient API.
+      $deadline = $wpdb->get_var($wpdb->prepare(
+        "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s",
+        $deadline_key
+      ));
+
+      if ($deadline === null) {
+        self::log('wait_and_process_buffer — deadline gone, breaking. phone=' . $phone);
+        break;
+      }
+
+      $remaining = (int) $deadline - time();
+      if ($remaining <= 0) {
+        self::log('wait_and_process_buffer — deadline reached after ' . $waited . 's. phone=' . $phone);
+        break;
+      }
+
+      sleep(1);
+      $waited++;
+    }
+
+    // Collect buffer directly from DB.
+    $raw = $wpdb->get_var($wpdb->prepare(
+      "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s",
+      $buffer_key
+    ));
+    $buffer = $raw ? maybe_unserialize($raw) : [];
+
+    $fallback_key = 'pn_cm_wa_fb_' . $hash;
+
+    if (!is_array($buffer) || empty($buffer)) {
+      // Check if the option row exists at all.
+      $row_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name = %s",
+        $buffer_key
+      ));
+      self::log('wait_and_process_buffer — buffer empty after wait, phone=' . $phone . ' raw_type=' . gettype($raw) . ' raw_len=' . strlen((string) $raw) . ' row_exists=' . $row_exists . ' last_error=' . $wpdb->last_error);
+
+      // Try to recover from fallback transient.
+      $fb = get_transient($fallback_key);
+      if (is_array($fb) && !empty($fb)) {
+        self::log('wait_and_process_buffer — RECOVERED ' . count($fb) . ' message(s) from fallback transient, phone=' . $phone);
+        $buffer = $fb;
+        delete_transient($fallback_key);
+      } else {
+        // Also try reading the buffer via WordPress API (in case direct DB missed it).
+        $wp_buf = get_option($buffer_key, []);
+        if (is_array($wp_buf) && !empty($wp_buf)) {
+          self::log('wait_and_process_buffer — RECOVERED ' . count($wp_buf) . ' message(s) via get_option, phone=' . $phone);
+          $buffer = $wp_buf;
+          delete_option($buffer_key);
+          delete_transient($fallback_key);
+        } else {
+          self::log('wait_and_process_buffer — all recovery attempts failed, phone=' . $phone);
+          self::release_buffer_lock($phone);
+          return;
+        }
+      }
+    }
+
+    // Clear buffer, deadline, and fallback from DB.
+    $wpdb->query($wpdb->prepare(
+      "DELETE FROM {$wpdb->options} WHERE option_name IN (%s, %s)",
+      $buffer_key,
+      $deadline_key
+    ));
+    delete_transient($fallback_key);
+
+    self::log('wait_and_process_buffer — processing ' . count($buffer) . ' buffered message(s) for phone=' . $phone);
+
+    // If only one message, process normally.
+    if (count($buffer) === 1) {
+      $msg = $buffer[0];
+      self::process_incoming_message(
+        $phone,
+        $msg['text'],
+        $msg['contact_name'],
+        !empty($msg['audio_media_id']) ? $msg['audio_media_id'] : '',
+        isset($msg['audio_mime']) ? $msg['audio_mime'] : '',
+        !empty($msg['is_reply']),
+        isset($msg['quoted_context_id']) ? $msg['quoted_context_id'] : ''
+      );
+    } else {
+      // Multiple messages: combine texts and process as one.
+      self::process_buffered_messages($phone, $buffer);
+    }
+
+    self::release_buffer_lock($phone);
+  }
+
+  /**
+   * Process multiple buffered messages as a single AI request.
+   *
+   * Combines all user texts into the conversation history so the AI
+   * sees every message and produces one comprehensive response.
+   *
+   * @param string $phone
+   * @param array  $buffer Array of message data arrays.
+   */
+  private static function process_buffered_messages($phone, $buffer) {
+    // Use the contact_name from the most recent message.
+    $contact_name = '';
+    $is_reply     = false;
+    foreach ($buffer as $msg) {
+      if (!empty($msg['contact_name'])) {
+        $contact_name = $msg['contact_name'];
+      }
+      if (!empty($msg['is_reply'])) {
+        $is_reply = true;
+      }
+    }
+
+    // Collect all text parts (transcribe audio if needed) and their quoted context IDs.
+    $texts = [];
+    $text_quoted_ids = [];
+    foreach ($buffer as $msg) {
+      $t = $msg['text'];
+
+      // Handle audio transcription if needed.
+      if (!empty($msg['audio_media_id'])) {
+        $audio_data = self::download_whatsapp_media($msg['audio_media_id']);
+        if ($audio_data !== false) {
+          $language = get_option('pn_customers_manager_transcription_language', '');
+          $t = self::transcribe_audio($audio_data, $msg['audio_mime'] ?? 'audio/ogg', $language);
+        }
+        if (empty($t)) {
+          continue; // Skip failed transcriptions.
+        }
+      }
+
+      if (!empty($t)) {
+        $texts[] = $t;
+        $text_quoted_ids[] = isset($msg['quoted_context_id']) ? $msg['quoted_context_id'] : '';
+      }
+    }
+
+    if (empty($texts)) {
+      self::log('process_buffered_messages — no text to process after transcription');
+      return;
+    }
+
+    // Get or create conversation (use the first text for welcome-message logic).
+    $first_text = $texts[0];
+    $conversation = self::get_or_create_conversation($phone, $contact_name, $is_reply, $first_text);
+    if (!$conversation) {
+      self::log('ERROR — could not get/create conversation for ' . $phone);
+      return;
+    }
+
+    $node_config = self::get_node_config($conversation);
+    if (empty($node_config)) {
+      $wa_node = self::find_ai_node();
+      if ($wa_node && !empty($wa_node['config'])) {
+        $node_config = $wa_node['config'];
+      }
+    }
+
+    // Add all user messages to history.
+    $messages = json_decode($conversation->messages, true) ?: [];
+    $buffered_quoted_texts = [];
+    foreach ($texts as $idx => $t) {
+      $quoted_text = '';
+      $qid = isset($text_quoted_ids[$idx]) ? $text_quoted_ids[$idx] : '';
+      if (!empty($qid)) {
+        $quoted_text = self::find_message_by_wamid($messages, $qid);
+        if (!empty($quoted_text)) {
+          self::log('[CONVERSATION] QUOTING (buffered): ' . mb_substr($quoted_text, 0, 200));
+        }
+      }
+      self::log('[CONVERSATION] USER (buffered): ' . $t);
+      $user_entry = [
+        'role'      => 'user',
+        'content'   => $t,
+        'timestamp' => current_time('mysql'),
+      ];
+      if (!empty($quoted_text)) {
+        $user_entry['quoted_text'] = $quoted_text;
+        $buffered_quoted_texts[$idx] = $quoted_text;
+      }
+      $messages[] = $user_entry;
+    }
+
+    // Skip greeting logic: if the only message is a simple greeting and welcome
+    // was already sent, save and return (same logic as single-message path).
+    if (count($texts) === 1) {
+      $has_assistant_message = false;
+      $user_message_count    = 0;
+      foreach ($messages as $m) {
+        if (isset($m['role']) && $m['role'] === 'user') $user_message_count++;
+        if (isset($m['role']) && $m['role'] === 'assistant') $has_assistant_message = true;
+      }
+      if ($user_message_count === 1 && $has_assistant_message) {
+        $normalized = mb_strtolower(trim($texts[0]));
+        $greetings  = ['hola', 'holi', 'hi', 'hello', 'hey', 'buenos días', 'buenas tardes', 'buenas noches', 'buenos dias', 'buenas', 'saludos'];
+        if (in_array($normalized, $greetings, true)) {
+          self::update_conversation_messages($conversation->id, $messages);
+          self::log('Skipping AI response — simple greeting detected and welcome message already sent (buffered path)');
+          return;
+        }
+      }
+    }
+
+    // Off-hours handling: check before calling AI to save costs
+    if (!empty($node_config['wa_schedule_enabled'])) {
+      $user_tz = self::resolve_and_store_user_timezone($phone);
+      if (!self::is_within_schedule($node_config, $user_tz)) {
+        $is_client_initiated = self::is_client_initiated_conversation($messages);
+
+        // Business-initiated conversations: always allow bot to respond.
+        if (!$is_client_initiated) {
+          self::log('Off-hours but business-initiated conversation — allowing bot to respond normally (buffered)');
+        }
+        // Option 1: Allow bot when client initiates
+        elseif (!empty($node_config['wa_schedule_allow_client_initiated'])) {
+          self::log('Off-hours but client initiated conversation — allowing bot to respond normally (buffered)');
+        }
+        // Option 2: Send custom off-hours message
+        elseif (!empty($node_config['wa_schedule_offhours_message_enabled'])) {
+          $offhours_msg = trim($node_config['wa_schedule_offhours_message'] ?? '');
+          if (!empty($offhours_msg) && !self::offhours_message_already_sent($messages)) {
+            self::log('Off-hours — sending custom off-hours message (buffered)');
+            $messages[] = [
+              'role'      => 'assistant',
+              'content'   => $offhours_msg,
+              'timestamp' => current_time('mysql'),
+              'offhours'  => true,
+              'auto_sent' => true,
+            ];
+            self::update_conversation_messages($conversation->id, $messages);
+            self::send_whatsapp_message($phone, $offhours_msg);
+            return;
+          }
+          self::update_conversation_messages($conversation->id, $messages);
+          return;
+        }
+        // Neither option: existing behavior (AI processes, then queues)
+      }
+    }
+
+    $require_postal = !empty($node_config['wa_require_postal_code']);
+    $system_prompt  = self::build_enriched_system_prompt($conversation);
+    $ai_model       = self::resolve_ai_model($node_config, $conversation);
+    self::sync_ai_model_to_db($ai_model, $conversation);
+    $temperature    = self::get_conversation_temperature($conversation);
+
+    // Inject quoted context into user messages for the AI
+    $ai_messages = $messages;
+    if (!empty($buffered_quoted_texts)) {
+      // Walk backward through ai_messages to find the user entries that correspond to our buffered texts
+      $user_idx = count($texts) - 1;
+      for ($i = count($ai_messages) - 1; $i >= 0 && $user_idx >= 0; $i--) {
+        if (($ai_messages[$i]['role'] ?? '') === 'user') {
+          if (isset($buffered_quoted_texts[$user_idx])) {
+            $ai_messages[$i]['content'] = '[Quoting: "' . mb_substr($buffered_quoted_texts[$user_idx], 0, 500) . '"] ' . $ai_messages[$i]['content'];
+          }
+          $user_idx--;
+        }
+      }
+    }
+
+    $openai_messages = self::build_openai_messages_with_gap_markers($ai_messages, $system_prompt);
+
+    self::log('[CONVERSATION] ── AI REQUEST (buffered, ' . count($texts) . ' user messages) ── model=' . $ai_model);
+
+    $direct_shipping = self::try_build_direct_shipping_response($messages, $node_config);
+
+    $is_fallback = false;
+    if ($direct_shipping !== null) {
+      $ai_response = $direct_shipping;
+    } else {
+      $openai_messages = self::maybe_inject_shipping_hint($openai_messages);
+      $ai_response = self::call_openai($openai_messages, $ai_model, $temperature);
+
+      if ($ai_response === false) {
+        $ai_response = self::get_error_fallback_message($node_config);
+        $is_fallback = true;
+      } else {
+        self::log('[CONVERSATION] ── RAW AI RESPONSE ──');
+        self::log('[CONVERSATION] ' . $ai_response);
+        self::log('[CONVERSATION] ── END RAW AI RESPONSE ──');
+      }
+    }
+
+    // Post-processing (same as single-message path).
+    $sent_images = [];
+    if ($is_fallback) {
+      $ai_response = self::markdown_to_whatsapp($ai_response);
+    } else {
+      $ai_response = self::strip_deepseek_think_tags($ai_response);
+      $ai_response = self::sanitize_system_prompt_leak($ai_response);
+      $ai_response = self::remove_duplicate_greetings($ai_response, $messages);
+      $ai_response = self::enforce_postal_code_rule($ai_response, $messages, $require_postal, $conversation);
+      $ai_response = self::markdown_to_whatsapp($ai_response);
+      $ai_response = self::strip_hallucinated_image_urls($ai_response);
+      $ai_response = self::validate_response_urls($ai_response);
+      $ai_response = self::detect_and_notify_order($ai_response, $conversation, $messages, $node_config);
+      $ai_response = self::detect_and_notify_special_order($ai_response, $conversation, $messages, $node_config);
+      $ai_response = self::detect_and_notify_escalation($ai_response, $conversation, $messages, $node_config);
+
+      // Extract and process follow-up tags
+      $followup_keys = self::extract_followup_tags($ai_response);
+      $ai_response   = self::strip_followup_tags($ai_response);
+      if (!empty($followup_keys)) {
+        self::create_followup_tasks($followup_keys, $phone, $contact_name, $node_config, 'wa_');
+      }
+
+      $already_sent_ids      = [];
+      $already_sent_more_ids = [];
+      foreach ($messages as $m) {
+        if (!empty($m['images'])) {
+          foreach ($m['images'] as $img) {
+            if (!empty($img['product_id'])) {
+              $pid = (int) $img['product_id'];
+              if (!empty($img['is_gallery'])) {
+                $already_sent_more_ids[] = $pid;
+              } else {
+                $already_sent_ids[] = $pid;
+              }
+            }
+          }
+        }
+      }
+
+      // Auto-inject image tags (same logic as single-message path).
+      $woo_active = class_exists('WooCommerce');
+      $recommendations_disabled = !empty($node_config['wa_disable_recommendations']);
+      if (!$woo_active || $recommendations_disabled) {
+        $ai_response = self::auto_inject_product_image_tags($ai_response);
+      } elseif (!preg_match('/\[PRODUCT_IMAGES:\d+\]/', $ai_response)) {
+        $site_url     = home_url();
+        $product_base = 'product';
+        $permalinks   = (array) get_option('woocommerce_permalinks', []);
+        if (!empty($permalinks['product_base'])) {
+          $product_base = trim($permalinks['product_base'], '/');
+        }
+        $url_count = preg_match_all(
+          '#' . preg_quote($site_url, '#') . '/' . preg_quote($product_base, '#') . '/[a-z0-9\-]+/?#i',
+          $ai_response
+        );
+        if ($url_count >= 1 && $url_count <= 2) {
+          $ai_response = self::auto_inject_product_image_tags($ai_response);
+        }
+      }
+
+      // Determine if message should be sent now or queued.
+      $send_now = self::is_within_schedule($node_config, self::resolve_and_store_user_timezone($phone));
+
+      if ($send_now) {
+        $ai_response = self::extract_and_send_product_images($ai_response, $phone, $sent_images, $already_sent_ids);
+        $ai_response = self::extract_and_send_more_product_images($ai_response, $phone, $sent_images, $already_sent_more_ids);
+      } else {
+        $extracted   = self::extract_product_images_data_only($ai_response, $already_sent_ids, $already_sent_more_ids);
+        $ai_response = $extracted['text'];
+        $sent_images = $extracted['images'];
+      }
+    }
+
+    // Store assistant message.
+    $stored_content = $ai_response;
+    if (!empty($sent_images)) {
+      $image_names = array_unique(array_column($sent_images, 'product_name'));
+      $stored_content .= "\n[Se enviaron imágenes de: " . implode(', ', $image_names) . "]";
+    }
+    $assistant_msg = [
+      'role'      => 'assistant',
+      'content'   => $stored_content,
+      'timestamp' => current_time('mysql'),
+      'auto_sent' => true,
+    ];
+    if (!empty($sent_images)) {
+      $assistant_msg['images'] = $sent_images;
+    }
+    $messages[] = $assistant_msg;
+
+    self::update_conversation_messages($conversation->id, $messages);
+
+    // Send or queue.
+    if (!isset($send_now)) {
+      $send_now = self::is_within_schedule($node_config, self::resolve_and_store_user_timezone($phone));
+    }
+    if ($send_now) {
+      self::log('[CONVERSATION] ── FINAL RESPONSE SENT (buffered) ──');
+      self::log('[CONVERSATION] ' . $ai_response);
+      if (!empty($sent_images)) {
+        self::log('[CONVERSATION] + Images sent: ' . implode(', ', array_unique(array_column($sent_images, 'product_name'))));
+      }
+      self::log('[CONVERSATION] ── END ──');
+      $wamid = self::send_whatsapp_message($phone, $ai_response);
+      if (!empty($wamid) && is_string($wamid)) {
+        $last_idx = count($messages) - 1;
+        if ($last_idx >= 0 && ($messages[$last_idx]['role'] ?? '') === 'assistant') {
+          $messages[$last_idx]['wamid'] = $wamid;
+          self::update_conversation_messages($conversation->id, $messages);
+        }
+      }
+    } else {
+      self::log('[CONVERSATION] ── RESPONSE QUEUED (buffered) ──');
+      self::log('[CONVERSATION] ' . $ai_response);
+      self::log('[CONVERSATION] ── END ──');
+      self::maybe_send_or_queue($phone, $ai_response, $conversation->id, $node_config, $sent_images);
+    }
+
+    // Sync to GHL if integration is active
+    $combined_text = implode("\n", $texts);
+    self::sync_message_to_ghl($phone, $combined_text, $ai_response);
+  }
+
   /**
    * Public wrapper for process_incoming_message (called from shutdown hook).
+   * Now routes through the message buffer for response delay.
    *
    * @param string $phone
    * @param string $text
    * @param string $contact_name
    */
-  public static function deferred_process_message($phone, $text, $contact_name) {
-    self::process_incoming_message($phone, $text, $contact_name);
+  public static function deferred_process_message($phone, $text, $contact_name, $audio_media_id = '', $audio_mime = '', $is_reply = false, $quoted_context_id = '') {
+    $msg = [
+      'text'              => $text,
+      'contact_name'      => $contact_name,
+      'audio_media_id'    => $audio_media_id,
+      'audio_mime'        => $audio_mime,
+      'is_reply'          => $is_reply,
+      'quoted_context_id' => $quoted_context_id,
+    ];
+
+    // Buffer the message and (re)set the response deadline.
+    self::buffer_message($phone, $msg);
+
+    // Try to acquire the processing lock for this phone number.
+    // Only one process should be sleeping/waiting per phone.
+    if (self::acquire_buffer_lock($phone)) {
+      self::wait_and_process_buffer($phone);
+    } else {
+      self::log('deferred_process_message — lock already held for phone=' . $phone . ', message buffered only');
+    }
   }
 
   /* ================================================================
@@ -254,13 +920,11 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * @param string $text
    * @param string $contact_name
    */
-  private static function process_incoming_message($phone, $text, $contact_name) {
-    self::log('Processing message — phone=' . $phone . ' contact=' . $contact_name);
-    self::log('[CONVERSATION] ── INCOMING MESSAGE ──');
-    self::log('[CONVERSATION] FROM: ' . $phone . ' (' . $contact_name . ')');
-    self::log('[CONVERSATION] USER: ' . $text);
+  private static function process_incoming_message($phone, $text, $contact_name, $audio_media_id = '', $audio_mime = '', $is_reply = false, $quoted_context_id = '') {
+    $is_audio = !empty($audio_media_id);
+    self::log('Processing message — phone=' . $phone . ' contact=' . $contact_name . ($is_audio ? ' (audio)' : '') . ($is_reply ? ' (reply)' : ''));
 
-    $conversation = self::get_or_create_conversation($phone, $contact_name);
+    $conversation = self::get_or_create_conversation($phone, $contact_name, $is_reply, $text);
 
     if (!$conversation) {
       self::log('ERROR — could not get/create conversation for ' . $phone);
@@ -269,13 +933,75 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
     self::log('Conversation ID=' . $conversation->id . ' funnel_id=' . $conversation->funnel_id . ' node_id=' . $conversation->node_id);
 
-    // Add user message to history
+    if (self::is_user_ai_paused($phone)) {
+      self::log('process_incoming_message — AI PAUSED for phone=' . $phone . ', skipping');
+      return;
+    }
+
+    // Read node config once
+    $node_config = self::get_node_config($conversation);
+    if (empty($node_config)) {
+      $wa_node = self::find_ai_node();
+      if ($wa_node && !empty($wa_node['config'])) {
+        $node_config = $wa_node['config'];
+      }
+    }
+
+    // Handle audio: check node-level enable, download, and transcribe
+    if ($is_audio) {
+      if (empty($node_config['wa_audio_transcription_enabled'])) {
+        self::log('process_incoming_message — audio transcription not enabled for this node, skipping');
+        return;
+      }
+
+      $audio_data = self::download_whatsapp_media($audio_media_id);
+      if ($audio_data === false) {
+        self::log_always('process_incoming_message — failed to download audio media_id=' . $audio_media_id);
+        return;
+      }
+
+      // Use node-level provider/language if set, fall back to global settings
+      $provider = !empty($node_config['wa_transcription_provider'])
+        ? $node_config['wa_transcription_provider']
+        : null;
+      $language = !empty($node_config['wa_transcription_language'])
+        ? $node_config['wa_transcription_language']
+        : get_option('pn_customers_manager_transcription_language', '');
+
+      $text = self::transcribe_audio($audio_data, $audio_mime, $language, $provider);
+      if (empty($text)) {
+        self::log_always('process_incoming_message — audio transcription failed or empty for media_id=' . $audio_media_id);
+        return;
+      }
+
+      self::log_always('[CONVERSATION] AUDIO TRANSCRIBED: ' . $text);
+    }
+
+    self::log('[CONVERSATION] ── INCOMING MESSAGE ──');
+    self::log('[CONVERSATION] FROM: ' . $phone . ' (' . $contact_name . ')');
+
+    // Resolve quoted text from reply context
     $messages   = json_decode($conversation->messages, true) ?: [];
-    $messages[] = [
+    $quoted_text = '';
+    if (!empty($quoted_context_id)) {
+      $quoted_text = self::find_message_by_wamid($messages, $quoted_context_id);
+      if (!empty($quoted_text)) {
+        self::log('[CONVERSATION] QUOTING: ' . mb_substr($quoted_text, 0, 200));
+      }
+    }
+
+    self::log('[CONVERSATION] USER: ' . $text);
+
+    // Add user message to history
+    $user_entry = [
       'role'      => 'user',
       'content'   => $text,
       'timestamp' => current_time('mysql'),
     ];
+    if (!empty($quoted_text)) {
+      $user_entry['quoted_text'] = $quoted_text;
+    }
+    $messages[] = $user_entry;
 
     // Skip AI processing if this is just a greeting and welcome message already sent
     $user_message_count = 0;
@@ -308,12 +1034,47 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       }
     }
 
-    // Read node config once
-    $node_config = self::get_node_config($conversation);
-    if (empty($node_config)) {
-      $wa_node = self::find_ai_node();
-      if ($wa_node && !empty($wa_node['config'])) {
-        $node_config = $wa_node['config'];
+    // Off-hours handling: check before calling AI to save costs
+    if (!empty($node_config['wa_schedule_enabled'])) {
+      $user_tz = self::resolve_and_store_user_timezone($phone);
+      if (!self::is_within_schedule($node_config, $user_tz)) {
+        $is_client_initiated = self::is_client_initiated_conversation($messages);
+
+        // Business-initiated conversations: always allow bot to respond.
+        // When a worker opened this conversation (sent a template or
+        // manual message first), the bot should handle all subsequent
+        // client replies regardless of schedule restrictions.
+        if (!$is_client_initiated) {
+          self::log('Off-hours but business-initiated conversation — allowing bot to respond normally');
+          // Fall through to normal processing
+        }
+        // Option 1: Allow bot when client initiates
+        elseif (!empty($node_config['wa_schedule_allow_client_initiated'])) {
+          self::log('Off-hours but client initiated conversation — allowing bot to respond normally');
+          // Fall through to normal processing
+        }
+        // Option 2: Send custom off-hours message
+        elseif (!empty($node_config['wa_schedule_offhours_message_enabled'])) {
+          $offhours_msg = trim($node_config['wa_schedule_offhours_message'] ?? '');
+          if (!empty($offhours_msg) && !self::offhours_message_already_sent($messages)) {
+            self::log('Off-hours — sending custom off-hours message');
+            $messages[] = [
+              'role'      => 'assistant',
+              'content'   => $offhours_msg,
+              'timestamp' => current_time('mysql'),
+              'offhours'  => true,
+            ];
+            self::update_conversation_messages($conversation->id, $messages);
+            self::send_whatsapp_message($phone, $offhours_msg);
+            return;
+          } elseif (self::offhours_message_already_sent($messages)) {
+            self::log('Off-hours — custom message already sent, queuing');
+          }
+          // Queue via existing logic (don't call AI)
+          self::update_conversation_messages($conversation->id, $messages);
+          return;
+        }
+        // Neither option: existing behavior (AI processes, then queues)
       }
     }
 
@@ -335,7 +1096,16 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
     $temperature = self::get_conversation_temperature($conversation);
 
-    $openai_messages = self::build_openai_messages_with_gap_markers($messages, $system_prompt);
+    // Inject quoted context into the last user message for the AI
+    $ai_messages = $messages;
+    if (!empty($quoted_text)) {
+      $last_idx = count($ai_messages) - 1;
+      if ($last_idx >= 0 && ($ai_messages[$last_idx]['role'] ?? '') === 'user') {
+        $ai_messages[$last_idx]['content'] = '[Quoting: "' . mb_substr($quoted_text, 0, 500) . '"] ' . $ai_messages[$last_idx]['content'];
+      }
+    }
+
+    $openai_messages = self::build_openai_messages_with_gap_markers($ai_messages, $system_prompt);
 
     // Log full conversation history sent to AI
     self::log('[CONVERSATION] ── MESSAGE HISTORY (' . count($openai_messages) . ' messages) ──');
@@ -440,6 +1210,14 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
 
       // Detect special order tag and forward by email
       $ai_response = self::detect_and_notify_special_order($ai_response, $conversation, $messages, $node_config);
+      $ai_response = self::detect_and_notify_escalation($ai_response, $conversation, $messages, $node_config);
+
+      // Extract and process follow-up tags
+      $followup_keys = self::extract_followup_tags($ai_response);
+      $ai_response   = self::strip_followup_tags($ai_response);
+      if (!empty($followup_keys)) {
+        self::create_followup_tasks($followup_keys, $phone, $contact_name, $node_config, 'wa_');
+      }
 
       // Collect product IDs whose images were already sent in this
       // conversation so we never send the same photo twice.
@@ -512,13 +1290,23 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         self::log_image_debug('[IMG-DEBUG] PRE-EXTRACTION IDs: ' . implode(', ', $dbg_final[1]));
       }
 
-      // Extract and send product images (before sending text).
-      // Pass already-sent IDs so images are not re-sent within the
-      // same conversation.
-      $ai_response = self::extract_and_send_product_images($ai_response, $phone, $sent_images, $already_sent_ids);
+      // Determine if message should be sent now or queued
+      $send_now = self::is_within_schedule($node_config, self::resolve_and_store_user_timezone($phone));
 
-      // Extract and send additional gallery images when user asks for more.
-      $ai_response = self::extract_and_send_more_product_images($ai_response, $phone, $sent_images, $already_sent_more_ids);
+      if ($send_now) {
+        // Extract and send product images immediately (before sending text).
+        // Pass already-sent IDs so images are not re-sent within the
+        // same conversation.
+        $ai_response = self::extract_and_send_product_images($ai_response, $phone, $sent_images, $already_sent_ids);
+
+        // Extract and send additional gallery images when user asks for more.
+        $ai_response = self::extract_and_send_more_product_images($ai_response, $phone, $sent_images, $already_sent_more_ids);
+      } else {
+        // Extract image data without sending (will be queued)
+        $extracted = self::extract_product_images_data_only($ai_response, $already_sent_ids, $already_sent_more_ids);
+        $ai_response   = $extracted['text'];
+        $sent_images   = $extracted['images'];
+      }
 
       self::log_image_debug('[IMG-DEBUG] RESULT: sent_images_count=' . count($sent_images)
         . ' sent_images=' . wp_json_encode(array_map(function($img) {
@@ -537,6 +1325,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       'role'      => 'assistant',
       'content'   => $stored_content,
       'timestamp' => current_time('mysql'),
+      'auto_sent' => true,
     ];
     if (!empty($sent_images)) {
       $assistant_msg['images'] = $sent_images;
@@ -546,14 +1335,36 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     // Update conversation in DB
     self::update_conversation_messages($conversation->id, $messages);
 
-    // Send response via WhatsApp
-    self::log('[CONVERSATION] ── FINAL RESPONSE SENT ──');
-    self::log('[CONVERSATION] ' . $ai_response);
-    if (!empty($sent_images)) {
-      self::log('[CONVERSATION] + Images sent: ' . implode(', ', array_unique(array_column($sent_images, 'product_name'))));
+    // Send or queue response
+    if (!isset($send_now)) {
+      $send_now = self::is_within_schedule($node_config, self::resolve_and_store_user_timezone($phone));
     }
-    self::log('[CONVERSATION] ── END ──');
-    self::send_whatsapp_message($phone, $ai_response);
+
+    if ($send_now) {
+      self::log('[CONVERSATION] ── FINAL RESPONSE SENT ──');
+      self::log('[CONVERSATION] ' . $ai_response);
+      if (!empty($sent_images)) {
+        self::log('[CONVERSATION] + Images sent: ' . implode(', ', array_unique(array_column($sent_images, 'product_name'))));
+      }
+      self::log('[CONVERSATION] ── END ──');
+      $wamid = self::send_whatsapp_message($phone, $ai_response);
+      if (!empty($wamid) && is_string($wamid)) {
+        // Store wamid in the last assistant message for reply context tracking
+        $last_idx = count($messages) - 1;
+        if ($last_idx >= 0 && ($messages[$last_idx]['role'] ?? '') === 'assistant') {
+          $messages[$last_idx]['wamid'] = $wamid;
+          self::update_conversation_messages($conversation->id, $messages);
+        }
+      }
+    } else {
+      self::log('[CONVERSATION] ── RESPONSE QUEUED ──');
+      self::log('[CONVERSATION] ' . $ai_response);
+      self::log('[CONVERSATION] ── END ──');
+      self::maybe_send_or_queue($phone, $ai_response, $conversation->id, $node_config, $sent_images);
+    }
+
+    // Sync to GHL if integration is active
+    self::sync_message_to_ghl($phone, $text, $ai_response);
   }
 
   /* ================================================================
@@ -589,7 +1400,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    *
    * @param string $to    Recipient phone number.
    * @param string $text  Message text.
-   * @return bool
+   * @return string|false  The wamid of the sent message on success, or false on failure.
    */
   private static function send_whatsapp_message($to, $text) {
     $access_token   = get_option('pn_customers_manager_whatsapp_access_token', '');
@@ -633,7 +1444,928 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     $body = wp_remote_retrieve_body($response);
     self::log('send_whatsapp_message — response code=' . $code . ' body=' . $body);
 
-    return $code >= 200 && $code < 300;
+    if ($code < 200 || $code >= 300) {
+      return false;
+    }
+
+    // Extract wamid from Meta's response
+    $data = json_decode($body, true);
+    $wamid = isset($data['messages'][0]['id']) ? $data['messages'][0]['id'] : '';
+
+    return $wamid ?: true;
+  }
+
+  /**
+   * Send a WhatsApp template message via the Meta Cloud API.
+   *
+   * @param string $to            Recipient phone number.
+   * @param string $template_name Template name as registered in Meta Business Suite.
+   * @param string $language_code BCP 47 language code (e.g. es, en, ca).
+   * @param array  $components    Optional template components for variable substitution.
+   * @return string|false The wamid on success, or false on failure.
+   */
+  public static function send_whatsapp_template($to, $template_name, $language_code, $components = []) {
+    $access_token = get_option('pn_customers_manager_whatsapp_access_token', '');
+    $phone_id     = get_option('pn_customers_manager_whatsapp_phone_number_id', '');
+
+    if (empty($access_token) || empty($phone_id)) {
+      self::log('send_whatsapp_template — missing token or phone_id');
+      return false;
+    }
+
+    $url = 'https://graph.facebook.com/v21.0/' . $phone_id . '/messages';
+
+    $template_data = [
+      'name'     => $template_name,
+      'language' => [
+        'code' => $language_code,
+      ],
+    ];
+
+    if (!empty($components)) {
+      $template_data['components'] = $components;
+    }
+
+    $payload = [
+      'messaging_product' => 'whatsapp',
+      'recipient_type'    => 'individual',
+      'to'                => $to,
+      'type'              => 'template',
+      'template'          => $template_data,
+    ];
+
+    self::log('send_whatsapp_template — to=' . $to . ' template=' . $template_name . ' lang=' . $language_code);
+
+    $response = wp_remote_post($url, [
+      'timeout' => 30,
+      'headers' => [
+        'Content-Type'  => 'application/json',
+        'Authorization' => 'Bearer ' . $access_token,
+      ],
+      'body' => wp_json_encode($payload),
+    ]);
+
+    if (is_wp_error($response)) {
+      self::log('send_whatsapp_template — WP_Error: ' . $response->get_error_message());
+      return false;
+    }
+
+    $code = wp_remote_retrieve_response_code($response);
+    $body = wp_remote_retrieve_body($response);
+    self::log('send_whatsapp_template — response code=' . $code . ' body=' . $body);
+
+    if ($code < 200 || $code >= 300) {
+      return false;
+    }
+
+    $data  = json_decode($body, true);
+    $wamid = isset($data['messages'][0]['id']) ? $data['messages'][0]['id'] : '';
+
+    return $wamid ?: true;
+  }
+
+  /**
+   * Helper: check if a configuration flag is truthy (boolean true, 'on', '1', 1, 'true', 'yes').
+   *
+   * @param mixed $value
+   * @return bool
+   */
+  public static function is_truthy($value) {
+    if (is_bool($value)) {
+      return $value;
+    }
+    if (is_string($value)) {
+      $v = strtolower(trim($value));
+      return in_array($v, ['on', '1', 'true', 'yes'], true);
+    }
+    if (is_numeric($value)) {
+      return intval($value) > 0;
+    }
+    return !empty($value);
+  }
+
+  /**
+   * Helper: check if Meta message templates are enabled in a node config.
+   *
+   * Checks both wa_meta_templates_enabled and whether templates are configured.
+   *
+   * @param array $config
+   * @return bool
+   */
+  public static function is_meta_templates_enabled($config) {
+    if (empty($config) || !is_array($config)) {
+      return false;
+    }
+    $flag = $config['wa_meta_templates_enabled'] ?? false;
+    if (self::is_truthy($flag)) {
+      return true;
+    }
+    // Check if multi-templates array is defined and has non-empty entries
+    if (!empty($config['wa_meta_template_name'])) {
+      $names = (array) $config['wa_meta_template_name'];
+      foreach ($names as $n) {
+        if (!empty(trim((string) $n))) {
+          return true;
+        }
+      }
+    }
+    // Legacy single template check
+    $legacy_flag = $config['wa_template_enabled'] ?? false;
+    if (self::is_truthy($legacy_flag) && !empty($config['wa_template_name'])) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Initiate a WhatsApp conversation with template message(s) for a new lead.
+   *
+   * Supports both the legacy single-template config (wa_template_enabled /
+   * wa_template_name / wa_template_language) and the new multi-template system
+   * (wa_meta_templates_enabled + parallel arrays). When the new config is
+   * present it takes precedence; otherwise falls back to the legacy fields.
+   *
+   * @param string $phone        Recipient phone number.
+   * @param string $contact_name Optional contact name.
+   * @return bool True on success (at least one template sent or scheduled), false otherwise.
+   */
+  public static function initiate_conversation_with_template($phone, $contact_name = '') {
+    $node_data = self::find_ai_node();
+    if (!$node_data) {
+      self::log('[TEMPLATE] No WhatsApp AI node found');
+      return false;
+    }
+
+    $config    = $node_data['config'];
+    $funnel_id = $node_data['funnel_id'];
+    $node_id   = $node_data['node_id'];
+
+    // ── Determine which template system to use ──
+    $use_multi = self::is_meta_templates_enabled($config);
+
+    if ($use_multi) {
+      return self::initiate_multi_templates($phone, $contact_name, $config, $funnel_id, $node_id);
+    }
+
+    // ── Legacy single-template fallback ──
+    $enabled       = !empty($config['wa_template_enabled']) && self::is_truthy($config['wa_template_enabled']);
+    $template_name = !empty($config['wa_template_name']) ? $config['wa_template_name'] : '';
+    $language_code = !empty($config['wa_template_language']) ? $config['wa_template_language'] : '';
+
+    if (!$enabled || empty($template_name) || empty($language_code)) {
+      self::log('[TEMPLATE] Template not enabled or missing name/language');
+      return false;
+    }
+
+    return self::send_and_create_conversation($phone, $contact_name, $template_name, $language_code, $config, $funnel_id, $node_id);
+  }
+
+  /**
+   * Handle multi-template initiation for a new lead.
+   *
+   * Iterates over the configured templates and dispatches each according to
+   * its trigger: on_registration (immediate), after_delay (scheduled),
+   * on_inactivity (scheduled with response check), manual (skip).
+   *
+   * @param string $phone        Recipient phone number.
+   * @param string $contact_name Contact name.
+   * @param array  $config       Node configuration.
+   * @param int    $funnel_id    Funnel post ID.
+   * @param string $node_id      Node identifier.
+   * @return bool True if at least one template was sent or scheduled.
+   */
+  private static function initiate_multi_templates($phone, $contact_name, $config, $funnel_id, $node_id) {
+    $names        = isset($config['wa_meta_template_name'])        ? (array) $config['wa_meta_template_name']        : [];
+    $languages    = isset($config['wa_meta_template_language'])    ? (array) $config['wa_meta_template_language']    : [];
+    $triggers     = isset($config['wa_meta_template_trigger'])     ? (array) $config['wa_meta_template_trigger']     : [];
+    $delays       = isset($config['wa_meta_template_delay'])       ? (array) $config['wa_meta_template_delay']       : [];
+    $delay_units  = isset($config['wa_meta_template_delay_unit'])  ? (array) $config['wa_meta_template_delay_unit']  : [];
+    $use_vars     = isset($config['wa_meta_template_use_vars'])    ? (array) $config['wa_meta_template_use_vars']    : [];
+    $vars_mode    = isset($config['wa_meta_template_vars_mode'])   ? (array) $config['wa_meta_template_vars_mode']   : [];
+    $vars_config  = isset($config['wa_meta_template_vars_config']) ? (array) $config['wa_meta_template_vars_config'] : [];
+    $descriptions = isset($config['wa_meta_template_description']) ? (array) $config['wa_meta_template_description'] : [];
+
+    if (empty($names)) {
+      self::log('[TEMPLATE] Multi-template enabled but no templates configured');
+      return false;
+    }
+
+    $count                = count($names);
+    $any_sent             = false;
+    $any_scheduled        = false;
+    $conversation_created = false;
+
+    for ($i = 0; $i < $count; $i++) {
+      $tpl_name   = isset($names[$i])        ? trim($names[$i])        : '';
+      $tpl_lang   = isset($languages[$i])    ? trim($languages[$i])    : '';
+      $trigger    = isset($triggers[$i])     ? trim($triggers[$i])     : 'manual';
+      $delay      = isset($delays[$i])       ? intval($delays[$i])     : 0;
+      $delay_unit = isset($delay_units[$i])  ? trim($delay_units[$i])  : 'minutes';
+      $tpl_desc   = isset($descriptions[$i]) ? trim($descriptions[$i]) : '';
+
+      // Parse variables for this template row
+      $use_vars_enabled = isset($use_vars[$i]) && self::is_truthy($use_vars[$i]);
+      $tpl_vars = [];
+      if ($use_vars_enabled) {
+        $mode        = isset($vars_mode[$i])   ? trim($vars_mode[$i])   : 'numbers';
+        $config_text = isset($vars_config[$i]) ? trim($vars_config[$i]) : '';
+        $tpl_vars    = self::parse_template_variables($config_text, $mode);
+      }
+
+      if (empty($tpl_name) || empty($tpl_lang)) {
+        self::log('[TEMPLATE] Skipping template row ' . $i . ' — missing name or language');
+        continue;
+      }
+
+      switch ($trigger) {
+        case 'on_registration':
+          // Send immediately and create conversation if not yet created.
+          if (!$conversation_created) {
+            $result = self::send_and_create_conversation($phone, $contact_name, $tpl_name, $tpl_lang, $config, $funnel_id, $node_id, $tpl_vars, $tpl_desc);
+            if ($result) {
+              $conversation_created = true;
+              $any_sent             = true;
+            }
+          } else {
+            // Conversation exists — just send the template.
+            $components = [];
+            if (!empty($tpl_vars)) {
+              $values     = self::get_user_variable_values($phone, $tpl_vars);
+              $components = self::build_template_components($values);
+            }
+            $wamid = self::send_whatsapp_template($phone, $tpl_name, $tpl_lang, $components);
+            if ($wamid) {
+              self::log_always('[CONVERSATION] TEMPLATE to ' . $phone . ': ' . $tpl_name . ' (' . $tpl_lang . ')');
+              self::append_template_to_conversation($phone, $tpl_name, is_string($wamid) ? $wamid : '', !empty($tpl_desc) ? $tpl_desc : '[Template: ' . $tpl_name . ']');
+              $any_sent = true;
+            }
+          }
+          break;
+
+        case 'after_delay':
+        case 'on_inactivity':
+          $delay_seconds = self::compute_delay_seconds($delay, $delay_unit);
+          if ($delay_seconds < 1) {
+            $delay_seconds = 60; // Minimum 1 minute fallback.
+          }
+          $scheduled_at = time();
+          $event_time   = $scheduled_at + $delay_seconds;
+          $event_args   = [$phone, $tpl_name, $tpl_lang, $contact_name, $trigger, $scheduled_at, $tpl_vars, $tpl_desc];
+
+          // Always store in our own queue (primary). This is reliable regardless
+          // of WP Cron health. The queue is processed on every webhook, init hook,
+          // and GHL/Zoho webhook — so delivery is near-instant once fire_at arrives.
+          self::queue_pending_template($event_time, $event_args);
+
+          // Also try WP Cron as a secondary trigger, but don't depend on it.
+          $scheduled_ok = wp_schedule_single_event($event_time, 'pn_cm_send_scheduled_wa_template', $event_args, true);
+          if (is_wp_error($scheduled_ok) || $scheduled_ok === false) {
+            self::log('[TEMPLATE] Queued template "' . $tpl_name . '" for ' . $phone . ' in ' . $delay . ' ' . $delay_unit . ' (fires at ' . wp_date('Y-m-d H:i:s', $event_time) . ') — WP Cron unavailable, queue-only');
+          } else {
+            self::log('[TEMPLATE] Queued + cron-scheduled template "' . $tpl_name . '" for ' . $phone . ' in ' . $delay . ' ' . $delay_unit . ' (fires at ' . wp_date('Y-m-d H:i:s', $event_time) . ')');
+          }
+          $any_sent      = true;
+          $any_scheduled = true;
+          break;
+
+        case 'manual':
+        default:
+          self::log('[TEMPLATE] Skipping manual template "' . $tpl_name . '" for ' . $phone);
+          break;
+      }
+    }
+
+    // If no immediate template was sent but we scheduled some, create the
+    // conversation record if one does not already exist so the scheduled templates have context.
+    if ($any_sent && !$conversation_created) {
+      global $wpdb;
+      $table    = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
+      $phone_norm = ltrim($phone, '+');
+      $existing = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$table} WHERE REPLACE(phone_number, '+', '') = %s AND status = 'active' LIMIT 1",
+        $phone_norm
+      ));
+      if (!$existing) {
+        $first_desc = !empty($descriptions[0]) ? trim($descriptions[0]) : (!empty($config['wa_welcome_message']) ? self::strip_html_to_plain_text($config['wa_welcome_message']) : '[Scheduled templates]');
+        self::create_conversation_record($phone, $contact_name, $first_desc, '', $config, $funnel_id, $node_id, true);
+      }
+    }
+
+    // Ensure scheduled templates fire on time by triggering WP Cron.
+    // This is critical in webhook-driven flows where there may be no front-end
+    // page visits to trigger WP Cron naturally (wp-cron.php).
+    // When DISABLE_WP_CRON is true, the site relies on a real system cron
+    // (crontab), which typically runs every minute — no action needed.
+    if ($any_scheduled) {
+      spawn_cron();
+    }
+
+    return $any_sent;
+  }
+
+  /**
+   * Convert a delay amount + unit into seconds.
+   *
+   * @param int    $amount Delay amount.
+   * @param string $unit   One of: minutes, hours, days.
+   * @return int Delay in seconds.
+   */
+  private static function compute_delay_seconds($amount, $unit) {
+    $amount = max(0, intval($amount));
+    switch ($unit) {
+      case 'hours':
+        return $amount * HOUR_IN_SECONDS;
+      case 'days':
+        return $amount * DAY_IN_SECONDS;
+      case 'minutes':
+      default:
+        return $amount * MINUTE_IN_SECONDS;
+    }
+  }
+
+  /**
+   * Send a template and create the conversation record.
+   *
+   * Shared helper used by both legacy single-template and multi-template flows.
+   *
+   * @param string $phone             Recipient phone number.
+   * @param string $contact_name      Contact name.
+   * @param string $template_name     Template name.
+   * @param string $language_code     Language code.
+   * @param array  $config            Node configuration.
+   * @param int    $funnel_id         Funnel post ID.
+   * @param string $node_id           Node identifier.
+   * @param array  $template_variables Personalization variables.
+   * @param string $template_desc     Template description or preview text.
+   * @return bool True on success.
+   */
+  private static function send_and_create_conversation($phone, $contact_name, $template_name, $language_code, $config, $funnel_id, $node_id, $template_variables = [], $template_desc = '') {
+    global $wpdb;
+    $table    = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
+    $phone_norm = ltrim($phone, '+');
+    $existing = $wpdb->get_var($wpdb->prepare(
+      "SELECT id FROM {$table} WHERE REPLACE(phone_number, '+', '') = %s AND status = 'active' LIMIT 1",
+      $phone_norm
+    ));
+
+    // Build components from template variables if configured.
+    $components = [];
+    if (!empty($template_variables) && is_array($template_variables)) {
+      $values     = self::get_user_variable_values($phone, $template_variables);
+      $components = self::build_template_components($values);
+    }
+
+    $first_content = !empty($template_desc) ? $template_desc : (!empty($config['wa_welcome_message']) ? self::strip_html_to_plain_text($config['wa_welcome_message']) : '[Template: ' . $template_name . ']');
+
+    if ($existing) {
+      self::log('[TEMPLATE] Active conversation #' . $existing . ' already exists for ' . $phone . ' — sending template and appending to conversation');
+      $wamid = self::send_whatsapp_template($phone, $template_name, $language_code, $components);
+      if ($wamid) {
+        self::log_always('[CONVERSATION] TEMPLATE to ' . $phone . ': ' . $template_name . ' (' . $language_code . ')');
+        self::append_template_to_conversation($phone, $template_name, is_string($wamid) ? $wamid : '', $first_content);
+        return true;
+      }
+      return false;
+    }
+
+    // Send the template message.
+    $wamid = self::send_whatsapp_template($phone, $template_name, $language_code, $components);
+    if (!$wamid) {
+      self::log('[TEMPLATE] Failed to send template to ' . $phone);
+      return false;
+    }
+
+    return self::create_conversation_record($phone, $contact_name, $first_content, is_string($wamid) ? $wamid : '', $config, $funnel_id, $node_id, false);
+  }
+
+  /**
+   * Create a conversation record in the database.
+   *
+   * @param string $phone            Recipient phone number.
+   * @param string $contact_name     Contact name.
+   * @param string $first_content    First message content.
+   * @param string $wamid            WhatsApp message ID (empty if not yet sent).
+   * @param array  $config           Node configuration.
+   * @param int    $funnel_id        Funnel post ID.
+   * @param string $node_id          Node identifier.
+   * @param bool   $is_scheduled_only True if the template was only scheduled, not sent yet.
+   * @return bool
+   */
+  private static function create_conversation_record($phone, $contact_name, $first_content, $wamid, $config, $funnel_id, $node_id, $is_scheduled_only = false) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
+
+    // Normalize phone: strip leading '+' for consistent storage.
+    $phone = ltrim($phone, '+');
+
+    $messages   = [];
+    $messages[] = [
+      'role'      => 'assistant',
+      'content'   => $first_content,
+      'wamid'     => $wamid,
+      'timestamp' => current_time('mysql'),
+      'auto_sent' => true,
+      'pending'   => $is_scheduled_only, // True if template is scheduled but not yet sent.
+    ];
+
+    // Resolve system prompt and AI model from node config or global defaults.
+    $system_prompt = !empty($config['wa_system_prompt'])
+      ? $config['wa_system_prompt']
+      : get_option('pn_customers_manager_whatsapp_system_prompt', '');
+    $ai_model = !empty($config['wa_ai_model'])
+      ? $config['wa_ai_model']
+      : get_option('pn_customers_manager_whatsapp_ai_model', 'gpt-4o-mini');
+
+    $wpdb->insert($table, [
+      'phone_number'  => $phone,
+      'contact_name'  => $contact_name,
+      'funnel_id'     => $funnel_id,
+      'node_id'       => $node_id,
+      'messages'      => wp_json_encode($messages),
+      'system_prompt' => $system_prompt,
+      'ai_model'      => $ai_model,
+      'status'        => 'active',
+      'created_at'    => current_time('mysql'),
+      'updated_at'    => current_time('mysql'),
+    ]);
+
+    $id = $wpdb->insert_id;
+    if (!$id) {
+      self::log('[TEMPLATE] Failed to create conversation for ' . $phone);
+      return false;
+    }
+
+    if ($is_scheduled_only) {
+      self::log_always('[CONVERSATION] ── TEMPLATE SCHEDULED (pending delivery) ──');
+      self::log_always('[CONVERSATION] TEMPLATE PENDING for ' . $phone . ': ' . $first_content);
+    } else {
+      self::log_always('[CONVERSATION] ── TEMPLATE SENT ──');
+      self::log_always('[CONVERSATION] TEMPLATE to ' . $phone . ': ' . $first_content);
+    }
+
+    return true;
+  }
+
+  /**
+   * Parse template variables from config JSON.
+   *
+   * Format: JSON array of objects: [{"key":"1","field":"display_name"},{"key":"nombre","field":"display_name"}]
+   * - Numbers mode: keys are numbers "1", "2", "3" (sorted numerically)
+   * - Names mode: keys are custom names (order preserved)
+   *
+   * @param string $config_json  JSON string with variables config.
+   * @param string $mode         Mode: 'numbers' or 'names'.
+   * @return array Array of WP field names to extract values from, in order.
+   */
+  private static function parse_template_variables($config_json, $mode = 'numbers') {
+    if (empty($config_json)) {
+      return [];
+    }
+
+    $vars_data = json_decode($config_json, true);
+    if (!is_array($vars_data)) {
+      return [];
+    }
+
+    $mapping = [];
+    $ordered_fields = [];
+
+    // For numbers mode, we need to sort by numeric key
+    if ($mode === 'numbers') {
+      $temp = [];
+      foreach ($vars_data as $var) {
+        if (empty($var['key']) || empty($var['field'])) {
+          continue;
+        }
+        $numeric_key = intval($var['key']);
+        $temp[$numeric_key] = $var['field'];
+        $mapping[$var['key']] = $var['field'];
+      }
+      ksort($temp);
+      $ordered_fields = array_values($temp);
+    } else {
+      // For names mode, preserve the order in the array
+      foreach ($vars_data as $var) {
+        if (empty($var['key']) || empty($var['field'])) {
+          continue;
+        }
+        $ordered_fields[] = $var['field'];
+        $mapping[$var['key']] = $var['field'];
+      }
+    }
+
+    self::log('[TEMPLATE VARS] Mode: ' . $mode . ', Mapping: ' . wp_json_encode($mapping) . ', Ordered: ' . implode(', ', $ordered_fields));
+
+    return $ordered_fields;
+  }
+
+  /**
+   * Get user data values for template variables.
+   *
+   * @param string $phone     Phone number to find the user.
+   * @param array  $variables Array of variable keys (display_name, first_name, etc.).
+   * @return array Array of values in the same order as $variables.
+   */
+  private static function get_user_variable_values($phone, $variables) {
+    if (empty($variables) || !is_array($variables)) {
+      return [];
+    }
+
+    // Find user by phone number.
+    global $wpdb;
+    $user_id = $wpdb->get_var($wpdb->prepare(
+      "SELECT user_id FROM {$wpdb->usermeta}
+       WHERE meta_key = 'phone'
+       AND REPLACE(REPLACE(REPLACE(meta_value, '+', ''), ' ', ''), '-', '') LIKE %s
+       LIMIT 1",
+      '%' . $wpdb->esc_like(preg_replace('/[^\d]/', '', $phone)) . '%'
+    ));
+
+    if (!$user_id) {
+      self::log('[TEMPLATE VARS] User not found for phone: ' . $phone);
+      return array_fill(0, count($variables), '');
+    }
+
+    $user = get_userdata($user_id);
+    if (!$user) {
+      return array_fill(0, count($variables), '');
+    }
+
+    $values = [];
+    foreach ($variables as $var_key) {
+      switch ($var_key) {
+        case 'display_name':
+          $values[] = $user->display_name;
+          break;
+        case 'first_name':
+          $values[] = $user->first_name;
+          break;
+        case 'last_name':
+          $values[] = $user->last_name;
+          break;
+        case 'email':
+          $values[] = $user->user_email;
+          break;
+        case 'phone':
+          $values[] = get_user_meta($user_id, 'phone', true);
+          break;
+        case 'user_login':
+          $values[] = $user->user_login;
+          break;
+        default:
+          $values[] = '';
+          break;
+      }
+    }
+
+    self::log('[TEMPLATE VARS] Resolved for phone ' . $phone . ': ' . wp_json_encode(array_combine($variables, $values)));
+    return $values;
+  }
+
+  /**
+   * Build template components array from variable values.
+   *
+   * @param array $values Array of variable values.
+   * @return array Components array for WhatsApp API.
+   */
+  private static function build_template_components($values) {
+    if (empty($values)) {
+      return [];
+    }
+
+    $parameters = [];
+    foreach ($values as $value) {
+      $parameters[] = [
+        'type' => 'text',
+        'text' => (string) $value,
+      ];
+    }
+
+    return [
+      [
+        'type'       => 'body',
+        'parameters' => $parameters,
+      ],
+    ];
+  }
+
+  /**
+   * Handle a scheduled template send (cron callback).
+   *
+   * Hooked to `pn_cm_send_scheduled_wa_template`. For `after_delay` triggers,
+   * sends the template immediately. For `on_inactivity` triggers, checks
+   * whether the client has shown any activity since the template was scheduled
+   * (WhatsApp messages, conversation updates, GHL/CRM actions, etc.);
+   * if the client was active, the template is skipped.
+   *
+   * @param string $phone              Recipient phone number.
+   * @param string $template_name      Template name.
+   * @param string $language_code      Language code.
+   * @param string $contact_name       Contact name.
+   * @param string $trigger_type       Trigger type (after_delay or on_inactivity).
+   * @param int    $scheduled_at       Unix timestamp when the template was scheduled (0 for legacy).
+   * @param array  $template_variables Array of variable keys for template personalization.
+   */
+  public static function send_scheduled_template($phone, $template_name, $language_code, $contact_name, $trigger_type, $scheduled_at = 0, $template_variables = [], $template_desc = '') {
+    self::log('[TEMPLATE] Scheduled template firing: trigger=' . $trigger_type . ' template=' . $template_name . ' phone=' . $phone);
+
+    // Deduplication: since templates are stored in both WP Cron and the fallback
+    // queue, prevent sending the same template twice. Use a short-lived transient
+    // keyed on phone + template + scheduled_at.
+    $dedup_key = 'pn_cm_tpl_sent_' . md5($phone . $template_name . intval($scheduled_at));
+    if (get_transient($dedup_key)) {
+      self::log('[TEMPLATE] Skipping duplicate send for "' . $template_name . '" to ' . $phone . ' (already sent)');
+      return;
+    }
+    set_transient($dedup_key, 1, 3600); // 1 hour dedup window.
+
+    if ($trigger_type === 'on_inactivity') {
+      // Build a threshold timestamp in the same format as current_time('mysql')
+      // used by the conversations table (site-local timezone).
+      $scheduled_at = intval($scheduled_at);
+      $threshold_time = $scheduled_at > 0
+        ? wp_date('Y-m-d H:i:s', $scheduled_at)
+        : '';
+
+      global $wpdb;
+      $table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
+      $phone_normalized = ltrim($phone, '+');
+      $row   = $wpdb->get_row($wpdb->prepare(
+        "SELECT messages, updated_at FROM {$table} WHERE REPLACE(phone_number, '+', '') = %s AND status = 'active' ORDER BY updated_at DESC LIMIT 1",
+        $phone_normalized
+      ));
+
+      if ($row) {
+        if ($threshold_time) {
+          // Check for user messages sent AFTER the template was scheduled.
+          // This detects WhatsApp replies from the client.
+          $messages = !empty($row->messages) ? json_decode($row->messages, true) : [];
+          if (is_array($messages)) {
+            foreach ($messages as $msg) {
+              if (!isset($msg['role']) || $msg['role'] !== 'user') {
+                continue;
+              }
+              $msg_time = isset($msg['timestamp']) ? $msg['timestamp'] : '';
+              if ($msg_time && $msg_time > $threshold_time) {
+                self::log('[TEMPLATE] Client ' . $phone . ' sent a WA message after scheduling — skipping on_inactivity template "' . $template_name . '"');
+                return;
+              }
+            }
+          }
+
+          // Check the WP user registration or modification date for the
+          // associated phone number. This detects external activity such as
+          // GHL webhook sign-ups, CRM contact updates, Zoho sync, etc.
+          $user = get_users([
+            'meta_key'   => 'pn_cm_phone',
+            'meta_value' => $phone,
+            'number'     => 1,
+          ]);
+          if (!empty($user)) {
+            $wp_user = $user[0];
+            // user_registered is stored in UTC; convert threshold to UTC for comparison.
+            $threshold_utc = $scheduled_at > 0 ? gmdate('Y-m-d H:i:s', $scheduled_at) : '';
+            if ($threshold_utc && $wp_user->user_registered > $threshold_utc) {
+              self::log('[TEMPLATE] Client ' . $phone . ' was registered/updated after scheduling (' . $wp_user->user_registered . ') — skipping on_inactivity template "' . $template_name . '"');
+              return;
+            }
+            // Also check profile last-modified meta (set by GHL, Zoho, CRM, etc.)
+            $profile_modified = get_user_meta($wp_user->ID, 'pn_cm_profile_updated', true);
+            if ($profile_modified && $profile_modified > $threshold_time) {
+              self::log('[TEMPLATE] Client ' . $phone . ' has recent CRM activity (' . $profile_modified . ') — skipping on_inactivity template "' . $template_name . '"');
+              return;
+            }
+          }
+        } else {
+          // Legacy fallback (no $scheduled_at): skip if any user message exists.
+          $messages = !empty($row->messages) ? json_decode($row->messages, true) : [];
+          if (is_array($messages)) {
+            foreach ($messages as $msg) {
+              if (isset($msg['role']) && $msg['role'] === 'user') {
+                self::log('[TEMPLATE] Client ' . $phone . ' has responded — skipping on_inactivity template "' . $template_name . '"');
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Build components from template variables if configured.
+    $components = [];
+    if (!empty($template_variables) && is_array($template_variables)) {
+      $values = self::get_user_variable_values($phone, $template_variables);
+      $components = self::build_template_components($values);
+    }
+
+    // Send the template.
+    $wamid = self::send_whatsapp_template($phone, $template_name, $language_code, $components);
+    if ($wamid) {
+      self::log_always('[CONVERSATION] SCHEDULED TEMPLATE to ' . $phone . ': ' . $template_name . ' (' . $language_code . ') trigger=' . $trigger_type);
+      $content = !empty($template_desc) ? $template_desc : '[Template: ' . $template_name . ']';
+      self::append_template_to_conversation($phone, $template_name, is_string($wamid) ? $wamid : '', $content);
+    } else {
+      self::log('[TEMPLATE] Failed to send scheduled template "' . $template_name . '" to ' . $phone);
+    }
+  }
+
+  /**
+   * Process any overdue scheduled template events directly.
+   *
+   * This acts as a fallback for WP Cron: if DISABLE_WP_CRON is true, or if
+   * the site has low traffic and WP Cron never fires, this method manually
+   * checks the cron array and fires any past-due template events.
+   *
+   * Call this from webhook handlers and other entry points to ensure
+   * templates are sent even when WP Cron is unreliable.
+   */
+  public static function process_pending_template_events() {
+    $fired = 0;
+
+    // 1. Process overdue WP Cron events.
+    $crons = _get_cron_array();
+    if (is_array($crons) && !empty($crons)) {
+      $gmt_time = microtime(true);
+      $hook     = 'pn_cm_send_scheduled_wa_template';
+
+      foreach ($crons as $timestamp => $cronhooks) {
+        if ($timestamp > $gmt_time) {
+          break;
+        }
+        if (!isset($cronhooks[$hook])) {
+          continue;
+        }
+
+        foreach ($cronhooks[$hook] as $hash => $event) {
+          wp_unschedule_event($timestamp, $hook, $event['args']);
+          do_action_ref_array($hook, $event['args']);
+          $fired++;
+        }
+      }
+    }
+
+    // 2. Process our fallback queue (templates that wp_schedule_single_event refused).
+    $queue = get_option('pn_cm_wa_pending_templates', []);
+    if (is_array($queue) && !empty($queue)) {
+      $now       = time();
+      $remaining = [];
+
+      foreach ($queue as $item) {
+        $fire_at = isset($item['fire_at']) ? (int) $item['fire_at'] : 0;
+        $args    = isset($item['args'])    ? $item['args']          : [];
+
+        if ($fire_at <= $now && !empty($args)) {
+          self::log('[TEMPLATE] Firing fallback-queued template for phone=' . ($args[0] ?? '?'));
+          call_user_func_array([__CLASS__, 'send_scheduled_template'], $args);
+          $fired++;
+        } else {
+          $remaining[] = $item;
+        }
+      }
+
+      if (count($remaining) !== count($queue)) {
+        update_option('pn_cm_wa_pending_templates', $remaining, false);
+      }
+    }
+
+    if ($fired > 0) {
+      self::log('[TEMPLATE] process_pending_template_events fired ' . $fired . ' overdue event(s)');
+    }
+  }
+
+  /**
+   * Store a template in our fallback queue when wp_schedule_single_event fails.
+   *
+   * @param int   $fire_at   Unix timestamp when the template should fire.
+   * @param array $args      Arguments for send_scheduled_template().
+   */
+  private static function queue_pending_template($fire_at, $args) {
+    $queue = get_option('pn_cm_wa_pending_templates', []);
+    if (!is_array($queue)) {
+      $queue = [];
+    }
+
+    $queue[] = [
+      'fire_at' => (int) $fire_at,
+      'args'    => $args,
+    ];
+
+    update_option('pn_cm_wa_pending_templates', $queue, false);
+    self::log('[TEMPLATE] Stored in fallback queue — fire_at=' . wp_date('Y-m-d H:i:s', $fire_at) . ' phone=' . ($args[0] ?? '?'));
+  }
+
+  /**
+   * Append or update a sent template message in an existing conversation record.
+   *
+   * @param string $phone
+   * @param string $template_name
+   * @param string $wamid
+   * @param string $content
+   * @return bool
+   */
+  private static function append_template_to_conversation($phone, $template_name, $wamid = '', $content = '') {
+    global $wpdb;
+    $table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
+    $phone_normalized = ltrim($phone, '+');
+    $conv = $wpdb->get_row($wpdb->prepare(
+      "SELECT id, messages FROM {$table} WHERE REPLACE(phone_number, '+', '') = %s AND status = 'active' ORDER BY id DESC LIMIT 1",
+      $phone_normalized
+    ));
+    if (!$conv) {
+      return false;
+    }
+    $msgs = !empty($conv->messages) ? json_decode($conv->messages, true) : [];
+    if (!is_array($msgs)) {
+      $msgs = [];
+    }
+    $text = !empty($content) ? $content : '[Template: ' . $template_name . ']';
+
+    // If there is an existing placeholder/pending message without a wamid, replace it.
+    // This handles messages created when the template was scheduled but not yet sent.
+    $updated = false;
+    foreach ($msgs as $idx => $m) {
+      if (empty($m['wamid']) && isset($m['role']) && $m['role'] === 'assistant') {
+        $is_placeholder = (empty($m['content']) || strpos($m['content'], '[Scheduled') !== false);
+        $is_pending     = (!empty($m['pending']));
+        $is_auto        = (!empty($m['auto_sent']));
+        if ($is_placeholder || $is_pending || $is_auto) {
+          $msgs[$idx]['content']   = $text;
+          $msgs[$idx]['wamid']     = $wamid;
+          $msgs[$idx]['timestamp'] = current_time('mysql');
+          $msgs[$idx]['pending']   = false;
+          $updated = true;
+          break;
+        }
+      }
+    }
+    if (!$updated) {
+      $msgs[] = [
+        'role'      => 'assistant',
+        'content'   => $text,
+        'wamid'     => $wamid,
+        'timestamp' => current_time('mysql'),
+        'auto_sent' => true,
+      ];
+    }
+    self::update_conversation_messages($conv->id, $msgs);
+    return true;
+  }
+
+  /**
+   * Find a message in conversation history by its WhatsApp message ID (wamid).
+   *
+   * @param array  $messages Conversation message history.
+   * @param string $wamid    The WhatsApp message ID to search for.
+   * @return string The message content, or empty string if not found.
+   */
+  private static function find_message_by_wamid($messages, $wamid) {
+    if (empty($wamid) || empty($messages)) {
+      return '';
+    }
+    foreach ($messages as $msg) {
+      if (isset($msg['wamid']) && $msg['wamid'] === $wamid && !empty($msg['content'])) {
+        return $msg['content'];
+      }
+    }
+    return '';
+  }
+
+  /**
+   * Sync a WhatsApp message exchange to GHL as a contact note.
+   *
+   * @param string $phone       Customer phone number.
+   * @param string $user_text   The customer's message.
+   * @param string $ai_response The AI's response.
+   */
+  private static function sync_message_to_ghl($phone, $user_text, $ai_response) {
+    if (!class_exists('PN_CUSTOMERS_MANAGER_GHL')) {
+      return;
+    }
+    if (empty(get_option('pn_customers_manager_ghl_api_key', ''))) {
+      return;
+    }
+
+    $ghl_id = PN_CUSTOMERS_MANAGER_GHL::find_ghl_contact_id_by_phone($phone);
+    if (empty($ghl_id)) {
+      return;
+    }
+
+    $wa_sync     = get_option('pn_customers_manager_ghl_wa_sync', '') === 'on';
+    $provider_id = get_option('pn_customers_manager_ghl_conversation_provider_id', '');
+
+    if ($wa_sync && !empty($provider_id)) {
+      // Use Conversations API — bypasses sync_direction check by design.
+      PN_CUSTOMERS_MANAGER_GHL::add_conversation_message($ghl_id, $user_text, 'inbound');
+      if (!empty($ai_response)) {
+        PN_CUSTOMERS_MANAGER_GHL::add_conversation_message($ghl_id, $ai_response, 'outbound');
+      }
+    } else {
+      // Fallback to notes.
+      $note = "WhatsApp\n\n"
+        . "Customer:\n" . $user_text . "\n\n"
+        . "AI Response:\n" . $ai_response;
+      PN_CUSTOMERS_MANAGER_GHL::create_note($ghl_id, $note);
+    }
   }
 
   /**
@@ -748,7 +2480,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     $body .= '--' . $boundary . '--' . "\r\n";
 
     if ($is_temp) {
-      @unlink($file_path);
+      wp_delete_file($file_path);
     }
 
     $upload_url = 'https://graph.facebook.com/v21.0/' . $phone_id . '/media';
@@ -1003,13 +2735,16 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * @param string $contact_name
    * @return object|null
    */
-  private static function get_or_create_conversation($phone, $contact_name = '') {
+  private static function get_or_create_conversation($phone, $contact_name = '', $is_reply = false, $text = '') {
     global $wpdb;
     $table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
 
+    // Normalize phone: strip leading '+' so we match both formats.
+    $phone_normalized = ltrim($phone, '+');
+
     $conversation = $wpdb->get_row($wpdb->prepare(
-      "SELECT * FROM {$table} WHERE phone_number = %s AND status = 'active' ORDER BY updated_at DESC LIMIT 1",
-      $phone
+      "SELECT * FROM {$table} WHERE REPLACE(phone_number, '+', '') = %s AND status = 'active' ORDER BY updated_at DESC LIMIT 1",
+      $phone_normalized
     ));
 
     if ($conversation) {
@@ -1017,6 +2752,8 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         $wpdb->update($table, ['contact_name' => $contact_name], ['id' => $conversation->id]);
         $conversation->contact_name = $contact_name;
       }
+      // Ensure a CRM organization exists for this phone (idempotent).
+      self::sync_organization_for_phone($phone, $contact_name);
       return $conversation;
     }
 
@@ -1045,7 +2782,11 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       self::log('Auto-linked conversation to funnel=' . $funnel_id . ' node=' . $node_id);
     }
 
-    // Send welcome message if configured.
+    // Send or queue welcome message if configured.
+    // Skip sending (but still store in history) when:
+    //   - The message is a reply to a manually-sent message (is_reply), OR
+    //   - The customer's first message is NOT a simple greeting, meaning they
+    //     are likely responding to a manually-sent welcome message.
     $messages = [];
     if (!empty($welcome_msg)) {
       $welcome_msg = self::strip_html_to_plain_text($welcome_msg);
@@ -1053,10 +2794,48 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
         'role'      => 'assistant',
         'content'   => $welcome_msg,
         'timestamp' => current_time('mysql'),
+        'auto_sent' => true,
       ];
-      self::send_whatsapp_message($phone, $welcome_msg);
-      self::log('[CONVERSATION] ── NEW CONVERSATION ──');
-      self::log('[CONVERSATION] WELCOME to ' . $phone . ' (' . $contact_name . '): ' . $welcome_msg);
+
+      $skip_sending_welcome = false;
+
+      if ($is_reply) {
+        $skip_sending_welcome = true;
+        self::log('[CONVERSATION] Skipping welcome send — message is a reply to a previous message');
+      } else {
+        // Check if the incoming text looks like a response to an already-sent
+        // welcome rather than a cold first-contact greeting.  When admins send
+        // the welcome message manually (before the bot template is ready),
+        // the customer's first message will be a substantive reply, not a
+        // simple greeting.  In that case we store the welcome in history (so
+        // the AI has context) but do NOT send it over WhatsApp to avoid a
+        // duplicate.
+        $incoming_text = $text;
+        if (empty($incoming_text) && !empty($contact_name)) {
+          // Audio or empty — treat as non-greeting, skip welcome send
+          $skip_sending_welcome = true;
+          self::log('[CONVERSATION] Skipping welcome send — incoming message is empty/audio');
+        } else {
+          $normalized = mb_strtolower(trim($incoming_text));
+          $simple_greetings = ['hola', 'holi', 'hi', 'hello', 'hey', 'buenos días', 'buenas tardes', 'buenas noches', 'buenos dias', 'buenas', 'saludos', 'que tal', 'qué tal'];
+          if (!in_array($normalized, $simple_greetings, true)) {
+            // Not a simple greeting — customer is likely replying to a
+            // manually-sent welcome.  Store welcome in history but don't send.
+            $skip_sending_welcome = true;
+            self::log('[CONVERSATION] Skipping welcome send — first message is substantive, likely replying to manual welcome');
+          }
+        }
+      }
+
+      if (!$skip_sending_welcome) {
+        $wa_node_config = $wa_node ? ($wa_node['config'] ?? []) : [];
+        self::maybe_send_or_queue($phone, $welcome_msg, 0, $wa_node_config);
+        self::log('[CONVERSATION] ── NEW CONVERSATION ──');
+        self::log('[CONVERSATION] WELCOME SENT to ' . $phone . ' (' . $contact_name . '): ' . $welcome_msg);
+      } else {
+        self::log('[CONVERSATION] ── NEW CONVERSATION (welcome stored but NOT sent) ──');
+        self::log('[CONVERSATION] WELCOME STORED (not sent) for ' . $phone . ' (' . $contact_name . '): ' . $welcome_msg);
+      }
     }
 
     $wpdb->insert($table, [
@@ -1077,7 +2856,183 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       return null;
     }
 
+    // Sync CRM organization so the lead appears in the Clients dashboard.
+    self::sync_organization_for_phone($phone, $contact_name);
+
     return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", $id));
+  }
+
+  /**
+   * Find or create a pn_cm_organization for a phone number so that
+   * WhatsApp leads automatically appear in the CRM Clients dashboard.
+   *
+   * If an organization with this phone already exists, update its name
+   * when the organization has no title and a contact_name is available.
+   *
+   * @param string $phone        Phone number (as stored in WA conversations).
+   * @param string $contact_name Contact name from WhatsApp profile.
+   * @return int|false Organization post ID, or false on failure.
+   */
+  private static function sync_organization_for_phone($phone, $contact_name = '') {
+    if (empty($phone)) {
+      return false;
+    }
+
+    $phone_clean = preg_replace('/[^\d]/', '', $phone);
+    if (empty($phone_clean)) {
+      return false;
+    }
+
+    // Prevent race conditions: use a transient lock so concurrent requests
+    // for the same phone number do not both create an organization.
+    $lock_key = 'pn_cm_sync_org_' . $phone_clean;
+    if (get_transient($lock_key)) {
+      // Another request is creating the org right now — wait briefly and retry lookup.
+      usleep(500000); // 0.5 seconds
+    }
+    set_transient($lock_key, 1, 30); // 30-second lock
+
+    // Search for an existing organization by phone using direct SQL with
+    // character stripping so that stored formats like "+34 651 045 739",
+    // "+34651045739", or "34651045739" all match the same digits.
+    global $wpdb;
+    $org_id = $wpdb->get_var($wpdb->prepare(
+      "SELECT p.ID FROM {$wpdb->posts} p
+       INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+       WHERE p.post_type = 'pn_cm_organization'
+         AND p.post_status = 'publish'
+         AND pm.meta_key = 'pn_cm_organization_phone'
+         AND REPLACE(REPLACE(REPLACE(REPLACE(pm.meta_value, '+', ''), ' ', ''), '-', ''), '.', '') LIKE %s
+       ORDER BY p.ID DESC
+       LIMIT 1",
+      '%' . $wpdb->esc_like($phone_clean) . '%'
+    ));
+
+    if ($org_id) {
+      $org_id = (int) $org_id;
+      // Update name if org has a placeholder or empty title and we have a real name.
+      if (!empty($contact_name)) {
+        $org = get_post($org_id);
+        if ($org && (empty($org->post_title) || $org->post_title === $phone || $org->post_title === $phone_clean)) {
+          wp_update_post(['ID' => $org_id, 'post_title' => $contact_name]);
+          self::log('[SYNC] Updated organization #' . $org_id . ' title to: ' . $contact_name);
+        }
+      }
+      delete_transient($lock_key);
+      return $org_id;
+    }
+
+    // Check if a WP user already exists with this phone number.
+    // GHL/Zoho webhooks may have already created a user contact for this phone.
+    // In that case, create an organization linked to the existing user instead of
+    // a standalone duplicate.
+    $existing_user_id = $wpdb->get_var($wpdb->prepare(
+      "SELECT user_id FROM {$wpdb->usermeta}
+       WHERE meta_key = 'phone'
+       AND REPLACE(REPLACE(REPLACE(REPLACE(meta_value, '+', ''), ' ', ''), '-', ''), '.', '') LIKE %s
+       LIMIT 1",
+      '%' . $wpdb->esc_like($phone_clean) . '%'
+    ));
+
+    if (!$existing_user_id) {
+      $existing_user_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT user_id FROM {$wpdb->usermeta}
+         WHERE meta_key = 'billing_phone'
+         AND REPLACE(REPLACE(REPLACE(REPLACE(meta_value, '+', ''), ' ', ''), '-', ''), '.', '') LIKE %s
+         LIMIT 1",
+        '%' . $wpdb->esc_like($phone_clean) . '%'
+      ));
+    }
+
+    if ($existing_user_id) {
+      $existing_user_id = (int) $existing_user_id;
+      $user = get_userdata($existing_user_id);
+
+      // Check if this user already has an organization linked.
+      $linked_orgs = get_posts([
+        'post_type'      => 'pn_cm_organization',
+        'posts_per_page' => 1,
+        'post_status'    => 'publish',
+        'meta_key'       => 'pn_cm_organization_contact',
+        'meta_value'     => $existing_user_id,
+        'fields'         => 'ids',
+      ]);
+
+      if (!empty($linked_orgs)) {
+        $org_id = $linked_orgs[0];
+        self::log('[SYNC] Found existing org #' . $org_id . ' linked to user #' . $existing_user_id . ' for phone ' . $phone);
+        delete_transient($lock_key);
+        return $org_id;
+      }
+
+      // Create an organization linked to the existing user.
+      $org_title = !empty($contact_name) ? $contact_name : ($user ? trim($user->first_name . ' ' . $user->last_name) : $phone);
+      if (empty(trim($org_title))) {
+        $org_title = $user ? $user->display_name : $phone;
+      }
+
+      $org_id = wp_insert_post([
+        'post_type'   => 'pn_cm_organization',
+        'post_title'  => $org_title,
+        'post_status' => 'publish',
+      ]);
+
+      if (!is_wp_error($org_id) && $org_id) {
+        update_post_meta($org_id, 'pn_cm_organization_phone', $phone);
+        update_post_meta($org_id, 'pn_cm_organization_contact', $existing_user_id);
+        if ($user && $user->user_email) {
+          update_post_meta($org_id, 'pn_cm_organization_email', $user->user_email);
+        }
+        update_post_meta($org_id, 'pn_cm_client_source', 'whatsapp');
+        if (class_exists('PN_CUSTOMERS_MANAGER_Clients')) {
+          // Copy stage from user if set, otherwise use default.
+          $user_stage = get_user_meta($existing_user_id, 'pn_cm_client_stage', true);
+          $stage = !empty($user_stage) ? $user_stage : PN_CUSTOMERS_MANAGER_Clients::get_default_stage();
+          update_post_meta($org_id, 'pn_cm_organization_client_stage', $stage);
+        }
+        // Copy GHL/Zoho IDs if present.
+        $ghl_id = get_user_meta($existing_user_id, 'pn_cm_ghl_contact_id', true);
+        if (!empty($ghl_id)) {
+          update_post_meta($org_id, 'pn_cm_organization_ghl_id', $ghl_id);
+        }
+        $zoho_id = get_user_meta($existing_user_id, 'pn_cm_zoho_contact_id', true);
+        if (!empty($zoho_id)) {
+          update_post_meta($org_id, 'pn_cm_organization_zoho_id', $zoho_id);
+        }
+
+        self::log('[SYNC] Created organization #' . $org_id . ' linked to existing user #' . $existing_user_id . ' for phone ' . $phone);
+        delete_transient($lock_key);
+        return $org_id;
+      }
+    }
+
+    // No organization or user found — create one.
+    $title = !empty($contact_name) ? $contact_name : $phone;
+
+    $org_id = wp_insert_post([
+      'post_type'   => 'pn_cm_organization',
+      'post_title'  => $title,
+      'post_status' => 'publish',
+    ]);
+
+    if (is_wp_error($org_id) || !$org_id) {
+      self::log('[SYNC] Failed to create organization for phone ' . $phone);
+      delete_transient($lock_key);
+      return false;
+    }
+
+    update_post_meta($org_id, 'pn_cm_organization_phone', $phone);
+    update_post_meta($org_id, 'pn_cm_client_source', 'whatsapp');
+
+    // Set default stage.
+    if (class_exists('PN_CUSTOMERS_MANAGER_Clients')) {
+      update_post_meta($org_id, 'pn_cm_organization_client_stage', PN_CUSTOMERS_MANAGER_Clients::get_default_stage());
+    }
+
+    self::log('[SYNC] Created organization #' . $org_id . ' (' . $title . ') for phone ' . $phone);
+
+    delete_transient($lock_key);
+    return $org_id;
   }
 
   /**
@@ -1090,6 +3045,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    * @return object|null
    */
   public static function create_conversation_for_node($phone, $contact_name, $funnel_id, $node_id) {
+    // Normalize phone: strip leading '+' so it matches the webhook format (digits only).
+    $phone = ltrim($phone, '+');
+
     global $wpdb;
     $table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
 
@@ -1097,12 +3055,14 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
     $ai_model      = get_option('pn_customers_manager_whatsapp_ai_model', 'gpt-4o-mini');
     $welcome_msg   = '';
 
+    $node_config_data = [];
     $canvas_data = get_post_meta($funnel_id, 'pn_cm_funnel_canvas', true);
     if ($canvas_data) {
       $data = json_decode($canvas_data, true);
       if ($data && isset($data['nodes'])) {
         foreach ($data['nodes'] as $node) {
           if ($node['id'] === $node_id && isset($node['config'])) {
+            $node_config_data = $node['config'];
             if (!empty($node['config']['wa_system_prompt'])) {
               $system_prompt = $node['config']['wa_system_prompt'];
             }
@@ -1118,19 +3078,39 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       }
     }
 
+    $meta_templates_enabled = self::is_meta_templates_enabled($node_config_data);
+
+    if ($meta_templates_enabled) {
+      self::log('[CONVERSATION] ── NEW REGISTRATION / NODE CONTACT: ' . $phone . ' ──');
+      self::log('[CONVERSATION] Meta templates enabled — skipping plain-text welcome (Meta policy requires template outside 24h window). Initiating template system.');
+
+      self::initiate_multi_templates($phone, $contact_name, $node_config_data, $funnel_id, $node_id);
+
+      // Sync CRM organization so the lead appears in the Clients dashboard.
+      self::sync_organization_for_phone($phone, $contact_name);
+
+      $phone_norm = ltrim($phone, '+');
+      return $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$table} WHERE REPLACE(phone_number, '+', '') = %s ORDER BY id DESC LIMIT 1",
+        $phone_norm
+      ));
+    }
+
+    // When Meta templates are not enabled:
+    // In WhatsApp Cloud API, sending a cold plain-text message to a customer without an active
+    // 24h window is strictly rejected with error 131047. We store the welcome message in conversation
+    // history so the bot knows the welcome context when the customer replies, but do NOT attempt
+    // to send free-form text to Meta.
     $messages = [];
     if (!empty($welcome_msg)) {
-      // The welcome message may contain HTML from a WYSIWYG editor.
       $welcome_msg = self::strip_html_to_plain_text($welcome_msg);
-
       $messages[] = [
         'role'      => 'assistant',
         'content'   => $welcome_msg,
         'timestamp' => current_time('mysql'),
       ];
-      self::send_whatsapp_message($phone, $welcome_msg);
-      self::log('[CONVERSATION] ── NEW CONVERSATION (deferred) ──');
-      self::log('[CONVERSATION] WELCOME to ' . $phone . ': ' . $welcome_msg);
+      self::log('[CONVERSATION] ── NEW CONVERSATION (registration) ──');
+      self::log('[CONVERSATION] Welcome message stored in history for ' . $phone . ', but NOT sent as text (Meta requires an approved template to initiate contact outside 24h window)');
     }
 
     $wpdb->insert($table, [
@@ -1151,18 +3131,12 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       return null;
     }
 
-    return $wpdb->get_row($wpdb->prepare(
-      "SELECT * FROM {$table} WHERE id = %d",
-      $id
-    ));
+    // Sync CRM organization so the lead appears in the Clients dashboard.
+    self::sync_organization_for_phone($phone, $contact_name);
+
+    return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", $id));
   }
 
-  /**
-   * Update messages JSON for a conversation.
-   *
-   * @param int   $conversation_id
-   * @param array $messages
-   */
   private static function update_conversation_messages($conversation_id, $messages) {
     global $wpdb;
     $table = $wpdb->prefix . 'pn_cm_whatsapp_conversations';
@@ -1375,7 +3349,7 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
                     // Escape HTML but convert URLs to clickable links
                     $content = esc_html($msg['content']);
                     $content = make_clickable($content);
-                    echo nl2br($content);
+                    echo wp_kses_post(nl2br($content));
                   ?>
                 </div>
               <?php endif; ?>
@@ -1603,6 +3577,9 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
           <?php foreach ($messages as $msg): ?>
             <div class="pn-cm-wa-msg pn-cm-wa-msg-<?php echo esc_attr($msg['role']); ?>">
               <div class="pn-cm-wa-msg-bubble">
+                <?php if (!empty($msg['quoted_text'])): ?>
+                  <div class="pn-cm-wa-msg-quote"><?php echo esc_html(mb_substr($msg['quoted_text'], 0, 300)); ?></div>
+                <?php endif; ?>
                 <?php if (!empty($msg['images'])): ?>
                   <div class="pn-cm-wa-msg-images">
                     <?php foreach ($msg['images'] as $img): ?>
@@ -1620,6 +3597,13 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
                       echo esc_html(date_i18n(get_option('time_format'), strtotime($local_time)));
                     }
                   ?>
+                  <?php if ($msg['role'] === 'assistant'): ?>
+                    <?php if (!empty($msg['auto_sent'])): ?>
+                      <span class="material-icons-outlined pn-cm-wa-msg-icon" title="<?php echo esc_attr__('Automated bot message', 'pn-customers-manager'); ?>">smart_toy</span>
+                    <?php else: ?>
+                      <span class="material-icons-outlined pn-cm-wa-msg-icon" title="<?php echo esc_attr__('Manual message', 'pn-customers-manager'); ?>">person</span>
+                    <?php endif; ?>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>
@@ -1766,9 +3750,11 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
    */
   public static function ajax_test_webhook_receive($since) {
     if ($since === 'start') {
+      $server_time = current_time('mysql');
+      self::log('[RECEIVE-TEST] Start listening — server_time=' . $server_time);
       return [
-        'found'      => false,
-        'server_time' => current_time('mysql'),
+        'found'       => false,
+        'server_time' => $server_time,
       ];
     }
 
@@ -1783,39 +3769,39 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       ];
     }
 
-    $row = $wpdb->get_row($wpdb->prepare(
-      "SELECT * FROM {$table} WHERE updated_at >= %s ORDER BY updated_at DESC LIMIT 1",
-      $since
+    // Search all recent conversations (not just updated_at >= since, because the
+    // conversation may have been created before listening started but received a
+    // new message after). Check the last 10 conversations for any user message
+    // with a timestamp >= since.
+    $rows = $wpdb->get_results($wpdb->prepare(
+      "SELECT * FROM {$table} ORDER BY updated_at DESC LIMIT 10"
     ));
 
-    if (!$row) {
-      return [
-        'found' => false,
-      ];
+    if (empty($rows)) {
+      return ['found' => false];
     }
 
-    $messages = json_decode($row->messages, true) ?: [];
-    $found_msg = null;
+    foreach ($rows as $row) {
+      $messages = json_decode($row->messages, true) ?: [];
 
-    foreach ($messages as $msg) {
-      if ($msg['role'] === 'user' && isset($msg['timestamp']) && $msg['timestamp'] >= $since) {
-        $found_msg = $msg;
+      foreach ($messages as $msg) {
+        if (
+          isset($msg['role']) && $msg['role'] === 'user' &&
+          isset($msg['timestamp']) && $msg['timestamp'] >= $since
+        ) {
+          self::log('[RECEIVE-TEST] Found message from ' . $row->phone_number . ': ' . $msg['content']);
+          return [
+            'found'   => true,
+            'phone'   => $row->phone_number,
+            'name'    => $row->contact_name,
+            'message' => $msg['content'],
+            'time'    => $msg['timestamp'],
+          ];
+        }
       }
     }
 
-    if (!$found_msg) {
-      return [
-        'found' => false,
-      ];
-    }
-
-    return [
-      'found'   => true,
-      'phone'   => $row->phone_number,
-      'name'    => $row->contact_name,
-      'message' => $found_msg['content'],
-      'time'    => $found_msg['timestamp'],
-    ];
+    return ['found' => false];
   }
 
   /**
@@ -1905,5 +3891,665 @@ class PN_CUSTOMERS_MANAGER_WhatsApp_AI {
       PN_CUSTOMERS_MANAGER_VERSION,
       true
     );
+  }
+
+  /* ================================================================
+   * IMAGE EXTRACTION (without sending)
+   * ================================================================ */
+
+  /**
+   * Extract product image data from AI response text and strip image tags,
+   * WITHOUT sending images via WhatsApp. Used when deferring sends.
+   *
+   * @param  string $text              AI response text with image tags
+   * @param  array  $already_sent_ids  Product IDs whose main image was already sent
+   * @param  array  $already_sent_more Product IDs whose gallery was already sent
+   * @return array  ['text' => cleaned text, 'images' => array of image data]
+   */
+  private static function extract_product_images_data_only($text, $already_sent_ids = [], $already_sent_more = []) {
+    $images = [];
+
+    // Extract main product images
+    if (preg_match_all('/\[PRODUCT_IMAGES:(\d+)\]/', $text, $matches)) {
+      foreach ($matches[1] as $product_id) {
+        $product_id = (int) $product_id;
+
+        if (in_array($product_id, $already_sent_ids, true)) {
+          $text = str_replace('[PRODUCT_IMAGES:' . $product_id . ']', '[PRODUCT_MORE_IMAGES:' . $product_id . ']', $text);
+          continue;
+        }
+
+        if (!function_exists('wc_get_product')) continue;
+        $product = wc_get_product($product_id);
+        if (!$product) continue;
+
+        $thumb_id = get_post_thumbnail_id($product_id);
+        if (!$thumb_id) continue;
+
+        $main_url = wp_get_attachment_url($thumb_id);
+        if (!$main_url) continue;
+
+        $images[] = [
+          'url'          => $main_url,
+          'product_name' => $product->get_name(),
+          'product_id'   => $product_id,
+          'type'         => 'main',
+        ];
+      }
+      $text = preg_replace('/\s*\[PRODUCT_IMAGES:\d+\]/', '', $text);
+    }
+
+    // Extract gallery images
+    if (preg_match_all('/\[PRODUCT_MORE_IMAGES:(\d+)\]/', $text, $matches)) {
+      $unique_ids = array_unique($matches[1]);
+      foreach ($unique_ids as $product_id) {
+        $product_id = (int) $product_id;
+        if (in_array($product_id, $already_sent_more, true)) continue;
+        if (!function_exists('wc_get_product')) continue;
+
+        $product = wc_get_product($product_id);
+        if (!$product) continue;
+
+        $gallery_ids = $product->get_gallery_image_ids();
+        if (empty($gallery_ids)) continue;
+
+        foreach ($gallery_ids as $gallery_id) {
+          $gallery_url = wp_get_attachment_url($gallery_id);
+          if (!$gallery_url) continue;
+          $images[] = [
+            'url'          => $gallery_url,
+            'product_name' => $product->get_name(),
+            'product_id'   => $product_id,
+            'type'         => 'gallery',
+          ];
+        }
+      }
+      $text = preg_replace('/\s*\[PRODUCT_MORE_IMAGES:\d+\]/', '', $text);
+    }
+
+    return ['text' => trim($text), 'images' => $images];
+  }
+
+  /* ================================================================
+   * MESSAGE SCHEDULING
+   * ================================================================ */
+
+  /**
+   * Country calling-code → IANA timezone lookup.
+   *
+   * @param  string $phone  E.164 phone number (e.g. +34612345678)
+   * @return string|null     IANA timezone or null if no match
+   */
+  private static function get_timezone_from_phone($phone) {
+    $map = [
+      '1'    => 'America/New_York',
+      '7'    => 'Europe/Moscow',
+      '20'   => 'Africa/Cairo',
+      '27'   => 'Africa/Johannesburg',
+      '30'   => 'Europe/Athens',
+      '31'   => 'Europe/Amsterdam',
+      '32'   => 'Europe/Brussels',
+      '33'   => 'Europe/Paris',
+      '34'   => 'Europe/Madrid',
+      '36'   => 'Europe/Budapest',
+      '39'   => 'Europe/Rome',
+      '40'   => 'Europe/Bucharest',
+      '41'   => 'Europe/Zurich',
+      '43'   => 'Europe/Vienna',
+      '44'   => 'Europe/London',
+      '45'   => 'Europe/Copenhagen',
+      '46'   => 'Europe/Stockholm',
+      '47'   => 'Europe/Oslo',
+      '48'   => 'Europe/Warsaw',
+      '49'   => 'Europe/Berlin',
+      '51'   => 'America/Lima',
+      '52'   => 'America/Mexico_City',
+      '53'   => 'America/Havana',
+      '54'   => 'America/Argentina/Buenos_Aires',
+      '55'   => 'America/Sao_Paulo',
+      '56'   => 'America/Santiago',
+      '57'   => 'America/Bogota',
+      '58'   => 'America/Caracas',
+      '60'   => 'Asia/Kuala_Lumpur',
+      '61'   => 'Australia/Sydney',
+      '62'   => 'Asia/Jakarta',
+      '63'   => 'Asia/Manila',
+      '64'   => 'Pacific/Auckland',
+      '65'   => 'Asia/Singapore',
+      '66'   => 'Asia/Bangkok',
+      '81'   => 'Asia/Tokyo',
+      '82'   => 'Asia/Seoul',
+      '84'   => 'Asia/Ho_Chi_Minh',
+      '86'   => 'Asia/Shanghai',
+      '90'   => 'Europe/Istanbul',
+      '91'   => 'Asia/Kolkata',
+      '92'   => 'Asia/Karachi',
+      '93'   => 'Asia/Kabul',
+      '94'   => 'Asia/Colombo',
+      '95'   => 'Asia/Yangon',
+      '98'   => 'Asia/Tehran',
+      '212'  => 'Africa/Casablanca',
+      '213'  => 'Africa/Algiers',
+      '216'  => 'Africa/Tunis',
+      '218'  => 'Africa/Tripoli',
+      '220'  => 'Africa/Banjul',
+      '221'  => 'Africa/Dakar',
+      '233'  => 'Africa/Accra',
+      '234'  => 'Africa/Lagos',
+      '254'  => 'Africa/Nairobi',
+      '255'  => 'Africa/Dar_es_Salaam',
+      '256'  => 'Africa/Kampala',
+      '260'  => 'Africa/Lusaka',
+      '263'  => 'Africa/Harare',
+      '351'  => 'Europe/Lisbon',
+      '352'  => 'Europe/Luxembourg',
+      '353'  => 'Europe/Dublin',
+      '354'  => 'Atlantic/Reykjavik',
+      '355'  => 'Europe/Tirane',
+      '356'  => 'Europe/Malta',
+      '357'  => 'Asia/Nicosia',
+      '358'  => 'Europe/Helsinki',
+      '359'  => 'Europe/Sofia',
+      '370'  => 'Europe/Vilnius',
+      '371'  => 'Europe/Riga',
+      '372'  => 'Europe/Tallinn',
+      '380'  => 'Europe/Kiev',
+      '381'  => 'Europe/Belgrade',
+      '385'  => 'Europe/Zagreb',
+      '386'  => 'Europe/Ljubljana',
+      '420'  => 'Europe/Prague',
+      '421'  => 'Europe/Bratislava',
+      '502'  => 'America/Guatemala',
+      '503'  => 'America/El_Salvador',
+      '504'  => 'America/Tegucigalpa',
+      '505'  => 'America/Managua',
+      '506'  => 'America/Costa_Rica',
+      '507'  => 'America/Panama',
+      '509'  => 'America/Port-au-Prince',
+      '591'  => 'America/La_Paz',
+      '593'  => 'America/Guayaquil',
+      '595'  => 'America/Asuncion',
+      '598'  => 'America/Montevideo',
+      '880'  => 'Asia/Dhaka',
+      '886'  => 'Asia/Taipei',
+      '960'  => 'Indian/Maldives',
+      '961'  => 'Asia/Beirut',
+      '962'  => 'Asia/Amman',
+      '963'  => 'Asia/Damascus',
+      '964'  => 'Asia/Baghdad',
+      '965'  => 'Asia/Kuwait',
+      '966'  => 'Asia/Riyadh',
+      '967'  => 'Asia/Aden',
+      '968'  => 'Asia/Muscat',
+      '970'  => 'Asia/Gaza',
+      '971'  => 'Asia/Dubai',
+      '972'  => 'Asia/Jerusalem',
+      '973'  => 'Asia/Bahrain',
+      '974'  => 'Asia/Qatar',
+      '976'  => 'Asia/Ulaanbaatar',
+      '977'  => 'Asia/Kathmandu',
+      '992'  => 'Asia/Dushanbe',
+      '993'  => 'Asia/Ashgabat',
+      '994'  => 'Asia/Baku',
+      '995'  => 'Asia/Tbilisi',
+      '996'  => 'Asia/Bishkek',
+      '998'  => 'Asia/Tashkent',
+    ];
+
+    $clean = ltrim($phone, '+');
+
+    // Try 3-digit, 2-digit, 1-digit prefix (longest match first)
+    for ($len = 3; $len >= 1; $len--) {
+      $prefix = substr($clean, 0, $len);
+      if (isset($map[$prefix])) {
+        return $map[$prefix];
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Resolve timezone for a phone number and store it as user meta.
+   *
+   * @param  string $phone
+   * @return string  IANA timezone (falls back to WP site timezone)
+   */
+  private static function resolve_and_store_user_timezone($phone) {
+    // Try to find existing WP user by phone
+    $users = get_users([
+      'meta_key'   => 'billing_phone',
+      'meta_value' => $phone,
+      'number'     => 1,
+      'fields'     => 'ID',
+    ]);
+
+    if (empty($users)) {
+      // Also try without leading +
+      $clean_phone = ltrim($phone, '+');
+      $users = get_users([
+        'meta_key'   => 'billing_phone',
+        'meta_value' => $clean_phone,
+        'number'     => 1,
+        'fields'     => 'ID',
+      ]);
+    }
+
+    $user_id = !empty($users) ? (int) $users[0] : 0;
+
+    // Check if user already has a timezone stored
+    if ($user_id) {
+      $existing_tz = get_user_meta($user_id, 'userspn_timezone', true);
+      if (!empty($existing_tz)) {
+        return $existing_tz;
+      }
+    }
+
+    // Resolve from phone prefix
+    $timezone = self::get_timezone_from_phone($phone);
+
+    // Fallback to WP site timezone
+    if (!$timezone) {
+      $timezone = wp_timezone_string();
+      if (empty($timezone) || substr($timezone, 0, 3) === 'UTC') {
+        $timezone = 'UTC';
+      }
+    }
+
+    // Store on user if found
+    if ($user_id) {
+      update_user_meta($user_id, 'userspn_timezone', $timezone);
+    }
+
+    return $timezone;
+  }
+
+  /**
+   * Check if the current time (in the user's timezone) falls within the node's schedule.
+   *
+   * @param  array  $node_config    Node configuration array
+   * @param  string $user_timezone  IANA timezone string
+   * @return bool
+   */
+  private static function is_within_schedule($node_config, $user_timezone) {
+    if (empty($node_config['wa_schedule_enabled'])) {
+      return true; // No schedule configured = always allowed
+    }
+
+    $schedule_days = $node_config['wa_schedule_days'] ?? '';
+    if (is_string($schedule_days)) {
+      $schedule_days = json_decode($schedule_days, true);
+    }
+
+    if (empty($schedule_days) || !is_array($schedule_days)) {
+      return true; // No schedule data = always allowed
+    }
+
+    try {
+      $tz  = new DateTimeZone($user_timezone);
+      $now = new DateTime('now', $tz);
+    } catch (Exception $e) {
+      return true; // Invalid timezone = don't block
+    }
+
+    // Day of week: 1=Monday ... 7=Sunday (ISO-8601)
+    $day_index = (int) $now->format('N') - 1; // 0=Monday ... 6=Sunday
+    $day_keys  = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    $day_key   = $day_keys[$day_index];
+
+    if (!isset($schedule_days[$day_key]) || empty($schedule_days[$day_key]['enabled'])) {
+      return false; // Day not enabled
+    }
+
+    $from = $schedule_days[$day_key]['from'] ?? '00:00';
+    $to   = $schedule_days[$day_key]['to'] ?? '23:59';
+
+    $current_time = $now->format('H:i');
+
+    return ($current_time >= $from && $current_time <= $to);
+  }
+
+  /**
+   * Check if the conversation was initiated by the client.
+   * Returns true if the first non-system message is from 'user'.
+   *
+   * @param  array $messages Conversation messages array.
+   * @return bool
+   */
+  private static function is_client_initiated_conversation($messages) {
+    foreach ($messages as $m) {
+      $role = $m['role'] ?? '';
+      if ($role === 'system') continue;
+      return $role === 'user';
+    }
+    return true; // Empty conversation = client is initiating
+  }
+
+  /**
+   * Check if an off-hours message was already sent in this conversation.
+   *
+   * @param  array $messages Conversation messages array.
+   * @return bool
+   */
+  private static function offhours_message_already_sent($messages) {
+    foreach ($messages as $m) {
+      if (!empty($m['offhours'])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Create CRM tasks from follow-up tags extracted from AI responses.
+   *
+   * @param array  $keys         List of follow-up keys found in the AI response.
+   * @param string $phone        Customer phone number.
+   * @param string $contact_name Customer display name.
+   * @param array  $node_config  Node configuration.
+   * @param string $prefix       Config prefix ('wa_' or 'ig_').
+   */
+  private static function create_followup_tasks($keys, $phone, $contact_name, $node_config, $prefix) {
+    if (!post_type_exists('pn_tasks_task')) {
+      self::log('FOLLOWUP — pn_tasks_task CPT does not exist, skipping task creation');
+      return;
+    }
+
+    $client = self::resolve_crm_client($phone);
+    if (!$client) {
+      self::log('FOLLOWUP — could not resolve CRM client for phone=' . $phone . ', skipping');
+      return;
+    }
+
+    $raw = $node_config[$prefix . 'followup_listeners'] ?? '';
+    if (is_string($raw)) {
+      $raw = json_decode($raw, true);
+    }
+    if (!is_array($raw)) {
+      return;
+    }
+
+    // Build key → listener map
+    $listeners = [];
+    foreach ($raw as $l) {
+      $k = trim($l[$prefix . 'followup_key'] ?? '');
+      if ($k) {
+        $listeners[$k] = $l;
+      }
+    }
+
+    foreach ($keys as $key) {
+      if (!isset($listeners[$key])) {
+        self::log('FOLLOWUP — key "' . $key . '" not found in listeners, skipping');
+        continue;
+      }
+      $listener = $listeners[$key];
+      $label = trim($listener[$prefix . 'followup_label'] ?? $key);
+      $delay = max(1, intval($listener[$prefix . 'followup_delay'] ?? 24));
+      $unit  = $listener[$prefix . 'followup_delay_unit'] ?? 'hours';
+
+      // Calculate due date
+      $due = new DateTime('now', wp_timezone());
+      switch ($unit) {
+        case 'days':   $due->modify("+{$delay} days"); break;
+        case 'weeks':  $due->modify("+{$delay} weeks"); break;
+        case 'months': $due->modify("+{$delay} months"); break;
+        default:       $due->modify("+{$delay} hours"); break;
+      }
+
+      $post_id = wp_insert_post([
+        'post_type'    => 'pn_tasks_task',
+        // translators: %s is the follow-up action label.
+        'post_title'   => sprintf(__('Follow-up: %s', 'pn-customers-manager'), $label),
+        // translators: %1$s is the contact name, %2$s is the follow-up action label.
+        'post_content' => sprintf(__('Automatic follow-up for %1$s. Action: %2$s', 'pn-customers-manager'), $contact_name, $label),
+        'post_status'  => 'publish',
+      ]);
+
+      if (!is_wp_error($post_id)) {
+        update_post_meta($post_id, 'pn_cm_linked_client', $client['type'] . '_' . $client['id']);
+        update_post_meta($post_id, 'pn_tasks_manager_task_date', $due->format('Y-m-d'));
+        update_post_meta($post_id, 'pn_tasks_manager_task_time', $due->format('H:i'));
+        self::log('FOLLOWUP — created task #' . $post_id . ' for key=' . $key . ' client=' . $client['type'] . '_' . $client['id'] . ' due=' . $due->format('Y-m-d H:i'));
+      } else {
+        self::log('FOLLOWUP — failed to create task for key=' . $key . ': ' . $post_id->get_error_message());
+      }
+    }
+  }
+
+  /**
+   * Resolve a phone number to a CRM client (user or organization).
+   *
+   * @param  string $phone Phone number to look up.
+   * @return array|null  Array with 'type' and 'id', or null if not found.
+   */
+  private static function resolve_crm_client($phone) {
+    // Try user by billing_phone
+    $users = get_users([
+      'meta_key'   => 'billing_phone',
+      'meta_value' => $phone,
+      'number'     => 1,
+      'fields'     => 'ID',
+    ]);
+    if (empty($users)) {
+      $users = get_users([
+        'meta_key'   => 'billing_phone',
+        'meta_value' => ltrim($phone, '+'),
+        'number'     => 1,
+        'fields'     => 'ID',
+      ]);
+    }
+    if (!empty($users)) {
+      return ['type' => 'user', 'id' => (int) $users[0]];
+    }
+
+    // Try organization by phone meta
+    $orgs = get_posts([
+      'post_type'      => 'pn_cm_organization',
+      'meta_key'       => 'pn_cm_organization_phone',
+      'meta_value'     => $phone,
+      'posts_per_page' => 1,
+      'fields'         => 'ids',
+    ]);
+    if (empty($orgs)) {
+      $orgs = get_posts([
+        'post_type'      => 'pn_cm_organization',
+        'meta_key'       => 'pn_cm_organization_phone',
+        'meta_value'     => ltrim($phone, '+'),
+        'posts_per_page' => 1,
+        'fields'         => 'ids',
+      ]);
+    }
+    if (!empty($orgs)) {
+      return ['type' => 'organization', 'id' => (int) $orgs[0]];
+    }
+
+    return null;
+  }
+
+  /**
+   * Find the next allowed schedule window and return it as a UTC DateTime.
+   *
+   * @param  array  $node_config
+   * @param  string $user_timezone
+   * @return DateTime  UTC DateTime of next allowed send time
+   */
+  private static function get_next_schedule_window($node_config, $user_timezone) {
+    $schedule_days = $node_config['wa_schedule_days'] ?? '';
+    if (is_string($schedule_days)) {
+      $schedule_days = json_decode($schedule_days, true);
+    }
+
+    $day_keys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+    try {
+      $tz  = new DateTimeZone($user_timezone);
+      $now = new DateTime('now', $tz);
+    } catch (Exception $e) {
+      // Fallback: schedule for 5 minutes from now in UTC
+      return new DateTime('+5 minutes', new DateTimeZone('UTC'));
+    }
+
+    // Check today first (if we're before the "from" time), then next 7 days
+    for ($offset = 0; $offset <= 7; $offset++) {
+      $check_date  = clone $now;
+      $check_date->modify('+' . $offset . ' days');
+      $day_index   = (int) $check_date->format('N') - 1;
+      $day_key     = $day_keys[$day_index];
+
+      if (!isset($schedule_days[$day_key]) || empty($schedule_days[$day_key]['enabled'])) {
+        continue;
+      }
+
+      $from = $schedule_days[$day_key]['from'] ?? '09:00';
+
+      // Build the candidate DateTime in user's timezone
+      $candidate = clone $check_date;
+      list($h, $m) = explode(':', $from);
+      $candidate->setTime((int) $h, (int) $m, 0);
+
+      // For today, only use if the "from" time is still in the future
+      if ($offset === 0 && $candidate <= $now) {
+        continue;
+      }
+
+      // Convert to UTC
+      $candidate->setTimezone(new DateTimeZone('UTC'));
+      return $candidate;
+    }
+
+    // No window found in next 7 days — schedule 24h from now as fallback
+    $fallback = new DateTime('+24 hours', new DateTimeZone('UTC'));
+    return $fallback;
+  }
+
+  /**
+   * Send a message immediately or queue it for later delivery.
+   *
+   * @param  string $phone
+   * @param  string $text
+   * @param  int    $conversation_id
+   * @param  array  $node_config
+   * @param  array  $images_data      Optional array of image data to send
+   * @return bool   True if sent immediately, false if queued
+   */
+  private static function maybe_send_or_queue($phone, $text, $conversation_id, $node_config, $images_data = []) {
+    // If no schedule is enabled, send immediately
+    if (empty($node_config['wa_schedule_enabled'])) {
+      self::send_message_with_images($phone, $text, $images_data);
+      return true;
+    }
+
+    $user_timezone = self::resolve_and_store_user_timezone($phone);
+
+    if (self::is_within_schedule($node_config, $user_timezone)) {
+      self::send_message_with_images($phone, $text, $images_data);
+      return true;
+    }
+
+    // Queue the message
+    $scheduled_for = self::get_next_schedule_window($node_config, $user_timezone);
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'pn_cm_whatsapp_message_queue';
+
+    $wpdb->insert($table, [
+      'phone_number'    => $phone,
+      'message_text'    => $text,
+      'message_images'  => !empty($images_data) ? wp_json_encode($images_data) : null,
+      'conversation_id' => $conversation_id,
+      'funnel_id'       => 0,
+      'node_id'         => '',
+      'scheduled_for'   => $scheduled_for->format('Y-m-d H:i:s'),
+      'status'          => 'pending',
+      'attempts'        => 0,
+      'created_at'      => current_time('mysql', true), // UTC
+    ]);
+
+    self::log('Message queued for ' . $phone . ' — scheduled_for=' . $scheduled_for->format('Y-m-d H:i:s') . ' UTC (user_tz=' . $user_timezone . ')');
+
+    return false;
+  }
+
+  /**
+   * Send a text message and any associated images.
+   *
+   * @param string $phone
+   * @param string $text
+   * @param array  $images_data
+   */
+  private static function send_message_with_images($phone, $text, $images_data = []) {
+    // Send images first (if any)
+    if (!empty($images_data)) {
+      foreach ($images_data as $img) {
+        if (!empty($img['url'])) {
+          self::send_whatsapp_image($phone, $img['url'], $img['product_name'] ?? '');
+        }
+      }
+    }
+
+    // Send text
+    self::send_whatsapp_message($phone, $text);
+  }
+
+  /**
+   * Process the message queue (cron handler).
+   * Sends pending messages whose scheduled_for has passed.
+   */
+  public static function process_message_queue() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'pn_cm_whatsapp_message_queue';
+
+    $now_utc = gmdate('Y-m-d H:i:s');
+
+    $messages = $wpdb->get_results($wpdb->prepare(
+      "SELECT * FROM {$table} WHERE status = 'pending' AND scheduled_for <= %s ORDER BY scheduled_for ASC LIMIT 50",
+      $now_utc
+    ));
+
+    if (empty($messages)) {
+      return;
+    }
+
+    self::log('[QUEUE] Processing ' . count($messages) . ' queued messages');
+
+    foreach ($messages as $msg) {
+      $images_data = [];
+      if (!empty($msg->message_images)) {
+        $images_data = json_decode($msg->message_images, true) ?: [];
+      }
+
+      // Send images first
+      if (!empty($images_data)) {
+        foreach ($images_data as $img) {
+          if (!empty($img['url'])) {
+            self::send_whatsapp_image($msg->phone_number, $img['url'], $img['product_name'] ?? '');
+          }
+        }
+      }
+
+      // Send text
+      $success = self::send_whatsapp_message($msg->phone_number, $msg->message_text);
+
+      if ($success) {
+        $wpdb->update($table, [
+          'status'  => 'sent',
+          'sent_at' => gmdate('Y-m-d H:i:s'),
+        ], ['id' => $msg->id]);
+
+        self::log('[QUEUE] Sent message id=' . $msg->id . ' to ' . $msg->phone_number);
+      } else {
+        $attempts = (int) $msg->attempts + 1;
+        $new_status = $attempts >= 3 ? 'failed' : 'pending';
+
+        $wpdb->update($table, [
+          'status'        => $new_status,
+          'attempts'      => $attempts,
+          'error_message' => 'Send failed on attempt ' . $attempts,
+        ], ['id' => $msg->id]);
+
+        self::log('[QUEUE] Failed message id=' . $msg->id . ' to ' . $msg->phone_number . ' (attempt ' . $attempts . '/3)');
+      }
+    }
   }
 }

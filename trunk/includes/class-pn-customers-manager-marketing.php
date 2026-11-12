@@ -876,7 +876,7 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 					$('#pn-cm-offer-message').hide();
 
 					$.ajax({
-						url: '<?php echo admin_url('admin-ajax.php'); ?>',
+						url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
 						type: 'POST',
 						data: formData + '&action=pn_cm_frontend_save_offer_data',
 						success: function(response) {
@@ -925,11 +925,11 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 					$btn.prop('disabled', true);
 
 					$.ajax({
-						url: '<?php echo admin_url('admin-ajax.php'); ?>',
+						url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
 						type: 'POST',
 						data: {
 							action: 'pn_cm_frontend_delete_offer_page',
-							nonce: '<?php echo wp_create_nonce('pn_cm_delete_offer_page'); ?>',
+							nonce: '<?php echo esc_attr(wp_create_nonce('pn_cm_delete_offer_page')); ?>',
 							page_id: pageId
 						},
 						success: function(response) {
@@ -1484,11 +1484,11 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 									</div>
 								</div>
 								<div class="pn-cm-page-actions pn-customers-manager-display-flex pn-customers-manager-gap-10">
-									<a href="<?php echo get_edit_post_link($page_id); ?>" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent">
+									<a href="<?php echo esc_url(get_edit_post_link($page_id)); ?>" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent">
 										<span class="material-icons-outlined">edit</span>
 										<?php esc_html_e('Edit', 'pn-customers-manager'); ?>
 									</a>
-									<a href="<?php echo get_permalink($page_id); ?>" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent">
+									<a href="<?php echo esc_url(get_permalink($page_id)); ?>" target="_blank" class="pn-customers-manager-btn pn-customers-manager-btn-small pn-customers-manager-btn-transparent">
 										<span class="material-icons-outlined">visibility</span>
 										<?php esc_html_e('View', 'pn-customers-manager'); ?>
 									</a>
@@ -1550,7 +1550,7 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 					$('#pn-cm-sales-presentation-message').hide();
 
 					$.ajax({
-						url: '<?php echo admin_url('admin-ajax.php'); ?>',
+						url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
 						type: 'POST',
 						data: formData + '&action=pn_cm_frontend_save_offer_data',
 						success: function(response) {
@@ -1599,11 +1599,11 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 					$btn.prop('disabled', true);
 
 					$.ajax({
-						url: '<?php echo admin_url('admin-ajax.php'); ?>',
+						url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
 						type: 'POST',
 						data: {
 							action: 'pn_cm_frontend_delete_offer_page',
-							nonce: '<?php echo wp_create_nonce('pn_cm_delete_offer_page'); ?>',
+							nonce: '<?php echo esc_attr(wp_create_nonce('pn_cm_delete_offer_page')); ?>',
 							page_id: pageId,
 							page_type: 'sales_presentation'
 						},
@@ -2048,10 +2048,13 @@ class PN_CUSTOMERS_MANAGER_Marketing {
 
 			// Create page with appropriate title
 			$page_titles = [
+				/* translators: %s: date and time of page generation (e.g. "2024-01-15 14:30") */
 				'business_offer' => __('Business Offer - %s', 'pn-customers-manager'),
+				/* translators: %s: date and time of page generation (e.g. "2024-01-15 14:30") */
 				'sales_presentation' => __('Sales Presentation - %s', 'pn-customers-manager'),
 			];
 			$page_title = sprintf(
+				/* translators: %s: date and time of page generation (e.g. "2024-01-15 14:30") */
 				$page_titles[$page_type] ?? __('Generated Page - %s', 'pn-customers-manager'),
 				date_i18n('Y-m-d H:i', current_time('timestamp'))
 			);

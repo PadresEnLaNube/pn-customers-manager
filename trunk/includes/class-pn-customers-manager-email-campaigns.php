@@ -367,7 +367,7 @@ class PN_CUSTOMERS_MANAGER_Email_Campaigns {
 			<div class="pn-cm-email-campaigns-records-section">
 				<h3><?php esc_html_e('Sent emails', 'pn-customers-manager'); ?></h3>
 				<div class="pn-cm-email-campaigns-records-wrapper">
-					<?php echo self::render_records_table($records, $mail_id); ?>
+					<?php echo wp_kses_post(self::render_records_table($records, $mail_id)); ?>
 				</div>
 			</div>
 

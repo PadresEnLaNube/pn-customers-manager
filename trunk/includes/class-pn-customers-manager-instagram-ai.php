@@ -122,7 +122,7 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
       }
 
       foreach ($entry['messaging'] as $event) {
-        if (empty($event['message']) || empty($event['message']['text'])) {
+        if (empty($event['message'])) {
           continue;
         }
 
@@ -132,10 +132,36 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
         }
 
         $sender_id = isset($event['sender']['id']) ? sanitize_text_field($event['sender']['id']) : '';
-        $text      = sanitize_text_field($event['message']['text']);
         $mid       = isset($event['message']['mid']) ? sanitize_text_field($event['message']['mid']) : '';
 
-        if (empty($sender_id) || empty($text)) {
+        if (empty($sender_id)) {
+          continue;
+        }
+
+        // Determine message content: text or audio attachment
+        $text      = '';
+        $audio_url  = '';
+        $audio_mime = 'audio/mpeg';
+
+        if (!empty($event['message']['text'])) {
+          $text = sanitize_text_field($event['message']['text']);
+        } elseif (!empty($event['message']['attachments'])) {
+          foreach ($event['message']['attachments'] as $att) {
+            if ($att['type'] === 'audio' && !empty($att['payload']['url'])) {
+              $audio_url = esc_url_raw($att['payload']['url']);
+              break;
+            }
+          }
+        }
+
+        // Skip if neither text nor audio
+        if (empty($text) && empty($audio_url)) {
+          continue;
+        }
+
+        // For audio: check if transcription is enabled
+        if (!empty($audio_url) && empty(get_option('pn_customers_manager_audio_transcription_enabled', ''))) {
+          self::log('Webhook — audio message ignored (transcription disabled)');
           continue;
         }
 
@@ -149,11 +175,17 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
           set_transient($transient_key, 1, 300);
         }
 
-        self::log('Webhook — message from: ' . $sender_id . ' text: ' . mb_substr($text, 0, 50));
+        if (!empty($text)) {
+          self::log('Webhook — message from: ' . $sender_id . ' text: ' . mb_substr($text, 0, 50));
+        } else {
+          self::log('Webhook — audio message from: ' . $sender_id);
+        }
 
         $pending_messages[] = [
           'sender_id' => $sender_id,
           'text'      => $text,
+          'audio_url'  => $audio_url,
+          'audio_mime' => $audio_mime,
         ];
       }
     }
@@ -169,7 +201,9 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
         foreach ($pending_messages as $msg) {
           PN_CUSTOMERS_MANAGER_Instagram_AI::deferred_process_message(
             $msg['sender_id'],
-            $msg['text']
+            $msg['text'],
+            !empty($msg['audio_url']) ? $msg['audio_url'] : '',
+            isset($msg['audio_mime']) ? $msg['audio_mime'] : ''
           );
         }
       });
@@ -178,16 +212,17 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
     return new WP_REST_Response(['status' => 'ok'], 200);
   }
 
-  public static function deferred_process_message($sender_id, $text) {
-    self::process_incoming_message($sender_id, $text);
+  public static function deferred_process_message($sender_id, $text, $audio_url = '', $audio_mime = '') {
+    self::process_incoming_message($sender_id, $text, $audio_url, $audio_mime);
   }
 
   /* ================================================================
    * MESSAGE PROCESSING
    * ================================================================ */
 
-  private static function process_incoming_message($sender_id, $text) {
-    self::log('Processing message — sender_id=' . $sender_id . ' text=' . mb_substr($text, 0, 50));
+  private static function process_incoming_message($sender_id, $text, $audio_url = '', $audio_mime = '') {
+    $is_audio = !empty($audio_url);
+    self::log('Processing message — sender_id=' . $sender_id . ($is_audio ? ' (audio)' : ' text=' . mb_substr($text, 0, 50)));
 
     $conversation = self::get_or_create_conversation($sender_id);
 
@@ -197,6 +232,62 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
     }
 
     self::log('Conversation ID=' . $conversation->id . ' funnel_id=' . $conversation->funnel_id . ' node_id=' . $conversation->node_id);
+
+    if (self::is_user_ai_paused($sender_id)) {
+      self::log('process_incoming_message — AI PAUSED for sender_id=' . $sender_id . ', skipping');
+      return;
+    }
+
+    // Read node config once
+    $node_config = self::get_node_config($conversation);
+    if (empty($node_config)) {
+      $ig_node = self::find_ai_node();
+      if ($ig_node && !empty($ig_node['config'])) {
+        $node_config = $ig_node['config'];
+      }
+    }
+
+    // Handle audio: check node-level enable, download, and transcribe
+    if ($is_audio) {
+      if (empty($node_config['ig_audio_transcription_enabled'])) {
+        self::log('process_incoming_message — audio transcription not enabled for this node, skipping');
+        return;
+      }
+
+      $audio_response = wp_remote_get($audio_url, ['timeout' => 30]);
+      if (is_wp_error($audio_response)) {
+        self::log_always('process_incoming_message — failed to download IG audio: ' . $audio_response->get_error_message());
+        return;
+      }
+
+      $http_code = wp_remote_retrieve_response_code($audio_response);
+      if ($http_code < 200 || $http_code >= 300) {
+        self::log_always('process_incoming_message — IG audio download HTTP ' . $http_code);
+        return;
+      }
+
+      $audio_data = wp_remote_retrieve_body($audio_response);
+      if (empty($audio_data)) {
+        self::log_always('process_incoming_message — IG audio download empty body');
+        return;
+      }
+
+      // Use node-level provider/language if set, fall back to global settings
+      $provider = !empty($node_config['ig_transcription_provider'])
+        ? $node_config['ig_transcription_provider']
+        : null;
+      $language = !empty($node_config['ig_transcription_language'])
+        ? $node_config['ig_transcription_language']
+        : get_option('pn_customers_manager_transcription_language', '');
+
+      $text = self::transcribe_audio($audio_data, $audio_mime, $language, $provider);
+      if (empty($text)) {
+        self::log_always('process_incoming_message — IG audio transcription failed or empty');
+        return;
+      }
+
+      self::log_always('[CONVERSATION] AUDIO TRANSCRIBED: ' . $text);
+    }
 
     $messages   = json_decode($conversation->messages, true) ?: [];
     $messages[] = [
@@ -236,12 +327,43 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
       }
     }
 
-    // Read node config
-    $node_config = self::get_node_config($conversation);
-    if (empty($node_config)) {
-      $ig_node = self::find_ai_node();
-      if ($ig_node && !empty($ig_node['config'])) {
-        $node_config = $ig_node['config'];
+    // Off-hours handling
+    if (!empty($node_config['ig_schedule_enabled'])) {
+      if (!self::is_within_schedule_ig($node_config)) {
+        $is_client_initiated = self::is_client_initiated_conversation_ig($messages);
+
+        // Business-initiated conversations: always allow bot to respond.
+        if (!$is_client_initiated) {
+          self::log('Off-hours but business-initiated conversation — allowing bot to respond normally');
+        }
+        // Option 1: Allow bot when client initiates
+        elseif (!empty($node_config['ig_schedule_allow_client_initiated'])) {
+          self::log('Off-hours but client initiated conversation — allowing bot to respond normally');
+        }
+        // Option 2: Send custom off-hours message
+        elseif (!empty($node_config['ig_schedule_offhours_message_enabled'])) {
+          $offhours_msg = trim($node_config['ig_schedule_offhours_message'] ?? '');
+          $already_sent = false;
+          foreach ($messages as $m) {
+            if (!empty($m['offhours'])) { $already_sent = true; break; }
+          }
+          if (!empty($offhours_msg) && !$already_sent) {
+            self::log('Off-hours — sending custom off-hours message');
+            $messages[] = [
+              'role'      => 'assistant',
+              'content'   => $offhours_msg,
+              'timestamp' => current_time('mysql'),
+              'offhours'  => true,
+              'auto_sent' => true,
+            ];
+            self::update_conversation_messages($conversation->id, $messages);
+            self::send_instagram_message($sender_id, $offhours_msg);
+            return;
+          }
+          self::update_conversation_messages($conversation->id, $messages);
+          return;
+        }
+        // Neither option: existing behavior (AI processes, then queues)
       }
     }
 
@@ -300,12 +422,22 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
       $ai_response = self::validate_response_urls($ai_response);
       $ai_response = self::detect_and_notify_order($ai_response, $conversation, $messages, $node_config);
       $ai_response = self::detect_and_notify_special_order($ai_response, $conversation, $messages, $node_config);
+      $ai_response = self::detect_and_notify_escalation($ai_response, $conversation, $messages, $node_config);
+
+      // Extract and process follow-up tags
+      $followup_keys = self::extract_followup_tags($ai_response);
+      $ai_response   = self::strip_followup_tags($ai_response);
+      if (!empty($followup_keys)) {
+        // Instagram uses sender_id, not phone — log and skip if unresolvable
+        self::log('FOLLOWUP — Instagram follow-up keys detected: ' . implode(', ', $followup_keys) . ' (sender_id=' . $sender_id . ')');
+      }
     }
 
     $messages[] = [
       'role'      => 'assistant',
       'content'   => $ai_response,
       'timestamp' => current_time('mysql'),
+      'auto_sent' => true,
     ];
 
     self::update_conversation_messages($conversation->id, $messages);
@@ -607,7 +739,7 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
                     // Escape HTML but convert URLs to clickable links
                     $content = esc_html($msg['content']);
                     $content = make_clickable($content);
-                    echo nl2br($content);
+                    echo wp_kses_post(nl2br($content));
                   ?>
                 </div>
               <?php endif; ?>
@@ -829,6 +961,9 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
           <?php foreach ($messages as $msg): ?>
             <div class="pn-cm-ig-msg pn-cm-ig-msg-<?php echo esc_attr($msg['role']); ?>">
               <div class="pn-cm-ig-msg-bubble">
+                <?php if (!empty($msg['quoted_text'])): ?>
+                  <div class="pn-cm-wa-msg-quote"><?php echo esc_html(mb_substr($msg['quoted_text'], 0, 300)); ?></div>
+                <?php endif; ?>
                 <?php if (!empty($msg['images'])): ?>
                   <div class="pn-cm-wa-msg-images">
                     <?php foreach ($msg['images'] as $img): ?>
@@ -846,6 +981,13 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
                       echo esc_html(date_i18n(get_option('time_format'), strtotime($local_time)));
                     }
                   ?>
+                  <?php if ($msg['role'] === 'assistant'): ?>
+                    <?php if (!empty($msg['auto_sent'])): ?>
+                      <span class="material-icons-outlined pn-cm-ig-msg-icon" title="<?php echo esc_attr__('Automated bot message', 'pn-customers-manager'); ?>">smart_toy</span>
+                    <?php else: ?>
+                      <span class="material-icons-outlined pn-cm-ig-msg-icon" title="<?php echo esc_attr__('Manual message', 'pn-customers-manager'); ?>">person</span>
+                    <?php endif; ?>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>
@@ -920,6 +1062,7 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
         'role'      => 'assistant',
         'content'   => $test_message,
         'timestamp' => current_time('mysql'),
+        'auto_sent' => true,
       ];
       self::update_conversation_messages($conversation->id, $messages);
     }
@@ -1053,5 +1196,55 @@ class PN_CUSTOMERS_MANAGER_Instagram_AI {
       PN_CUSTOMERS_MANAGER_VERSION,
       true
     );
+  }
+
+  /**
+   * Check if currently within the Instagram bot schedule.
+   * Uses WP timezone since Instagram doesn't provide phone-based timezone.
+   */
+  private static function is_within_schedule_ig($node_config) {
+    if (empty($node_config['ig_schedule_enabled'])) {
+      return true;
+    }
+
+    $schedule_days = $node_config['ig_schedule_days'] ?? '';
+    if (is_string($schedule_days)) {
+      $schedule_days = json_decode($schedule_days, true);
+    }
+    if (empty($schedule_days) || !is_array($schedule_days)) {
+      return true;
+    }
+
+    try {
+      $tz  = wp_timezone();
+      $now = new DateTime('now', $tz);
+    } catch (Exception $e) {
+      return true;
+    }
+
+    $day_index = (int) $now->format('N') - 1;
+    $day_keys  = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    $day_key   = $day_keys[$day_index];
+
+    if (!isset($schedule_days[$day_key]) || empty($schedule_days[$day_key]['enabled'])) {
+      return false;
+    }
+
+    $from = $schedule_days[$day_key]['from'] ?? '00:00';
+    $to   = $schedule_days[$day_key]['to'] ?? '23:59';
+
+    return ($now->format('H:i') >= $from && $now->format('H:i') <= $to);
+  }
+
+  /**
+   * Check if the conversation was initiated by the client.
+   */
+  private static function is_client_initiated_conversation_ig($messages) {
+    foreach ($messages as $m) {
+      $role = $m['role'] ?? '';
+      if ($role === 'system') continue;
+      return $role === 'user';
+    }
+    return true;
   }
 }

@@ -11,6 +11,64 @@
  */
 
 /* ==========================================================================
+   0. ADMIN NAVIGATION BAR (shared budget/invoice)
+   ========================================================================== */
+.pn-cm-admin-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.pn-cm-admin-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: #666;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.pn-cm-admin-nav-item:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+    text-decoration: none;
+}
+
+.pn-cm-admin-nav-item.pn-cm-admin-nav-active {
+    background: rgba(10, 108, 186, 0.1);
+    color: #0a6cba;
+}
+
+.pn-cm-admin-nav-item i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.pn-cm-admin-nav-label {
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .pn-cm-admin-nav {
+        gap: 4px;
+    }
+    .pn-cm-admin-nav-item {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    .pn-cm-admin-nav-item i {
+        font-size: 16px;
+    }
+}
+
+/* ==========================================================================
    1. PUBLIC INVOICE PAGE
    ========================================================================== */
 
@@ -27,7 +85,7 @@
 }
 
 /* Hide ALL elements injected outside the wrapper (theme headers, plugin banners, etc.) */
-body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(script):not(style):not(.pn-customers-manager-popup):not(#pn-cm-invoice-add-item-modal) {
+body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(.pn-cm-invoice-sticky-totals):not(script):not(style):not(.pn-customers-manager-popup):not(#pn-cm-invoice-add-item-modal):not(.pn-customers-manager-tooltip-box) {
     display: none !important;
     height: 0 !important;
     overflow: hidden !important;
@@ -134,6 +192,43 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 .pn-cm-invoice-status-cancelled {
     background: #f8d7da;
     color: #721c24;
+}
+
+/* Admin navigation bar styles are in pn-customers-manager-budget.css (shared) */
+
+/* --- Status wrapper (admin dropdown) --- */
+.pn-cm-invoice-status-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pn-cm-invoice-status-select {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    outline: none;
+}
+
+.pn-cm-invoice-status-select:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+/* --- Footer image --- */
+.pn-cm-invoice-footer-image {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.pn-cm-invoice-footer-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
 }
 
 /* --- Info row: bill to + details --- */
@@ -349,6 +444,10 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
     color: #28a745;
 }
 
+.pn-cm-invoice-totals-irpf {
+    color: #dc3545;
+}
+
 .pn-cm-invoice-totals-total {
     font-size: 18px;
     font-weight: 700;
@@ -394,6 +493,25 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
     border-color: #999;
 }
 
+.pn-cm-invoice-btn-outline {
+    background: #fff;
+    color: #0a6cba;
+    border: 1px solid #0a6cba;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.pn-cm-invoice-btn-outline:hover {
+    background: #0a6cba;
+    color: #fff;
+}
+
+.pn-cm-invoice-btn-outline i {
+    font-size: 16px;
+}
+
 /* --- Status messages --- */
 .pn-cm-invoice-status-message {
     display: flex;
@@ -417,20 +535,32 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 
 /* --- Terms --- */
 .pn-cm-invoice-terms {
-    margin-top: 40px;
-    padding-top: 30px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.pn-cm-invoice-terms-content {
+    font-size: 11px;
+    color: #999 !important;
+    line-height: 1.5;
+}
+
+/* --- Payment details --- */
+.pn-cm-invoice-payment-details {
+    margin-top: 30px;
+    padding-top: 25px;
     border-top: 1px solid #eee;
 }
 
-.pn-cm-invoice-terms h3 {
+.pn-cm-invoice-payment-details h3 {
     font-size: 14px;
     margin: 0 0 10px;
     color: #333 !important;
 }
 
-.pn-cm-invoice-terms-content {
+.pn-cm-invoice-payment-details-content {
     font-size: 12px;
-    color: #888 !important;
+    color: #555 !important;
     line-height: 1.6;
 }
 
@@ -444,6 +574,11 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 /* ==========================================================================
    2. ADMIN ITEMS EDITOR
    ========================================================================== */
+
+/* --- Dashboard metabox inner padding --- */
+#pn_customers_manager_invoice_meta_box .inside {
+    padding: 16px 20px;
+}
 
 .pn-cm-invoice-admin-items {
     margin-top: 10px;
@@ -570,6 +705,214 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 .pn-cm-invoice-list-status-sent { background: #d4edfc; color: #0a6cba; }
 .pn-cm-invoice-list-status-paid { background: #d4edda; color: #155724; }
 .pn-cm-invoice-list-status-cancelled { background: #f8d7da; color: #721c24; }
+
+#pn-cm-invoice-csv-export-btn,
+#pn-cm-invoice-csv-import-btn {
+    margin-right: 10px;
+}
+
+/* --- Invoice list table (dashboard) --- */
+.pn-cm-invoice-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.pn-cm-invoice-list-table thead th {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #666;
+    white-space: nowrap;
+}
+
+.pn-cm-invoice-list-table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background .15s;
+}
+
+.pn-cm-invoice-list-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.pn-cm-invoice-list-table tbody td {
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+
+.pn-cm-invoice-list-col-number { width: 110px; }
+.pn-cm-invoice-list-col-title { min-width: 140px; }
+.pn-cm-invoice-list-col-org { min-width: 120px; }
+.pn-cm-invoice-list-col-date { width: 130px; white-space: nowrap; }
+.pn-cm-invoice-list-col-status { width: 110px; text-align: center; }
+.pn-cm-invoice-list-col-total { width: 100px; text-align: right; white-space: nowrap; }
+.pn-cm-invoice-list-col-actions { width: 50px; text-align: center; overflow: visible; }
+
+.pn-cm-invoice-list-table {
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+}
+
+.pn-cm-invoice-list-table a {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.pn-cm-invoice-list-table td {
+    position: relative;
+}
+
+.pn-cm-invoice-list-table thead .pn-cm-invoice-list-col-status { text-align: center; }
+.pn-cm-invoice-list-table thead .pn-cm-invoice-list-col-total { text-align: right; }
+.pn-cm-invoice-list-table thead .pn-cm-invoice-list-col-actions { text-align: center; }
+
+.pn-cm-invoice-list-col-date small,
+.pn-cm-invoice-list-col-status small {
+    display: block;
+    margin-top: 2px;
+    color: #888;
+    font-size: 11px;
+}
+
+@media (max-width: 768px) {
+    .pn-customers-manager-pn_cm_invoice-list-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .pn-cm-invoice-list-table {
+        min-width: 700px;
+    }
+}
+
+/* --- Admin list table columns (WP Admin) --- */
+.column-pn_cm_invoice_number { width: 100px; }
+.column-pn_cm_invoice_status { width: 100px; }
+.column-pn_cm_invoice_total { width: 120px; }
+.column-pn_cm_invoice_date_col { width: 120px; }
+.column-pn_cm_invoice_organization { width: 160px; }
+
+/* --- Sticky totals bar --- */
+.pn-cm-invoice-sticky-totals {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+    z-index: 1000;
+    padding: 14px 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.pn-cm-invoice-sticky-totals.pn-cm-invoice-sticky-hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pn-cm-invoice-sticky-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 32px;
+    padding: 0 50px;
+}
+
+.pn-cm-invoice-sticky-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pn-cm-invoice-sticky-label {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.pn-cm-invoice-sticky-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.pn-cm-invoice-sticky-item-total .pn-cm-invoice-sticky-value {
+    font-size: 20px;
+    color: #0a6cba;
+}
+
+/* --- Admin quick-link block (WP Admin metabox) --- */
+.pn-cm-invoice-admin-quick-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f0f6fc;
+    border: 1px solid #c3d9ed;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.pn-cm-invoice-admin-quick-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #2271b1;
+    color: #fff !important;
+    border-radius: 4px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.pn-cm-invoice-admin-quick-link-btn:hover {
+    background: #135e96;
+    color: #fff !important;
+}
+
+.pn-cm-invoice-admin-quick-link-btn i {
+    font-size: 18px;
+}
+
+.pn-cm-invoice-admin-quick-link-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    background: #fff;
+    color: #2271b1 !important;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pn-cm-invoice-admin-quick-link-copy:hover {
+    background: #2271b1;
+    color: #fff !important;
+}
+
+.pn-cm-invoice-admin-quick-link-copy i {
+    font-size: 16px;
+}
 
 /* ==========================================================================
    2b. ADMIN EDITING ON PUBLIC PAGE
@@ -708,6 +1051,35 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 
 .pn-cm-invoice-row-delete:hover {
     color: #dc3545 !important;
+}
+
+/* --- Bulk selection mode --- */
+.pn-cm-invoice-bulk-checkbox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    flex-shrink: 0;
+}
+
+.pn-cm-invoice-bulk-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #0a6cba;
+}
+
+.pn-cm-invoice-selecting .pn-cm-invoice-col-drag {
+    display: none;
+}
+
+.pn-cm-invoice-item-row.pn-cm-invoice-bulk-checked {
+    background: rgba(10, 108, 186, 0.06);
+}
+
+.pn-cm-invoice-selecting .pn-cm-invoice-bulk-delete,
+.pn-cm-invoice-selecting .pn-cm-invoice-bulk-select-toggle {
+    opacity: 1;
 }
 
 /* --- Edit item popup form --- */
@@ -886,7 +1258,7 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
         background: #fff !important;
     }
 
-    /* Hide interactive and admin-only elements */
+    /* Hide interactive, admin-only, payments, deliverables and status badge in PDF */
     .pn-cm-invoice-actions,
     .pn-cm-invoice-print-btn-wrapper,
     .pn-cm-invoice-admin-buttons,
@@ -894,6 +1266,14 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
     .pn-cm-invoice-col-actions,
     .pn-cm-invoice-phase-toggle,
     .pn-cm-invoice-sortable-placeholder,
+    .pn-cm-invoice-sticky-totals,
+    .pn-cm-admin-nav,
+    .pn-cm-invoice-status-select,
+    .pn-cm-invoice-status-wrapper,
+    .pn-cm-invoice-files-upload-area,
+    .pn-cm-invoice-file-delete-public,
+    .pn-cm-invoice-payments,
+    .pn-cm-invoice-files-section,
     #wpadminbar,
     .pn-customers-manager-popup {
         display: none !important;
@@ -914,43 +1294,41 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
         page-break-inside: avoid;
     }
 
-    /* Items: compact print layout */
-    .pn-cm-invoice-items-list {
-        font-size: 11px;
-    }
-
-    .pn-cm-invoice-item-row {
-        padding: 8px 0 !important;
-        page-break-inside: avoid;
-    }
-
-    .pn-cm-invoice-item-title {
-        margin-bottom: 3px;
-    }
-
-    .pn-cm-invoice-item-meta {
-        gap: 4px 14px;
-        font-size: 11px;
-    }
-
-    .pn-cm-invoice-col-phase {
-        font-size: 13px;
-    }
-
-    /* Compact header */
+    /* Compact header — mirrors web layout */
     .pn-cm-invoice-header {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
         margin-bottom: 25px;
         padding-bottom: 18px;
-        border-bottom-color: #333;
+        border-bottom: 2px solid #333;
         page-break-after: avoid;
+    }
+
+    .pn-cm-invoice-header-company {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
+    }
+
+    .pn-cm-invoice-header-meta {
+        text-align: right !important;
     }
 
     .pn-cm-invoice-header-meta h1 {
         font-size: 20px;
+        color: #333 !important;
     }
 
     .pn-cm-invoice-company-info h2 {
         font-size: 16px;
+        color: #333 !important;
+    }
+
+    .pn-cm-invoice-company-info p {
+        color: #666 !important;
     }
 
     .pn-cm-invoice-logo {
@@ -958,15 +1336,53 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
         max-height: 60px;
     }
 
-    /* Compact info and notes */
+    /* Status badge */
+    .pn-cm-invoice-status {
+        border: 1px solid currentColor;
+        font-size: 11px !important;
+        padding: 3px 10px !important;
+    }
+
+    /* Compact info row — two columns side by side */
     .pn-cm-invoice-info-row {
         margin-bottom: 18px;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 20px !important;
+        justify-content: space-between !important;
+    }
+
+    .pn-cm-invoice-info-block {
+        flex: 1 !important;
+        background: #f9f9f9 !important;
+        padding: 12px 15px !important;
+        border-radius: 6px !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .pn-cm-invoice-info-block h3 {
+        font-size: 10px !important;
+        margin-bottom: 8px !important;
+        color: #666 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        border-bottom: 1px solid #ddd !important;
+        padding-bottom: 5px !important;
+    }
+
+    .pn-cm-invoice-info-block p {
+        font-size: 11px !important;
+        line-height: 1.4 !important;
+        margin: 3px 0 !important;
+        color: #333 !important;
     }
 
     .pn-cm-invoice-client-notes {
         margin-bottom: 18px;
         padding: 10px 14px;
-        border-left-color: #333;
+        border-left: 3px solid #333 !important;
+        background: #f9f9f9 !important;
+        border-radius: 0 6px 6px 0 !important;
     }
 
     .pn-cm-invoice-items-section {
@@ -974,25 +1390,188 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
         overflow: visible !important;
     }
 
-    /* Totals */
+    /* Items list — bordered container */
+    .pn-cm-invoice-items-list {
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        padding: 0 !important;
+        background: #fff !important;
+        font-size: 11px;
+    }
+
+    /* Item rows */
+    .pn-cm-invoice-item-row {
+        border-bottom: 1px solid #eee !important;
+        padding: 10px 14px !important;
+        page-break-inside: avoid;
+    }
+
+    .pn-cm-invoice-item-row:last-child {
+        border-bottom: none !important;
+    }
+
+    .pn-cm-invoice-item-content {
+        width: 100% !important;
+    }
+
+    /* Description + total on same line */
+    .pn-cm-invoice-item-title {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-bottom: 4px !important;
+    }
+
+    .pn-cm-invoice-col-desc {
+        font-weight: 600 !important;
+        color: #222 !important;
+        font-size: 11px !important;
+    }
+
+    /* Meta row: type icon, qty, unit price, total — aligned right */
+    .pn-cm-invoice-item-meta {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        font-size: 10px !important;
+        color: #666 !important;
+    }
+
+    .pn-cm-invoice-col-type i {
+        font-size: 13px !important;
+    }
+
+    .pn-cm-invoice-col-total {
+        font-weight: 700 !important;
+        color: #333 !important;
+        margin-left: auto !important;
+    }
+
+    .pn-cm-invoice-col-qty,
+    .pn-cm-invoice-col-price {
+        font-weight: 500 !important;
+    }
+
+    /* Phase groups */
+    .pn-cm-invoice-item-phase {
+        background: #f5f5f5 !important;
+        border-radius: 0 !important;
+        padding: 8px 14px !important;
+        margin: 0 !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    .pn-cm-invoice-col-phase {
+        font-weight: 700 !important;
+        font-size: 12px !important;
+        color: #000 !important;
+        border-bottom: none !important;
+    }
+
+    .pn-cm-invoice-phase-items {
+        margin-left: 15px !important;
+        padding-left: 15px !important;
+        border-left: 2px solid #ddd !important;
+    }
+
+    /* Totals — right-aligned block like the web version */
     .pn-cm-invoice-totals {
         page-break-inside: avoid;
+        margin-left: auto !important;
+        max-width: 50% !important;
+        width: 50% !important;
+        margin-top: 20px !important;
+        margin-bottom: 20px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    .pn-cm-invoice-totals-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        padding: 5px 0 !important;
+        font-size: 11px !important;
+        border-bottom: 1px solid #eee !important;
+        color: #333 !important;
     }
 
     .pn-cm-invoice-totals-total {
-        border-top-color: #000;
+        border-top: 2px solid #333 !important;
+        border-bottom: none !important;
+        margin-top: 6px !important;
+        padding-top: 8px !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
     }
 
-    /* Status badge border for grayscale printers */
-    .pn-cm-invoice-status {
-        border: 1px solid currentColor;
+    .pn-cm-invoice-totals-discount {
+        color: #c62828 !important;
     }
 
-    /* Terms */
-    .pn-cm-invoice-terms {
-        margin-top: 20px;
-        padding-top: 15px;
+    .pn-cm-invoice-totals-irpf {
+        color: #333 !important;
+    }
+
+    /* Footer image */
+    .pn-cm-invoice-footer-image {
+        margin: 20px 0 !important;
+    }
+
+    .pn-cm-invoice-footer-image img {
+        border-radius: 0 !important;
+    }
+
+    /* Status messages */
+    .pn-cm-invoice-status-message {
         page-break-inside: avoid;
+        margin: 15px 0 !important;
+        padding: 10px 15px !important;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        font-size: 12px !important;
+    }
+
+    /* Payment details */
+    .pn-cm-invoice-payment-details {
+        margin-top: 20px;
+        padding: 15px !important;
+        page-break-inside: avoid;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        background: #f9f9f9 !important;
+    }
+
+    .pn-cm-invoice-payment-details h3 {
+        font-size: 13px !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    .pn-cm-invoice-payment-details-content {
+        font-size: 11px !important;
+        line-height: 1.5 !important;
+        color: #333 !important;
+    }
+
+    /* Terms — styled as footer (final overrides block handles positioning) */
+    .pn-cm-invoice-terms {
+        margin-top: auto !important;
+        padding: 10px 0 0 !important;
+        border: none !important;
+        border-top: 1px solid #ddd !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        text-align: center !important;
+        page-break-inside: avoid;
+    }
+
+    .pn-cm-invoice-terms-content {
+        font-size: 7pt !important;
+        line-height: 1.3 !important;
+        color: #999 !important;
     }
 
     /* Don't print link URLs (some browsers append them) */
@@ -1150,6 +1729,18 @@ body.pn-customers-manager-invoice-public > *:not(.pn-cm-invoice-wrapper):not(scr
 
     .pn-cm-invoice-terms-content {
         font-size: 11px;
+    }
+
+    /* ==============================================
+     * Sticky bar on mobile
+     * ============================================*/
+    .pn-cm-invoice-sticky-inner {
+        padding: 0 20px;
+        gap: 16px;
+    }
+
+    .pn-cm-invoice-sticky-item-total .pn-cm-invoice-sticky-value {
+        font-size: 16px;
     }
 
     /* ==============================================
@@ -1476,4 +2067,591 @@ body.pn-customers-manager-invoice-public .pn-customers-manager-popup-close-wrapp
 
 .pn-cm-invoice-edit-item-popup .pn-customers-manager-mt-15 {
     margin-top: 15px;
+}
+
+/* ==========================================================================
+   PAYMENTS SECTION
+   ========================================================================== */
+
+.pn-cm-invoice-payments {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.pn-cm-invoice-payments h3 {
+    margin: 0 0 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.pn-cm-payments-header {
+    cursor: pointer;
+}
+
+.pn-cm-payments-toggle {
+    vertical-align: middle;
+    margin-right: 4px;
+    transition: transform 0.2s;
+}
+
+.pn-cm-payments-collapsed .pn-cm-payments-toggle {
+    transform: rotate(-90deg);
+}
+
+.pn-cm-payments-collapsed .pn-cm-payments-body {
+    display: none;
+}
+
+.pn-cm-invoice-payments-list {
+    margin-bottom: 15px;
+}
+
+.pn-cm-invoice-payments-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+}
+
+.pn-cm-invoice-payments-date {
+    min-width: 100px;
+    color: #666;
+}
+
+.pn-cm-invoice-payments-amount {
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.pn-cm-invoice-payments-method {
+    color: #666;
+    min-width: 100px;
+}
+
+.pn-cm-invoice-payments-notes {
+    color: #888;
+    flex: 1;
+    font-style: italic;
+}
+
+.pn-cm-invoice-payments-summary {
+    display: flex;
+    gap: 20px;
+    padding: 12px 0;
+    font-size: 14px;
+    border-top: 2px solid #ddd;
+}
+
+.pn-cm-invoice-payments-add-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.pn-cm-invoice-payments-add-form input,
+.pn-cm-invoice-payments-add-form select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.pn-cm-invoice-payments-add-form input[type="date"] {
+    max-width: 150px;
+}
+
+.pn-cm-invoice-payments-add-form input[type="number"] {
+    max-width: 120px;
+}
+
+.pn-cm-invoice-payments-add-form input[type="text"] {
+    flex: 1;
+    min-width: 100px;
+}
+
+.pn-cm-invoice-payment-add-btn {
+    padding: 6px 14px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pn-cm-invoice-payment-add-btn:hover {
+    background: #135e96;
+}
+
+.pn-cm-invoice-payment-remove {
+    text-decoration: none;
+}
+
+@media print {
+    .pn-cm-invoice-payments-add-form,
+    .pn-cm-invoice-payment-remove,
+    .pn-cm-payment-edit,
+    .pn-cm-payment-toggle-visibility,
+    .pn-cm-payments-charts,
+    .pn-cm-payments-header {
+        display: none !important;
+    }
+    .pn-cm-payments-collapsed .pn-cm-payments-body {
+        display: block !important;
+    }
+}
+
+
+/* ==========================================================================
+   DELIVERABLES / FILES SECTION
+   ========================================================================== */
+
+/* --- Public page --- */
+.pn-cm-invoice-files-section {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.pn-cm-invoice-files-section h3 {
+    margin: 0 0 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.pn-cm-invoice-file-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.pn-cm-invoice-file-row:last-child {
+    border-bottom: none;
+}
+
+.pn-cm-invoice-file-icon {
+    flex-shrink: 0;
+    color: #666;
+}
+
+.pn-cm-invoice-file-icon i {
+    font-size: 22px;
+    vertical-align: middle;
+}
+
+.pn-cm-invoice-file-name {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+    word-break: break-word;
+    font-size: 14px;
+}
+
+.pn-cm-invoice-file-size {
+    flex-shrink: 0;
+    color: #888;
+    font-size: 13px;
+    min-width: 60px;
+    text-align: right;
+}
+
+.pn-cm-invoice-files-upload-area {
+    margin-top: 15px;
+    text-align: right;
+}
+
+/* --- Admin metabox files table --- */
+.pn-cm-invoice-files-admin-table {
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.pn-cm-invoice-files-admin-table thead th {
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #666;
+    border-bottom: 2px solid #ddd;
+    background: #f9f9f9;
+}
+
+.pn-cm-invoice-files-admin-table tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+/* --- Print: hide upload area and delete buttons --- */
+@media print {
+    .pn-cm-invoice-files-upload-area,
+    .pn-cm-invoice-file-delete-public {
+        display: none !important;
+    }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .pn-cm-invoice-file-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .pn-cm-invoice-file-size {
+        min-width: auto;
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .pn-cm-invoice-files-section {
+        padding: 15px;
+    }
+
+    .pn-cm-invoice-file-name {
+        font-size: 13px;
+    }
+
+    .pn-cm-invoice-file-size {
+        font-size: 12px;
+    }
+}
+
+/* ==========================================================================
+   6. INVOICE TYPE BADGES & FILTERS
+   ========================================================================== */
+
+/* Type badge (admin list + frontend list) */
+.pn-cm-invoice-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.pn-cm-invoice-type-income {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.pn-cm-invoice-type-expense {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* Type filter buttons */
+.pn-cm-invoice-type-filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.pn-cm-invoice-type-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 16px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: #fff;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pn-cm-invoice-type-filter:hover {
+    border-color: #999;
+    color: #333;
+}
+
+.pn-cm-invoice-type-filter.active {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+/* Type column in frontend list */
+.pn-cm-invoice-list-col-type {
+    width: 40px;
+    text-align: center;
+}
+
+/* ==========================================================================
+   AI UPLOAD ZONE (expense invoices)
+   ========================================================================== */
+
+.pn-cm-invoice-ai-upload-zone {
+    margin-bottom: 16px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.pn-cm-invoice-ai-upload-dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.pn-cm-invoice-ai-upload-dropzone:hover,
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-dragover {
+    border-color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.04);
+}
+
+.pn-cm-invoice-ai-upload-dropzone .pn-cm-ai-upload-icon {
+    font-size: 40px;
+    color: #6c5ce7;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.pn-cm-invoice-ai-upload-dropzone .pn-cm-ai-upload-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.pn-cm-invoice-ai-upload-dropzone .pn-cm-ai-upload-subtext {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Loader state */
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-loading {
+    pointer-events: none;
+    border-color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.04);
+}
+
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-loading .pn-cm-ai-upload-icon,
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-loading .pn-cm-ai-upload-text,
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-loading .pn-cm-ai-upload-subtext {
+    display: none;
+}
+
+.pn-cm-invoice-ai-upload-dropzone .pn-cm-ai-upload-loader {
+    display: none;
+}
+
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-loading .pn-cm-ai-upload-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.pn-cm-invoice-ai-upload-dropzone .pn-cm-ai-upload-loader .pn-customers-manager-loader-circle {
+    width: 36px;
+    height: 36px;
+}
+
+.pn-cm-invoice-ai-upload-dropzone .pn-cm-ai-upload-loader .pn-customers-manager-loader-circle div {
+    width: 28px;
+    height: 28px;
+}
+
+.pn-cm-ai-upload-loader-text {
+    font-size: 13px;
+    color: #6c5ce7;
+    font-weight: 500;
+}
+
+/* Success state */
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-success {
+    border-color: #28a745;
+    background: rgba(40, 167, 69, 0.04);
+    padding: 14px 20px;
+}
+
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-success .pn-cm-ai-upload-icon,
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-success .pn-cm-ai-upload-text,
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-success .pn-cm-ai-upload-subtext,
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-success .pn-cm-ai-upload-loader {
+    display: none;
+}
+
+.pn-cm-ai-upload-success-bar {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #28a745;
+    font-weight: 500;
+}
+
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-success .pn-cm-ai-upload-success-bar {
+    display: flex;
+}
+
+.pn-cm-ai-upload-success-bar i {
+    font-size: 20px;
+}
+
+.pn-cm-ai-upload-success-filename {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pn-cm-ai-upload-success-bar .pn-cm-ai-upload-retry {
+    color: #6c5ce7;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    margin-left: auto;
+}
+
+.pn-cm-ai-upload-success-bar .pn-cm-ai-upload-retry:hover {
+    text-decoration: underline;
+}
+
+/* Error state */
+.pn-cm-invoice-ai-upload-dropzone.pn-cm-ai-upload-error {
+    border-color: #dc3545;
+    background: rgba(220, 53, 69, 0.04);
+}
+
+/* Field highlight animation for auto-filled fields */
+@keyframes pn-cm-invoice-ai-field-highlight {
+    0%   { background-color: rgba(40, 167, 69, 0.25); }
+    100% { background-color: transparent; }
+}
+
+.pn-cm-invoice-ai-field-highlight {
+    animation: pn-cm-invoice-ai-field-highlight 2s ease-out;
+}
+
+/* AI analyze button */
+.pn-cm-invoice-ai-analyze {
+    display: inline-flex;
+    align-items: center;
+    transition: opacity 0.2s;
+}
+
+.pn-cm-invoice-ai-analyze:hover {
+    opacity: 0.7;
+}
+
+.pn-cm-invoice-ai-analyze .pn-customers-manager-loader-circle {
+    width: 18px;
+    height: 18px;
+}
+
+.pn-cm-invoice-ai-analyze .pn-customers-manager-loader-circle div {
+    width: 14px;
+    height: 14px;
+}
+
+/* ==========================================================================
+   PRINT OVERRIDES (must be LAST to beat responsive @media max-width rules)
+   ========================================================================== */
+@media print {
+    /* Force two-column header: company left, invoice meta right */
+    .pn-cm-invoice-header {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        gap: 20px !important;
+    }
+
+    .pn-cm-invoice-header-company {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
+        flex: 1 !important;
+    }
+
+    .pn-cm-invoice-header-meta {
+        text-align: right !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Force two-column info row: bill-to left, details right */
+    .pn-cm-invoice-info-row {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 20px !important;
+    }
+
+    .pn-cm-invoice-info-block {
+        flex: 1 !important;
+        width: 50% !important;
+    }
+
+    /* Hide status badge */
+    .pn-cm-invoice-status,
+    .pn-cm-invoice-status-wrapper {
+        display: none !important;
+    }
+
+    /* Wrapper: flex column to push terms to bottom of page */
+    .pn-cm-invoice-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 100vh !important;
+    }
+
+    /* Terms — pushed to bottom of the page as a footer */
+    .pn-cm-invoice-terms {
+        margin-top: auto !important;
+        padding: 10px 0 0 !important;
+        border: none !important;
+        border-top: 1px solid #ddd !important;
+        background: transparent !important;
+        text-align: center !important;
+    }
+
+    .pn-cm-invoice-terms-content {
+        font-size: 7pt !important;
+        color: #999 !important;
+        line-height: 1.3 !important;
+    }
+
+    .pn-cm-invoice-terms-content p {
+        margin: 2px 0 !important;
+    }
 }

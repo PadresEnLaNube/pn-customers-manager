@@ -1,5 +1,14 @@
 /* ===== Funnel Builder ===== */
 
+/* Settings popup – maximise available space */
+#pn-cm-fb-settings-popup {
+  max-width: 95vw;
+  max-height: 95vh;
+}
+#pn-cm-fb-settings-popup .pn-customers-manager-popup-content {
+  max-width: 100%;
+}
+
 /* Layout */
 .pn-cm-fb-wrap {
   display: flex;
@@ -105,33 +114,59 @@
   background: rgba(79, 70, 229, 0.05);
 }
 
-#pn-cm-fb-btn-delete {
-  color: #dc2626;
-  border-color: #dc2626;
-  margin-right: 8px;
+/* Topbar icon buttons */
+.pn-cm-fb-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-#pn-cm-fb-btn-delete:hover {
-  background: rgba(220, 38, 38, 0.05);
-}
-
-/* New funnel input */
-.pn-cm-fb-input-new-funnel {
-  padding: 6px 12px;
-  border: 1px solid #d0d0d0;
+.pn-cm-fb-topbar-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
   border-radius: 6px;
-  font-size: 13px;
-  outline: none;
-  min-width: 200px;
-  max-width: 300px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
 
-.pn-cm-fb-input-new-funnel:focus {
-  border-color: var(--pn-customers-manager-color-main, #4f46e5);
+.pn-cm-fb-topbar-icon-btn .material-icons-outlined {
+  font-size: 20px;
 }
 
-.pn-cm-fb-input-new-funnel::placeholder {
-  color: #999;
+.pn-cm-fb-topbar-icon-btn:hover {
+  background: rgba(100, 116, 139, 0.1);
+  color: #334155;
+}
+
+.pn-cm-fb-topbar-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pn-cm-fb-topbar-icon-btn:disabled:hover {
+  background: transparent;
+  color: #64748b;
+}
+
+.pn-cm-fb-topbar-icon-btn--primary {
+  color: var(--pn-customers-manager-color-main, #4f46e5);
+}
+
+.pn-cm-fb-topbar-icon-btn--primary:hover {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--pn-customers-manager-color-main, #4f46e5);
+}
+
+.pn-cm-fb-topbar-icon-btn--danger:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
 }
 
 /* Body: 3-column layout */
@@ -1426,6 +1461,43 @@
   margin-top: 4px;
 }
 
+/* Undo/Redo disabled state */
+.pn-cm-fb-zoom-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Multi-select active button state */
+.pn-cm-fb-zoom-btn.pn-cm-fb-multi-select-active {
+  background: #e8eaf6;
+  color: var(--pn-customers-manager-color-main, #4f46e5);
+}
+
+/* Separator between multi-select and zoom buttons */
+.pn-cm-fb-zoom-separator {
+  width: 1px;
+  height: 18px;
+  background: #e0e0e0;
+  margin: 0 2px;
+}
+
+/* Multi-selected node visual style */
+.pn-cm-fb-node.pn-cm-fb-node-multi-selected {
+  outline: 2px solid var(--pn-customers-manager-color-main, #4f46e5);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+}
+
+/* Marquee selection rectangle */
+#pn-cm-fb-marquee {
+  position: absolute;
+  border: 1px dashed var(--pn-customers-manager-color-main, #4f46e5);
+  background: rgba(79, 70, 229, 0.08);
+  pointer-events: none;
+  z-index: 50;
+}
+
 @media (max-width: 600px) {
   /* Auto-collapse sidebar on very small screens */
   .pn-cm-fb-sidebar-left {
@@ -1445,4 +1517,63 @@
     border-right: 1px solid #e0e0e0;
     opacity: 1;
   }
+}
+
+/* ===== Schedule Grid – Button-style day toggles ===== */
+
+.pn-cm-schedule-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pn-cm-schedule-day-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pn-cm-schedule-day-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.pn-cm-schedule-day-btn input[type="checkbox"] {
+  display: none;
+}
+
+.pn-cm-schedule-day-btn:has(input:checked) {
+  background: #2271b1;
+  border-color: #2271b1;
+  color: #fff;
+}
+
+.pn-cm-schedule-day-btn:hover {
+  border-color: #2271b1;
+}
+
+.pn-cm-schedule-from,
+.pn-cm-schedule-to {
+  width: 90px;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.pn-cm-schedule-separator {
+  color: #999;
+  font-size: 13px;
 }

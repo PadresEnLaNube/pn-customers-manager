@@ -103,7 +103,8 @@ class PN_CUSTOMERS_MANAGER_Admin {
 			],
 		]);
 
-		wp_enqueue_script($this->plugin_name . '-invoice-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-invoice-admin.js', ['jquery'], $this->version, true);
+		wp_enqueue_script('pn-cm-chartjs', PN_CUSTOMERS_MANAGER_URL . 'assets/js/vendor/chart.min.js', [], $this->version, true);
+		wp_enqueue_script($this->plugin_name . '-invoice-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-invoice-admin.js', ['jquery', 'pn-cm-chartjs'], $this->version, true);
 		wp_localize_script($this->plugin_name . '-invoice-admin', 'pnCmInvoiceAdmin', [
 			'ajaxUrl' => admin_url('admin-ajax.php'),
 			'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
@@ -120,6 +121,11 @@ class PN_CUSTOMERS_MANAGER_Admin {
 				'invoiceDuplicated' => esc_html__('Invoice duplicated successfully.', 'pn-customers-manager'),
 				'noDescription' => esc_html__('Please enter a description.', 'pn-customers-manager'),
 				'newPhase' => esc_html__('New phase', 'pn-customers-manager'),
+				'aiAnalyzed' => esc_html__('AI analysis completed. Fields have been filled.', 'pn-customers-manager'),
+				'aiUploading' => esc_html__('Analyzing with AI…', 'pn-customers-manager'),
+				'aiUploadInvalidType' => esc_html__('Please upload a PDF, JPG, or PNG file.', 'pn-customers-manager'),
+				'aiUploadTooLarge' => esc_html__('File is too large. Maximum size is 10 MB.', 'pn-customers-manager'),
+				'aiUploadNoKey' => esc_html__('No AI API key configured.', 'pn-customers-manager'),
 			],
 		]);
 	}

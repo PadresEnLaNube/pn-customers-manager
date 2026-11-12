@@ -101,7 +101,7 @@
       if (!$popup.length) return;
 
       // Show loading
-      $popupBody.html('<div class="pn-cm-conv-popup-loading"></div>');
+      $popupBody.html('<div class="pn-cm-csv-spinner"></div>');
 
       // Open via plugin popup manager
       pn_customers_manager_Popups.open(popupId);

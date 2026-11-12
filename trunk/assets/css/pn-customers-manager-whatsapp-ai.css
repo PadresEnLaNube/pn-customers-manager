@@ -184,6 +184,16 @@
   border-bottom-left-radius: 2px;
 }
 
+.pn-cm-wa-msg-quote {
+  border-left: 3px solid rgba(0,0,0,.15);
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #667;
+  background: rgba(0,0,0,.03);
+  border-radius: 4px;
+}
+
 .pn-cm-wa-msg-images {
   display: flex;
   flex-direction: column;
@@ -202,6 +212,16 @@
   color: #999;
   text-align: right;
   margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.pn-cm-wa-msg-icon {
+  font-size: 13px !important;
+  opacity: 0.6;
+  vertical-align: middle;
 }
 
 /* Actions below chat */

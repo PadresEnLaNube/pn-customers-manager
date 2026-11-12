@@ -53,24 +53,49 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     color: #333;
 }
 
-/* --- Back link (admin only) --- */
-.pn-cm-budget-back-link {
+/* --- Admin navigation bar (shared budget/invoice) --- */
+.pn-cm-admin-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.pn-cm-admin-nav-item {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 14px;
-    color: #0a6cba;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: #666;
     text-decoration: none;
-    margin-bottom: 20px;
+    transition: background 0.15s, color 0.15s;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    vertical-align: middle;
 }
 
-.pn-cm-budget-back-link:hover {
-    color: #084a82;
-    text-decoration: underline;
+.pn-cm-admin-nav-item:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+    text-decoration: none;
 }
 
-.pn-cm-budget-back-link i {
+.pn-cm-admin-nav-item.pn-cm-admin-nav-active {
+    background: rgba(10, 108, 186, 0.1);
+    color: #0a6cba;
+}
+
+.pn-cm-admin-nav-item i {
     font-size: 18px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.pn-cm-admin-nav-label {
+    white-space: nowrap;
 }
 
 /* --- Header: company info left, budget meta right --- */
@@ -153,6 +178,11 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 .pn-cm-budget-status-rejected {
     background: #f8d7da;
     color: #721c24;
+}
+
+.pn-cm-budget-status-paid {
+    background: #c3e6cb;
+    color: #0b5226;
 }
 
 .pn-cm-budget-status-wrapper {
@@ -860,6 +890,25 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     line-height: 1.6;
 }
 
+/* --- Payment details --- */
+.pn-cm-budget-payment-details {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid #eee;
+}
+
+.pn-cm-budget-payment-details h3 {
+    font-size: 14px;
+    margin: 0 0 10px;
+    color: #333 !important;
+}
+
+.pn-cm-budget-payment-details-content {
+    font-size: 12px;
+    color: #555 !important;
+    line-height: 1.6;
+}
+
 .pn-cm-budget-others {
     margin-top: 30px;
     padding-top: 20px;
@@ -889,6 +938,11 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 /* ==========================================================================
    2. ADMIN ITEMS EDITOR
    ========================================================================== */
+
+/* --- Dashboard metabox inner padding --- */
+#pn_customers_manager_budget_meta_box .inside {
+    padding: 16px 20px;
+}
 
 /* --- Admin metabox padding --- */
 .pn-cm-budget-admin-totals-section .pn-customers-manager-content {
@@ -1128,6 +1182,11 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     color: #005a87;
 }
 
+#pn-cm-budget-csv-export-btn,
+#pn-cm-budget-csv-import-btn {
+    margin-right: 10px;
+}
+
 /* --- Budget list status badges (frontend list view) --- */
 .pn-cm-budget-list-status {
     display: inline-block;
@@ -1181,7 +1240,25 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 .pn-cm-budget-list-col-date { width: 130px; white-space: nowrap; }
 .pn-cm-budget-list-col-status { width: 110px; text-align: center; }
 .pn-cm-budget-list-col-total { width: 100px; text-align: right; white-space: nowrap; }
-.pn-cm-budget-list-col-actions { width: 50px; text-align: center; }
+.pn-cm-budget-list-col-actions { width: 50px; text-align: center; overflow: visible; }
+
+/* Ensure list links are clickable regardless of theme interference */
+.pn-cm-budget-list-table {
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+}
+
+.pn-cm-budget-list-table a {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.pn-cm-budget-list-table td {
+    position: relative;
+}
 
 .pn-cm-budget-list-table thead .pn-cm-budget-list-col-status { text-align: center; }
 .pn-cm-budget-list-table thead .pn-cm-budget-list-col-total { text-align: right; }
@@ -1196,30 +1273,24 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 }
 
 @media (max-width: 768px) {
-    .pn-cm-budget-list-table thead { display: none; }
-    .pn-cm-budget-list-table,
-    .pn-cm-budget-list-table tbody,
-    .pn-cm-budget-list-table tr,
-    .pn-cm-budget-list-table td { display: block; width: 100%; }
-    .pn-cm-budget-list-table tbody tr {
-        padding: 12px 0;
-        border-bottom: 1px solid #eee;
+    .pn-customers-manager-pn_cm_budget-list-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
-    .pn-cm-budget-list-table tbody td {
-        padding: 4px 8px;
-        text-align: left;
+    .pn-cm-budget-list-table {
+        min-width: 700px;
     }
-    .pn-cm-budget-list-table tbody td::before {
-        content: attr(data-label);
-        display: inline-block;
-        font-weight: 600;
-        margin-right: 8px;
-        min-width: 90px;
+
+    .pn-cm-admin-nav {
+        gap: 4px;
+    }
+    .pn-cm-admin-nav-item {
+        padding: 6px 10px;
         font-size: 12px;
-        color: #666;
     }
-    .pn-cm-budget-list-col-actions { text-align: right; }
-    .pn-cm-budget-list-col-actions::before { display: none !important; }
+    .pn-cm-admin-nav-item i {
+        font-size: 16px;
+    }
 }
 
 /* ==========================================================================
@@ -1469,12 +1540,14 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
 
 /* --- Utility classes for admin popup (main CSS is not loaded on this page) --- */
 .pn-customers-manager-popup-content .pn-customers-manager-p-30,
-.pn-cm-budget-edit-item-popup.pn-customers-manager-p-30 {
+.pn-cm-budget-edit-item-popup.pn-customers-manager-p-30,
+.pn-cm-invoice-edit-item-popup.pn-customers-manager-p-30 {
     padding: 30px;
 }
 
 .pn-customers-manager-popup-content .pn-customers-manager-mb-30,
-.pn-cm-budget-edit-item-popup h4.pn-customers-manager-mb-30 {
+.pn-cm-budget-edit-item-popup h4.pn-customers-manager-mb-30,
+.pn-cm-invoice-edit-item-popup h4.pn-customers-manager-mb-30 {
     margin-bottom: 30px;
 }
 
@@ -1787,7 +1860,7 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     }
 
     /* Hide interactive and admin-only elements */
-    .pn-cm-budget-back-link,
+    .pn-cm-admin-nav,
     .pn-cm-budget-sticky-totals,
     .pn-cm-budget-email-prompt,
     .pn-cm-budget-actions,
@@ -1870,12 +1943,40 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     /* Compact info and notes */
     .pn-cm-budget-info-row {
         margin-bottom: 18px;
+        display: flex !important;
+        gap: 20px !important;
+        justify-content: space-between !important;
+    }
+
+    .pn-cm-budget-info-block {
+        flex: 1 !important;
+        background: #f9f9f9 !important;
+        padding: 12px 15px !important;
+        border-radius: 6px !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .pn-cm-budget-info-block h3 {
+        font-size: 13px !important;
+        margin-bottom: 8px !important;
+        color: #333 !important;
+        border-bottom: 1px solid #ddd !important;
+        padding-bottom: 5px !important;
+    }
+
+    .pn-cm-budget-info-block p {
+        font-size: 11px !important;
+        line-height: 1.4 !important;
+        margin: 3px 0 !important;
     }
 
     .pn-cm-budget-client-notes {
         margin-bottom: 18px;
         padding: 10px 14px;
         border-left-color: #333;
+        background: #f9f9f9 !important;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
     }
 
     .pn-cm-budget-items-section {
@@ -1883,18 +1984,102 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
         overflow: visible !important;
     }
 
+    /* Items table structure */
+    .pn-cm-budget-items-list {
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        padding: 10px !important;
+        background: #fff !important;
+    }
+
+    .pn-cm-budget-item-row {
+        border-bottom: 1px solid #eee !important;
+        padding: 10px 5px !important;
+    }
+
+    .pn-cm-budget-item-row:last-child {
+        border-bottom: none !important;
+    }
+
+    .pn-cm-budget-item-title {
+        font-weight: 600 !important;
+        margin-bottom: 5px !important;
+    }
+
+    .pn-cm-budget-item-meta {
+        display: flex !important;
+        gap: 15px !important;
+        font-size: 11px !important;
+        color: #666 !important;
+    }
+
+    .pn-cm-budget-col-qty,
+    .pn-cm-budget-col-price,
+    .pn-cm-budget-col-total {
+        font-weight: 500 !important;
+    }
+
+    /* Phase groups */
+    .pn-cm-budget-item-phase {
+        background: #f5f5f5 !important;
+        border-radius: 4px !important;
+        padding: 8px 10px !important;
+        margin: 8px 0 !important;
+    }
+
+    .pn-cm-budget-col-phase {
+        font-weight: 600 !important;
+        font-size: 12px !important;
+        color: #000 !important;
+    }
+
+    .pn-cm-budget-phase-items {
+        margin-left: 15px !important;
+        padding-left: 15px !important;
+        border-left: 2px solid #ddd !important;
+    }
+
     /* Totals */
     .pn-cm-budget-totals {
         page-break-inside: avoid;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        padding: 15px !important;
+        background: #f9f9f9 !important;
+        margin-top: 20px !important;
+    }
+
+    .pn-cm-budget-totals-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        padding: 6px 10px !important;
+        font-size: 12px !important;
     }
 
     .pn-cm-budget-totals-total {
-        border-top-color: #000;
+        border-top: 2px solid #000 !important;
+        margin-top: 8px !important;
+        padding-top: 10px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+    }
+
+    .pn-cm-budget-totals-discount {
+        color: #c62828 !important;
     }
 
     /* Status badge border for grayscale printers */
     .pn-cm-budget-status {
         border: 1px solid currentColor;
+    }
+
+    /* Images gallery */
+    .pn-cm-budget-images-gallery {
+        margin: 20px 0 !important;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        padding: 15px !important;
+        background: #f9f9f9 !important;
     }
 
     /* Image items */
@@ -1925,6 +2110,46 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
         margin-top: 20px;
         padding-top: 15px;
         page-break-inside: avoid;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        padding: 15px !important;
+        background: #f9f9f9 !important;
+    }
+
+    .pn-cm-budget-terms h3 {
+        font-size: 13px !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    .pn-cm-budget-terms-content {
+        font-size: 11px !important;
+        line-height: 1.5 !important;
+        color: #333 !important;
+    }
+
+    /* Payment details */
+    .pn-cm-budget-payment-details {
+        margin-top: 20px;
+        page-break-inside: avoid;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
+        padding: 15px !important;
+        background: #f9f9f9 !important;
+    }
+
+    .pn-cm-budget-payment-details h3 {
+        font-size: 13px !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    .pn-cm-budget-payment-details-content {
+        font-size: 11px !important;
+        line-height: 1.5 !important;
+        color: #333 !important;
     }
 
     /* Don't print link URLs (some browsers append them) */
@@ -2067,7 +2292,9 @@ body.pn-customers-manager-budget-public > *:not(.pn-cm-budget-wrapper):not(.pn-c
     }
 
     .pn-cm-budget-admin-buttons {
-        flex-direction: column !important;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
     }
 
     .pn-cm-budget-admin-buttons .pn-cm-budget-btn {
@@ -2237,6 +2464,14 @@ body.pn-customers-manager-budget-public .pn-customers-manager-popup {
 
 body.pn-customers-manager-budget-public .pn-customers-manager-popup.pn-customers-manager-popup-active {
     display: flex;
+}
+
+/* Hide items editor and payments when a popup is open (avoid redundant view behind overlay). */
+body.pn-customers-manager-popup-open .pn-cm-budget-items-section,
+body.pn-customers-manager-popup-open .pn-cm-budget-payments,
+body.pn-customers-manager-popup-open .pn-cm-invoice-items-section,
+body.pn-customers-manager-popup-open .pn-cm-invoice-payments {
+    display: none;
 }
 
 body.pn-customers-manager-budget-public .pn-customers-manager-popup-overlay {
@@ -2432,13 +2667,15 @@ body.pn-customers-manager-budget-public .pn-customers-manager-popup-close-wrappe
     background: #135e96;
 }
 
-.pn-cm-budget-edit-item-popup .pn-customers-manager-btn.pn-customers-manager-disabled {
+.pn-cm-budget-edit-item-popup .pn-customers-manager-btn.pn-customers-manager-disabled,
+.pn-cm-invoice-edit-item-popup .pn-customers-manager-btn.pn-customers-manager-disabled {
     opacity: .6;
     pointer-events: none;
 }
 
 /* --- Heading --- */
-.pn-cm-budget-edit-item-popup h4 {
+.pn-cm-budget-edit-item-popup h4,
+.pn-cm-invoice-edit-item-popup h4 {
     margin: 0 0 20px;
     font-size: 18px;
     font-weight: 600;
@@ -2950,4 +3187,829 @@ body.pn-customers-manager-budget-public .pn-customers-manager-popup-close-wrappe
 
 .pn-cm-budget-selecting .pn-cm-budget-bulk-action-switch {
     display: inline-flex !important;
+}
+
+/* ==========================================================================
+   PAYMENTS SECTION
+   ========================================================================== */
+
+/* --- Admin metabox payments --- */
+.pn-cm-payments-container {
+    margin-top: 10px;
+}
+
+.pn-cm-payments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.pn-cm-payments-table th {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #555;
+}
+
+.pn-cm-payments-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+}
+
+.pn-cm-payments-table tr:hover {
+    background: #f9f9f9;
+}
+
+.pn-cm-payment-remove {
+    text-decoration: none;
+}
+
+.pn-cm-payments-empty {
+    color: #888;
+    font-style: italic;
+    margin: 10px 0;
+}
+
+.pn-cm-payments-summary {
+    display: flex;
+    gap: 20px;
+    padding: 10px 0;
+    font-size: 14px;
+    border-top: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+.pn-cm-payments-add-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pn-cm-payments-add-row input,
+.pn-cm-payments-add-row select {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.pn-cm-payments-add-row input[type="date"] {
+    max-width: 150px;
+}
+
+.pn-cm-payments-add-row input[type="number"] {
+    max-width: 120px;
+}
+
+.pn-cm-payments-add-row input[type="text"] {
+    flex: 1;
+    min-width: 100px;
+}
+
+.pn-cm-payments-add-row .pn-cm-payment-add-btn {
+    padding: 6px 14px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.pn-cm-payments-add-row .pn-cm-payment-add-btn:hover {
+    background: #135e96;
+}
+
+/* --- Payment header icon (small, in th) --- */
+.pn-cm-payment-th-icon {
+    font-size: 16px;
+}
+
+/* --- Unified payment action icons (matches budget item pattern) --- */
+.pn-cm-payment-td-actions a {
+    color: #888;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    transition: all 0.15s;
+}
+
+.pn-cm-payment-td-actions a:hover {
+    background: #f0f0f0;
+}
+
+.pn-cm-payment-td-actions a i {
+    font-size: 18px;
+}
+
+/* Payment action hover colors */
+.pn-cm-payment-toggle-visibility:hover { color: #28a745 !important; }
+.pn-cm-payment-edit:hover, .pn-cm-payment-edit-save:hover { color: #0a6cba !important; }
+.pn-cm-payment-remove:hover, .pn-cm-budget-payment-remove:hover, .pn-cm-invoice-payment-remove:hover { color: #dc3545 !important; }
+.pn-cm-payment-edit-cancel:hover { color: #666 !important; }
+
+/* Payment visibility state indicators (on the icon itself, not action hover) */
+.pn-cm-payment-state-visible { color: #28a745; }
+.pn-cm-payment-state-hidden { color: #ccc; }
+
+/* --- Payment edit button --- */
+.pn-cm-payment-edit {
+    text-decoration: none;
+}
+
+/* --- Inline edit row --- */
+.pn-cm-payment-editing td {
+    padding: 4px 6px;
+}
+
+.pn-cm-payment-editing input,
+.pn-cm-payment-editing select {
+    padding: 3px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.pn-cm-payment-editing input[type="date"] {
+    max-width: 140px;
+}
+
+.pn-cm-payment-editing input[type="number"] {
+    max-width: 100px;
+}
+
+.pn-cm-payment-edit-save,
+.pn-cm-payment-edit-cancel {
+    text-decoration: none;
+}
+
+/* --- Payments section toggle --- */
+.pn-cm-payments-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.pn-cm-payments-toggle {
+    font-size: 20px;
+    color: #666;
+    transition: transform .2s;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.pn-cm-payments-collapsed .pn-cm-payments-toggle {
+    transform: rotate(-90deg);
+}
+
+.pn-cm-payments-collapsed .pn-cm-payments-body {
+    display: none;
+}
+
+/* --- Payments mini charts --- */
+.pn-cm-payments-charts {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 15px 0;
+    flex-wrap: wrap;
+}
+
+.pn-cm-payments-chart-box {
+    width: 180px;
+    height: 180px;
+}
+
+/* --- Payment form spacing from notes --- */
+.pn-cm-payments-add-form {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* --- Public page payments --- */
+.pn-cm-budget-payments {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.pn-cm-budget-payments h3 {
+    margin: 0 0 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.pn-cm-budget-payments-list {
+    margin-bottom: 15px;
+}
+
+.pn-cm-budget-payments-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+}
+
+.pn-cm-budget-payments-date {
+    min-width: 100px;
+    color: #666;
+}
+
+.pn-cm-budget-payments-amount {
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.pn-cm-budget-payments-method {
+    color: #666;
+    min-width: 100px;
+}
+
+.pn-cm-budget-payments-notes {
+    color: #888;
+    flex: 1;
+    font-style: italic;
+}
+
+.pn-cm-budget-payments-summary {
+    display: flex;
+    gap: 20px;
+    padding: 12px 0;
+    font-size: 14px;
+    border-top: 2px solid #ddd;
+}
+
+.pn-cm-budget-payments-add-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.pn-cm-budget-payments-add-form input,
+.pn-cm-budget-payments-add-form select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.pn-cm-budget-payments-add-form input[type="date"] {
+    max-width: 150px;
+}
+
+.pn-cm-budget-payments-add-form input[type="number"] {
+    max-width: 120px;
+}
+
+.pn-cm-budget-payments-add-form input[type="text"] {
+    flex: 1;
+    min-width: 100px;
+}
+
+.pn-cm-budget-payment-add-btn {
+    padding: 6px 14px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pn-cm-budget-payment-add-btn:hover {
+    background: #135e96;
+}
+
+.pn-cm-budget-payment-remove {
+    text-decoration: none;
+}
+
+/* --- Payment type badges --- */
+.pn-cm-payment-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.pn-cm-payment-type-income {
+    background: #d4edda;
+    color: #155724;
+}
+
+.pn-cm-payment-type-expense {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* --- Payment row type coloring --- */
+.pn-cm-payment-row-expense td {
+    background: #fff5f5;
+}
+
+/* --- Payment visibility toggle --- */
+.pn-cm-payment-toggle-visibility {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* --- Payment summary colors --- */
+.pn-cm-payment-summary-income {
+    color: #155724;
+}
+
+.pn-cm-payment-summary-expense {
+    color: #721c24;
+}
+
+/* --- Paid status message --- */
+.pn-cm-budget-status-paid-msg {
+    background: #c3e6cb;
+    color: #0b5226;
+}
+
+/* --- Payment visible label in form --- */
+.pn-cm-payment-visible-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* --- Payment switch (slide toggle) --- */
+.pn-cm-payment-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.pn-cm-payment-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.pn-cm-payment-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 20px;
+}
+
+.pn-cm-payment-switch-slider::before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.pn-cm-payment-switch input:checked + .pn-cm-payment-switch-slider {
+    background-color: #28a745;
+}
+
+.pn-cm-payment-switch input:checked + .pn-cm-payment-switch-slider::before {
+    transform: translateX(16px);
+}
+
+/* --- Payment concept column on public page --- */
+.pn-cm-budget-payments-concept {
+    font-weight: 500;
+    flex: 1;
+    min-width: 80px;
+}
+
+/* --- Admin payments table on public page --- */
+.pn-cm-budget-payments-admin-table .pn-cm-payments-table {
+    font-size: 12px;
+}
+
+.pn-cm-budget-payments-admin-table .pn-cm-payments-table th {
+    padding: 6px 8px;
+    white-space: nowrap;
+}
+
+.pn-cm-budget-payments-admin-table .pn-cm-payments-table td {
+    padding: 5px 8px;
+}
+
+/* --- Payments table: stacked cards on mobile --- */
+@media (max-width: 768px) {
+    .pn-cm-payments-table thead {
+        display: none;
+    }
+
+    .pn-cm-payments-table,
+    .pn-cm-payments-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .pn-cm-payments-table tr {
+        display: block;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 10px 100px 10px 12px;
+        margin-bottom: 10px;
+        background: #fff;
+        position: relative;
+    }
+
+    .pn-cm-payments-table tr.pn-cm-payment-row-expense {
+        background: #fff5f5;
+    }
+
+    .pn-cm-payments-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 3px 0;
+        border-bottom: none;
+        font-size: 13px;
+    }
+
+    .pn-cm-payments-table td:empty {
+        display: none;
+    }
+
+    .pn-cm-payments-table td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #666;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        min-width: 80px;
+        flex-shrink: 0;
+        margin-right: 8px;
+    }
+
+    .pn-cm-payments-table td.pn-cm-payment-td-actions {
+        display: inline-flex;
+        padding: 0;
+        position: absolute;
+        top: 10px;
+        right: 12px;
+    }
+
+    .pn-cm-payments-table td.pn-cm-payment-td-actions + td.pn-cm-payment-td-actions {
+        right: 40px;
+    }
+
+    .pn-cm-payments-table td.pn-cm-payment-td-actions + td.pn-cm-payment-td-actions + td.pn-cm-payment-td-actions {
+        right: 68px;
+    }
+
+    .pn-cm-payments-table td.pn-cm-payment-td-actions::before {
+        display: none;
+    }
+
+    /* Summary stacks vertically */
+    .pn-cm-payments-summary,
+    .pn-cm-budget-payments-summary {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    /* Add form stacks vertically */
+    .pn-cm-payments-add-row,
+    .pn-cm-budget-payments-add-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pn-cm-payments-add-row input,
+    .pn-cm-payments-add-row select,
+    .pn-cm-budget-payments-add-form input,
+    .pn-cm-budget-payments-add-form select {
+        max-width: none !important;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .pn-cm-payment-visible-label {
+        padding: 4px 0;
+    }
+
+    /* Client payment rows also stack */
+    .pn-cm-budget-payments-row {
+        flex-wrap: wrap;
+        gap: 4px 12px;
+    }
+
+    .pn-cm-budget-payments-date,
+    .pn-cm-budget-payments-method {
+        min-width: auto;
+    }
+}
+
+/* ==========================================================================
+   SHARED LOADER (replicate from main CSS for standalone pages)
+   ========================================================================== */
+
+.pn-customers-manager-loader-circle-wrapper {
+    width: 100%;
+    margin: auto;
+    height: 200px;
+    margin-top: 125px;
+}
+
+.pn-customers-manager-loader-circle {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.pn-customers-manager-loader-circle div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border: 8px solid var(--pn-customers-manager-color-main, #2271b1);
+    border-radius: 50%;
+    animation: pn-customers-manager-loader-circle 1.2s cubic-bezier(.5, 0, .5, 1) infinite;
+    border-color: var(--pn-customers-manager-color-main, #2271b1) transparent transparent;
+}
+
+.pn-customers-manager-loader-circle div:nth-child(1) { animation-delay: -.45s; }
+.pn-customers-manager-loader-circle div:nth-child(2) { animation-delay: -.3s; }
+.pn-customers-manager-loader-circle div:nth-child(3) { animation-delay: -.15s; }
+
+@keyframes pn-customers-manager-loader-circle {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Popup-specific override: smaller margin so loader is centered in popup */
+.pn-customers-manager-popup-content .pn-customers-manager-loader-circle-wrapper {
+    height: auto;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+/* ==========================================================================
+   SHARED BUTTON STYLES (replicate from main CSS for standalone pages)
+   ========================================================================== */
+
+.pn-customers-manager-btn {
+    background-color: var(--pn-customers-manager-color-main, #2271b1);
+    color: #ffffff;
+    display: inline-block;
+    margin: auto;
+    margin-top: 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    height: auto;
+    text-align: center;
+    box-shadow: none;
+    line-height: 20px;
+    border: none;
+    padding: 15px 35px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.pn-customers-manager-btn:hover {
+    background-color: var(--pn-customers-manager-bg-color-main-alt, #135e96);
+    transform: translateY(-2px);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.pn-customers-manager-btn-mini {
+    line-height: 20px;
+    padding: 5px 30px;
+}
+
+.pn-customers-manager-btn-transparent {
+    color: var(--pn-customers-manager-color-main, #2271b1);
+    border: 1px solid var(--pn-customers-manager-color-main, #2271b1);
+    background-color: transparent;
+}
+
+.pn-customers-manager-btn-transparent:hover {
+    color: #ffffff;
+    background-color: var(--pn-customers-manager-color-main, #2271b1);
+}
+
+/* Alternative item/phase creation link (plain text, no button chrome) */
+.pn-cm-budget-popup-add-alt.pn-customers-manager-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 13px;
+    color: var(--pn-customers-manager-color-main, #2271b1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    line-height: normal;
+    min-height: 100%;
+}
+
+.pn-cm-budget-popup-add-alt.pn-customers-manager-btn:hover {
+    background: none;
+    color: var(--pn-customers-manager-color-main, #2271b1);
+}
+
+/* ==========================================================================
+   INVOICE POPUP FORM STYLES (mirror budget popup form layout)
+   ========================================================================== */
+
+.pn-cm-invoice-edit-item-popup .pn-customers-manager-input-wrapper {
+    margin-bottom: 16px;
+}
+
+.pn-cm-invoice-edit-item-popup .pn-customers-manager-display-inline-table {
+    display: block !important;
+    width: 100% !important;
+}
+
+.pn-cm-invoice-edit-item-popup .pn-customers-manager-p-10 {
+    padding: 4px 0;
+}
+
+.pn-cm-invoice-edit-item-popup label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 4px;
+}
+
+.pn-cm-invoice-edit-item-popup input.pn-customers-manager-input,
+.pn-cm-invoice-edit-item-popup textarea.pn-customers-manager-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-height: 42px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.pn-cm-invoice-edit-item-popup input.pn-customers-manager-input:focus,
+.pn-cm-invoice-edit-item-popup textarea.pn-customers-manager-input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+.pn-cm-invoice-edit-item-popup select.pn-customers-manager-select {
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-height: 42px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.4;
+    appearance: auto;
+}
+
+.pn-cm-invoice-edit-item-popup select.pn-customers-manager-select:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+.pn-cm-invoice-edit-item-popup .pn-customers-manager-text-align-right {
+    text-align: right;
+}
+
+.pn-cm-invoice-edit-item-popup .pn-customers-manager-mt-15 {
+    margin-top: 15px;
+}
+
+@media print {
+    .pn-cm-budget-payments-add-form,
+    .pn-cm-budget-payment-remove,
+    .pn-cm-payment-toggle-visibility,
+    .pn-cm-payment-edit,
+    .pn-cm-payments-add-form,
+    .pn-cm-payments-charts,
+    .pn-cm-payments-header {
+        display: none !important;
+    }
+    .pn-cm-payments-collapsed .pn-cm-payments-body {
+        display: block !important;
+    }
+}
+
+/* ==========================================================================
+   GLOBAL FINANCIAL SUMMARY
+   ========================================================================== */
+
+.pn-cm-global-summary {
+    margin-top: 30px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0 20px 20px;
+}
+
+.pn-cm-global-summary .pn-cm-payments-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pn-cm-global-summary .pn-cm-payments-summary {
+    flex-wrap: wrap;
+}
+
+.pn-cm-global-summary-doc-total,
+.pn-cm-global-summary-invoiced {
+    border-top: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.pn-cm-global-summary .pn-cm-payments-charts {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 20px;
+}
+
+/* --- Global payments detail list --- */
+.pn-cm-global-payments-list {
+    margin-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 10px;
+}
+
+.pn-cm-global-payments-list .pn-cm-payments-table {
+    font-size: 12px;
+}
+
+.pn-cm-global-payments-list .pn-cm-payments-table th {
+    padding: 6px 8px;
+    white-space: nowrap;
+}
+
+.pn-cm-global-payments-list .pn-cm-payments-table td {
+    padding: 5px 8px;
+}
+
+.pn-cm-global-payment-budget-link {
+    color: #2271b1;
+    text-decoration: none;
+    max-width: 180px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.pn-cm-global-payment-budget-link:hover {
+    text-decoration: underline;
 }

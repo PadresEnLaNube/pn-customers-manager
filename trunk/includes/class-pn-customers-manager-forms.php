@@ -120,7 +120,7 @@ class PN_CUSTOMERS_MANAGER_Forms {
           case 'checkbox':
             ?>
               <label class="pn-customers-manager-switch">
-                <input id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" class="<?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?> pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-customers-manager-field" type="<?php echo esc_attr($pn_customers_manager_input['type']); ?>" <?php echo $pn_customers_manager_value == 'on' ? 'checked="checked"' : ''; ?> <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?> <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 'multiple' : ''); ?> <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
+                <input id="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" name="<?php echo esc_attr($pn_customers_manager_input['id']) . ((array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple']) ? '[]' : ''); ?>" class="<?php echo array_key_exists('class', $pn_customers_manager_input) ? esc_attr($pn_customers_manager_input['class']) : ''; ?> pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-customers-manager-field" type="checkbox" <?php echo $pn_customers_manager_value == 'on' ? 'checked="checked"' : ''; ?> <?php echo (((array_key_exists('disabled', $pn_customers_manager_input) && $pn_customers_manager_input['disabled'] == 'true') || $disabled) ? 'disabled' : ''); ?> <?php echo ((array_key_exists('required', $pn_customers_manager_input) && $pn_customers_manager_input['required'] == true) ? 'required' : ''); ?> <?php echo (array_key_exists('multiple', $pn_customers_manager_input) && $pn_customers_manager_input['multiple'] ? 'multiple' : ''); ?> <?php echo wp_kses_post($pn_customers_manager_parent_block); ?>>
                 <span class="pn-customers-manager-slider pn-customers-manager-round"></span>
               </label>
             <?php
@@ -146,6 +146,66 @@ class PN_CUSTOMERS_MANAGER_Forms {
                     </div>
                   <?php endforeach ?>
                 <?php endif ?>
+              </div>
+            <?php
+            break;
+          case 'template_vars_builder':
+            $vars_data = is_string($pn_customers_manager_value) ? json_decode($pn_customers_manager_value, true) : [];
+            if (!is_array($vars_data)) {
+              $vars_data = [];
+            }
+            // Ensure at least one empty row for initial state
+            if (empty($vars_data)) {
+              $vars_data = [['key' => '', 'field' => '']];
+            }
+
+            $wp_fields = [
+              'display_name' => __('Display Name (full name)', 'pn-customers-manager'),
+              'first_name'   => __('First Name', 'pn-customers-manager'),
+              'last_name'    => __('Last Name', 'pn-customers-manager'),
+              'email'        => __('Email', 'pn-customers-manager'),
+              'phone'        => __('Phone Number', 'pn-customers-manager'),
+              'user_login'   => __('Username', 'pn-customers-manager'),
+            ];
+            ?>
+              <div class="pn-customers-manager-template-vars-builder" data-field-id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>">
+                <div class="pn-cm-vars-rows">
+                  <?php foreach ($vars_data as $index => $var): ?>
+                    <div class="pn-cm-var-row">
+                      <input type="text"
+                        class="pn-cm-var-key pn-customers-manager-input"
+                        placeholder="<?php esc_attr_e('Variable name or number (e.g., "1" or "nombre")', 'pn-customers-manager'); ?>"
+                        value="<?php echo esc_attr(isset($var['key']) ? $var['key'] : ''); ?>">
+                      <span class="pn-cm-var-arrow">→</span>
+                      <select class="pn-cm-var-field pn-customers-manager-select">
+                        <option value=""><?php esc_html_e('Select WP field', 'pn-customers-manager'); ?></option>
+                        <?php foreach ($wp_fields as $field_key => $field_label): ?>
+                          <option value="<?php echo esc_attr($field_key); ?>"
+                            <?php selected(isset($var['field']) ? $var['field'] : '', $field_key); ?>>
+                            <?php echo esc_html($field_label); ?>
+                          </option>
+                        <?php endforeach; ?>
+                      </select>
+                      <button type="button" class="pn-cm-var-remove" title="<?php esc_attr_e('Remove variable', 'pn-customers-manager'); ?>">
+                        <i class="material-icons-outlined">remove_circle</i>
+                      </button>
+                      <button type="button" class="pn-cm-var-move-up" title="<?php esc_attr_e('Move up', 'pn-customers-manager'); ?>">
+                        <i class="material-icons-outlined">arrow_upward</i>
+                      </button>
+                      <button type="button" class="pn-cm-var-move-down" title="<?php esc_attr_e('Move down', 'pn-customers-manager'); ?>">
+                        <i class="material-icons-outlined">arrow_downward</i>
+                      </button>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+                <button type="button" class="pn-cm-var-add pn-customers-manager-btn pn-customers-manager-btn-mini">
+                  <i class="material-icons-outlined">add</i> <?php esc_html_e('Add variable', 'pn-customers-manager'); ?>
+                </button>
+                <input type="hidden"
+                  id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>"
+                  name="<?php echo esc_attr($pn_customers_manager_input['id']); ?>"
+                  class="pn-cm-vars-hidden pn-customers-manager-field"
+                  value="<?php echo esc_attr(wp_json_encode($vars_data)); ?>">
               </div>
             <?php
             break;
@@ -460,11 +520,14 @@ class PN_CUSTOMERS_MANAGER_Forms {
                 <div class="pn-customers-manager-html-multi-group pn-customers-manager-display-table pn-customers-manager-width-100-percent pn-customers-manager-mb-10">
                   <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
                     <?php foreach ($pn_customers_manager_input['html_multi_fields'] as $index => $html_multi_field): ?>
-                      <?php if (isset($html_multi_field['label']) && !empty($html_multi_field['label'])): ?>
-                        <label><?php echo esc_html($html_multi_field['label']); ?></label>
-                      <?php endif; ?>
-
-                      <?php self::pn_customers_manager_input_builder($html_multi_field, $pn_customers_manager_type, $pn_customers_manager_id, false, true, $length_index); ?>
+                      <div class="pn-customers-manager-html-multi-field-wrapper" style="margin-bottom: 10px;">
+                        <?php if (isset($html_multi_field['label']) && !empty($html_multi_field['label'])): ?>
+                          <label class="pn-customers-manager-html-multi-label" style="display: block; font-weight: 600; margin-bottom: 4px; color: #333; font-size: 13px;">
+                            <?php echo esc_html($html_multi_field['label']); ?>
+                          </label>
+                        <?php endif; ?>
+                        <?php self::pn_customers_manager_input_builder($html_multi_field, $pn_customers_manager_type, $pn_customers_manager_id, false, true, $length_index); ?>
+                      </div>
                     <?php endforeach ?>
                   </div>
                   <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-center">
@@ -480,7 +543,14 @@ class PN_CUSTOMERS_MANAGER_Forms {
               <div class="pn-customers-manager-html-multi-group pn-customers-manager-mb-50">
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
                   <?php foreach ($pn_customers_manager_input['html_multi_fields'] as $html_multi_field): ?>
-                    <?php self::pn_customers_manager_input_builder($html_multi_field, $pn_customers_manager_type); ?>
+                    <div class="pn-customers-manager-html-multi-field-wrapper" style="margin-bottom: 10px;">
+                      <?php if (isset($html_multi_field['label']) && !empty($html_multi_field['label'])): ?>
+                        <label class="pn-customers-manager-html-multi-label" style="display: block; font-weight: 600; margin-bottom: 4px; color: #333; font-size: 13px;">
+                          <?php echo esc_html($html_multi_field['label']); ?>
+                        </label>
+                      <?php endif; ?>
+                      <?php self::pn_customers_manager_input_builder($html_multi_field, $pn_customers_manager_type); ?>
+                    </div>
                   <?php endforeach ?>
                 </div>
                 <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-center">
@@ -714,7 +784,9 @@ class PN_CUSTOMERS_MANAGER_Forms {
           <?php if (!empty($users_with_role)): ?>
             <div class="pn-customers-manager-mb-20 pn-customers-manager-p-15 pn-customers-manager-users-with-role-box">
               <h4 class="pn-customers-manager-mb-10">
-                <?php echo esc_html(sprintf(__('Users with %s Role', 'pn-customers-manager'), $role_label)); ?>
+                <?php
+                // translators: %s is the user role label (e.g. "Editor", "Administrator")
+                echo esc_html(sprintf(__('Users with %s Role', 'pn-customers-manager'), $role_label)); ?>
                 <span class="pn-customers-manager-role-badge">
                   <?php echo count($users_with_role); ?>
                 </span>
@@ -735,7 +807,9 @@ class PN_CUSTOMERS_MANAGER_Forms {
             <div class="pn-customers-manager-mb-20 pn-customers-manager-p-15 pn-customers-manager-alert-warning">
               <p>
                 <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">info</i>
-                <?php echo esc_html(sprintf(__('No users currently have the %s role.', 'pn-customers-manager'), $role_label)); ?>
+                <?php
+                // translators: %s is the user role label (e.g. "Editor", "Administrator")
+                echo esc_html(sprintf(__('No users currently have the %s role.', 'pn-customers-manager'), $role_label)); ?>
               </p>
             </div>
           <?php endif; ?>
@@ -770,7 +844,9 @@ class PN_CUSTOMERS_MANAGER_Forms {
                 class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-assign-role-btn"
                 data-input-id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>">
                 <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">person_add</i>
-                <?php echo esc_html(sprintf(__('Assign %s Role', 'pn-customers-manager'), $role_label)); ?>
+                <?php
+                // translators: %s is the user role label (e.g. "Editor", "Administrator")
+                echo esc_html(sprintf(__('Assign %s Role', 'pn-customers-manager'), $role_label)); ?>
               </button>
             </div>
 
@@ -779,7 +855,9 @@ class PN_CUSTOMERS_MANAGER_Forms {
                 class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-remove-role-btn"
                 data-input-id="<?php echo esc_attr($pn_customers_manager_input['id']); ?>">
                 <i class="material-icons-outlined pn-customers-manager-vertical-align-middle">person_remove</i>
-                <?php echo esc_html(sprintf(__('Remove %s Role', 'pn-customers-manager'), $role_label)); ?>
+                <?php
+                // translators: %s is the user role label (e.g. "Editor", "Administrator")
+                echo esc_html(sprintf(__('Remove %s Role', 'pn-customers-manager'), $role_label)); ?>
               </button>
             </div>
           </div>
@@ -819,6 +897,8 @@ class PN_CUSTOMERS_MANAGER_Forms {
           <div
             class="pn-customers-manager-toggle-wrapper pn-customers-manager-section-wrapper pn-customers-manager-position-relative pn-customers-manager-mb-10 <?php echo $section_color ? 'pn-customers-manager-section-colored' : ''; ?> <?php echo array_key_exists('class', $input_array) ? esc_attr($input_array['class']) : ''; ?>"
             id="<?php echo array_key_exists('id', $input_array) ? esc_attr($input_array['id']) : ''; ?>"
+            <?php echo !empty($input_array['parent']) ? 'data-pn-customers-manager-parent="' . esc_attr($input_array['parent']) . '"' : ''; ?>
+            <?php echo !empty($input_array['parent_option']) ? 'data-pn-customers-manager-parent-option="' . esc_attr($input_array['parent_option']) . '"' : ''; ?>
             <?php echo $section_color ? 'style="--pn-customers-manager-section-color: ' . esc_attr($section_color) . '"' : ''; ?>>
             <a href="#" class="pn-customers-manager-toggle pn-customers-manager-width-100-percent pn-customers-manager-text-decoration-none">
               <?php if ($section_color): ?>
@@ -900,6 +980,8 @@ class PN_CUSTOMERS_MANAGER_Forms {
         <div
           class="pn-customers-manager-toggle-wrapper pn-customers-manager-section-wrapper pn-customers-manager-position-relative pn-customers-manager-mb-10 <?php echo $section_color ? 'pn-customers-manager-section-colored' : ''; ?> <?php echo array_key_exists('class', $input_array) ? esc_attr($input_array['class']) : ''; ?>"
           id="<?php echo array_key_exists('id', $input_array) ? esc_attr($input_array['id']) : ''; ?>"
+          <?php echo !empty($input_array['parent']) ? 'data-pn-customers-manager-parent="' . esc_attr($input_array['parent']) . '"' : ''; ?>
+          <?php echo !empty($input_array['parent_option']) ? 'data-pn-customers-manager-parent-option="' . esc_attr($input_array['parent_option']) . '"' : ''; ?>
           <?php echo $section_color ? 'style="--pn-customers-manager-section-color: ' . esc_attr($section_color) . '"' : ''; ?>>
           <a href="#" class="pn-customers-manager-toggle pn-customers-manager-width-100-percent pn-customers-manager-text-decoration-none">
             <?php if ($section_color): ?>

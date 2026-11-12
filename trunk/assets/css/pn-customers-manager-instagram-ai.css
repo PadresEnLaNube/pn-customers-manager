@@ -206,6 +206,16 @@
   color: #999;
   text-align: right;
   margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.pn-cm-ig-msg-icon {
+  font-size: 13px !important;
+  opacity: 0.6;
+  vertical-align: middle;
 }
 
 /* Actions below chat */

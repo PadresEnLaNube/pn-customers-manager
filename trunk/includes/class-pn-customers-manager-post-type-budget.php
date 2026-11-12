@@ -95,6 +95,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         'label' => esc_html__('Budget number', 'pn-customers-manager'),
         'placeholder' => esc_html__('Auto-generated', 'pn-customers-manager'),
         'readonly' => !empty($budget_id),
+        'skip_save' => true,
       ];
       $pn_customers_manager_fields_meta['pn_cm_budget_date'] = [
         'id' => 'pn_cm_budget_date',
@@ -123,6 +124,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
           'sent' => esc_html__('Sent', 'pn-customers-manager'),
           'accepted' => esc_html__('Accepted', 'pn-customers-manager'),
           'rejected' => esc_html__('Rejected', 'pn-customers-manager'),
+          'paid' => esc_html__('Paid', 'pn-customers-manager'),
         ],
       ];
       $pn_customers_manager_fields_meta['pn_cm_budget_tax_rate'] = [
@@ -153,6 +155,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         'id' => 'pn_cm_budget_section_details_end',
         'section' => 'end',
       ];
+
       $pn_customers_manager_fields_meta['pn_cm_budget_section_notes_start'] = [
         'id' => 'pn_cm_budget_section_notes_start',
         'section' => 'start',
@@ -301,7 +304,8 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
   public function pn_cm_budget_meta_box_function($post) {
     // Enqueue budget CSS + JS on admin edit screen.
     wp_enqueue_style('pn-customers-manager-budget', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-budget.css', [], PN_CUSTOMERS_MANAGER_VERSION);
-    wp_enqueue_script('pn-customers-manager-budget-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-budget-admin.js', ['jquery', 'wph-trumbowyg'], PN_CUSTOMERS_MANAGER_VERSION, true);
+    wp_enqueue_script('pn-cm-chartjs', PN_CUSTOMERS_MANAGER_URL . 'assets/js/vendor/chart.min.js', [], PN_CUSTOMERS_MANAGER_VERSION, true);
+    wp_enqueue_script('pn-customers-manager-budget-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-budget-admin.js', ['jquery', 'wph-trumbowyg', 'pn-cm-chartjs'], PN_CUSTOMERS_MANAGER_VERSION, true);
     wp_localize_script('pn-customers-manager-budget-admin', 'pnCmBudgetAdmin', [
       'ajaxUrl' => admin_url('admin-ajax.php'),
       'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
@@ -334,7 +338,9 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
       ],
     ]);
 
-    foreach (self::pn_cm_budget_get_fields_meta($post->ID) as $pn_customers_manager_field) {
+    $fields = self::pn_cm_budget_get_fields_meta($post->ID);
+    $fields = PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_filter_cpt_fields($fields, 'pn_cm_budget');
+    foreach ($fields as $pn_customers_manager_field) {
       if (!is_null(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_field, 'post', $post->ID))) {
         echo wp_kses(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_field, 'post', $post->ID), PN_CUSTOMERS_MANAGER_KSES);
       }
@@ -903,7 +909,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
             <?php esc_html_e('AI prompt', 'pn-customers-manager'); ?>
           </button>
         </div>
-        <?php echo self::render_ai_prompt_block($budget_id); ?>
+        <?php echo wp_kses_post(self::render_ai_prompt_block($budget_id)); ?>
       </div>
     <?php
     return ob_get_clean();
@@ -936,10 +942,12 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
             <td class="pn-customers-manager-text-align-right pn-customers-manager-budget-totals-value" id="pn-cm-budget-admin-subtotal"><?php echo esc_html(self::format_currency($subtotal)); ?></td>
           </tr>
           <tr id="pn-cm-budget-admin-discount-row" <?php echo $discount_rate > 0 ? '' : 'style="display:none"'; ?>>
+            <?php // translators: %s is the discount percentage value. ?>
             <td class="pn-customers-manager-text-align-right"><strong><?php echo esc_html(sprintf(__('Discount (%s%%)', 'pn-customers-manager'), number_format($discount_rate, 2))); ?></strong></td>
             <td class="pn-customers-manager-text-align-right pn-customers-manager-budget-totals-value" id="pn-cm-budget-admin-discount">-<?php echo esc_html(self::format_currency($discount_amount)); ?></td>
           </tr>
           <tr id="pn-cm-budget-admin-tax-row" <?php echo $tax_rate > 0 ? '' : 'style="display:none"'; ?>>
+            <?php // translators: %s is the tax percentage value. ?>
             <td class="pn-customers-manager-text-align-right"><strong><?php echo esc_html(sprintf(__('Tax (%s%%)', 'pn-customers-manager'), number_format($tax_rate, 2))); ?></strong></td>
             <td class="pn-customers-manager-text-align-right pn-customers-manager-budget-totals-value" id="pn-cm-budget-admin-tax"><?php echo esc_html(self::format_currency($tax_amount)); ?></td>
           </tr>
@@ -1293,6 +1301,10 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
 
               if (!empty($key_value)) {
                 foreach ($key_value as $key => $value) {
+                  // Skip auto-generated fields to prevent overwriting with empty values.
+                  if ($key === 'pn_cm_budget_number' || $key === 'pn_cm_budget_token') {
+                    continue;
+                  }
                   update_post_meta($budget_id, $key, $value);
                 }
               }
@@ -1524,7 +1536,8 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
     // Enqueue budget styles and scripts on front-end so list actions work
     if (!is_admin()) {
       wp_enqueue_style('pn-customers-manager-budget', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-budget.css', [], PN_CUSTOMERS_MANAGER_VERSION);
-      wp_enqueue_script('pn-customers-manager-budget-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-budget-admin.js', ['jquery', 'wph-trumbowyg'], PN_CUSTOMERS_MANAGER_VERSION, true);
+      wp_enqueue_script('pn-cm-chartjs', PN_CUSTOMERS_MANAGER_URL . 'assets/js/vendor/chart.min.js', [], PN_CUSTOMERS_MANAGER_VERSION, true);
+      wp_enqueue_script('pn-customers-manager-budget-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-budget-admin.js', ['jquery', 'wph-trumbowyg', 'pn-cm-chartjs'], PN_CUSTOMERS_MANAGER_VERSION, true);
       wp_localize_script('pn-customers-manager-budget-admin', 'pnCmBudgetAdmin', [
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('pn-customers-manager-nonce'),
@@ -1554,8 +1567,9 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
     }
 
     ob_start();
+    echo wp_kses_post( self::render_admin_nav( 'budgets' ) );
     ?>
-      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_budget-list pn-customers-manager-mb-50 pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mb-100">
+      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_budget-list pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mb-100 pn-customers-manager-pb-100">
         <div class="pn-customers-manager-cpt-search-container pn-customers-manager-mb-20 pn-customers-manager-text-align-right">
           <div class="pn-customers-manager-cpt-search-wrapper">
             <input type="text" class="pn-customers-manager-cpt-search-input pn-customers-manager-input pn-customers-manager-display-none" placeholder="<?php esc_attr_e('Filter...', 'pn-customers-manager'); ?>" />
@@ -1565,7 +1579,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
               <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-font-size-30 pn-customers-manager-vertical-align-middle">cloud_download</i>
             </a>
             <a href="#" id="pn-cm-budget-csv-import-btn" class="pn-customers-manager-text-decoration-none pn-customers-manager-tooltip" title="<?php esc_attr_e('Import CSV', 'pn-customers-manager'); ?>">
-              <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-font-size-30 pn-customers-manager-vertical-align-middle">upload</i>
+              <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-font-size-30 pn-customers-manager-vertical-align-middle">cloud_upload</i>
             </a>
 
             <a href="#" class="pn-customers-manager-popup-open-ajax pn-customers-manager-text-decoration-none" data-pn-customers-manager-popup-id="pn-customers-manager-popup-pn_cm_budget-add" data-pn-customers-manager-ajax-type="pn_cm_budget_new">
@@ -1577,6 +1591,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         <div class="pn-customers-manager-cpt-list-wrapper pn-customers-manager-pn_cm_budget-list-wrapper">
           <?php echo wp_kses(self::pn_cm_budget_list(), PN_CUSTOMERS_MANAGER_KSES); ?>
         </div>
+        <?php echo wp_kses( self::render_global_financial_summary( 'budget', array( 'accepted', 'paid' ) ), PN_CUSTOMERS_MANAGER_KSES ); ?>
       </div>
     <?php PN_CUSTOMERS_MANAGER_Budget_Csv::pn_customers_manager_budget_csv_render_ui(); ?>
     <?php
@@ -1965,7 +1980,11 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         <h4 class="pn-customers-manager-text-align-center pn-customers-manager-mb-30"><?php echo esc_html($budget_number); ?> &mdash; <?php echo esc_html(get_the_title($budget_id)); ?></h4>
 
         <form action="" method="post" id="pn-customers-manager-budget-form-edit" class="pn-customers-manager-form">
-          <?php foreach (array_merge(self::pn_cm_budget_get_fields(), self::pn_cm_budget_get_fields_meta($budget_id)) as $pn_customers_manager_field): ?>
+          <?php
+            $skip_in_edit_popup = ['pn_cm_budget_items_block', 'pn_cm_budget_totals_block', 'pn_cm_budget_quick_link_block'];
+            foreach (array_merge(self::pn_cm_budget_get_fields(), self::pn_cm_budget_get_fields_meta($budget_id)) as $pn_customers_manager_field):
+              if (in_array($pn_customers_manager_field['id'], $skip_in_edit_popup, true)) { continue; }
+          ?>
             <?php echo wp_kses(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_field, 'post', $budget_id), PN_CUSTOMERS_MANAGER_KSES); ?>
           <?php endforeach ?>
 
@@ -2285,6 +2304,720 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Budget {
         <a href="#" class="pn-customers-manager-btn pn-cm-budget-popup-add-save"><?php esc_html_e('Add item', 'pn-customers-manager'); ?></a>
       </div>
     </div>
+    <?php
+    return ob_get_clean();
+  }
+
+  // ───────────────────────────────────────────────
+  // Payments helpers (shared by budget & invoice)
+  // ───────────────────────────────────────────────
+
+  /**
+   * Get payments array from post meta.
+   *
+   * @param int    $post_id
+   * @param string $type 'budget' or 'invoice'
+   * @return array
+   */
+  public static function get_payments( $post_id, $type = 'budget' ) {
+    $meta_key = 'pn_cm_' . $type . '_payments';
+    $payments = get_post_meta( $post_id, $meta_key, true );
+    return is_array( $payments ) ? $payments : array();
+  }
+
+  /**
+   * Get category labels for payment entries.
+   *
+   * @return array
+   */
+  public static function get_payment_category_labels() {
+    return array(
+      'client_payment' => __( 'Client payment', 'pn-customers-manager' ),
+      'worker'         => __( 'Worker', 'pn-customers-manager' ),
+      'material'       => __( 'Material', 'pn-customers-manager' ),
+      'supply'         => __( 'Supply', 'pn-customers-manager' ),
+      'other'          => __( 'Other', 'pn-customers-manager' ),
+    );
+  }
+
+  /**
+   * Add a payment entry.
+   *
+   * @param int    $post_id
+   * @param array  $data { date, amount, concept, type, category, recipient, method, notes, visible }
+   * @param string $type 'budget' or 'invoice'
+   * @return array The new payment entry.
+   */
+  public static function add_payment( $post_id, $data, $type = 'budget' ) {
+    $meta_key    = 'pn_cm_' . $type . '_payments';
+    $counter_key = 'pn_cm_' . $type . '_next_payment_id';
+
+    $payments = self::get_payments( $post_id, $type );
+    $next_id  = intval( get_post_meta( $post_id, $counter_key, true ) );
+    if ( $next_id < 1 ) {
+      $next_id = 1;
+    }
+
+    $payment = array(
+      'id'        => $next_id,
+      'date'      => sanitize_text_field( $data['date'] ),
+      'amount'    => floatval( $data['amount'] ),
+      'concept'   => isset( $data['concept'] ) ? sanitize_text_field( $data['concept'] ) : '',
+      'type'      => isset( $data['type'] ) && in_array( $data['type'], array( 'income', 'expense' ), true ) ? $data['type'] : 'income',
+      'category'  => isset( $data['category'] ) ? sanitize_text_field( $data['category'] ) : 'client_payment',
+      'recipient' => isset( $data['recipient'] ) ? sanitize_text_field( $data['recipient'] ) : '',
+      'method'    => sanitize_text_field( $data['method'] ),
+      'notes'     => sanitize_text_field( $data['notes'] ),
+      'visible'   => isset( $data['visible'] ) ? intval( $data['visible'] ) : 1,
+    );
+
+    $payments[] = $payment;
+    update_post_meta( $post_id, $meta_key, $payments );
+    update_post_meta( $post_id, $counter_key, $next_id + 1 );
+
+    return $payment;
+  }
+
+  /**
+   * Remove a payment entry by ID.
+   *
+   * @param int    $post_id
+   * @param int    $payment_id
+   * @param string $type 'budget' or 'invoice'
+   * @return bool
+   */
+  public static function remove_payment( $post_id, $payment_id, $type = 'budget' ) {
+    $meta_key = 'pn_cm_' . $type . '_payments';
+    $payments = self::get_payments( $post_id, $type );
+    $filtered = array_values( array_filter( $payments, function( $p ) use ( $payment_id ) {
+      return intval( $p['id'] ) !== intval( $payment_id );
+    } ) );
+
+    if ( count( $filtered ) === count( $payments ) ) {
+      return false;
+    }
+
+    update_post_meta( $post_id, $meta_key, $filtered );
+    return true;
+  }
+
+  /**
+   * Toggle the visible flag of a payment entry.
+   *
+   * @param int    $post_id
+   * @param int    $payment_id
+   * @param string $type 'budget' or 'invoice'
+   * @return bool
+   */
+  public static function toggle_payment_visibility( $post_id, $payment_id, $type = 'budget' ) {
+    $meta_key = 'pn_cm_' . $type . '_payments';
+    $payments = self::get_payments( $post_id, $type );
+    $found    = false;
+    foreach ( $payments as &$p ) {
+      if ( intval( $p['id'] ) === intval( $payment_id ) ) {
+        $current     = isset( $p['visible'] ) ? intval( $p['visible'] ) : 1;
+        $p['visible'] = $current ? 0 : 1;
+        $found        = true;
+        break;
+      }
+    }
+    unset( $p );
+    if ( ! $found ) {
+      return false;
+    }
+    update_post_meta( $post_id, $meta_key, $payments );
+    return true;
+  }
+
+  /**
+   * Update an existing payment entry by ID.
+   *
+   * @param int    $post_id
+   * @param int    $payment_id
+   * @param array  $data
+   * @param string $type 'budget' or 'invoice'
+   * @return bool
+   */
+  public static function update_payment( $post_id, $payment_id, $data, $type = 'budget' ) {
+    $meta_key = 'pn_cm_' . $type . '_payments';
+    $payments = self::get_payments( $post_id, $type );
+    $found    = false;
+    foreach ( $payments as &$p ) {
+      if ( intval( $p['id'] ) === intval( $payment_id ) ) {
+        $p['date']      = sanitize_text_field( $data['date'] );
+        $p['amount']    = floatval( $data['amount'] );
+        $p['concept']   = isset( $data['concept'] ) ? sanitize_text_field( $data['concept'] ) : '';
+        $p['type']      = isset( $data['type'] ) && in_array( $data['type'], array( 'income', 'expense' ), true ) ? $data['type'] : 'income';
+        $p['category']  = isset( $data['category'] ) ? sanitize_text_field( $data['category'] ) : 'client_payment';
+        $p['recipient'] = isset( $data['recipient'] ) ? sanitize_text_field( $data['recipient'] ) : '';
+        $p['method']    = sanitize_text_field( $data['method'] );
+        $p['notes']     = sanitize_text_field( $data['notes'] );
+        $p['visible']   = isset( $data['visible'] ) ? intval( $data['visible'] ) : 0;
+        $found          = true;
+        break;
+      }
+    }
+    unset( $p );
+    if ( ! $found ) {
+      return false;
+    }
+    update_post_meta( $post_id, $meta_key, $payments );
+    return true;
+  }
+
+  /**
+   * Check if the budget should be marked as paid (or reverted from paid).
+   *
+   * Sums all income-type payments. If total >= budget total and budget total > 0,
+   * set status to 'paid'. If it drops below and status was 'paid', revert to 'accepted'.
+   *
+   * @param int    $post_id
+   * @param string $type 'budget' or 'invoice'
+   */
+  public static function maybe_mark_as_paid( $post_id, $type = 'budget' ) {
+    $payments    = self::get_payments( $post_id, $type );
+    $total_key   = 'pn_cm_' . $type . '_total';
+    $status_key  = 'pn_cm_' . $type . '_status';
+    $doc_total   = floatval( get_post_meta( $post_id, $total_key, true ) );
+    $status      = get_post_meta( $post_id, $status_key, true );
+
+    $income_total = 0;
+    foreach ( $payments as $p ) {
+      $p_type = isset( $p['type'] ) ? $p['type'] : 'income';
+      if ( 'income' === $p_type ) {
+        $income_total += floatval( $p['amount'] );
+      }
+    }
+
+    if ( $doc_total > 0 && $income_total >= $doc_total && 'paid' !== $status ) {
+      update_post_meta( $post_id, $status_key, 'paid' );
+    } elseif ( 'paid' === $status && ( $doc_total <= 0 || $income_total < $doc_total ) ) {
+      update_post_meta( $post_id, $status_key, 'accepted' );
+    }
+  }
+
+  /**
+   * Sync payments from source entity to its linked counterpart.
+   *
+   * @param int    $source_id
+   * @param string $source_type 'budget' or 'invoice'
+   */
+  public static function sync_payments( $source_id, $source_type ) {
+    $source_meta    = 'pn_cm_' . $source_type . '_payments';
+    $source_counter = 'pn_cm_' . $source_type . '_next_payment_id';
+    $payments       = get_post_meta( $source_id, $source_meta, true );
+    if ( ! is_array( $payments ) ) {
+      $payments = array();
+    }
+    $next_id = intval( get_post_meta( $source_id, $source_counter, true ) );
+
+    // Only sync income payments to the linked entity.
+    $income_payments = array_values( array_filter( $payments, function( $p ) {
+      $p_type = isset( $p['type'] ) ? $p['type'] : 'income';
+      return 'income' === $p_type;
+    } ) );
+
+    if ( 'invoice' === $source_type ) {
+      $linked_id = get_post_meta( $source_id, 'pn_cm_invoice_source_budget_id', true );
+      if ( ! empty( $linked_id ) && get_post_status( intval( $linked_id ) ) !== false ) {
+        update_post_meta( intval( $linked_id ), 'pn_cm_budget_payments', $income_payments );
+        update_post_meta( intval( $linked_id ), 'pn_cm_budget_next_payment_id', $next_id );
+      }
+    } else {
+      $linked_ids = get_post_meta( $source_id, 'pn_cm_budget_invoice_ids', true );
+      if ( is_array( $linked_ids ) && ! empty( $linked_ids ) ) {
+        $first_invoice = intval( $linked_ids[0] );
+        if ( get_post_status( $first_invoice ) !== false ) {
+          update_post_meta( $first_invoice, 'pn_cm_invoice_payments', $income_payments );
+          update_post_meta( $first_invoice, 'pn_cm_invoice_next_payment_id', $next_id );
+        }
+      }
+    }
+  }
+
+  /**
+   * Render payments HTML block for admin metabox (budget or invoice).
+   *
+   * @param int    $post_id
+   * @param string $type 'budget' or 'invoice'
+   * @return string
+   */
+  public static function render_payments_block( $post_id, $type = 'budget' ) {
+    $payments = self::get_payments( $post_id, $type );
+    $total_key = 'pn_cm_' . $type . '_total';
+    $doc_total = floatval( get_post_meta( $post_id, $total_key, true ) );
+
+    $total_income  = 0;
+    $total_expense = 0;
+    $expense_by_category = array();
+    foreach ( $payments as $p ) {
+      $p_type = isset( $p['type'] ) ? $p['type'] : 'income';
+      if ( 'expense' === $p_type ) {
+        $total_expense += floatval( $p['amount'] );
+        $p_cat = isset( $p['category'] ) ? $p['category'] : 'other';
+        if ( ! isset( $expense_by_category[ $p_cat ] ) ) {
+          $expense_by_category[ $p_cat ] = 0;
+        }
+        $expense_by_category[ $p_cat ] += floatval( $p['amount'] );
+      } else {
+        $total_income += floatval( $p['amount'] );
+      }
+    }
+    $remaining = $doc_total - $total_income;
+
+    $methods = array(
+      'cash'          => __( 'Cash', 'pn-customers-manager' ),
+      'bank_transfer' => __( 'Bank transfer', 'pn-customers-manager' ),
+      'card'          => __( 'Card', 'pn-customers-manager' ),
+      'paypal'        => __( 'PayPal', 'pn-customers-manager' ),
+      'bizum'         => __( 'Bizum', 'pn-customers-manager' ),
+      'other'         => __( 'Other', 'pn-customers-manager' ),
+    );
+
+    $categories = self::get_payment_category_labels();
+
+    $type_labels = array(
+      'income'  => __( 'Income', 'pn-customers-manager' ),
+      'expense' => __( 'Expense', 'pn-customers-manager' ),
+    );
+
+    ob_start();
+    ?>
+    <div class="pn-cm-payments-container pn-cm-payments-collapsed" data-type="<?php echo esc_attr( $type ); ?>" data-post-id="<?php echo esc_attr( $post_id ); ?>"
+         data-total-income="<?php echo esc_attr( $total_income ); ?>"
+         data-total-expense="<?php echo esc_attr( $total_expense ); ?>"
+         data-remaining="<?php echo esc_attr( $remaining ); ?>"
+         data-net-result="<?php echo esc_attr( $total_income - $total_expense ); ?>"
+         data-expense-categories="<?php echo esc_attr( wp_json_encode( $expense_by_category ) ); ?>"
+         data-category-labels="<?php echo esc_attr( wp_json_encode( $categories ) ); ?>">
+      <div class="pn-cm-payments-header">
+        <h3><i class="material-icons-outlined pn-cm-payments-toggle">expand_more</i><?php esc_html_e( 'Payments', 'pn-customers-manager' ); ?></h3>
+      </div>
+      <div class="pn-cm-payments-body">
+      <?php if ( ! empty( $payments ) ) : ?>
+        <table class="pn-cm-payments-table">
+          <thead>
+            <tr>
+              <th><?php esc_html_e( 'Date', 'pn-customers-manager' ); ?></th>
+              <th><?php esc_html_e( 'Concept', 'pn-customers-manager' ); ?></th>
+              <th><?php esc_html_e( 'Type', 'pn-customers-manager' ); ?></th>
+              <th><?php esc_html_e( 'Category', 'pn-customers-manager' ); ?></th>
+              <th><?php esc_html_e( 'Recipient', 'pn-customers-manager' ); ?></th>
+              <th><?php esc_html_e( 'Amount', 'pn-customers-manager' ); ?></th>
+              <th><?php esc_html_e( 'Method', 'pn-customers-manager' ); ?></th>
+              <th><?php esc_html_e( 'Notes', 'pn-customers-manager' ); ?></th>
+              <th title="<?php esc_attr_e( 'Visible to client', 'pn-customers-manager' ); ?>"><i class="material-icons-outlined pn-cm-payment-th-icon">visibility</i></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ( $payments as $payment ) :
+              $p_type    = isset( $payment['type'] ) ? $payment['type'] : 'income';
+              $p_cat     = isset( $payment['category'] ) ? $payment['category'] : 'client_payment';
+              $p_visible = isset( $payment['visible'] ) ? intval( $payment['visible'] ) : 1;
+            ?>
+              <tr class="pn-cm-payment-row-<?php echo esc_attr( $p_type ); ?>"
+                  data-payment-id="<?php echo esc_attr( $payment['id'] ); ?>"
+                  data-date="<?php echo esc_attr( $payment['date'] ); ?>"
+                  data-concept="<?php echo esc_attr( isset( $payment['concept'] ) ? $payment['concept'] : '' ); ?>"
+                  data-type="<?php echo esc_attr( $p_type ); ?>"
+                  data-category="<?php echo esc_attr( $p_cat ); ?>"
+                  data-recipient="<?php echo esc_attr( isset( $payment['recipient'] ) ? $payment['recipient'] : '' ); ?>"
+                  data-amount="<?php echo esc_attr( floatval( $payment['amount'] ) ); ?>"
+                  data-method="<?php echo esc_attr( $payment['method'] ); ?>"
+                  data-notes="<?php echo esc_attr( $payment['notes'] ); ?>"
+                  data-visible="<?php echo esc_attr( $p_visible ); ?>">
+                <td data-label="<?php esc_attr_e( 'Date', 'pn-customers-manager' ); ?>"><?php echo esc_html( $payment['date'] ); ?></td>
+                <td data-label="<?php esc_attr_e( 'Concept', 'pn-customers-manager' ); ?>"><?php echo esc_html( isset( $payment['concept'] ) ? $payment['concept'] : '' ); ?></td>
+                <td data-label="<?php esc_attr_e( 'Type', 'pn-customers-manager' ); ?>"><span class="pn-cm-payment-type-badge pn-cm-payment-type-<?php echo esc_attr( $p_type ); ?>"><?php echo esc_html( isset( $type_labels[ $p_type ] ) ? $type_labels[ $p_type ] : $p_type ); ?></span></td>
+                <td data-label="<?php esc_attr_e( 'Category', 'pn-customers-manager' ); ?>"><?php echo esc_html( isset( $categories[ $p_cat ] ) ? $categories[ $p_cat ] : $p_cat ); ?></td>
+                <td data-label="<?php esc_attr_e( 'Recipient', 'pn-customers-manager' ); ?>"><?php echo esc_html( isset( $payment['recipient'] ) ? $payment['recipient'] : '' ); ?></td>
+                <td data-label="<?php esc_attr_e( 'Amount', 'pn-customers-manager' ); ?>"><?php echo esc_html( self::format_currency( floatval( $payment['amount'] ) ) ); ?></td>
+                <td data-label="<?php esc_attr_e( 'Method', 'pn-customers-manager' ); ?>"><?php echo esc_html( isset( $methods[ $payment['method'] ] ) ? $methods[ $payment['method'] ] : $payment['method'] ); ?></td>
+                <td data-label="<?php esc_attr_e( 'Notes', 'pn-customers-manager' ); ?>"><?php echo esc_html( $payment['notes'] ); ?></td>
+                <td data-label="<?php esc_attr_e( 'Visible', 'pn-customers-manager' ); ?>" class="pn-cm-payment-td-actions">
+                  <a href="#" class="pn-cm-payment-toggle-visibility pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e( 'Toggle client visibility', 'pn-customers-manager' ); ?>" data-payment-id="<?php echo esc_attr( $payment['id'] ); ?>">
+                    <i class="material-icons-outlined <?php echo $p_visible ? 'pn-cm-payment-state-visible' : 'pn-cm-payment-state-hidden'; ?>"><?php echo $p_visible ? 'visibility' : 'visibility_off'; ?></i>
+                  </a>
+                </td>
+                <td class="pn-cm-payment-td-actions">
+                  <a href="#" class="pn-cm-payment-edit pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e( 'Edit', 'pn-customers-manager' ); ?>" data-payment-id="<?php echo esc_attr( $payment['id'] ); ?>">
+                    <i class="material-icons-outlined">edit</i>
+                  </a>
+                </td>
+                <td class="pn-cm-payment-td-actions">
+                  <a href="#" class="pn-cm-payment-remove pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e( 'Delete', 'pn-customers-manager' ); ?>" data-payment-id="<?php echo esc_attr( $payment['id'] ); ?>">
+                    <i class="material-icons-outlined">delete</i>
+                  </a>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      <?php else : ?>
+        <p class="pn-cm-payments-empty"><?php esc_html_e( 'No payments recorded.', 'pn-customers-manager' ); ?></p>
+      <?php endif; ?>
+
+      <?php $net_result = $total_income - $total_expense; ?>
+      <div class="pn-cm-payments-summary">
+        <span><?php esc_html_e( 'Total income', 'pn-customers-manager' ); ?>: <strong class="pn-cm-payment-summary-income"><?php echo esc_html( self::format_currency( $total_income ) ); ?></strong></span>
+        <span><?php esc_html_e( 'Total expenses', 'pn-customers-manager' ); ?>: <strong class="pn-cm-payment-summary-expense"><?php echo esc_html( self::format_currency( $total_expense ) ); ?></strong></span>
+        <span><?php esc_html_e( 'Result', 'pn-customers-manager' ); ?>: <strong class="<?php echo $net_result >= 0 ? 'pn-cm-payment-summary-income' : 'pn-cm-payment-summary-expense'; ?>"><?php echo esc_html( self::format_currency( $net_result ) ); ?></strong></span>
+        <span><?php esc_html_e( 'Remaining', 'pn-customers-manager' ); ?>: <strong><?php echo esc_html( self::format_currency( $remaining ) ); ?></strong></span>
+      </div>
+
+      <div class="pn-cm-payments-charts">
+        <div class="pn-cm-payments-chart-box">
+          <canvas class="pn-cm-payments-chart-balance" width="180" height="180"></canvas>
+        </div>
+        <div class="pn-cm-payments-chart-box">
+          <canvas class="pn-cm-payments-chart-categories" width="180" height="180"></canvas>
+        </div>
+      </div>
+
+      <div class="pn-cm-payments-add-form">
+        <div class="pn-cm-payments-add-row">
+          <input type="date" class="pn-cm-payment-date" value="<?php echo esc_attr( gmdate( 'Y-m-d' ) ); ?>" />
+          <input type="text" class="pn-cm-payment-concept" placeholder="<?php esc_attr_e( 'Concept', 'pn-customers-manager' ); ?>" />
+          <select class="pn-cm-payment-type">
+            <option value="income"><?php esc_html_e( 'Income', 'pn-customers-manager' ); ?></option>
+            <option value="expense"><?php esc_html_e( 'Expense', 'pn-customers-manager' ); ?></option>
+          </select>
+          <select class="pn-cm-payment-category">
+            <?php foreach ( $categories as $key => $label ) : ?>
+              <option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
+            <?php endforeach; ?>
+          </select>
+          <input type="text" class="pn-cm-payment-recipient" placeholder="<?php esc_attr_e( 'Recipient', 'pn-customers-manager' ); ?>" />
+          <input type="number" class="pn-cm-payment-amount" step="0.01" min="0" placeholder="<?php esc_attr_e( 'Amount', 'pn-customers-manager' ); ?>" />
+          <select class="pn-cm-payment-method">
+            <?php foreach ( $methods as $key => $label ) : ?>
+              <option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
+            <?php endforeach; ?>
+          </select>
+          <input type="text" class="pn-cm-payment-notes" placeholder="<?php esc_attr_e( 'Notes', 'pn-customers-manager' ); ?>" />
+          <label class="pn-cm-payment-visible-label">
+            <label class="pn-cm-payment-switch"><input type="checkbox" class="pn-cm-payment-visible" /><span class="pn-cm-payment-switch-slider"></span></label>
+            <?php esc_html_e( 'Visible', 'pn-customers-manager' ); ?>
+          </label>
+          <button type="button" class="pn-cm-payment-add-btn pn-customers-manager-btn pn-customers-manager-btn-mini"><?php esc_html_e( 'Add', 'pn-customers-manager' ); ?></button>
+        </div>
+      </div>
+      </div><!-- .pn-cm-payments-body -->
+    </div>
+    <?php
+    return ob_get_clean();
+  }
+
+  /**
+   * Render a global financial summary block aggregating data from multiple posts.
+   *
+   * Shows total income, expenses, net result, remaining, and two doughnut charts
+   * (balance + expense categories), using the same schema as individual payments blocks.
+   *
+   * @param string $type    'budget' or 'invoice'.
+   * @param array  $statuses Post meta statuses to include (e.g. ['accepted','paid']).
+   * @return string HTML output.
+   */
+  public static function render_global_financial_summary( $type = 'budget', $statuses = array( 'accepted', 'paid' ) ) {
+    $post_type  = 'pn_cm_' . $type;
+    $status_key = 'pn_cm_' . $type . '_status';
+    $total_key  = 'pn_cm_' . $type . '_total';
+
+    $posts = get_posts( array(
+      'post_type'   => $post_type,
+      'post_status' => 'any',
+      'numberposts' => -1,
+      'fields'      => 'ids',
+    ) );
+
+    $grand_total_income  = 0;
+    $grand_total_expense = 0;
+    $grand_doc_total     = 0;
+    $expense_by_category = array();
+    $categories          = self::get_payment_category_labels();
+    $post_count          = 0;
+    $all_payments        = array();
+
+    foreach ( $posts as $pid ) {
+      $st = get_post_meta( $pid, $status_key, true );
+      if ( ! in_array( $st, $statuses, true ) ) {
+        continue;
+      }
+      $post_count++;
+
+      $doc_total      = floatval( get_post_meta( $pid, $total_key, true ) );
+      $grand_doc_total += $doc_total;
+
+      $payments = self::get_payments( $pid, $type );
+      foreach ( $payments as $p ) {
+        $p_type = isset( $p['type'] ) ? $p['type'] : 'income';
+        if ( 'expense' === $p_type ) {
+          $grand_total_expense += floatval( $p['amount'] );
+          $p_cat = isset( $p['category'] ) ? $p['category'] : 'other';
+          if ( ! isset( $expense_by_category[ $p_cat ] ) ) {
+            $expense_by_category[ $p_cat ] = 0;
+          }
+          $expense_by_category[ $p_cat ] += floatval( $p['amount'] );
+        } else {
+          $grand_total_income += floatval( $p['amount'] );
+        }
+
+        // Collect for the global payments listing.
+        $token = get_post_meta( $pid, 'pn_cm_' . $type . '_token', true );
+        $p['budget_id']    = $pid;
+        $p['budget_title'] = get_the_title( $pid );
+        $p['budget_url']   = ! empty( $token ) ? self::pn_cm_budget_get_public_url( $token ) : get_permalink( $pid );
+        $all_payments[]    = $p;
+      }
+    }
+
+    // Sort all payments by date descending.
+    usort( $all_payments, function ( $a, $b ) {
+      return strcmp( $b['date'], $a['date'] );
+    } );
+
+    // For invoices, also add the invoice totals as "income" for income-type and "expense" for expense-type.
+    if ( 'invoice' === $type ) {
+      $grand_invoiced_income  = 0;
+      $grand_invoiced_expense = 0;
+      $grand_pending          = 0;
+
+      foreach ( $posts as $pid ) {
+        $st = get_post_meta( $pid, $status_key, true );
+        if ( ! in_array( $st, $statuses, true ) ) {
+          continue;
+        }
+        $inv_type  = get_post_meta( $pid, 'pn_cm_invoice_type', true );
+        $inv_total = floatval( get_post_meta( $pid, $total_key, true ) );
+
+        if ( 'expense' === $inv_type ) {
+          $grand_invoiced_expense += $inv_total;
+        } else {
+          $grand_invoiced_income += $inv_total;
+          // Pending = invoiced amount - payments received.
+          $payments_income = 0;
+          $payments = self::get_payments( $pid, $type );
+          foreach ( $payments as $p ) {
+            if ( ( isset( $p['type'] ) ? $p['type'] : 'income' ) === 'income' ) {
+              $payments_income += floatval( $p['amount'] );
+            }
+          }
+          $grand_pending += max( 0, $inv_total - $payments_income );
+        }
+      }
+    }
+
+    $remaining  = $grand_doc_total - $grand_total_income;
+    $net_result = $grand_total_income - $grand_total_expense;
+
+    if ( $post_count === 0 ) {
+      return '';
+    }
+
+    ob_start();
+    ?>
+    <div class="pn-cm-payments-container pn-cm-global-summary pn-cm-payments-collapsed"
+         data-total-income="<?php echo esc_attr( $grand_total_income ); ?>"
+         data-total-expense="<?php echo esc_attr( $grand_total_expense ); ?>"
+         data-remaining="<?php echo esc_attr( $remaining ); ?>"
+         data-net-result="<?php echo esc_attr( $net_result ); ?>"
+         data-expense-categories="<?php echo esc_attr( wp_json_encode( $expense_by_category ) ); ?>"
+         data-category-labels="<?php echo esc_attr( wp_json_encode( $categories ) ); ?>">
+      <div class="pn-cm-payments-header">
+        <h3>
+          <i class="material-icons-outlined pn-cm-payments-toggle">expand_more</i>
+          <?php
+            if ( 'invoice' === $type ) {
+              esc_html_e( 'Global invoice summary', 'pn-customers-manager' );
+            } else {
+              esc_html_e( 'Global budget summary', 'pn-customers-manager' );
+            }
+          ?>
+          <small style="font-weight:400;color:#999;margin-left:8px;"><?php
+            echo esc_html( sprintf(
+              /* translators: %d: number of items */
+              _n( '%d item', '%d items', $post_count, 'pn-customers-manager' ),
+              $post_count
+            ) );
+          ?></small>
+        </h3>
+      </div>
+      <div class="pn-cm-payments-body">
+        <?php if ( 'invoice' === $type ) : ?>
+          <div class="pn-cm-payments-summary pn-cm-global-summary-invoiced">
+            <span><?php esc_html_e( 'Total invoiced (income)', 'pn-customers-manager' ); ?>: <strong class="pn-cm-payment-summary-income"><?php echo esc_html( self::format_currency( $grand_invoiced_income ) ); ?></strong></span>
+            <span><?php esc_html_e( 'Total invoiced (expenses)', 'pn-customers-manager' ); ?>: <strong class="pn-cm-payment-summary-expense"><?php echo esc_html( self::format_currency( $grand_invoiced_expense ) ); ?></strong></span>
+            <span><?php esc_html_e( 'Pending collection', 'pn-customers-manager' ); ?>: <strong><?php echo esc_html( self::format_currency( $grand_pending ) ); ?></strong></span>
+          </div>
+        <?php else : ?>
+          <div class="pn-cm-payments-summary pn-cm-global-summary-doc-total">
+            <span><?php esc_html_e( 'Total budgeted', 'pn-customers-manager' ); ?>: <strong><?php echo esc_html( self::format_currency( $grand_doc_total ) ); ?></strong></span>
+            <span><?php esc_html_e( 'Remaining to collect', 'pn-customers-manager' ); ?>: <strong><?php echo esc_html( self::format_currency( max( 0, $remaining ) ) ); ?></strong></span>
+          </div>
+        <?php endif; ?>
+
+        <div class="pn-cm-payments-summary">
+          <span><?php esc_html_e( 'Total income', 'pn-customers-manager' ); ?>: <strong class="pn-cm-payment-summary-income"><?php echo esc_html( self::format_currency( $grand_total_income ) ); ?></strong></span>
+          <span><?php esc_html_e( 'Total expenses', 'pn-customers-manager' ); ?>: <strong class="pn-cm-payment-summary-expense"><?php echo esc_html( self::format_currency( $grand_total_expense ) ); ?></strong></span>
+          <span><?php esc_html_e( 'Result', 'pn-customers-manager' ); ?>: <strong class="<?php echo $net_result >= 0 ? 'pn-cm-payment-summary-income' : 'pn-cm-payment-summary-expense'; ?>"><?php echo esc_html( self::format_currency( $net_result ) ); ?></strong></span>
+        </div>
+
+        <div class="pn-cm-payments-charts">
+          <div class="pn-cm-payments-chart-box">
+            <canvas class="pn-cm-payments-chart-balance" width="180" height="180"></canvas>
+          </div>
+          <div class="pn-cm-payments-chart-box">
+            <canvas class="pn-cm-payments-chart-categories" width="180" height="180"></canvas>
+          </div>
+        </div>
+
+        <?php if ( ! empty( $all_payments ) ) :
+          $gl_payment_methods = array(
+            'cash'          => __( 'Cash', 'pn-customers-manager' ),
+            'bank_transfer' => __( 'Bank transfer', 'pn-customers-manager' ),
+            'card'          => __( 'Card', 'pn-customers-manager' ),
+            'paypal'        => __( 'PayPal', 'pn-customers-manager' ),
+            'bizum'         => __( 'Bizum', 'pn-customers-manager' ),
+            'other'         => __( 'Other', 'pn-customers-manager' ),
+          );
+          $gl_payment_types = array(
+            'income'  => __( 'Income', 'pn-customers-manager' ),
+            'expense' => __( 'Expense', 'pn-customers-manager' ),
+          );
+        ?>
+          <div class="pn-cm-global-payments-list pn-customers-manager-toggle-wrapper">
+            <a href="#" class="pn-customers-manager-toggle pn-customers-manager-width-100-percent pn-customers-manager-text-decoration-none">
+              <div class="pn-customers-manager-display-table pn-customers-manager-width-100-percent">
+                <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-90-percent">
+                  <label class="pn-customers-manager-cursor-pointer">
+                    <?php esc_html_e( 'Payment details', 'pn-customers-manager' ); ?>
+                    <small style="font-weight:400;color:#999;margin-left:8px;"><?php echo esc_html( count( $all_payments ) ); ?></small>
+                  </label>
+                </div>
+                <div class="pn-customers-manager-display-inline-table pn-customers-manager-width-10-percent pn-customers-manager-text-align-right">
+                  <i class="material-icons-outlined pn-customers-manager-cursor-pointer pn-customers-manager-color-main-0">add</i>
+                </div>
+              </div>
+            </a>
+            <div class="pn-customers-manager-toggle-content pn-customers-manager-display-none-soft">
+              <table class="pn-cm-payments-table">
+                <thead>
+                  <tr>
+                    <th><?php esc_html_e( 'Date', 'pn-customers-manager' ); ?></th>
+                    <th><?php echo esc_html( 'budget' === $type ? __( 'Budget', 'pn-customers-manager' ) : __( 'Invoice', 'pn-customers-manager' ) ); ?></th>
+                    <th><?php esc_html_e( 'Concept', 'pn-customers-manager' ); ?></th>
+                    <th><?php esc_html_e( 'Type', 'pn-customers-manager' ); ?></th>
+                    <th><?php esc_html_e( 'Category', 'pn-customers-manager' ); ?></th>
+                    <th><?php esc_html_e( 'Amount', 'pn-customers-manager' ); ?></th>
+                    <th><?php esc_html_e( 'Method', 'pn-customers-manager' ); ?></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ( $all_payments as $gp ) :
+                    $gp_type = isset( $gp['type'] ) ? $gp['type'] : 'income';
+                    $gp_cat  = isset( $gp['category'] ) ? $gp['category'] : '';
+                  ?>
+                    <tr class="pn-cm-payment-row-<?php echo esc_attr( $gp_type ); ?>">
+                      <td data-label="<?php esc_attr_e( 'Date', 'pn-customers-manager' ); ?>"><?php echo esc_html( $gp['date'] ); ?></td>
+                      <td data-label="<?php echo esc_attr( 'budget' === $type ? __( 'Budget', 'pn-customers-manager' ) : __( 'Invoice', 'pn-customers-manager' ) ); ?>">
+                        <a href="<?php echo esc_url( $gp['budget_url'] ); ?>" target="_blank" class="pn-cm-global-payment-budget-link"><?php echo esc_html( $gp['budget_title'] ); ?></a>
+                      </td>
+                      <td data-label="<?php esc_attr_e( 'Concept', 'pn-customers-manager' ); ?>"><?php echo esc_html( isset( $gp['concept'] ) ? $gp['concept'] : '' ); ?></td>
+                      <td data-label="<?php esc_attr_e( 'Type', 'pn-customers-manager' ); ?>">
+                        <span class="pn-cm-payment-type-badge pn-cm-payment-type-<?php echo esc_attr( $gp_type ); ?>"><?php echo esc_html( isset( $gl_payment_types[ $gp_type ] ) ? $gl_payment_types[ $gp_type ] : $gp_type ); ?></span>
+                      </td>
+                      <td data-label="<?php esc_attr_e( 'Category', 'pn-customers-manager' ); ?>"><?php echo esc_html( isset( $categories[ $gp_cat ] ) ? $categories[ $gp_cat ] : $gp_cat ); ?></td>
+                      <td data-label="<?php esc_attr_e( 'Amount', 'pn-customers-manager' ); ?>"><?php echo esc_html( self::format_currency( floatval( $gp['amount'] ) ) ); ?></td>
+                      <td data-label="<?php esc_attr_e( 'Method', 'pn-customers-manager' ); ?>"><?php echo esc_html( isset( $gl_payment_methods[ $gp['method'] ] ) ? $gl_payment_methods[ $gp['method'] ] : $gp['method'] ); ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+    <?php
+    return ob_get_clean();
+  }
+
+  /**
+   * Render the admin navigation bar for budget/invoice pages.
+   *
+   * Shows icon links to budgets list, invoices list, and WP admin settings.
+   * Only renders if the current user can manage options.
+   *
+   * @param string $active 'budgets', 'invoices', or '' to highlight the current section.
+   * @return string HTML output.
+   */
+  public static function render_admin_nav( $active = '', $post_id = 0 ) {
+    if ( ! current_user_can( 'manage_options' ) ) {
+      return '';
+    }
+
+    $budget_page_id  = get_option( 'pn_customers_manager_page_budget_list', 0 );
+    $invoice_page_id = get_option( 'pn_customers_manager_page_invoice_list', 0 );
+    $budget_url      = ! empty( $budget_page_id ) ? get_permalink( $budget_page_id ) : '';
+    $invoice_url     = ! empty( $invoice_page_id ) ? get_permalink( $invoice_page_id ) : '';
+    $settings_url    = admin_url( 'admin.php?page=pn_customers_manager_options' );
+    $budget_settings_url  = $settings_url . '&section=pn_customers_manager_accounting_parent_section_start.pn_customers_manager_budget_subsection_start';
+    $invoice_settings_url = $settings_url . '&section=pn_customers_manager_accounting_parent_section_start.pn_customers_manager_invoice_subsection_start';
+
+    // Build edit URL when viewing a single budget or invoice.
+    $edit_url = '';
+    if ( ! empty( $post_id ) ) {
+      $edit_url = get_edit_post_link( $post_id, 'raw' );
+    }
+
+    // Only render if at least one page is configured.
+    if ( empty( $budget_url ) && empty( $invoice_url ) ) {
+      return '';
+    }
+
+    ob_start();
+    ?>
+    <nav class="pn-cm-admin-nav" aria-label="<?php esc_attr_e( 'Admin navigation', 'pn-customers-manager' ); ?>">
+      <?php if ( ! empty( $edit_url ) ) : ?>
+        <a href="<?php echo esc_url( $edit_url ); ?>" class="pn-cm-admin-nav-item" title="<?php echo 'budgets' === $active ? esc_attr__( 'Edit budget', 'pn-customers-manager' ) : esc_attr__( 'Edit invoice', 'pn-customers-manager' ); ?>" target="_blank">
+          <i class="material-icons-outlined">edit</i>
+          <span class="pn-cm-admin-nav-label"><?php echo 'budgets' === $active ? esc_html__( 'Edit budget', 'pn-customers-manager' ) : esc_html__( 'Edit invoice', 'pn-customers-manager' ); ?></span>
+        </a>
+      <?php endif; ?>
+      <?php if ( ! empty( $budget_url ) ) : ?>
+        <a href="<?php echo esc_url( $budget_url ); ?>" class="pn-cm-admin-nav-item<?php echo 'budgets' === $active ? ' pn-cm-admin-nav-active' : ''; ?>" title="<?php esc_attr_e( 'Budgets', 'pn-customers-manager' ); ?>">
+          <i class="material-icons-outlined">request_quote</i>
+          <span class="pn-cm-admin-nav-label"><?php esc_html_e( 'Budgets', 'pn-customers-manager' ); ?></span>
+        </a>
+      <?php endif; ?>
+      <?php if ( ! empty( $invoice_url ) ) : ?>
+        <a href="<?php echo esc_url( $invoice_url ); ?>" class="pn-cm-admin-nav-item<?php echo 'invoices' === $active ? ' pn-cm-admin-nav-active' : ''; ?>" title="<?php esc_attr_e( 'Invoices', 'pn-customers-manager' ); ?>">
+          <i class="material-icons-outlined">receipt_long</i>
+          <span class="pn-cm-admin-nav-label"><?php esc_html_e( 'Invoices', 'pn-customers-manager' ); ?></span>
+        </a>
+      <?php endif; ?>
+      <a href="<?php echo esc_url( $budget_settings_url ); ?>" class="pn-cm-admin-nav-item" title="<?php esc_attr_e( 'Budget settings', 'pn-customers-manager' ); ?>" target="_blank">
+        <i class="material-icons-outlined">tune</i>
+        <span class="pn-cm-admin-nav-label"><?php esc_html_e( 'Budget settings', 'pn-customers-manager' ); ?></span>
+      </a>
+      <a href="<?php echo esc_url( $invoice_settings_url ); ?>" class="pn-cm-admin-nav-item" title="<?php esc_attr_e( 'Invoice settings', 'pn-customers-manager' ); ?>" target="_blank">
+        <i class="material-icons-outlined">tune</i>
+        <span class="pn-cm-admin-nav-label"><?php esc_html_e( 'Invoice settings', 'pn-customers-manager' ); ?></span>
+      </a>
+      <?php
+        $expense_settings_url = $settings_url . '&section=pn_customers_manager_accounting_parent_section_start.pn_customers_manager_expense_subsection_start';
+      ?>
+      <a href="<?php echo esc_url( $expense_settings_url ); ?>" class="pn-cm-admin-nav-item" title="<?php esc_attr_e( 'Expense settings', 'pn-customers-manager' ); ?>" target="_blank">
+        <i class="material-icons-outlined">tune</i>
+        <span class="pn-cm-admin-nav-label"><?php esc_html_e( 'Expense settings', 'pn-customers-manager' ); ?></span>
+      </a>
+      <a href="<?php echo esc_url( $settings_url ); ?>" class="pn-cm-admin-nav-item" title="<?php esc_attr_e( 'All settings', 'pn-customers-manager' ); ?>" target="_blank">
+        <i class="material-icons-outlined">settings</i>
+        <span class="pn-cm-admin-nav-label"><?php esc_html_e( 'Settings', 'pn-customers-manager' ); ?></span>
+      </a>
+    </nav>
     <?php
     return ob_get_clean();
   }

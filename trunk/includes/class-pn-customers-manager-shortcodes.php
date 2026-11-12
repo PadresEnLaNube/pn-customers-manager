@@ -120,8 +120,8 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
     }
 
     // Link attributes
-    $target = !empty($atts['target_blank']) && $atts['target_blank'] !== '0' ? ' target="_blank"' : '';
-    $rel    = !empty($atts['nofollow']) && $atts['nofollow'] !== '0' ? ' rel="nofollow"' : '';
+    $target_blank = !empty($atts['target_blank']) && $atts['target_blank'] !== '0';
+    $nofollow     = !empty($atts['nofollow']) && $atts['nofollow'] !== '0';
 
     // Alignment
     $align = in_array($atts['align'], ['left', 'center', 'right'], true) ? $atts['align'] : 'center';
@@ -129,7 +129,7 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
     ob_start();
     ?>
     <div class="pn-cm-btn-wrap" style="text-align:<?php echo esc_attr($align); ?>">
-      <a href="<?php echo esc_url($atts['url']); ?>" class="pn-cm-btn <?php echo esc_attr($style_class . ' ' . $size_class); ?>"<?php echo $target . $rel; ?><?php echo $inline ? ' style="' . esc_attr($inline) . '"' : ''; ?>>
+      <a href="<?php echo esc_url($atts['url']); ?>" class="pn-cm-btn <?php echo esc_attr($style_class . ' ' . $size_class); ?>"<?php if ($target_blank) { echo ' target="_blank"'; } ?><?php if ($nofollow) { echo ' rel="nofollow"'; } ?><?php echo $inline ? ' style="' . esc_attr($inline) . '"' : ''; ?>>
         <?php if (!empty($atts['use_image']) && $atts['use_image'] !== '0' && !empty($atts['image'])): ?>
           <?php echo wp_get_attachment_image(absint($atts['image']), 'medium', false, ['class' => 'pn-cm-btn-img']); ?>
         <?php else: ?>
@@ -673,7 +673,7 @@ class PN_CUSTOMERS_MANAGER_Shortcodes {
       <?php
         $popup_id = 'pn-cm-conv-popup-' . esc_attr($platform);
       ?>
-      <div id="<?php echo $popup_id; ?>" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft" data-pn-customers-manager-popup-id="<?php echo $popup_id; ?>">
+      <div id="<?php echo esc_attr($popup_id); ?>" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft" data-pn-customers-manager-popup-id="<?php echo esc_attr($popup_id); ?>">
         <div class="pn-customers-manager-popup-overlay"></div>
         <div class="pn-customers-manager-popup-content pn-cm-conv-popup-content">
           <div class="pn-cm-conv-popup-body"></div>

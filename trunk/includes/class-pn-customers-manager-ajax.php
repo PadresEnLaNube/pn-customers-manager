@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Load the plugin Ajax functions.
  *
@@ -10,6 +10,11 @@
  * @subpackage PN_CUSTOMERS_MANAGER/includes
  * @author     Padres en la Nube
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class PN_CUSTOMERS_MANAGER_Ajax {
   /**
    * Load ajax functions.
@@ -183,12 +188,14 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           break;
         case 'pn_cm_funnel_remove':
           if (!empty($pn_cm_funnel_id)) {
+            $pn_cm_funnel_title = get_the_title($pn_cm_funnel_id);
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('delete', 'funnel', $pn_cm_funnel_id, $pn_cm_funnel_title, 'Deleted Funnel #' . $pn_cm_funnel_id);
             wp_delete_post($pn_cm_funnel_id, true);
 
             $plugin_post_type_funnel = new PN_CUSTOMERS_MANAGER_Post_Type_Funnel();
             echo wp_json_encode([
-              'error_key' => '', 
-              'html' => $plugin_post_type_funnel->pn_cm_funnel_list(), 
+              'error_key' => '',
+              'html' => $plugin_post_type_funnel->pn_cm_funnel_list(),
             ]);
 
             exit;
@@ -203,6 +210,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           break;
         case 'pn_cm_funnel_node_settings':
           $node_subtype = !empty($_POST['node_subtype']) ? sanitize_text_field(wp_unslash($_POST['node_subtype'])) : '';
+          // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- output is already escaped internally via wp_kses and esc_html; contains form elements that wp_kses_post would strip
           echo PN_CUSTOMERS_MANAGER_Funnel_Builder::render_settings_popup_fields($node_subtype);
           exit;
         case 'pn_cm_funnel_builder_save':
@@ -216,6 +224,9 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           break;
         case 'pn_cm_funnel_builder_delete':
           PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_delete_funnel();
+          break;
+        case 'pn_cm_funnel_builder_rename':
+          PN_CUSTOMERS_MANAGER_Funnel_Builder::ajax_rename_funnel();
           break;
         case 'pn_cm_openai_test':
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
@@ -401,13 +412,14 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           break;
         case 'pn_cm_organization_duplicate':
           if (!empty($pn_cm_organization_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('create', 'organization', $pn_cm_organization_id, get_the_title($pn_cm_organization_id), 'Duplicated Organization #' . $pn_cm_organization_id);
             $plugin_post_type_post = new PN_CUSTOMERS_MANAGER_Functions_Post();
             $plugin_post_type_post->pn_customers_manager_duplicate_post($pn_cm_organization_id, 'publish');
-            
+
             $plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
             echo wp_json_encode([
-              'error_key' => '', 
-              'html' => $plugin_post_type_organization->pn_cm_organization_list(), 
+              'error_key' => '',
+              'html' => $plugin_post_type_organization->pn_cm_organization_list(),
             ]);
 
             exit;
@@ -450,7 +462,11 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             exit;
           }
 
-          $page_content = '[' . $shortcode_name . ']';
+          $managed = PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_get_managed_pages();
+          $block   = isset( $managed[ $page_option ]['block'] ) ? $managed[ $page_option ]['block'] : null;
+          $page_content = $block
+            ? '<!-- wp:' . $block . ' /-->'
+            : '[' . $shortcode_name . ']';
 
           $page_id = wp_insert_post([
             'post_title'   => $page_title,
@@ -553,6 +569,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           break;
         case 'pn_cm_organization_remove':
           if (!empty($pn_cm_organization_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('delete', 'organization', $pn_cm_organization_id, get_the_title($pn_cm_organization_id), 'Deleted Organization #' . $pn_cm_organization_id);
             wp_delete_post($pn_cm_organization_id, true);
 
             $plugin_post_type_organization = new PN_CUSTOMERS_MANAGER_Post_Type_organization();
@@ -1170,6 +1187,186 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           PN_CUSTOMERS_MANAGER_Projections::ajax_test_social_media();
           exit;
 
+        // ── Go High Level ──
+        case 'pn_cm_ghl_test':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_GHL::ajax_test();
+          exit;
+        case 'pn_cm_ghl_push_all':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_GHL::ajax_push_all();
+          exit;
+        case 'pn_cm_ghl_pull_all':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_GHL::ajax_pull_all();
+          exit;
+        case 'pn_cm_ghl_get_pipeline_stages':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_GHL::ajax_get_pipeline_stages();
+          exit;
+
+        // ── Zoho CRM ──
+        case 'pn_cm_zoho_disconnect':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Zoho::disconnect();
+          echo wp_json_encode(['error_key' => '', 'message' => esc_html__('Zoho disconnected.', 'pn-customers-manager')]);
+          exit;
+        case 'pn_cm_zoho_test':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Zoho::ajax_test();
+          exit;
+        case 'pn_cm_zoho_push_all':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Zoho::ajax_push_all();
+          exit;
+        case 'pn_cm_zoho_pull_all':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Zoho::ajax_pull_all();
+          exit;
+        case 'pn_cm_zoho_get_deal_stages':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Zoho::ajax_get_deal_stages();
+          exit;
+
+        // ── Clients Dashboard ──
+        case 'pn_cm_client_get_list':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_get_clients();
+          exit;
+        case 'pn_cm_client_update_stage':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_update_stage();
+          exit;
+        case 'pn_cm_client_add':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_add_client();
+          exit;
+        case 'pn_cm_client_get_detail':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_get_detail();
+          exit;
+
+        case 'pn_cm_client_get_edit_form':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_get_edit_form();
+          exit;
+
+        case 'pn_cm_client_save':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_save_client();
+          exit;
+
+        case 'pn_cm_client_add_task':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_add_task();
+          exit;
+
+        case 'pn_cm_client_add_appointment':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_add_appointment();
+          exit;
+
+        case 'pn_cm_client_complete_task':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_complete_task();
+          exit;
+
+        case 'pn_cm_client_get_messages':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_get_conversation_messages();
+          exit;
+
+        case 'pn_cm_client_get_duplicates':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_get_duplicates();
+          exit;
+
+        case 'pn_cm_client_merge_duplicates':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Clients::ajax_merge_duplicates();
+          exit;
+
+        case 'pn_cm_db_update':
+          if (!current_user_can('manage_options')) {
+            echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
+            exit;
+          }
+          require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-activator.php';
+          PN_CUSTOMERS_MANAGER_Activator::pn_customers_manager_create_tables();
+          echo wp_json_encode(['error_key' => '', 'version' => PN_CUSTOMERS_MANAGER_DB_VERSION]);
+          exit;
+
+        case 'pn_cm_activity_log_list':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            echo wp_json_encode(['error_key' => 'no_permission']);
+            exit;
+          }
+          PN_CUSTOMERS_MANAGER_Activity_Log::ajax_get_logs();
+          exit;
+
         case 'pn_cm_mail_stats_period':
           if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
             echo wp_json_encode(['error_key' => 'no_permission', 'error_content' => esc_html__('You do not have permission.', 'pn-customers-manager')]);
@@ -1364,6 +1561,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
         case 'pn_cm_budget_remove':
           $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('delete', 'budget', $pn_cm_budget_id, get_the_title($pn_cm_budget_id), 'Deleted Budget #' . $pn_cm_budget_id);
             wp_delete_post($pn_cm_budget_id, true);
 
             $plugin_post_type_budget = new PN_CUSTOMERS_MANAGER_Post_Type_Budget();
@@ -1378,6 +1576,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
         case 'pn_cm_budget_duplicate':
           $pn_cm_budget_id = !empty($_POST['pn_cm_budget_id']) ? intval($_POST['pn_cm_budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('create', 'budget', $pn_cm_budget_id, get_the_title($pn_cm_budget_id), 'Duplicated Budget #' . $pn_cm_budget_id);
             $original = get_post($pn_cm_budget_id);
             if ($original) {
               $new_id = wp_insert_post([
@@ -1512,6 +1711,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
           if (!empty($pn_cm_budget_id) && !empty($item_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('delete', 'budget', $pn_cm_budget_id, get_the_title($pn_cm_budget_id), 'Deleted item #' . $item_id . ' from Budget #' . $pn_cm_budget_id);
             PN_CUSTOMERS_MANAGER_Post_Type_Budget::delete_budget_item($pn_cm_budget_id, $item_id);
             PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
 
@@ -1763,6 +1963,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_budget_id = !empty($_POST['budget_id']) ? intval($_POST['budget_id']) : 0;
           if (!empty($pn_cm_budget_id)) {
             update_post_meta($pn_cm_budget_id, 'pn_cm_budget_status', 'sent');
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('status_change', 'budget', $pn_cm_budget_id, get_the_title($pn_cm_budget_id), 'Budget status changed to sent');
             wp_send_json(['error_key' => '', 'status' => 'sent']);
           }
           wp_send_json(['error_key' => 'pn_cm_budget_send_error']);
@@ -1773,6 +1974,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           if (empty($pn_cm_budget_id)) {
             wp_send_json(['error_key' => 'pn_cm_budget_generate_invoice_error', 'error_content' => esc_html(__('Budget ID is required.', 'pn-customers-manager'))]);
           }
+          PN_CUSTOMERS_MANAGER_Activity_Log::log('create', 'invoice', $pn_cm_budget_id, get_the_title($pn_cm_budget_id), 'Generated Invoice from Budget #' . $pn_cm_budget_id);
 
           // Read budget data
           $budget_items = PN_CUSTOMERS_MANAGER_Post_Type_Budget::get_budget_items($pn_cm_budget_id);
@@ -1897,6 +2099,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             ]);
           }
 
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Writing CSV to php://output stream.
           fclose($output);
           exit;
           break;
@@ -1915,12 +2118,14 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           }
 
           $csv_file = $_FILES['csv_file']['tmp_name'];
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading uploaded CSV temp file.
           $handle = fopen($csv_file, 'r');
           if (!$handle) {
             wp_send_json(['error_key' => 'pn_cm_budget_import_items_error', 'error_content' => esc_html(__('Could not read the CSV file.', 'pn-customers-manager'))]);
           }
 
           // Skip UTF-8 BOM if present.
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Reading BOM bytes from CSV stream.
           $bom = fread($handle, 3);
           if ($bom !== chr(0xEF) . chr(0xBB) . chr(0xBF)) {
             rewind($handle);
@@ -1929,6 +2134,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           // Read and validate header row.
           $header = fgetcsv($handle);
           if (!$header) {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle on error.
             fclose($handle);
             wp_send_json(['error_key' => 'pn_cm_budget_import_items_error', 'error_content' => esc_html(__('Empty CSV file.', 'pn-customers-manager'))]);
           }
@@ -2006,6 +2212,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             ];
           }
 
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle after import.
           fclose($handle);
 
           PN_CUSTOMERS_MANAGER_Post_Type_Budget::pn_cm_budget_recalculate_totals($pn_cm_budget_id);
@@ -2068,22 +2275,22 @@ class PN_CUSTOMERS_MANAGER_Ajax {
         case 'pn_cm_invoice_remove':
           $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
           if (!empty($pn_cm_invoice_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('delete', 'invoice', $pn_cm_invoice_id, get_the_title($pn_cm_invoice_id), 'Deleted Invoice #' . $pn_cm_invoice_id);
             wp_delete_post($pn_cm_invoice_id, true);
 
             $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
-            echo wp_json_encode([
+            wp_send_json([
               'error_key' => '',
               'html' => $plugin_post_type_invoice->pn_cm_invoice_list(),
             ]);
-            exit;
           }
-          echo wp_json_encode(['error_key' => 'pn_cm_invoice_remove_error', 'error_content' => esc_html(__('An error occurred while removing the Invoice.', 'pn-customers-manager'))]);
-          exit;
+          wp_send_json(['error_key' => 'pn_cm_invoice_remove_error', 'error_content' => esc_html(__('An error occurred while removing the Invoice.', 'pn-customers-manager'))]);
           break;
 
         case 'pn_cm_invoice_duplicate':
           $pn_cm_invoice_id = !empty($_POST['pn_cm_invoice_id']) ? intval($_POST['pn_cm_invoice_id']) : 0;
           if (!empty($pn_cm_invoice_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('create', 'invoice', $pn_cm_invoice_id, get_the_title($pn_cm_invoice_id), 'Duplicated Invoice #' . $pn_cm_invoice_id);
             $original = get_post($pn_cm_invoice_id);
             if ($original) {
               $new_id = wp_insert_post([
@@ -2094,7 +2301,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
               ]);
 
               if ($new_id && !is_wp_error($new_id)) {
-                $meta_keys = ['pn_cm_invoice_organization_id', 'pn_cm_invoice_tax_rate', 'pn_cm_invoice_discount_rate', 'pn_cm_invoice_notes', 'pn_cm_invoice_client_notes'];
+                $meta_keys = ['pn_cm_invoice_organization_id', 'pn_cm_invoice_tax_rate', 'pn_cm_invoice_discount_rate', 'pn_cm_invoice_irpf_rate', 'pn_cm_invoice_notes', 'pn_cm_invoice_client_notes'];
                 foreach ($meta_keys as $mk) {
                   $val = get_post_meta($pn_cm_invoice_id, $mk, true);
                   if ($val !== '') update_post_meta($new_id, $mk, $val);
@@ -2122,14 +2329,12 @@ class PN_CUSTOMERS_MANAGER_Ajax {
             }
 
             $plugin_post_type_invoice = new PN_CUSTOMERS_MANAGER_Post_Type_Invoice();
-            echo wp_json_encode([
+            wp_send_json([
               'error_key' => '',
               'html' => $plugin_post_type_invoice->pn_cm_invoice_list(),
             ]);
-            exit;
           }
-          echo wp_json_encode(['error_key' => 'pn_cm_invoice_duplicate_error']);
-          exit;
+          wp_send_json(['error_key' => 'pn_cm_invoice_duplicate_error']);
           break;
 
         case 'pn_cm_invoice_add_item':
@@ -2164,6 +2369,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
                 'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
                 'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
                 'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+                'irpf_amount'     => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_irpf_amount', true)),
                 'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
               ],
             ]);
@@ -2189,6 +2395,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
           $item_id = !empty($_POST['item_id']) ? intval($_POST['item_id']) : 0;
           if (!empty($pn_cm_invoice_id) && !empty($item_id)) {
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('delete', 'invoice', $pn_cm_invoice_id, get_the_title($pn_cm_invoice_id), 'Deleted item #' . $item_id . ' from Invoice #' . $pn_cm_invoice_id);
             PN_CUSTOMERS_MANAGER_Post_Type_Invoice::delete_invoice_item($pn_cm_invoice_id, $item_id);
             PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($pn_cm_invoice_id);
 
@@ -2198,6 +2405,7 @@ class PN_CUSTOMERS_MANAGER_Ajax {
                 'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
                 'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
                 'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+                'irpf_amount'     => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_irpf_amount', true)),
                 'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
               ],
             ]);
@@ -2245,15 +2453,182 @@ class PN_CUSTOMERS_MANAGER_Ajax {
 
             wp_send_json([
               'error_key' => '',
+              'item' => [
+                'item_id'     => $item_id,
+                'item_type'   => $item_type,
+                'description' => $description,
+                'quantity'    => $quantity,
+                'unit_price'  => $unit_price,
+              ],
               'totals' => [
                 'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
                 'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
                 'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+                'irpf_amount'     => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_irpf_amount', true)),
                 'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
               ],
             ]);
           }
           wp_send_json(['error_key' => 'pn_cm_invoice_update_item_error']);
+          break;
+
+        case 'pn_cm_invoice_export_items':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_export_items_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          if (empty($pn_cm_invoice_id)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_export_items_error', 'error_content' => esc_html(__('Invoice ID is required.', 'pn-customers-manager'))]);
+          }
+
+          $items = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_items($pn_cm_invoice_id);
+          $invoice_title = sanitize_file_name(get_the_title($pn_cm_invoice_id));
+
+          header('Content-Type: text/csv; charset=UTF-8');
+          header('Content-Disposition: attachment; filename="invoice-items-' . $invoice_title . '.csv"');
+          header('Pragma: no-cache');
+          header('Expires: 0');
+
+          $output = fopen('php://output', 'w');
+          fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+          fputcsv($output, ['item_type', 'description', 'quantity', 'unit_price']);
+
+          foreach ($items as $item) {
+            fputcsv($output, [
+              isset($item['item_type']) ? $item['item_type'] : 'fixed',
+              isset($item['description']) ? $item['description'] : '',
+              isset($item['item_type']) && $item['item_type'] === 'phase' ? '' : (isset($item['quantity']) ? floatval($item['quantity']) : 0),
+              isset($item['item_type']) && $item['item_type'] === 'phase' ? '' : (isset($item['unit_price']) ? floatval($item['unit_price']) : 0),
+            ]);
+          }
+
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Writing CSV to php://output stream.
+          fclose($output);
+          exit;
+          break;
+
+        case 'pn_cm_invoice_import_items':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_import_items_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          if (empty($pn_cm_invoice_id)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_import_items_error', 'error_content' => esc_html(__('Invoice ID is required.', 'pn-customers-manager'))]);
+          }
+
+          if (empty($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_import_items_error', 'error_content' => esc_html(__('No valid CSV file uploaded.', 'pn-customers-manager'))]);
+          }
+
+          $csv_file = $_FILES['csv_file']['tmp_name'];
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading uploaded CSV temp file.
+          $handle = fopen($csv_file, 'r');
+          if (!$handle) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_import_items_error', 'error_content' => esc_html(__('Could not read the CSV file.', 'pn-customers-manager'))]);
+          }
+
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Reading BOM bytes from CSV stream.
+          $bom = fread($handle, 3);
+          if ($bom !== chr(0xEF) . chr(0xBB) . chr(0xBF)) {
+            rewind($handle);
+          }
+
+          $header = fgetcsv($handle);
+          if (!$header) {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle on error.
+            fclose($handle);
+            wp_send_json(['error_key' => 'pn_cm_invoice_import_items_error', 'error_content' => esc_html(__('Empty CSV file.', 'pn-customers-manager'))]);
+          }
+          $header = array_map('trim', $header);
+          $header = array_map('strtolower', $header);
+
+          $valid_types = ['phase', 'fixed', 'hours'];
+          $new_items = [];
+
+          while (($row = fgetcsv($handle)) !== false) {
+            if (empty(array_filter($row))) {
+              continue;
+            }
+
+            $data = [];
+            foreach ($header as $i => $col) {
+              $data[$col] = isset($row[$i]) ? $row[$i] : '';
+            }
+
+            $item_type = isset($data['item_type']) ? sanitize_text_field(trim($data['item_type'])) : 'fixed';
+            if (!in_array($item_type, $valid_types, true)) {
+              $item_type = 'fixed';
+            }
+
+            $description = isset($data['description']) ? wp_kses_post(trim($data['description'])) : '';
+            $quantity = isset($data['quantity']) ? floatval($data['quantity']) : ($item_type === 'phase' ? 0 : 1);
+            $unit_price = isset($data['unit_price']) ? floatval($data['unit_price']) : 0;
+
+            if ($item_type === 'phase') {
+              $quantity = 0;
+              $unit_price = 0;
+            }
+
+            $item_id = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::add_invoice_item($pn_cm_invoice_id, [
+              'item_type'   => $item_type,
+              'description' => $description,
+              'quantity'    => $quantity,
+              'unit_price'  => $unit_price,
+            ]);
+
+            $total = round($quantity * $unit_price, 2);
+            $new_items[] = [
+              'id'          => $item_id,
+              'item_type'   => $item_type,
+              'description' => $description,
+              'quantity'    => $quantity,
+              'unit_price'  => $unit_price,
+              'total'       => $total,
+            ];
+          }
+
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle after import.
+          fclose($handle);
+
+          PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($pn_cm_invoice_id);
+
+          wp_send_json([
+            'error_key' => '',
+            'items' => $new_items,
+            'count' => count($new_items),
+            'totals' => [
+              'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
+              'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
+              'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+              'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
+            ],
+          ]);
+          break;
+
+        case 'pn_cm_invoice_bulk_remove_items':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_bulk_remove_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $item_ids = !empty($_POST['item_ids']) ? json_decode(stripslashes($_POST['item_ids']), true) : [];
+          if (!empty($pn_cm_invoice_id) && !empty($item_ids) && is_array($item_ids)) {
+            foreach ($item_ids as $iid) {
+              PN_CUSTOMERS_MANAGER_Post_Type_Invoice::delete_invoice_item($pn_cm_invoice_id, intval($iid));
+            }
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($pn_cm_invoice_id);
+
+            wp_send_json([
+              'error_key' => '',
+              'totals' => [
+                'subtotal'        => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_subtotal', true)),
+                'tax_amount'      => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_tax_amount', true)),
+                'discount_amount' => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_discount_amount', true)),
+                'irpf_amount'     => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_irpf_amount', true)),
+                'total'           => floatval(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_total', true)),
+              ],
+            ]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_bulk_remove_error']);
           break;
 
         case 'pn_cm_invoice_edit_item_form':
@@ -2272,10 +2647,336 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
           if (!empty($pn_cm_invoice_id)) {
             update_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_status', 'sent');
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('status_change', 'invoice', $pn_cm_invoice_id, get_the_title($pn_cm_invoice_id), 'Invoice status changed to sent');
             wp_send_json(['error_key' => '', 'status' => 'sent']);
           }
           wp_send_json(['error_key' => 'pn_cm_invoice_send_error']);
           break;
+
+        case 'pn_cm_invoice_update_status':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_update_status_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $new_status = !empty($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : '';
+          $allowed_statuses = ['draft', 'sent', 'paid', 'cancelled'];
+          if (!empty($pn_cm_invoice_id) && in_array($new_status, $allowed_statuses, true)) {
+            update_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_status', $new_status);
+            if ($new_status === 'paid' && empty(get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_paid_at', true))) {
+              update_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_paid_at', current_time('mysql'));
+            }
+            PN_CUSTOMERS_MANAGER_Activity_Log::log('status_change', 'invoice', $pn_cm_invoice_id, get_the_title($pn_cm_invoice_id), 'Invoice status changed to ' . $new_status);
+            wp_send_json(['error_key' => '', 'status' => $new_status]);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_update_status_error']);
+          break;
+
+        case 'pn_cm_invoice_reset_counter':
+          if (!current_user_can('manage_options')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_reset_counter_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $is_locked = get_option('pn_customers_manager_invoice_number_locked', '0') === '1';
+          if ($is_locked) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_reset_counter_error', 'error_content' => esc_html(__('Numbering format is locked. Unlock it first to reset the counter.', 'pn-customers-manager'))]);
+          }
+          update_option('pn_customers_manager_invoice_next_number', '1');
+          wp_send_json(['error_key' => '']);
+          break;
+
+        case 'pn_cm_invoice_upload_file':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_upload_file_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          if (empty($pn_cm_invoice_id) || empty($_FILES['file'])) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_upload_file_error', 'error_content' => esc_html(__('Invoice ID and file are required.', 'pn-customers-manager'))]);
+          }
+          $result = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::add_invoice_file($pn_cm_invoice_id, $_FILES['file']);
+          if (is_wp_error($result)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_upload_file_error', 'error_content' => $result->get_error_message()]);
+          }
+          $result['size_formatted'] = size_format($result['size']);
+          wp_send_json(['error_key' => '', 'file' => $result]);
+          break;
+
+        case 'pn_cm_invoice_delete_file':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_delete_file_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $file_id = !empty($_POST['file_id']) ? intval($_POST['file_id']) : 0;
+          if (empty($pn_cm_invoice_id) || empty($file_id)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_delete_file_error', 'error_content' => esc_html(__('Invoice ID and file ID are required.', 'pn-customers-manager'))]);
+          }
+          $deleted = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::delete_invoice_file($pn_cm_invoice_id, $file_id);
+          if ($deleted) {
+            wp_send_json(['error_key' => '']);
+          }
+          wp_send_json(['error_key' => 'pn_cm_invoice_delete_file_error', 'error_content' => esc_html(__('File not found.', 'pn-customers-manager'))]);
+          break;
+
+        case 'pn_cm_invoice_download_file':
+          // Logged-in users can also download via the public page (admins viewing the invoice).
+          $pn_cm_invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $invoice_token    = isset($_POST['invoice_token']) ? sanitize_text_field(wp_unslash($_POST['invoice_token'])) : '';
+          $file_id          = !empty($_POST['file_id']) ? intval($_POST['file_id']) : 0;
+
+          if (empty($pn_cm_invoice_id) || empty($invoice_token) || empty($file_id)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_download_file_error', 'error_content' => esc_html(__('Invalid request.', 'pn-customers-manager'))]);
+          }
+
+          $stored_token = get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_token', true);
+          if (empty($stored_token) || $stored_token !== $invoice_token) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_download_file_error', 'error_content' => esc_html(__('Invalid token.', 'pn-customers-manager'))]);
+          }
+
+          $invoice_status = get_post_meta($pn_cm_invoice_id, 'pn_cm_invoice_status', true);
+          if ($invoice_status === 'draft') {
+            wp_send_json(['error_key' => 'pn_cm_invoice_download_file_error', 'error_content' => esc_html(__('Downloads are not available for draft invoices.', 'pn-customers-manager'))]);
+          }
+
+          $files = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files($pn_cm_invoice_id);
+          $target_file = null;
+          foreach ($files as $f) {
+            if (intval($f['id']) === $file_id) {
+              $target_file = $f;
+              break;
+            }
+          }
+
+          if (!$target_file) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_download_file_error', 'error_content' => esc_html(__('File not found.', 'pn-customers-manager'))]);
+          }
+
+          $dir = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files_dir();
+          $filepath = $dir . '/' . $target_file['stored_name'];
+
+          if (!file_exists($filepath)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_download_file_error', 'error_content' => esc_html(__('File not found on disk.', 'pn-customers-manager'))]);
+          }
+
+          header('Content-Type: application/octet-stream');
+          header('Content-Disposition: attachment; filename="' . $target_file['filename'] . '"');
+          header('Content-Length: ' . filesize($filepath));
+          header('Cache-Control: no-store, no-cache, must-revalidate');
+          // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Streaming file download to browser.
+          readfile($filepath);
+          exit;
+
+        case 'pn_cm_invoice_ai_analyze_file':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+          $invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $file_id    = !empty($_POST['file_id']) ? intval($_POST['file_id']) : 0;
+          if (empty($invoice_id) || empty($file_id)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('Invoice ID and file ID are required.', 'pn-customers-manager'))]);
+          }
+          $files = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files($invoice_id);
+          $target_file = null;
+          foreach ($files as $f) {
+            if (intval($f['id']) === $file_id) {
+              $target_file = $f;
+              break;
+            }
+          }
+          if (!$target_file) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('File not found.', 'pn-customers-manager'))]);
+          }
+          $dir = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files_dir();
+          $filepath = $dir . '/' . $target_file['stored_name'];
+          if (!file_exists($filepath)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('File not found on disk.', 'pn-customers-manager'))]);
+          }
+          $result = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::call_ai_vision($filepath);
+          if (is_wp_error($result)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => $result->get_error_message()]);
+          }
+          // Resolve organization: find or create.
+          if (!empty($result['organization'])) {
+            $org_name = sanitize_text_field($result['organization']);
+            global $wpdb;
+            $found_id = $wpdb->get_var($wpdb->prepare(
+              "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'pn_cm_organization' AND post_status = 'publish' AND LOWER(post_title) = LOWER(%s) LIMIT 1",
+              $org_name
+            ));
+            if ($found_id) {
+              $result['organization_id'] = intval($found_id);
+            } else {
+              $new_org_id = wp_insert_post([
+                'post_title'  => $org_name,
+                'post_type'   => 'pn_cm_organization',
+                'post_status' => 'publish',
+                'post_author' => get_current_user_id(),
+              ]);
+              if ($new_org_id && !is_wp_error($new_org_id)) {
+                $result['organization_id'] = $new_org_id;
+                $result['organization_created'] = true;
+                // Save org details from AI extraction.
+                if (!empty($result['organization_address'])) update_post_meta($new_org_id, 'pn_cm_organization_address', sanitize_text_field($result['organization_address']));
+                if (!empty($result['organization_city'])) update_post_meta($new_org_id, 'pn_cm_organization_city', sanitize_text_field($result['organization_city']));
+                if (!empty($result['organization_postal_code'])) update_post_meta($new_org_id, 'pn_cm_organization_postal_code', sanitize_text_field($result['organization_postal_code']));
+                if (!empty($result['organization_country'])) update_post_meta($new_org_id, 'pn_cm_organization_country', sanitize_text_field($result['organization_country']));
+                if (!empty($result['organization_fiscal_id'])) update_post_meta($new_org_id, 'pn_cm_organization_fiscal_id', sanitize_text_field($result['organization_fiscal_id']));
+              }
+            }
+          }
+          // Save items to invoice if AI returned them.
+          if ($invoice_id > 0 && !empty($result['items']) && is_array($result['items'])) {
+            $new_items = [];
+            foreach ($result['items'] as $idx => $ai_item) {
+              $qty   = isset($ai_item['quantity']) ? floatval($ai_item['quantity']) : 1;
+              $price = isset($ai_item['unit_price']) ? floatval($ai_item['unit_price']) : 0;
+              $new_items[] = [
+                'id'          => PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_next_item_id($invoice_id) + $idx,
+                'item_type'   => 'fixed',
+                'description' => sanitize_text_field($ai_item['concept'] ?? ''),
+                'quantity'    => $qty,
+                'unit_price'  => $price,
+                'total'       => round($qty * $price, 2),
+                'sort_order'  => $idx,
+              ];
+            }
+            if (!empty($new_items)) {
+              PN_CUSTOMERS_MANAGER_Post_Type_Invoice::save_invoice_items($invoice_id, $new_items);
+              PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($invoice_id);
+            }
+          }
+          wp_send_json(['error_key' => '', 'data' => $result]);
+          break;
+
+        case 'pn_cm_invoice_ai_analyze_upload':
+          if (!current_user_can('manage_options') && !current_user_can('pn_cm_manage_crm')) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('You do not have permission.', 'pn-customers-manager'))]);
+          }
+
+          if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('No file uploaded.', 'pn-customers-manager'))]);
+          }
+
+          $allowed_mimes = ['application/pdf', 'image/jpeg', 'image/png'];
+          $file_mime = mime_content_type($_FILES['file']['tmp_name']);
+          if (!in_array($file_mime, $allowed_mimes, true)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('Invalid file type. Only PDF, JPG and PNG are allowed.', 'pn-customers-manager'))]);
+          }
+
+          $max_size = 10 * 1024 * 1024; // 10 MB
+          if ($_FILES['file']['size'] > $max_size) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('File is too large. Maximum size is 10 MB.', 'pn-customers-manager'))]);
+          }
+
+          $invoice_id = !empty($_POST['invoice_id']) ? intval($_POST['invoice_id']) : 0;
+          $dir = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files_dir();
+          $original_name = sanitize_file_name($_FILES['file']['name']);
+          $unique_hash = wp_generate_password(12, false);
+          $temp_name = 'tmp-' . $unique_hash . '-' . $original_name;
+          $temp_path = $dir . '/' . $temp_name;
+
+          // phpcs:ignore Generic.PHP.ForbiddenFunctions.Found -- move_uploaded_file is the standard PHP function for handling uploads.
+          if (!move_uploaded_file($_FILES['file']['tmp_name'], $temp_path)) {
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => esc_html(__('Could not save the file.', 'pn-customers-manager'))]);
+          }
+
+          $ai_result = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::call_ai_vision($temp_path);
+          if (is_wp_error($ai_result)) {
+            wp_delete_file($temp_path);
+            wp_send_json(['error_key' => 'pn_cm_invoice_ai_analyze_error', 'error_content' => $ai_result->get_error_message()]);
+          }
+
+          // Auto-create organization if AI returned a name that doesn't exist yet.
+          if (!empty($ai_result['organization'])) {
+            $org_name = sanitize_text_field($ai_result['organization']);
+            $existing_orgs = get_posts([
+              'post_type'   => 'pn_cm_organization',
+              'numberposts' => 1,
+              'title'       => $org_name,
+              'post_status' => 'any',
+              'fields'      => 'ids',
+            ]);
+            if (empty($existing_orgs)) {
+              // Also try a case-insensitive search via SQL.
+              global $wpdb;
+              $found_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'pn_cm_organization' AND post_status = 'publish' AND LOWER(post_title) = LOWER(%s) LIMIT 1",
+                $org_name
+              ));
+              if ($found_id) {
+                $ai_result['organization_id'] = intval($found_id);
+              } else {
+                $new_org_id = wp_insert_post([
+                  'post_title'  => $org_name,
+                  'post_type'   => 'pn_cm_organization',
+                  'post_status' => 'publish',
+                  'post_author' => get_current_user_id(),
+                ]);
+                if ($new_org_id && !is_wp_error($new_org_id)) {
+                  $ai_result['organization_id'] = $new_org_id;
+                  $ai_result['organization_created'] = true;
+                  // Save org details from AI extraction.
+                  if (!empty($ai_result['organization_address'])) update_post_meta($new_org_id, 'pn_cm_organization_address', sanitize_text_field($ai_result['organization_address']));
+                  if (!empty($ai_result['organization_city'])) update_post_meta($new_org_id, 'pn_cm_organization_city', sanitize_text_field($ai_result['organization_city']));
+                  if (!empty($ai_result['organization_postal_code'])) update_post_meta($new_org_id, 'pn_cm_organization_postal_code', sanitize_text_field($ai_result['organization_postal_code']));
+                  if (!empty($ai_result['organization_country'])) update_post_meta($new_org_id, 'pn_cm_organization_country', sanitize_text_field($ai_result['organization_country']));
+                  if (!empty($ai_result['organization_fiscal_id'])) update_post_meta($new_org_id, 'pn_cm_organization_fiscal_id', sanitize_text_field($ai_result['organization_fiscal_id']));
+                }
+              }
+            } else {
+              $ai_result['organization_id'] = intval($existing_orgs[0]);
+            }
+          }
+
+          $response_data = ['error_key' => '', 'data' => $ai_result];
+
+          // Save items to invoice if AI returned them.
+          if ($invoice_id > 0 && !empty($ai_result['items']) && is_array($ai_result['items'])) {
+            $new_items = [];
+            foreach ($ai_result['items'] as $idx => $ai_item) {
+              $qty   = isset($ai_item['quantity']) ? floatval($ai_item['quantity']) : 1;
+              $price = isset($ai_item['unit_price']) ? floatval($ai_item['unit_price']) : 0;
+              $new_items[] = [
+                'id'          => PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_next_item_id($invoice_id) + $idx,
+                'item_type'   => 'fixed',
+                'description' => sanitize_text_field($ai_item['concept'] ?? ''),
+                'quantity'    => $qty,
+                'unit_price'  => $price,
+                'total'       => round($qty * $price, 2),
+                'sort_order'  => $idx,
+              ];
+            }
+            if (!empty($new_items)) {
+              PN_CUSTOMERS_MANAGER_Post_Type_Invoice::save_invoice_items($invoice_id, $new_items);
+              PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_recalculate_totals($invoice_id);
+            }
+          }
+
+          if ($invoice_id > 0) {
+            // Invoice exists: rename to permanent and attach.
+            $stored_name = $invoice_id . '-' . $unique_hash . '-' . $original_name;
+            $final_path  = $dir . '/' . $stored_name;
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Renaming temp file to permanent within the same directory.
+            rename($temp_path, $final_path);
+
+            $file_id = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_next_file_id($invoice_id);
+            $entry = [
+              'id'          => $file_id,
+              'filename'    => $original_name,
+              'stored_name' => $stored_name,
+              'size'        => filesize($final_path),
+              'uploaded_at' => current_time('mysql'),
+            ];
+            $files = PN_CUSTOMERS_MANAGER_Post_Type_Invoice::get_invoice_files($invoice_id);
+            $files[] = $entry;
+            PN_CUSTOMERS_MANAGER_Post_Type_Invoice::save_invoice_files($invoice_id, $files);
+
+            $response_data['file'] = $entry;
+          } else {
+            // Invoice not yet saved: return temp filename for hidden input.
+            $response_data['temp_file'] = $temp_name;
+          }
+
+          wp_send_json($response_data);
+          break;
+
         case 'migrate_calendar_booking':
           if (!current_user_can('manage_options')) {
             wp_send_json_error(['message' => __('You do not have permission to run migrations.', 'pn-customers-manager')]);
@@ -2435,6 +3136,181 @@ class PN_CUSTOMERS_MANAGER_Ajax {
           }
           echo wp_json_encode(['error_key' => 'pn_cm_mockup_flow_remove_error', 'error_content' => esc_html(__('An error occurred.', 'pn-customers-manager'))]);
           exit;
+          break;
+
+        // ── Budget Payments ──
+        case 'pn_cm_budget_add_payment':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $budget_id = ! empty( $_POST['budget_id'] ) ? intval( $_POST['budget_id'] ) : 0;
+          if ( empty( $budget_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'Invalid budget.', 'pn-customers-manager' ) ) );
+          }
+          $payment_data = array(
+            'date'      => ! empty( $_POST['payment_date'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_date'] ) ) : gmdate( 'Y-m-d' ),
+            'amount'    => ! empty( $_POST['payment_amount'] ) ? floatval( $_POST['payment_amount'] ) : 0,
+            'concept'   => isset( $_POST['payment_concept'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_concept'] ) ) : '',
+            'type'      => ! empty( $_POST['payment_type'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_type'] ) ) : 'income',
+            'category'  => ! empty( $_POST['payment_category'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_category'] ) ) : 'client_payment',
+            'recipient' => isset( $_POST['payment_recipient'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_recipient'] ) ) : '',
+            'method'    => ! empty( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : '',
+            'notes'     => isset( $_POST['payment_notes'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_notes'] ) ) : '',
+            'visible'   => isset( $_POST['payment_visible'] ) ? intval( $_POST['payment_visible'] ) : 1,
+          );
+          if ( $payment_data['amount'] <= 0 ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'Amount must be greater than zero.', 'pn-customers-manager' ) ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::add_payment( $budget_id, $payment_data, 'budget' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::maybe_mark_as_paid( $budget_id, 'budget' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::sync_payments( $budget_id, 'budget' );
+          $new_status = get_post_meta( $budget_id, 'pn_cm_budget_status', true );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $budget_id, 'budget' ), 'status' => $new_status ) );
+          break;
+
+        case 'pn_cm_budget_remove_payment':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $budget_id  = ! empty( $_POST['budget_id'] ) ? intval( $_POST['budget_id'] ) : 0;
+          $payment_id = ! empty( $_POST['payment_id'] ) ? intval( $_POST['payment_id'] ) : 0;
+          if ( empty( $budget_id ) || empty( $payment_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error' ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::remove_payment( $budget_id, $payment_id, 'budget' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::maybe_mark_as_paid( $budget_id, 'budget' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::sync_payments( $budget_id, 'budget' );
+          $new_status = get_post_meta( $budget_id, 'pn_cm_budget_status', true );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $budget_id, 'budget' ), 'status' => $new_status ) );
+          break;
+
+        case 'pn_cm_budget_toggle_payment_visibility':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $budget_id  = ! empty( $_POST['budget_id'] ) ? intval( $_POST['budget_id'] ) : 0;
+          $payment_id = ! empty( $_POST['payment_id'] ) ? intval( $_POST['payment_id'] ) : 0;
+          if ( empty( $budget_id ) || empty( $payment_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error' ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::toggle_payment_visibility( $budget_id, $payment_id, 'budget' );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $budget_id, 'budget' ) ) );
+          break;
+
+        case 'pn_cm_budget_edit_payment':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $budget_id  = ! empty( $_POST['budget_id'] ) ? intval( $_POST['budget_id'] ) : 0;
+          $payment_id = ! empty( $_POST['payment_id'] ) ? intval( $_POST['payment_id'] ) : 0;
+          if ( empty( $budget_id ) || empty( $payment_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error' ) );
+          }
+          $payment_data = array(
+            'date'      => ! empty( $_POST['payment_date'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_date'] ) ) : gmdate( 'Y-m-d' ),
+            'amount'    => ! empty( $_POST['payment_amount'] ) ? floatval( $_POST['payment_amount'] ) : 0,
+            'concept'   => isset( $_POST['payment_concept'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_concept'] ) ) : '',
+            'type'      => ! empty( $_POST['payment_type'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_type'] ) ) : 'income',
+            'category'  => ! empty( $_POST['payment_category'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_category'] ) ) : 'client_payment',
+            'recipient' => isset( $_POST['payment_recipient'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_recipient'] ) ) : '',
+            'method'    => ! empty( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : '',
+            'notes'     => isset( $_POST['payment_notes'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_notes'] ) ) : '',
+            'visible'   => isset( $_POST['payment_visible'] ) ? intval( $_POST['payment_visible'] ) : 0,
+          );
+          if ( $payment_data['amount'] <= 0 ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'Amount must be greater than zero.', 'pn-customers-manager' ) ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_payment( $budget_id, $payment_id, $payment_data, 'budget' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::maybe_mark_as_paid( $budget_id, 'budget' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::sync_payments( $budget_id, 'budget' );
+          $new_status = get_post_meta( $budget_id, 'pn_cm_budget_status', true );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $budget_id, 'budget' ), 'status' => $new_status ) );
+          break;
+
+        // ── Invoice Payments ──
+        case 'pn_cm_invoice_add_payment':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $invoice_id = ! empty( $_POST['invoice_id'] ) ? intval( $_POST['invoice_id'] ) : 0;
+          if ( empty( $invoice_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'Invalid invoice.', 'pn-customers-manager' ) ) );
+          }
+          $payment_data = array(
+            'date'      => ! empty( $_POST['payment_date'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_date'] ) ) : gmdate( 'Y-m-d' ),
+            'amount'    => ! empty( $_POST['payment_amount'] ) ? floatval( $_POST['payment_amount'] ) : 0,
+            'concept'   => isset( $_POST['payment_concept'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_concept'] ) ) : '',
+            'type'      => ! empty( $_POST['payment_type'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_type'] ) ) : 'income',
+            'category'  => ! empty( $_POST['payment_category'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_category'] ) ) : 'client_payment',
+            'recipient' => isset( $_POST['payment_recipient'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_recipient'] ) ) : '',
+            'method'    => ! empty( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : '',
+            'notes'     => isset( $_POST['payment_notes'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_notes'] ) ) : '',
+            'visible'   => isset( $_POST['payment_visible'] ) ? intval( $_POST['payment_visible'] ) : 1,
+          );
+          if ( $payment_data['amount'] <= 0 ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'Amount must be greater than zero.', 'pn-customers-manager' ) ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::add_payment( $invoice_id, $payment_data, 'invoice' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::maybe_mark_as_paid( $invoice_id, 'invoice' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::sync_payments( $invoice_id, 'invoice' );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $invoice_id, 'invoice' ) ) );
+          break;
+
+        case 'pn_cm_invoice_remove_payment':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $invoice_id = ! empty( $_POST['invoice_id'] ) ? intval( $_POST['invoice_id'] ) : 0;
+          $payment_id = ! empty( $_POST['payment_id'] ) ? intval( $_POST['payment_id'] ) : 0;
+          if ( empty( $invoice_id ) || empty( $payment_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error' ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::remove_payment( $invoice_id, $payment_id, 'invoice' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::maybe_mark_as_paid( $invoice_id, 'invoice' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::sync_payments( $invoice_id, 'invoice' );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $invoice_id, 'invoice' ) ) );
+          break;
+
+        case 'pn_cm_invoice_toggle_payment_visibility':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $invoice_id = ! empty( $_POST['invoice_id'] ) ? intval( $_POST['invoice_id'] ) : 0;
+          $payment_id = ! empty( $_POST['payment_id'] ) ? intval( $_POST['payment_id'] ) : 0;
+          if ( empty( $invoice_id ) || empty( $payment_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error' ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::toggle_payment_visibility( $invoice_id, $payment_id, 'invoice' );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $invoice_id, 'invoice' ) ) );
+          break;
+
+        case 'pn_cm_invoice_edit_payment':
+          if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'pn_cm_manage_crm' ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'You do not have permission.', 'pn-customers-manager' ) ) );
+          }
+          $invoice_id = ! empty( $_POST['invoice_id'] ) ? intval( $_POST['invoice_id'] ) : 0;
+          $payment_id = ! empty( $_POST['payment_id'] ) ? intval( $_POST['payment_id'] ) : 0;
+          if ( empty( $invoice_id ) || empty( $payment_id ) ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error' ) );
+          }
+          $payment_data = array(
+            'date'      => ! empty( $_POST['payment_date'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_date'] ) ) : gmdate( 'Y-m-d' ),
+            'amount'    => ! empty( $_POST['payment_amount'] ) ? floatval( $_POST['payment_amount'] ) : 0,
+            'concept'   => isset( $_POST['payment_concept'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_concept'] ) ) : '',
+            'type'      => ! empty( $_POST['payment_type'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_type'] ) ) : 'income',
+            'category'  => ! empty( $_POST['payment_category'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_category'] ) ) : 'client_payment',
+            'recipient' => isset( $_POST['payment_recipient'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_recipient'] ) ) : '',
+            'method'    => ! empty( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : '',
+            'notes'     => isset( $_POST['payment_notes'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_notes'] ) ) : '',
+            'visible'   => isset( $_POST['payment_visible'] ) ? intval( $_POST['payment_visible'] ) : 0,
+          );
+          if ( $payment_data['amount'] <= 0 ) {
+            wp_send_json( array( 'error_key' => 'pn_cm_payment_error', 'error_content' => esc_html__( 'Amount must be greater than zero.', 'pn-customers-manager' ) ) );
+          }
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::update_payment( $invoice_id, $payment_id, $payment_data, 'invoice' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::maybe_mark_as_paid( $invoice_id, 'invoice' );
+          PN_CUSTOMERS_MANAGER_Post_Type_Budget::sync_payments( $invoice_id, 'invoice' );
+          wp_send_json( array( 'error_key' => '', 'html' => PN_CUSTOMERS_MANAGER_Post_Type_Budget::render_payments_block( $invoice_id, 'invoice' ) ) );
           break;
       }
 

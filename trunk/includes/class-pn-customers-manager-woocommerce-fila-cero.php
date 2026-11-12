@@ -129,7 +129,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero {
 		]);
 
 		if ($total > 0) {
-			echo '<p class="form-field"><strong>' . sprintf(__('Total solidarity purchases: %d', 'pn-customers-manager'), $total) . '</strong></p>';
+			/* translators: %d: number of solidarity purchases for this product */
+			echo '<p class="form-field"><strong>' . esc_html(sprintf(__('Total solidarity purchases: %d', 'pn-customers-manager'), $total)) . '</strong></p>';
 		}
 
 		echo '</div>';
@@ -219,7 +220,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero {
 			$css_vars .= '--pn-customers-manager-' . str_replace('_', '-', $key) . ':' . esc_attr($sanitized) . ';';
 		}
 
-		echo '<div class="pn-cm-fc" style="' . $css_vars . '">';
+		echo '<div class="pn-cm-fc" style="' . esc_attr($css_vars) . '">';
 
 		// ── Heading & description ──
 		echo '<h4 class="pn-cm-fc__heading">' . esc_html($heading) . '</h4>';
@@ -254,7 +255,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero {
 			echo '<div class="pn-cm-fc-admin__header">';
 			echo '<h5 class="pn-cm-fc-admin__title">';
 			echo '<span class="material-icons-outlined pn-cm-fc-admin__toggle-icon">expand_more</span>';
-			echo __('Fila Cero — Admin', 'pn-customers-manager');
+			echo esc_html__('Fila Cero — Admin', 'pn-customers-manager');
 			echo '<span class="pn-cm-fc-admin__count">(' . count($all_entries) . ')</span>';
 			echo '</h5>';
 			echo '</div>';
@@ -263,10 +264,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero {
 			if (!empty($all_entries)) {
 				echo '<table class="pn-cm-fc-admin__table">';
 				echo '<thead><tr>';
-				echo '<th>' . __('Name', 'pn-customers-manager') . '</th>';
-				echo '<th>' . __('Order', 'pn-customers-manager') . '</th>';
-				echo '<th>' . __('Status', 'pn-customers-manager') . '</th>';
-				echo '<th>' . __('Date', 'pn-customers-manager') . '</th>';
+				echo '<th>' . esc_html__('Name', 'pn-customers-manager') . '</th>';
+				echo '<th>' . esc_html__('Order', 'pn-customers-manager') . '</th>';
+				echo '<th>' . esc_html__('Status', 'pn-customers-manager') . '</th>';
+				echo '<th>' . esc_html__('Date', 'pn-customers-manager') . '</th>';
 				echo '<th></th>';
 				echo '</tr></thead>';
 				echo '<tbody>';
@@ -276,14 +277,14 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero {
 					echo '<tr>';
 					echo '<td>' . esc_html($entry->display_name) . '</td>';
 					echo '<td><a href="' . esc_url($order_url) . '">#' . esc_html($entry->order_id) . '</a></td>';
-					echo '<td><span class="pn-cm-fc-admin__badge ' . $badge_class . '">' . esc_html($entry->status) . '</span></td>';
+					echo '<td><span class="pn-cm-fc-admin__badge ' . esc_attr($badge_class) . '">' . esc_html($entry->status) . '</span></td>';
 					echo '<td class="pn-cm-fc-admin__date">' . esc_html(date_i18n(get_option('date_format'), strtotime($entry->created_at))) . '</td>';
 					echo '<td><button class="pn-cm-fc-admin__delete" data-id="' . esc_attr($entry->id) . '" title="' . esc_attr__('Delete', 'pn-customers-manager') . '">&times;</button></td>';
 					echo '</tr>';
 				}
 				echo '</tbody></table>';
 			} else {
-				echo '<p class="pn-cm-fc-admin__empty">' . __('No entries yet.', 'pn-customers-manager') . '</p>';
+				echo '<p class="pn-cm-fc-admin__empty">' . esc_html__('No entries yet.', 'pn-customers-manager') . '</p>';
 			}
 			echo '</div>'; // __body
 			echo '</div>'; // .pn-cm-fc-admin
@@ -312,8 +313,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero {
 					fd.append('action', 'pn_customers_manager_ajax');
 					fd.append('sub_action', 'pn_cm_woo_fila_cero_delete');
 					fd.append('entry_id', id);
-					fd.append('security', '<?php echo wp_create_nonce('pn_customers_manager_ajax'); ?>');
-					fetch('<?php echo admin_url('admin-ajax.php'); ?>', {method:'POST', body: fd})
+					fd.append('security', '<?php echo esc_attr(wp_create_nonce('pn_customers_manager_ajax')); ?>');
+					fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {method:'POST', body: fd})
 						.then(function(r){ return r.json(); })
 						.then(function(d){
 							if (d.success) { row.style.transition='opacity .3s'; row.style.opacity='0'; setTimeout(function(){ row.remove(); }, 300); }
@@ -468,6 +469,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Fila_Cero {
 		$display->key           = 'pn_cm_fila_cero';
 		$display->display_key   = __('Fila Cero', 'pn-customers-manager');
 		$display->display_value = !empty($name)
+			/* translators: %s: buyer name */
 			? sprintf(__('Solidarity purchase — %s', 'pn-customers-manager'), esc_html($name))
 			: __('Solidarity purchase', 'pn-customers-manager');
 		$formatted_meta['pn_cm_fila_cero'] = $display;

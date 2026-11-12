@@ -864,7 +864,8 @@ Responde SOLO con JSON:
 		wp_localize_script('pn-cm-offer-generator', 'pnCMOfferGen', [
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'strings'  => [
-				'step_of'           => __('Step %1$d of %2$d', 'pn-customers-manager'),
+				// translators: %1$d is the current step number, %2$d is the total number of steps
+			'step_of'           => __('Step %1$d of %2$d', 'pn-customers-manager'),
 				'field_required'    => __('This field is required.', 'pn-customers-manager'),
 				'generation_failed' => __('Failed to generate offer. Please try again.', 'pn-customers-manager'),
 				'ajax_error'        => __('Communication error. Please check your connection and try again.', 'pn-customers-manager'),

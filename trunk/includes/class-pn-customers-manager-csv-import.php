@@ -142,8 +142,26 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
       'pn_cm_organization_priority'            => ['high', 'medium', 'low'],
       'pn_cm_organization_health'              => ['healthy', 'risk', 'churn'],
       'pn_cm_organization_last_contact_channel'=> ['email', 'call', 'meeting', 'chat', 'event', 'other'],
-      'pn_cm_organization_funnel_status'       => ['not_started', 'in_progress', 'stalled', 'won', 'lost'],
+      'pn_cm_organization_funnel_status'       => self::get_funnel_status_ids(),
     ];
+  }
+
+  /**
+   * Get enabled funnel status IDs from config or return defaults.
+   */
+  private static function get_funnel_status_ids() {
+    if ( class_exists( 'PN_CUSTOMERS_MANAGER_Settings' ) && method_exists( 'PN_CUSTOMERS_MANAGER_Settings', 'pn_customers_manager_get_funnel_states_config' ) ) {
+      $ids = [];
+      foreach ( PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_get_funnel_states_config() as $s ) {
+        if ( ! empty( $s['enabled'] ) ) {
+          $ids[] = $s['id'];
+        }
+      }
+      if ( ! empty( $ids ) ) {
+        return $ids;
+      }
+    }
+    return [ 'not_started', 'in_progress', 'stalled', 'won', 'lost' ];
   }
 
   /**
@@ -423,6 +441,7 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
     fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
     fputcsv($output, $header);
     fputcsv($output, $example_row);
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Writing CSV to php://output stream.
     fclose($output);
     exit;
   }
@@ -454,12 +473,14 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
       wp_send_json_error(__('Invalid file type. Please upload a CSV file.', 'pn-customers-manager'));
     }
 
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading uploaded CSV temp file.
     $handle = fopen($file, 'r');
     if ($handle === false) {
       wp_send_json_error(__('Could not open the file.', 'pn-customers-manager'));
     }
 
     // Skip BOM
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Reading BOM bytes from CSV stream.
     $bom = fread($handle, 3);
     if ($bom !== "\xEF\xBB\xBF") {
       rewind($handle);
@@ -467,6 +488,7 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
 
     $header = fgetcsv($handle);
     if (!$header) {
+      // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle on error.
       fclose($handle);
       wp_send_json_error(__('Could not read CSV headers.', 'pn-customers-manager'));
     }
@@ -483,6 +505,7 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
     unset($col);
 
     if (!in_array('post_title', $header, true)) {
+      // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle on validation error.
       fclose($handle);
       wp_send_json_error(__('Missing required column: post_title (or Title)', 'pn-customers-manager'));
     }
@@ -497,6 +520,7 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
         $rows[] = array_combine($header, $data);
       }
     }
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing CSV file handle after reading rows.
     fclose($handle);
 
     // Build display headers (translated labels) for preview table
@@ -550,6 +574,7 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
 
       $title = isset($row['post_title']) ? sanitize_text_field(trim($row['post_title'])) : '';
       if (empty($title)) {
+        // translators: %d is the CSV row number
         $results['errors'][] = sprintf(__('Row %d: post_title is empty, skipped.', 'pn-customers-manager'), $row_num);
         continue;
       }
@@ -572,8 +597,9 @@ class PN_CUSTOMERS_MANAGER_Csv_Import {
       $post_id = wp_insert_post($post_data, true);
 
       if (is_wp_error($post_id)) {
+        // translators: %1$d is the CSV row number, %2$s is the error message
         $results['errors'][] = sprintf(
-          __('Row %d: Error creating post — %s', 'pn-customers-manager'),
+          __('Row %1$d: Error creating post — %2$s', 'pn-customers-manager'),
           $row_num,
           $post_id->get_error_message()
         );

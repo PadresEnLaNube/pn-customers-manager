@@ -45,6 +45,38 @@
     if (socialBtn) {
       socialBtn.addEventListener('click', testSocialMedia);
     }
+
+    var ghlTestBtn = document.getElementById('pn-cm-ghl-test-btn');
+    var ghlPushBtn = document.getElementById('pn-cm-ghl-push-btn');
+    var ghlPullBtn = document.getElementById('pn-cm-ghl-pull-btn');
+
+    if (ghlTestBtn) {
+      ghlTestBtn.addEventListener('click', testGHL);
+    }
+    if (ghlPushBtn) {
+      ghlPushBtn.addEventListener('click', pushGHL);
+    }
+    if (ghlPullBtn) {
+      ghlPullBtn.addEventListener('click', pullGHL);
+    }
+
+    var zohoTestBtn       = document.getElementById('pn-cm-zoho-test-btn');
+    var zohoPushBtn       = document.getElementById('pn-cm-zoho-push-btn');
+    var zohoPullBtn       = document.getElementById('pn-cm-zoho-pull-btn');
+    var zohoDisconnectBtn = document.getElementById('pn-cm-zoho-disconnect-btn');
+
+    if (zohoTestBtn) {
+      zohoTestBtn.addEventListener('click', testZoho);
+    }
+    if (zohoPushBtn) {
+      zohoPushBtn.addEventListener('click', pushZoho);
+    }
+    if (zohoPullBtn) {
+      zohoPullBtn.addEventListener('click', pullZoho);
+    }
+    if (zohoDisconnectBtn) {
+      zohoDisconnectBtn.addEventListener('click', disconnectZoho);
+    }
   }
 
   function testOpenAI() {
@@ -436,6 +468,341 @@
       })
       .catch(function () {
         // Ignore individual poll errors
+      });
+  }
+
+  /* ======== Go High Level ======== */
+  function testGHL() {
+    var btn    = document.getElementById('pn-cm-ghl-test-btn');
+    var result = document.getElementById('pn-cm-ghl-test-result');
+
+    btn.disabled = true;
+    result.textContent = i18n.testing || 'Testing...';
+    result.style.color = '#666';
+
+    var formData = new FormData();
+    formData.append('action', 'pn_customers_manager_ajax');
+    formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+    formData.append('pn_customers_manager_ajax_type', 'pn_cm_ghl_test');
+
+    fetch(cfg.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData,
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.text().then(function (txt) {
+            throw new Error('HTTP ' + r.status + ': ' + txt.substring(0, 300));
+          });
+        }
+        return r.json();
+      })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.error_key) {
+          result.textContent = (i18n.error || 'Error:') + ' ' + res.error_content;
+          result.style.color = '#d63638';
+        } else {
+          result.textContent = res.message;
+          result.style.color = '#00a32a';
+        }
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        result.textContent = (i18n.error || 'Error') + ': ' + err.message;
+        result.style.color = '#d63638';
+      });
+  }
+
+  function pushGHL() {
+    var btn    = document.getElementById('pn-cm-ghl-push-btn');
+    var result = document.getElementById('pn-cm-ghl-push-result');
+
+    btn.disabled = true;
+    result.textContent = i18n.syncing || 'Syncing...';
+    result.style.color = '#666';
+
+    var formData = new FormData();
+    formData.append('action', 'pn_customers_manager_ajax');
+    formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+    formData.append('pn_customers_manager_ajax_type', 'pn_cm_ghl_push_all');
+
+    fetch(cfg.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData,
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.text().then(function (txt) {
+            throw new Error('HTTP ' + r.status + ': ' + txt.substring(0, 300));
+          });
+        }
+        return r.json();
+      })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.error_key) {
+          result.textContent = (i18n.error || 'Error:') + ' ' + res.error_content;
+          result.style.color = '#d63638';
+        } else {
+          result.textContent = res.message;
+          result.style.color = '#00a32a';
+        }
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        result.textContent = (i18n.error || 'Error') + ': ' + err.message;
+        result.style.color = '#d63638';
+      });
+  }
+
+  function pullGHL() {
+    var btn    = document.getElementById('pn-cm-ghl-pull-btn');
+    var result = document.getElementById('pn-cm-ghl-pull-result');
+
+    btn.disabled = true;
+
+    var totals = { orgs_created: 0, orgs_updated: 0, contacts_created: 0, contacts_updated: 0, errors: 0 };
+    var batchNum = 0;
+
+    function fetchPage(cursor) {
+      batchNum++;
+      result.textContent = (i18n.syncing || 'Syncing...') + ' (' + (i18n.batch || 'batch') + ' ' + batchNum + ')';
+      result.style.color = '#666';
+
+      var formData = new FormData();
+      formData.append('action', 'pn_customers_manager_ajax');
+      formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+      formData.append('pn_customers_manager_ajax_type', 'pn_cm_ghl_pull_all');
+      if (cursor) {
+        formData.append('pull_cursor', cursor);
+      }
+
+      fetch(cfg.ajaxUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: formData,
+      })
+        .then(function (r) {
+          if (!r.ok) {
+            return r.text().then(function (txt) {
+              throw new Error('HTTP ' + r.status + ': ' + txt.substring(0, 300));
+            });
+          }
+          return r.json();
+        })
+        .then(function (res) {
+          if (res.error_key) {
+            btn.disabled = false;
+            result.textContent = (i18n.error || 'Error:') + ' ' + res.error_content;
+            result.style.color = '#d63638';
+            return;
+          }
+
+          var s = res.summary || {};
+          totals.orgs_created     += s.orgs_created || 0;
+          totals.orgs_updated     += s.orgs_updated || 0;
+          totals.contacts_created += s.contacts_created || 0;
+          totals.contacts_updated += s.contacts_updated || 0;
+          totals.errors           += s.errors || 0;
+
+          if (res.has_more && res.cursor) {
+            fetchPage(res.cursor);
+          } else {
+            btn.disabled = false;
+            result.textContent = (i18n.pullComplete || 'Pull complete.') +
+              ' Orgs: ' + totals.orgs_created + ' created, ' + totals.orgs_updated + ' updated.' +
+              ' Contacts: ' + totals.contacts_created + ' created, ' + totals.contacts_updated + ' updated.' +
+              ' Errors: ' + totals.errors + '.';
+            result.style.color = totals.errors ? '#dba617' : '#00a32a';
+          }
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          result.textContent = (i18n.error || 'Error') + ': ' + err.message;
+          result.style.color = '#d63638';
+        });
+    }
+
+    fetchPage('');
+  }
+
+  /* ======== Zoho CRM ======== */
+  function testZoho() {
+    var btn    = document.getElementById('pn-cm-zoho-test-btn');
+    var result = document.getElementById('pn-cm-zoho-test-result');
+
+    btn.disabled = true;
+    result.textContent = i18n.testing || 'Testing...';
+    result.style.color = '#666';
+
+    var formData = new FormData();
+    formData.append('action', 'pn_customers_manager_ajax');
+    formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+    formData.append('pn_customers_manager_ajax_type', 'pn_cm_zoho_test');
+
+    fetch(cfg.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData,
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.text().then(function (txt) {
+            throw new Error('HTTP ' + r.status + ': ' + txt.substring(0, 300));
+          });
+        }
+        return r.json();
+      })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.error_key) {
+          result.textContent = (i18n.error || 'Error:') + ' ' + res.error_content;
+          result.style.color = '#d63638';
+        } else {
+          result.textContent = res.message;
+          result.style.color = '#00a32a';
+        }
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        result.textContent = (i18n.error || 'Error') + ': ' + err.message;
+        result.style.color = '#d63638';
+      });
+  }
+
+  function pushZoho() {
+    var btn    = document.getElementById('pn-cm-zoho-push-btn');
+    var result = document.getElementById('pn-cm-zoho-push-result');
+
+    btn.disabled = true;
+    result.textContent = i18n.syncing || 'Syncing...';
+    result.style.color = '#666';
+
+    var formData = new FormData();
+    formData.append('action', 'pn_customers_manager_ajax');
+    formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+    formData.append('pn_customers_manager_ajax_type', 'pn_cm_zoho_push_all');
+
+    fetch(cfg.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData,
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.text().then(function (txt) {
+            throw new Error('HTTP ' + r.status + ': ' + txt.substring(0, 300));
+          });
+        }
+        return r.json();
+      })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.error_key) {
+          result.textContent = (i18n.error || 'Error:') + ' ' + res.error_content;
+          result.style.color = '#d63638';
+        } else {
+          result.textContent = res.message;
+          result.style.color = '#00a32a';
+        }
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        result.textContent = (i18n.error || 'Error') + ': ' + err.message;
+        result.style.color = '#d63638';
+      });
+  }
+
+  function pullZoho() {
+    var btn    = document.getElementById('pn-cm-zoho-pull-btn');
+    var result = document.getElementById('pn-cm-zoho-pull-result');
+
+    btn.disabled = true;
+
+    var totals = { orgs_created: 0, orgs_updated: 0, contacts_created: 0, contacts_updated: 0, errors: 0 };
+    var batchNum = 0;
+
+    function fetchPage(page) {
+      batchNum++;
+      result.textContent = (i18n.syncing || 'Syncing...') + ' (' + (i18n.batch || 'batch') + ' ' + batchNum + ')';
+      result.style.color = '#666';
+
+      var formData = new FormData();
+      formData.append('action', 'pn_customers_manager_ajax');
+      formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+      formData.append('pn_customers_manager_ajax_type', 'pn_cm_zoho_pull_all');
+      formData.append('pull_page', page);
+
+      fetch(cfg.ajaxUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: formData,
+      })
+        .then(function (r) {
+          if (!r.ok) {
+            return r.text().then(function (txt) {
+              throw new Error('HTTP ' + r.status + ': ' + txt.substring(0, 300));
+            });
+          }
+          return r.json();
+        })
+        .then(function (res) {
+          if (res.error_key) {
+            btn.disabled = false;
+            result.textContent = (i18n.error || 'Error:') + ' ' + res.error_content;
+            result.style.color = '#d63638';
+            return;
+          }
+
+          var s = res.summary || {};
+          totals.orgs_created     += s.orgs_created || 0;
+          totals.orgs_updated     += s.orgs_updated || 0;
+          totals.contacts_created += s.contacts_created || 0;
+          totals.contacts_updated += s.contacts_updated || 0;
+          totals.errors           += s.errors || 0;
+
+          if (res.has_more) {
+            fetchPage(page + 1);
+          } else {
+            btn.disabled = false;
+            result.textContent = (i18n.pullComplete || 'Pull complete.') +
+              ' Orgs: ' + totals.orgs_created + ' created, ' + totals.orgs_updated + ' updated.' +
+              ' Contacts: ' + totals.contacts_created + ' created, ' + totals.contacts_updated + ' updated.' +
+              ' Errors: ' + totals.errors + '.';
+            result.style.color = totals.errors ? '#dba617' : '#00a32a';
+          }
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          result.textContent = (i18n.error || 'Error') + ': ' + err.message;
+          result.style.color = '#d63638';
+        });
+    }
+
+    fetchPage(1);
+  }
+
+  function disconnectZoho() {
+    if (!confirm(i18n.confirmDisconnect || 'Are you sure you want to disconnect Zoho CRM?')) {
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('action', 'pn_customers_manager_ajax');
+    formData.append('pn_customers_manager_ajax_nonce', cfg.nonce);
+    formData.append('pn_customers_manager_ajax_type', 'pn_cm_zoho_disconnect');
+
+    fetch(cfg.ajaxUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        location.reload();
       });
   }
 

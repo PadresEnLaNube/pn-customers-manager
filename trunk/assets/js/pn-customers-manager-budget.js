@@ -439,6 +439,17 @@
         });
 
         // -------------------------------------------------------
+        // 5b. Payments: toggle collapse
+        // -------------------------------------------------------
+
+        $(document).on('click', '.pn-cm-payments-header', function () {
+            // When admin JS is loaded, it handles this event.
+            if (typeof pnCmBudgetAdmin !== 'undefined') return;
+
+            $(this).closest('.pn-cm-payments-container, .pn-cm-budget-payments, .pn-cm-invoice-payments').toggleClass('pn-cm-payments-collapsed');
+        });
+
+        // -------------------------------------------------------
         // 6. Phase toggle (activate/deactivate all items in phase)
         // -------------------------------------------------------
 

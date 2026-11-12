@@ -2493,6 +2493,336 @@
             bulkUpdateField('is_recurring', value);
         });
 
+        // ── Helper: update status badge/select after payment changes ──
+        function updateBudgetStatus(newStatus) {
+            if (!newStatus) return;
+            var statusLabels = {
+                draft: pnCmBudgetAdmin.i18n.statusDraft || 'Draft',
+                sent: pnCmBudgetAdmin.i18n.statusSent || 'Sent',
+                accepted: pnCmBudgetAdmin.i18n.statusAccepted || 'Accepted',
+                rejected: pnCmBudgetAdmin.i18n.statusRejected || 'Rejected',
+                paid: pnCmBudgetAdmin.i18n.statusPaid || 'Paid'
+            };
+            // Public page status badge.
+            var $badge = $('.pn-cm-budget-status');
+            if ($badge.length) {
+                $badge.removeClass('pn-cm-budget-status-draft pn-cm-budget-status-sent pn-cm-budget-status-accepted pn-cm-budget-status-rejected pn-cm-budget-status-paid')
+                      .addClass('pn-cm-budget-status-' + newStatus)
+                      .text(statusLabels[newStatus] || newStatus);
+            }
+            var $select = $('.pn-cm-budget-status-select');
+            if ($select.length) {
+                $select.val(newStatus).data('current', newStatus);
+            }
+        }
+
+        // ── Payments: add ──
+        $(document).on('click', '.pn-cm-payments-container[data-type="budget"] .pn-cm-payment-add-btn, .pn-cm-budget-payment-add-btn', function (e) {
+            e.preventDefault();
+            var $container = $(this).closest('.pn-cm-payments-container, .pn-cm-budget-payments');
+            var budgetId = $container.data('post-id') || pnCmBudgetAdmin.budgetId;
+            var $form = $(this).closest('.pn-cm-payments-add-form, .pn-cm-budget-payments-add-form');
+            var date = $form.find('.pn-cm-payment-date').val();
+            var concept = $form.find('.pn-cm-payment-concept').val() || '';
+            var type = $form.find('.pn-cm-payment-type').val() || 'income';
+            var category = $form.find('.pn-cm-payment-category').val() || 'client_payment';
+            var recipient = $form.find('.pn-cm-payment-recipient').val() || '';
+            var amount = $form.find('.pn-cm-payment-amount').val();
+            var method = $form.find('.pn-cm-payment-method').val();
+            var notes = $form.find('.pn-cm-payment-notes').val() || '';
+            var visible = $form.find('.pn-cm-payment-visible').is(':checked') ? 1 : 0;
+
+            if (!amount || parseFloat(amount) <= 0) {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                return;
+            }
+
+            $.post(pnCmBudgetAdmin.ajaxUrl, {
+                action: 'pn_customers_manager_ajax',
+                pn_customers_manager_ajax_type: 'pn_cm_budget_add_payment',
+                pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
+                budget_id: budgetId,
+                payment_date: date,
+                payment_concept: concept,
+                payment_type: type,
+                payment_category: category,
+                payment_recipient: recipient,
+                payment_amount: amount,
+                payment_method: method,
+                payment_notes: notes,
+                payment_visible: visible
+            }, function (response) {
+                if (response && response.error_key === '') {
+                    if (response.html) {
+                        $container.replaceWith(response.html);
+                    } else {
+                        location.reload();
+                    }
+                    if (response.status) {
+                        updateBudgetStatus(response.status);
+                    }
+                } else {
+                    alert((response && response.error_content) || pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                }
+            }, 'json').fail(function () {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+            });
+        });
+
+        // ── Payments: remove ──
+        $(document).on('click', '.pn-cm-payments-container[data-type="budget"] .pn-cm-payment-remove, .pn-cm-budget-payment-remove', function (e) {
+            e.preventDefault();
+            var $container = $(this).closest('.pn-cm-payments-container, .pn-cm-budget-payments');
+            var budgetId = $container.data('post-id') || pnCmBudgetAdmin.budgetId;
+            var paymentId = $(this).data('payment-id');
+
+            if (!confirm(pnCmBudgetAdmin.i18n.confirmDelete || 'Are you sure?')) {
+                return;
+            }
+
+            $.post(pnCmBudgetAdmin.ajaxUrl, {
+                action: 'pn_customers_manager_ajax',
+                pn_customers_manager_ajax_type: 'pn_cm_budget_remove_payment',
+                pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
+                budget_id: budgetId,
+                payment_id: paymentId
+            }, function (response) {
+                if (response && response.error_key === '') {
+                    if (response.html) {
+                        $container.replaceWith(response.html);
+                    } else {
+                        location.reload();
+                    }
+                    if (response.status) {
+                        updateBudgetStatus(response.status);
+                    }
+                } else {
+                    alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                }
+            }, 'json').fail(function () {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+            });
+        });
+
+        // ── Payments: toggle visibility ──
+        $(document).on('click', '.pn-cm-payments-container[data-type="budget"] .pn-cm-payment-toggle-visibility, .pn-cm-budget-payments .pn-cm-payment-toggle-visibility', function (e) {
+            e.preventDefault();
+            var $container = $(this).closest('.pn-cm-payments-container, .pn-cm-budget-payments');
+            var budgetId = $container.data('post-id') || pnCmBudgetAdmin.budgetId;
+            var paymentId = $(this).data('payment-id');
+
+            $.post(pnCmBudgetAdmin.ajaxUrl, {
+                action: 'pn_customers_manager_ajax',
+                pn_customers_manager_ajax_type: 'pn_cm_budget_toggle_payment_visibility',
+                pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
+                budget_id: budgetId,
+                payment_id: paymentId
+            }, function (response) {
+                if (response && response.error_key === '') {
+                    if (response.html) {
+                        $container.replaceWith(response.html);
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                }
+            }, 'json').fail(function () {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+            });
+        });
+
+        // ── Payments: edit (inline) ──
+        $(document).on('click', '.pn-cm-payments-container[data-type="budget"] .pn-cm-payment-edit, .pn-cm-budget-payments .pn-cm-payment-edit', function (e) {
+            e.preventDefault();
+            var $row = $(this).closest('tr');
+            if ($row.hasClass('pn-cm-payment-editing')) return;
+            $row.addClass('pn-cm-payment-editing');
+
+            var d = $row.data();
+            var cells = $row.children('td');
+
+            // Store original HTML for cancel
+            $row.data('original-html', $row.html());
+
+            var editHtml = '<td><input type="date" class="pn-cm-payment-edit-date" value="' + (d.date || '') + '" /></td>' +
+                '<td><input type="text" class="pn-cm-payment-edit-concept" value="' + $('<span>').text(d.concept || '').html() + '" /></td>' +
+                '<td><select class="pn-cm-payment-edit-type"><option value="income"' + (d.type === 'income' ? ' selected' : '') + '>Income</option><option value="expense"' + (d.type === 'expense' ? ' selected' : '') + '>Expense</option></select></td>' +
+                '<td><select class="pn-cm-payment-edit-category">' +
+                    '<option value="client_payment"' + (d.category === 'client_payment' ? ' selected' : '') + '>Client payment</option>' +
+                    '<option value="worker"' + (d.category === 'worker' ? ' selected' : '') + '>Worker</option>' +
+                    '<option value="material"' + (d.category === 'material' ? ' selected' : '') + '>Material</option>' +
+                    '<option value="supply"' + (d.category === 'supply' ? ' selected' : '') + '>Supply</option>' +
+                    '<option value="other"' + (d.category === 'other' ? ' selected' : '') + '>Other</option>' +
+                '</select></td>' +
+                '<td><input type="text" class="pn-cm-payment-edit-recipient" value="' + $('<span>').text(d.recipient || '').html() + '" /></td>' +
+                '<td><input type="number" class="pn-cm-payment-edit-amount" step="0.01" min="0" value="' + (d.amount || 0) + '" /></td>' +
+                '<td><select class="pn-cm-payment-edit-method">' +
+                    '<option value="cash"' + (d.method === 'cash' ? ' selected' : '') + '>Cash</option>' +
+                    '<option value="bank_transfer"' + (d.method === 'bank_transfer' ? ' selected' : '') + '>Bank transfer</option>' +
+                    '<option value="card"' + (d.method === 'card' ? ' selected' : '') + '>Card</option>' +
+                    '<option value="paypal"' + (d.method === 'paypal' ? ' selected' : '') + '>PayPal</option>' +
+                    '<option value="bizum"' + (d.method === 'bizum' ? ' selected' : '') + '>Bizum</option>' +
+                    '<option value="other"' + (d.method === 'other' ? ' selected' : '') + '>Other</option>' +
+                '</select></td>' +
+                '<td><input type="text" class="pn-cm-payment-edit-notes" value="' + $('<span>').text(d.notes || '').html() + '" /></td>' +
+                '<td class="pn-cm-payment-td-actions"><label class="pn-cm-payment-switch"><input type="checkbox" class="pn-cm-payment-edit-visible"' + (parseInt(d.visible) ? ' checked' : '') + ' /><span class="pn-cm-payment-switch-slider"></span></label></td>' +
+                '<td class="pn-cm-payment-td-actions"><a href="#" class="pn-cm-payment-edit-save" title="Save"><i class="material-icons-outlined">check</i></a></td>' +
+                '<td class="pn-cm-payment-td-actions"><a href="#" class="pn-cm-payment-edit-cancel" title="Cancel"><i class="material-icons-outlined">close</i></a></td>';
+
+            $row.html(editHtml);
+        });
+
+        // ── Payments: edit cancel ──
+        $(document).on('click', '.pn-cm-payments-container[data-type="budget"] .pn-cm-payment-edit-cancel, .pn-cm-budget-payments .pn-cm-payment-edit-cancel', function (e) {
+            e.preventDefault();
+            var $row = $(this).closest('tr');
+            $row.html($row.data('original-html'));
+            $row.removeClass('pn-cm-payment-editing');
+        });
+
+        // ── Payments: edit save ──
+        $(document).on('click', '.pn-cm-payments-container[data-type="budget"] .pn-cm-payment-edit-save, .pn-cm-budget-payments .pn-cm-payment-edit-save', function (e) {
+            e.preventDefault();
+            var $row = $(this).closest('tr');
+            var $container = $row.closest('.pn-cm-payments-container, .pn-cm-budget-payments');
+            var budgetId = $container.data('post-id') || pnCmBudgetAdmin.budgetId;
+            var paymentId = $row.data('payment-id');
+
+            var amount = $row.find('.pn-cm-payment-edit-amount').val();
+            if (!amount || parseFloat(amount) <= 0) {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                return;
+            }
+
+            $.post(pnCmBudgetAdmin.ajaxUrl, {
+                action: 'pn_customers_manager_ajax',
+                pn_customers_manager_ajax_type: 'pn_cm_budget_edit_payment',
+                pn_customers_manager_ajax_nonce: pnCmBudgetAdmin.nonce,
+                budget_id: budgetId,
+                payment_id: paymentId,
+                payment_date: $row.find('.pn-cm-payment-edit-date').val(),
+                payment_concept: $row.find('.pn-cm-payment-edit-concept').val() || '',
+                payment_type: $row.find('.pn-cm-payment-edit-type').val() || 'income',
+                payment_category: $row.find('.pn-cm-payment-edit-category').val() || 'client_payment',
+                payment_recipient: $row.find('.pn-cm-payment-edit-recipient').val() || '',
+                payment_amount: amount,
+                payment_method: $row.find('.pn-cm-payment-edit-method').val(),
+                payment_notes: $row.find('.pn-cm-payment-edit-notes').val() || '',
+                payment_visible: $row.find('.pn-cm-payment-edit-visible').is(':checked') ? 1 : 0
+            }, function (response) {
+                if (response && response.error_key === '') {
+                    if (response.html) {
+                        $container.replaceWith(response.html);
+                    } else {
+                        location.reload();
+                    }
+                    if (response.status) {
+                        updateBudgetStatus(response.status);
+                    }
+                } else {
+                    alert((response && response.error_content) || pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+                }
+            }, 'json').fail(function () {
+                alert(pnCmBudgetAdmin.i18n.error || 'An error occurred.');
+            });
+        });
+
+        // ── Payments: toggle collapse ──
+        $(document).on('click', '.pn-cm-payments-header', function () {
+            $(this).closest('.pn-cm-payments-container, .pn-cm-budget-payments, .pn-cm-invoice-payments').toggleClass('pn-cm-payments-collapsed');
+        });
+
+        // ── Payments: init charts ──
+        function initPaymentCharts($container) {
+            if (typeof Chart === 'undefined') return;
+            var income = parseFloat($container.attr('data-total-income')) || 0;
+            var expense = parseFloat($container.attr('data-total-expense')) || 0;
+            var remaining = parseFloat($container.attr('data-remaining')) || 0;
+            var expCats = {};
+            var catLabels = {};
+            try { expCats = JSON.parse($container.attr('data-expense-categories') || '{}'); } catch(e) {}
+            try { catLabels = JSON.parse($container.attr('data-category-labels') || '{}'); } catch(e) {}
+
+            // Balance chart
+            var balanceCanvas = $container.find('.pn-cm-payments-chart-balance')[0];
+            if (balanceCanvas && (income > 0 || expense > 0)) {
+                new Chart(balanceCanvas.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Income', 'Expenses'],
+                        datasets: [{
+                            data: [income, expense],
+                            backgroundColor: ['#28a745', '#dc3545'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        cutout: '65%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } }
+                        }
+                    }
+                });
+            } else if (balanceCanvas) {
+                $(balanceCanvas).closest('.pn-cm-payments-chart-box').hide();
+            }
+
+            // Categories chart
+            var catCanvas = $container.find('.pn-cm-payments-chart-categories')[0];
+            var catKeys = Object.keys(expCats);
+            if (catCanvas && catKeys.length > 0) {
+                var catColors = {
+                    client_payment: '#4e79a7', worker: '#f28e2b', material: '#e15759',
+                    supply: '#76b7b2', other: '#999'
+                };
+                var catData = [];
+                var catNames = [];
+                var catBg = [];
+                var defaultColors = ['#59a14f', '#edc948', '#b07aa1', '#ff9da7', '#9c755f'];
+                var ci = 0;
+                catKeys.forEach(function (k) {
+                    if (expCats[k] > 0) {
+                        catData.push(expCats[k]);
+                        catNames.push(catLabels[k] || k);
+                        catBg.push(catColors[k] || defaultColors[ci++ % defaultColors.length]);
+                    }
+                });
+                if (catData.length > 0) {
+                    new Chart(catCanvas.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: catNames,
+                            datasets: [{
+                                data: catData,
+                                backgroundColor: catBg,
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            cutout: '65%',
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } }
+                            }
+                        }
+                    });
+                } else {
+                    $(catCanvas).closest('.pn-cm-payments-chart-box').hide();
+                }
+            } else if (catCanvas) {
+                $(catCanvas).closest('.pn-cm-payments-chart-box').hide();
+            }
+        }
+
+        // Init charts on page load
+        $('.pn-cm-payments-container, .pn-cm-budget-payments').each(function () {
+            initPaymentCharts($(this));
+        });
+
     }); // end document.ready
 
 })(jQuery);

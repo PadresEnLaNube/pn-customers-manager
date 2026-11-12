@@ -1172,8 +1172,8 @@ textarea{
   display:flex;
   flex-wrap:nowrap;
   overflow-x:auto;
-  border:1px solid #cccccc;
-  background-color:#f1f1f1
+  border: none;
+  background-color: transparent;
 }
 .pn-customers-manager-tabs button{
   width:50%;
@@ -1220,6 +1220,14 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
 .pn-customers-manager-body #header,.pn-customers-manager-body #header ~ hr,.pn-customers-manager-body #footer,.pn-customers-manager-body #footer ~ hr{
     display:none;
 }
+/* Ensure menu-more dropdowns are not clipped by table-layout or list-item ancestors */
+.pn-customers-manager-pn_cm_invoice-list-item,
+.pn-customers-manager-pn_cm_budget-list-item,
+.pn-customers-manager-pn_cm_invoice-list-item > .pn-customers-manager-display-table,
+.pn-customers-manager-pn_cm_budget-list-item > .pn-customers-manager-display-table,
+.pn-customers-manager-add-new-cpt{
+  overflow:visible;
+}
 .pn-customers-manager-menu-more-overlay{
   display:none;
   width:100%;
@@ -1233,8 +1241,12 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   position:absolute;
   right:0;
   min-width:250px;
+  max-height:70vh;
+  overflow-y:auto;
   background-color:#ffffff;
   border-radius:10px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.15);
+  z-index:100;
 }
 .pn-customers-manager-menu-more ul{
   margin:0;
@@ -2196,7 +2208,7 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   .pn-customers-manager-cpt-search-wrapper {
     padding: 8px 15px;
     transition: all 0.3s ease;
-    width: 100%;
+    margin-left: auto;
   }
 
   .pn-customers-manager-cpt-search-toggle {
@@ -2204,6 +2216,10 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
     margin-right: 10px;
     transition: all 0.3s ease;
     cursor: pointer;
+  }
+
+  .pn-customers-manager-cpt-search-wrapper a {
+    margin-right: 10px;
   }
 
   .pn-customers-manager-cpt-search-toggle:hover {
@@ -2275,6 +2291,7 @@ header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigati
   .pn-customers-manager-cpt-list-wrapper {
     max-width: 1000px;
     margin: auto;
+    padding-bottom: 50px;
   }
 /* END CPT LIST WRAPPERS */
 

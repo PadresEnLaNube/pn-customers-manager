@@ -121,13 +121,13 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			if (!empty($orders_data)) {
 				?>
 				<div class="options_group">
-					<h4 style="padding: 0 12px;"><?php _e('QR Statistics', 'pn-customers-manager'); ?></h4>
+					<h4 style="padding: 0 12px;"><?php esc_html_e('QR Statistics', 'pn-customers-manager'); ?></h4>
 					<p class="form-field" style="padding: 0 12px;">
-						<strong><?php _e('Total QR Codes Generated:', 'pn-customers-manager'); ?></strong>
+						<strong><?php esc_html_e('Total QR Codes Generated:', 'pn-customers-manager'); ?></strong>
 						<?php echo count($orders_data); ?><br>
-						<strong><?php _e('Processed:', 'pn-customers-manager'); ?></strong>
+						<strong><?php esc_html_e('Processed:', 'pn-customers-manager'); ?></strong>
 						<?php echo count(array_filter($orders_data, function($o) { return !empty($o['processed']); })); ?><br>
-						<strong><?php _e('Pending:', 'pn-customers-manager'); ?></strong>
+						<strong><?php esc_html_e('Pending:', 'pn-customers-manager'); ?></strong>
 						<?php echo count(array_filter($orders_data, function($o) { return empty($o['processed']); })); ?>
 					</p>
 				</div>
@@ -235,28 +235,28 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		?>
 		<div class="pn-cm-qr-user-section">
-			<h2><?php _e('Your QR Tickets', 'pn-customers-manager'); ?></h2>
+			<h2><?php esc_html_e('Your QR Tickets', 'pn-customers-manager'); ?></h2>
 			<p><?php echo wp_kses_post($instructions); ?></p>
 
 			<div class="pn-cm-qr-user-codes">
 				<?php foreach ($user_qrs as $qr_data): ?>
 					<div class="pn-cm-qr-user-code <?php echo $qr_data['processed'] ? 'processed' : 'pending'; ?>">
 						<div class="pn-cm-qr-code-image">
-							<?php echo $this->generate_qr_svg($qr_data['code']); ?>
+							<?php echo wp_kses_post($this->generate_qr_svg($qr_data['code'])); ?>
 						</div>
 						<div class="pn-cm-qr-code-info">
 							<p class="pn-cm-qr-code-string"><?php echo esc_html($qr_data['code']); ?></p>
-							<p class="pn-cm-qr-code-order"><?php printf(__('Order #%s', 'pn-customers-manager'), $qr_data['order_id']); ?></p>
-							<p class="pn-cm-qr-code-quantity"><?php printf(__('Quantity: %d', 'pn-customers-manager'), $qr_data['quantity']); ?></p>
+							<p class="pn-cm-qr-code-order"><?php /* translators: %s is the order ID */ printf(esc_html__('Order #%s', 'pn-customers-manager'), esc_html($qr_data['order_id'])); ?></p>
+							<p class="pn-cm-qr-code-quantity"><?php /* translators: %d is the item quantity */ printf(esc_html__('Quantity: %d', 'pn-customers-manager'), esc_html($qr_data['quantity'])); ?></p>
 							<?php if ($qr_data['processed']): ?>
 								<p class="pn-cm-qr-status processed">
 									<i class="material-icons-outlined">check_circle</i>
-									<?php _e('Processed', 'pn-customers-manager'); ?>
+									<?php esc_html_e('Processed', 'pn-customers-manager'); ?>
 								</p>
 							<?php else: ?>
 								<p class="pn-cm-qr-status pending">
 									<i class="material-icons-outlined">schedule</i>
-									<?php _e('Pending', 'pn-customers-manager'); ?>
+									<?php esc_html_e('Pending', 'pn-customers-manager'); ?>
 								</p>
 							<?php endif; ?>
 						</div>
@@ -291,18 +291,18 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		?>
 		<div class="pn-cm-qr-admin-panel">
-			<h2><?php _e('QR Tickets Management', 'pn-customers-manager'); ?></h2>
+			<h2><?php esc_html_e('QR Tickets Management', 'pn-customers-manager'); ?></h2>
 
 			<div class="pn-cm-qr-admin-controls">
 				<div class="pn-cm-qr-actions-btns">
 					<button type="button" id="pn-cm-qr-scan" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent">
-						<?php _e('Scan QR Code', 'pn-customers-manager'); ?>
+						<?php esc_html_e('Scan QR Code', 'pn-customers-manager'); ?>
 					</button>
 				</div>
 
 				<div class="pn-cm-qr-filters">
 					<select id="pn-cm-qr-filter-product" class="pn-cm-qr-filter">
-						<option value=""><?php _e('All Products', 'pn-customers-manager'); ?></option>
+						<option value=""><?php esc_html_e('All Products', 'pn-customers-manager'); ?></option>
 						<?php foreach ($qr_products as $qr_product): ?>
 							<option value="<?php echo esc_attr($qr_product->ID); ?>" <?php selected($qr_product->ID, $product_id); ?>>
 								<?php echo esc_html($qr_product->post_title); ?>
@@ -311,22 +311,22 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					</select>
 
 					<select id="pn-cm-qr-filter-variation" class="pn-cm-qr-filter" style="display: none;">
-						<option value=""><?php _e('All Variations', 'pn-customers-manager'); ?></option>
+						<option value=""><?php esc_html_e('All Variations', 'pn-customers-manager'); ?></option>
 					</select>
 
 					<select id="pn-cm-qr-filter-status" class="pn-cm-qr-filter">
-						<option value=""><?php _e('All Status', 'pn-customers-manager'); ?></option>
-						<option value="pending"><?php _e('Pending', 'pn-customers-manager'); ?></option>
-						<option value="processed"><?php _e('Processed', 'pn-customers-manager'); ?></option>
+						<option value=""><?php esc_html_e('All Status', 'pn-customers-manager'); ?></option>
+						<option value="pending"><?php esc_html_e('Pending', 'pn-customers-manager'); ?></option>
+						<option value="processed"><?php esc_html_e('Processed', 'pn-customers-manager'); ?></option>
 					</select>
 
-					<input type="text" id="pn-cm-qr-filter-search" class="pn-cm-qr-filter pn-cm-qr-search-input" placeholder="<?php _e('Search by customer, order, QR code...', 'pn-customers-manager'); ?>">
+					<input type="text" id="pn-cm-qr-filter-search" class="pn-cm-qr-filter pn-cm-qr-search-input" placeholder="<?php esc_html_e('Search by customer, order, QR code...', 'pn-customers-manager'); ?>">
 				</div>
 			</div>
 
 			<div id="pn-cm-qr-orders-wrapper" style="position: relative;">
 				<div id="pn-cm-qr-orders-list" data-product-id="<?php echo esc_attr($product_id); ?>" data-variation-id="">
-					<?php echo $this->get_orders_html($product_id); ?>
+					<?php echo wp_kses_post($this->get_orders_html($product_id)); ?>
 				</div>
 				<div class="pn-cm-qr-loader pn-customers-manager-display-none">
 					<div class="pn-customers-manager-loader-circle-wrapper">
@@ -342,14 +342,14 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		<div id="pn-cm-qr-scanner-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-medium pn-customers-manager-display-none-soft">
 			<div class="pn-customers-manager-popup-overlay"></div>
 			<div class="pn-customers-manager-popup-content">
-				<h3 class="pn-customers-manager-text-align-center"><?php _e('Scan QR Code', 'pn-customers-manager'); ?></h3>
+				<h3 class="pn-customers-manager-text-align-center"><?php esc_html_e('Scan QR Code', 'pn-customers-manager'); ?></h3>
 				<div id="pn-cm-qr-scanner-container" style="text-align: center; margin: 20px 0;">
 					<!-- Scanner will be initialized here -->
 				</div>
 				<div style="text-align: center;">
 					<button id="pn-cm-qr-switch-camera" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent" style="margin: 10px auto; display: none;">
 						<i class="material-icons-outlined">switch_camera</i>
-						<?php _e('Switch Camera', 'pn-customers-manager'); ?>
+						<?php esc_html_e('Switch Camera', 'pn-customers-manager'); ?>
 					</button>
 				</div>
 				<div id="pn-cm-qr-scanner-result" style="margin-top: 20px; text-align: center;"></div>
@@ -398,7 +398,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						<i class="material-icons-outlined">qr_code_2</i>
 					</div>
 					<div class="pn-cm-qr-stat-info">
-						<div class="pn-cm-qr-stat-label"><?php _e('Total QR Codes', 'pn-customers-manager'); ?></div>
+						<div class="pn-cm-qr-stat-label"><?php esc_html_e('Total QR Codes', 'pn-customers-manager'); ?></div>
 						<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['total']); ?></div>
 					</div>
 				</div>
@@ -407,7 +407,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						<i class="material-icons-outlined">schedule</i>
 					</div>
 					<div class="pn-cm-qr-stat-info">
-						<div class="pn-cm-qr-stat-label"><?php _e('Pending', 'pn-customers-manager'); ?></div>
+						<div class="pn-cm-qr-stat-label"><?php esc_html_e('Pending', 'pn-customers-manager'); ?></div>
 						<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['pending']); ?></div>
 					</div>
 				</div>
@@ -416,12 +416,12 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						<i class="material-icons-outlined">check_circle</i>
 					</div>
 					<div class="pn-cm-qr-stat-info">
-						<div class="pn-cm-qr-stat-label"><?php _e('Processed', 'pn-customers-manager'); ?></div>
+						<div class="pn-cm-qr-stat-label"><?php esc_html_e('Processed', 'pn-customers-manager'); ?></div>
 						<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['processed']); ?></div>
 					</div>
 				</div>
 			</div>
-			<p class="pn-cm-qr-no-orders"><?php _e('No QR tickets match the current filters', 'pn-customers-manager'); ?></p>
+			<p class="pn-cm-qr-no-orders"><?php esc_html_e('No QR tickets match the current filters', 'pn-customers-manager'); ?></p>
 			<?php
 			return ob_get_clean();
 		}
@@ -435,7 +435,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					<i class="material-icons-outlined">qr_code_2</i>
 				</div>
 				<div class="pn-cm-qr-stat-info">
-					<div class="pn-cm-qr-stat-label"><?php _e('Total QR Codes', 'pn-customers-manager'); ?></div>
+					<div class="pn-cm-qr-stat-label"><?php esc_html_e('Total QR Codes', 'pn-customers-manager'); ?></div>
 					<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['total']); ?></div>
 				</div>
 			</div>
@@ -444,7 +444,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					<i class="material-icons-outlined">schedule</i>
 				</div>
 				<div class="pn-cm-qr-stat-info">
-					<div class="pn-cm-qr-stat-label"><?php _e('Pending', 'pn-customers-manager'); ?></div>
+					<div class="pn-cm-qr-stat-label"><?php esc_html_e('Pending', 'pn-customers-manager'); ?></div>
 					<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['pending']); ?></div>
 				</div>
 			</div>
@@ -453,7 +453,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					<i class="material-icons-outlined">check_circle</i>
 				</div>
 				<div class="pn-cm-qr-stat-info">
-					<div class="pn-cm-qr-stat-label"><?php _e('Processed', 'pn-customers-manager'); ?></div>
+					<div class="pn-cm-qr-stat-label"><?php esc_html_e('Processed', 'pn-customers-manager'); ?></div>
 					<div class="pn-cm-qr-stat-value"><?php echo number_format($stats['processed']); ?></div>
 				</div>
 			</div>
@@ -461,19 +461,19 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		<!-- Bulk Actions Bar -->
 		<div class="pn-cm-qr-bulk-actions" style="display: none;">
-			<span class="pn-cm-qr-bulk-selected">0 <?php _e('selected', 'pn-customers-manager'); ?></span>
+			<span class="pn-cm-qr-bulk-selected">0 <?php esc_html_e('selected', 'pn-customers-manager'); ?></span>
 			<div class="pn-cm-qr-bulk-buttons">
 				<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-success" id="pn-cm-qr-bulk-process">
 					<i class="material-icons-outlined">check_circle</i>
-					<?php _e('Mark as Processed', 'pn-customers-manager'); ?>
+					<?php esc_html_e('Mark as Processed', 'pn-customers-manager'); ?>
 				</button>
 				<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-warning" id="pn-cm-qr-bulk-pending">
 					<i class="material-icons-outlined">schedule</i>
-					<?php _e('Mark as Pending', 'pn-customers-manager'); ?>
+					<?php esc_html_e('Mark as Pending', 'pn-customers-manager'); ?>
 				</button>
 				<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-danger" id="pn-cm-qr-bulk-delete">
 					<i class="material-icons-outlined">delete</i>
-					<?php _e('Delete', 'pn-customers-manager'); ?>
+					<?php esc_html_e('Delete', 'pn-customers-manager'); ?>
 				</button>
 			</div>
 		</div>
@@ -485,9 +485,9 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					<th style="width: 40px;">
 						<input type="checkbox" id="pn-cm-qr-select-all" class="pn-cm-qr-checkbox">
 					</th>
-					<th><?php _e('Customer', 'pn-customers-manager'); ?></th>
-					<th><?php _e('Products', 'pn-customers-manager'); ?></th>
-					<th><?php _e('Status', 'pn-customers-manager'); ?></th>
+					<th><?php esc_html_e('Customer', 'pn-customers-manager'); ?></th>
+					<th><?php esc_html_e('Products', 'pn-customers-manager'); ?></th>
+					<th><?php esc_html_e('Status', 'pn-customers-manager'); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -524,12 +524,12 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 							<?php if ($data['processed']): ?>
 								<span class="pn-cm-qr-badge processed">
 									<i class="material-icons-outlined">check_circle</i>
-									<span class="pn-cm-qr-badge-text"><?php _e('Processed', 'pn-customers-manager'); ?></span>
+									<span class="pn-cm-qr-badge-text"><?php esc_html_e('Processed', 'pn-customers-manager'); ?></span>
 								</span>
 							<?php else: ?>
 								<span class="pn-cm-qr-badge pending">
 									<i class="material-icons-outlined">schedule</i>
-									<span class="pn-cm-qr-badge-text"><?php _e('Pending', 'pn-customers-manager'); ?></span>
+									<span class="pn-cm-qr-badge-text"><?php esc_html_e('Pending', 'pn-customers-manager'); ?></span>
 								</span>
 							<?php endif; ?>
 						</td>
@@ -615,8 +615,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		";
 
 		if (!empty($prepare_values)) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query uses $wpdb->prefix table names and placeholder-based $where_sql; values passed to prepare().
 			$results = $wpdb->get_results($wpdb->prepare($query, ...$prepare_values));
 		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query uses only $wpdb->prefix table names; no user input when $prepare_values is empty.
 			$results = $wpdb->get_results($query);
 		}
 
@@ -756,8 +758,10 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		";
 
 		if (!empty($prepare_values)) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query uses $wpdb->prefix table names and placeholder-based $where_sql; values passed to prepare().
 			$result = $wpdb->get_row($wpdb->prepare($query, ...$prepare_values));
 		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query uses only $wpdb->prefix table names; no user input when $prepare_values is empty.
 			$result = $wpdb->get_row($query);
 		}
 
@@ -848,7 +852,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		?>
 		<div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-			<h2 style="margin-top: 0; color: #333;"><?php _e('Your QR Tickets', 'pn-customers-manager'); ?></h2>
+			<h2 style="margin-top: 0; color: #333;"><?php esc_html_e('Your QR Tickets', 'pn-customers-manager'); ?></h2>
 
 			<?php foreach ($qr_items as $qr_item): ?>
 				<div style="margin-bottom: 30px; padding: 20px; background: white; border-radius: 8px;">
@@ -858,7 +862,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					<?php endif; ?>
 
 					<div style="text-align: center; margin: 20px 0;">
-						<?php echo $this->generate_qr_svg($qr_item['code'], 200); ?>
+						<?php echo wp_kses_post($this->generate_qr_svg($qr_item['code'], 200)); ?>
 					</div>
 
 					<p style="text-align: center; font-family: monospace; font-size: 16px; font-weight: bold; color: #333;">
@@ -866,7 +870,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					</p>
 
 					<p style="text-align: center; color: #6c757d;">
-						<?php printf(__('Quantity: %d', 'pn-customers-manager'), $qr_item['quantity']); ?>
+						<?php /* translators: %d is the item quantity */ printf(esc_html__('Quantity: %d', 'pn-customers-manager'), esc_html($qr_item['quantity'])); ?>
 					</p>
 				</div>
 			<?php endforeach; ?>
@@ -902,7 +906,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		?>
 		<section class="woocommerce-order-qr-tickets" style="margin-top: 30px;">
-			<h2><?php _e('Your QR Tickets', 'pn-customers-manager'); ?></h2>
+			<h2><?php esc_html_e('Your QR Tickets', 'pn-customers-manager'); ?></h2>
 
 			<?php foreach ($qr_items as $qr_item): ?>
 				<div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
@@ -912,7 +916,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					<?php endif; ?>
 
 					<div style="text-align: center; margin: 20px 0;">
-						<?php echo $this->generate_qr_svg($qr_item['code'], 200); ?>
+						<?php echo wp_kses_post($this->generate_qr_svg($qr_item['code'], 200)); ?>
 					</div>
 
 					<p style="text-align: center; font-family: monospace; font-size: 16px; font-weight: bold;">
@@ -920,12 +924,12 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					</p>
 
 					<p style="text-align: center;">
-						<?php printf(__('Quantity: %d', 'pn-customers-manager'), $qr_item['quantity']); ?>
+						<?php /* translators: %d is the item quantity */ printf(esc_html__('Quantity: %d', 'pn-customers-manager'), esc_html($qr_item['quantity'])); ?>
 					</p>
 
 					<?php if ($qr_item['processed']): ?>
 						<p style="text-align: center; color: #28a745; font-weight: bold;">
-							<?php _e('✓ Processed', 'pn-customers-manager'); ?>
+							<?php esc_html_e('✓ Processed', 'pn-customers-manager'); ?>
 						</p>
 					<?php endif; ?>
 				</div>
@@ -990,7 +994,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		}
 
 		if (empty($qr_items)) {
-			echo '<p>' . __('No QR tickets for this order.', 'pn-customers-manager') . '</p>';
+			echo '<p>' . esc_html__('No QR tickets for this order.', 'pn-customers-manager') . '</p>';
 			return;
 		}
 
@@ -1051,7 +1055,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				<?php endif; ?>
 
 				<div class="pn-cm-qr-code-display">
-					<?php echo $this->generate_qr_svg($qr_item['code'], 150); ?>
+					<?php echo wp_kses_post($this->generate_qr_svg($qr_item['code'], 150)); ?>
 				</div>
 
 				<div class="pn-cm-qr-code-text">
@@ -1059,12 +1063,12 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				</div>
 
 				<div style="text-align: center; font-size: 12px; margin: 5px 0;">
-					<?php printf(__('Quantity: %d', 'pn-customers-manager'), $qr_item['quantity']); ?>
+					<?php /* translators: %d is the item quantity */ printf(esc_html__('Quantity: %d', 'pn-customers-manager'), esc_html($qr_item['quantity'])); ?>
 				</div>
 
 				<?php if ($qr_item['processed']): ?>
 					<div class="pn-cm-qr-status processed">
-						✓ <?php _e('Processed', 'pn-customers-manager'); ?>
+						✓ <?php esc_html_e('Processed', 'pn-customers-manager'); ?>
 					</div>
 					<?php if (!empty($qr_item['processed_date']) || !empty($qr_item['processed_by'])): ?>
 						<div class="pn-cm-qr-meta">
@@ -1072,13 +1076,13 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 								<?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($qr_item['processed_date']))); ?>
 							<?php endif; ?>
 							<?php if (!empty($qr_item['processed_by'])): ?>
-								<br><?php printf(__('by %s', 'pn-customers-manager'), esc_html($qr_item['processed_by'])); ?>
+								<br><?php /* translators: %s is the name of the user who processed the QR code */ printf(esc_html__('by %s', 'pn-customers-manager'), esc_html($qr_item['processed_by'])); ?>
 							<?php endif; ?>
 						</div>
 					<?php endif; ?>
 				<?php else: ?>
 					<div class="pn-cm-qr-status pending">
-						⏳ <?php _e('Pending', 'pn-customers-manager'); ?>
+						⏳ <?php esc_html_e('Pending', 'pn-customers-manager'); ?>
 					</div>
 				<?php endif; ?>
 			</div>
@@ -1332,7 +1336,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		}
 
 		wp_send_json_success([
-			'message' => sprintf(__('%d QR codes marked as processed', 'pn-customers-manager'), $processed),
+			'message' => /* translators: %d is the number of QR codes processed */ sprintf(__('%d QR codes marked as processed', 'pn-customers-manager'), $processed),
 			'count' => $processed
 		]);
 	}
@@ -1376,7 +1380,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		}
 
 		wp_send_json_success([
-			'message' => sprintf(__('%d QR codes marked as pending', 'pn-customers-manager'), $processed),
+			'message' => /* translators: %d is the number of QR codes marked as pending */ sprintf(__('%d QR codes marked as pending', 'pn-customers-manager'), $processed),
 			'count' => $processed
 		]);
 	}
@@ -1422,7 +1426,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		}
 
 		wp_send_json_success([
-			'message' => sprintf(__('%d QR codes deleted', 'pn-customers-manager'), $deleted),
+			'message' => /* translators: %d is the number of QR codes deleted */ sprintf(__('%d QR codes deleted', 'pn-customers-manager'), $deleted),
 			'count' => $deleted
 		]);
 	}
@@ -1444,7 +1448,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		}
 
 		$html = $this->qr_view($qr_code);
-		echo $html;
+		echo wp_kses_post($html);
 		wp_die();
 	}
 
@@ -1544,7 +1548,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		ob_start();
 		?>
 		<div class="pn-cm-qr-view pn-customers-manager-p-30">
-			<h4 class="pn-customers-manager-text-align-center"><?php _e('QR Ticket Details', 'pn-customers-manager'); ?></h4>
+			<h4 class="pn-customers-manager-text-align-center"><?php esc_html_e('QR Ticket Details', 'pn-customers-manager'); ?></h4>
 
 			<div class="pn-cm-qr-detail-wrapper">
 				<div class="pn-cm-qr-detail-qr">
@@ -1557,11 +1561,11 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				</div>
 
 				<div class="pn-cm-qr-detail-info">
-					<p><strong><?php _e('Order', 'pn-customers-manager'); ?>:</strong> #<?php echo esc_html($item_data->order_id); ?></p>
-					<p><strong><?php _e('Customer', 'pn-customers-manager'); ?>:</strong> <?php echo esc_html($customer); ?></p>
-					<p><strong><?php _e('Date', 'pn-customers-manager'); ?>:</strong> <?php echo esc_html($order_date); ?></p>
+					<p><strong><?php esc_html_e('Order', 'pn-customers-manager'); ?>:</strong> #<?php echo esc_html($item_data->order_id); ?></p>
+					<p><strong><?php esc_html_e('Customer', 'pn-customers-manager'); ?>:</strong> <?php echo esc_html($customer); ?></p>
+					<p><strong><?php esc_html_e('Date', 'pn-customers-manager'); ?>:</strong> <?php echo esc_html($order_date); ?></p>
 
-					<p><strong><?php _e('Product', 'pn-customers-manager'); ?>:</strong></p>
+					<p><strong><?php esc_html_e('Product', 'pn-customers-manager'); ?>:</strong></p>
 					<ul class="pn-cm-qr-products-list" style="margin: 10px 0; padding-left: 20px;">
 						<li style="margin: 5px 0; color: #333;">
 							<?php echo esc_html($product_name); ?>
@@ -1576,16 +1580,16 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						<div class="pn-cm-qr-processed-info" style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; border-left: 4px solid #28a745;">
 							<p class="pn-cm-qr-status-processed" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; margin: 0; color: #155724;">
 								<i class="material-icons-outlined" style="font-size: 20px;">check_circle</i>
-								<?php _e('Processed', 'pn-customers-manager'); ?>
+								<?php esc_html_e('Processed', 'pn-customers-manager'); ?>
 							</p>
 							<?php if ($item_data->processed_by): ?>
 								<p style="margin: 10px 0 0; font-size: 14px; color: #155724;">
-									<?php printf(__('By: %s', 'pn-customers-manager'), esc_html($item_data->processed_by)); ?>
+									<?php /* translators: %s is the name of the user who processed the QR code */ printf(esc_html__('By: %s', 'pn-customers-manager'), esc_html($item_data->processed_by)); ?>
 								</p>
 							<?php endif; ?>
 							<?php if ($item_data->processed_date): ?>
 								<p style="margin: 5px 0 0; font-size: 14px; color: #155724;">
-									<?php printf(__('On: %s', 'pn-customers-manager'), esc_html($item_data->processed_date)); ?>
+									<?php /* translators: %s is the date when the QR code was processed */ printf(esc_html__('On: %s', 'pn-customers-manager'), esc_html($item_data->processed_date)); ?>
 								</p>
 							<?php endif; ?>
 						</div>
@@ -1593,7 +1597,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 						<div class="pn-cm-qr-status-info" style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
 							<p class="pn-cm-qr-status-pending" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; margin: 0; color: #856404;">
 								<i class="material-icons-outlined" style="font-size: 20px;">schedule</i>
-								<?php _e('Pending', 'pn-customers-manager'); ?>
+								<?php esc_html_e('Pending', 'pn-customers-manager'); ?>
 							</p>
 						</div>
 					<?php endif; ?>
@@ -1697,6 +1701,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			]);
 		}
 
+		// phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- QR scanner library loaded from CDN; no bundled alternative.
 		wp_enqueue_script('pn-cm-qr-scanner', 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js', [], '2.3.8', true);
 		wp_enqueue_script('pn-cm-qr-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-cm-qr-admin.js', ['jquery', 'pn-cm-qr-scanner', 'pn-customers-manager', 'pn-customers-manager-popups', 'pn-customers-manager-ajax'], PN_CUSTOMERS_MANAGER_VERSION, true);
 
@@ -1725,20 +1730,27 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				'confirmDelete' => __('Are you sure you want to delete this QR code? This action cannot be undone.', 'pn-customers-manager'),
 				'selected' => __('selected', 'pn-customers-manager'),
 				'selectedPlural' => __('selected', 'pn-customers-manager'),
+				/* translators: %d is the number of selected QR codes */
 				'confirmBulkProcess' => __('Are you sure you want to mark %d QR codes as processed?', 'pn-customers-manager'),
+				/* translators: %d is the number of selected QR codes */
 				'confirmBulkPending' => __('Are you sure you want to mark %d QR codes as pending?', 'pn-customers-manager'),
+				/* translators: %d is the number of selected QR codes */
 				'confirmBulkDelete' => __('Are you sure you want to delete %d QR codes? This action cannot be undone.', 'pn-customers-manager'),
 				'completePending' => __('Complete Pending Orders', 'pn-customers-manager'),
 				'loadingOrders' => __('Loading pending orders...', 'pn-customers-manager'),
 				'noPendingOrders' => __('No pending orders found with QR products', 'pn-customers-manager'),
+				/* translators: %d is the number of pending orders found */
 				'pendingOrdersFound' => __('%d pending orders found', 'pn-customers-manager'),
 				'selectAll' => __('Select All', 'pn-customers-manager'),
 				'deselectAll' => __('Deselect All', 'pn-customers-manager'),
 				'completeSelected' => __('Complete Selected Orders', 'pn-customers-manager'),
+				/* translators: %s is the order number */
 				'orderNumber' => __('Order #%s', 'pn-customers-manager'),
 				'paymentMethod' => __('Payment Method', 'pn-customers-manager'),
 				'completingOrders' => __('Completing orders...', 'pn-customers-manager'),
+				/* translators: %d is the number of orders completed */
 				'ordersCompleted' => __('%d orders completed successfully', 'pn-customers-manager'),
+				/* translators: %d is the number of orders to be completed */
 				'confirmComplete' => __('Are you sure you want to complete %d orders?', 'pn-customers-manager'),
 			],
 		]);
@@ -1760,7 +1772,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		ob_start();
 		?>
 		<div class="pn-cm-qr-admin-panel pn-cm-qr-shortcode">
-			<h2><?php _e('QR Tickets Management', 'pn-customers-manager'); ?></h2>
+			<h2><?php esc_html_e('QR Tickets Management', 'pn-customers-manager'); ?></h2>
 
 			<!-- Persistent notification area -->
 			<div id="pn-cm-qr-notification" class="pn-cm-qr-notification pn-customers-manager-display-none" style="display: none;">
@@ -1773,16 +1785,16 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 			<div class="pn-cm-qr-admin-controls">
 				<div class="pn-cm-qr-actions-btns">
 					<button type="button" id="pn-cm-qr-scan" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent">
-						<?php _e('Scan QR Code', 'pn-customers-manager'); ?>
+						<?php esc_html_e('Scan QR Code', 'pn-customers-manager'); ?>
 					</button>
 					<button type="button" id="pn-cm-qr-complete-pending" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent">
-						<?php _e('Complete Pending Orders', 'pn-customers-manager'); ?>
+						<?php esc_html_e('Complete Pending Orders', 'pn-customers-manager'); ?>
 					</button>
 				</div>
 
 				<div class="pn-cm-qr-filters">
 					<select id="pn-cm-qr-filter-product" class="pn-cm-qr-filter">
-						<option value=""><?php _e('All Products', 'pn-customers-manager'); ?></option>
+						<option value=""><?php esc_html_e('All Products', 'pn-customers-manager'); ?></option>
 						<?php foreach ($qr_products as $qr_product): ?>
 							<option value="<?php echo esc_attr($qr_product->ID); ?>" <?php selected($qr_product->ID, $product_id); ?>>
 								<?php echo esc_html($qr_product->post_title); ?>
@@ -1791,22 +1803,22 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 					</select>
 
 					<select id="pn-cm-qr-filter-variation" class="pn-cm-qr-filter" style="display: none;">
-						<option value=""><?php _e('All Variations', 'pn-customers-manager'); ?></option>
+						<option value=""><?php esc_html_e('All Variations', 'pn-customers-manager'); ?></option>
 					</select>
 
 					<select id="pn-cm-qr-filter-status" class="pn-cm-qr-filter">
-						<option value=""><?php _e('All Status', 'pn-customers-manager'); ?></option>
-						<option value="pending"><?php _e('Pending', 'pn-customers-manager'); ?></option>
-						<option value="processed"><?php _e('Processed', 'pn-customers-manager'); ?></option>
+						<option value=""><?php esc_html_e('All Status', 'pn-customers-manager'); ?></option>
+						<option value="pending"><?php esc_html_e('Pending', 'pn-customers-manager'); ?></option>
+						<option value="processed"><?php esc_html_e('Processed', 'pn-customers-manager'); ?></option>
 					</select>
 
-					<input type="text" id="pn-cm-qr-filter-search" class="pn-cm-qr-filter pn-cm-qr-search-input" placeholder="<?php _e('Search by customer, order, QR code...', 'pn-customers-manager'); ?>">
+					<input type="text" id="pn-cm-qr-filter-search" class="pn-cm-qr-filter pn-cm-qr-search-input" placeholder="<?php esc_html_e('Search by customer, order, QR code...', 'pn-customers-manager'); ?>">
 				</div>
 			</div>
 
 			<div id="pn-cm-qr-orders-wrapper" style="position: relative;">
 				<div id="pn-cm-qr-orders-list" data-product-id="<?php echo esc_attr($product_id); ?>" data-variation-id="">
-					<?php echo $this->get_orders_html($product_id); ?>
+					<?php echo wp_kses_post($this->get_orders_html($product_id)); ?>
 				</div>
 				<div class="pn-cm-qr-loader pn-customers-manager-display-none">
 					<div class="pn-customers-manager-loader-circle-wrapper">
@@ -1822,14 +1834,14 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		<div id="pn-cm-qr-scanner-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-medium pn-customers-manager-display-none-soft">
 			<div class="pn-customers-manager-popup-overlay"></div>
 			<div class="pn-customers-manager-popup-content">
-				<h3 class="pn-customers-manager-text-align-center"><?php _e('Scan QR Code', 'pn-customers-manager'); ?></h3>
+				<h3 class="pn-customers-manager-text-align-center"><?php esc_html_e('Scan QR Code', 'pn-customers-manager'); ?></h3>
 				<div id="pn-cm-qr-scanner-container" style="text-align: center; margin: 20px 0;">
 					<!-- Scanner will be initialized here -->
 				</div>
 				<div style="text-align: center;">
 					<button id="pn-cm-qr-switch-camera" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent" style="margin: 10px auto; display: none;">
 						<i class="material-icons-outlined">switch_camera</i>
-						<?php _e('Switch Camera', 'pn-customers-manager'); ?>
+						<?php esc_html_e('Switch Camera', 'pn-customers-manager'); ?>
 					</button>
 				</div>
 				<div id="pn-cm-qr-scanner-result" style="margin-top: 20px; text-align: center;"></div>
@@ -1839,7 +1851,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		<!-- Complete Pending Orders Popup -->
 		<div id="pn-cm-qr-complete-pending-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-large pn-customers-manager-display-none-soft">
 			<div class="pn-customers-manager-popup-content">
-				<h3><?php _e('Complete Pending Orders with QR Products', 'pn-customers-manager'); ?></h3>
+				<h3><?php esc_html_e('Complete Pending Orders with QR Products', 'pn-customers-manager'); ?></h3>
 				<div id="pn-cm-qr-pending-orders-content">
 					<div class="pn-customers-manager-text-align-center" style="padding: 40px;">
 						<div class="pn-customers-manager-loader-circle"><div></div><div></div><div></div><div></div></div>
@@ -1902,6 +1914,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				wp_enqueue_script('pn-customers-manager-ajax');
 			}
 
+			// phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- QR scanner library loaded from CDN; no bundled alternative.
 			wp_enqueue_script(
 				'pn-cm-qr-scanner',
 				'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
@@ -1981,6 +1994,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		wp_enqueue_style('wph-material-icons-outlined', PN_CUSTOMERS_MANAGER_URL . 'assets/css/material-icons-outlined.min.css', [], PN_CUSTOMERS_MANAGER_VERSION);
 
 		// Enqueue QR scanner library
+		// phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- QR scanner library loaded from CDN; no bundled alternative.
 		wp_enqueue_script(
 			'pn-cm-qr-scanner',
 			'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
@@ -2063,8 +2077,11 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 				'confirmDelete' => __('Are you sure you want to delete this QR code? This action cannot be undone.', 'pn-customers-manager'),
 				'selected' => __('selected', 'pn-customers-manager'),
 				'selectedPlural' => __('selected', 'pn-customers-manager'),
+				/* translators: %d is the number of selected QR codes */
 				'confirmBulkProcess' => __('Are you sure you want to mark %d QR codes as processed?', 'pn-customers-manager'),
+				/* translators: %d is the number of selected QR codes */
 				'confirmBulkPending' => __('Are you sure you want to mark %d QR codes as pending?', 'pn-customers-manager'),
+				/* translators: %d is the number of selected QR codes */
 				'confirmBulkDelete' => __('Are you sure you want to delete %d QR codes? This action cannot be undone.', 'pn-customers-manager'),
 			],
 		]);
@@ -2153,7 +2170,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		// Build HTML
 		$html = '<div style="margin-bottom: 20px; padding: 15px; background: #e8f5e9; border-left: 4px solid #4caf50;">';
-		$html .= '<strong>' . sprintf(__('%d pending orders found with QR products', 'pn-customers-manager'), count($pending_orders)) . '</strong>';
+		$html .= '<strong>' . sprintf(/* translators: %d is the number of pending orders */ __('%d pending orders found with QR products', 'pn-customers-manager'), count($pending_orders)) . '</strong>';
 		$html .= '</div>';
 
 		$html .= '<div style="margin-bottom: 15px; text-align: right;">';
@@ -2230,7 +2247,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 		foreach ($order_ids as $order_id) {
 			$order = wc_get_order($order_id);
 			if (!$order) {
-				$errors[] = sprintf(__('Order #%d not found', 'pn-customers-manager'), $order_id);
+				$errors[] = sprintf(/* translators: %d is the order ID */ __('Order #%d not found', 'pn-customers-manager'), $order_id);
 				continue;
 			}
 
@@ -2241,7 +2258,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_QR {
 
 		if ($completed > 0) {
 			wp_send_json_success([
-				'message' => sprintf(__('%d orders completed successfully', 'pn-customers-manager'), $completed),
+				'message' => /* translators: %d is the number of orders completed */ sprintf(__('%d orders completed successfully', 'pn-customers-manager'), $completed),
 				'completed' => $completed,
 				'errors' => $errors
 			]);

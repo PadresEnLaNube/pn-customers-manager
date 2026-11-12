@@ -66,8 +66,6 @@
 
       pn_customers_manager_btn.addClass('pn-customers-manager-link-disabled').siblings('.pn-customers-manager-waiting').removeClass('pn-customers-manager-display-none');
 
-      console.log('Form submitted:', cm_pn_form.attr('id'));
-
       var ajax_url = pn_customers_manager_ajax.ajax_url;
       var data = {
         action: 'pn_customers_manager_ajax_nopriv',
@@ -138,24 +136,28 @@
         }
 
         if (is_multiple) {
-          if (!(typeof window['pn_customers_manager_window_vars']['form_field_' + element.name] !== 'undefined')) {
-            window['pn_customers_manager_window_vars']['form_field_' + element.name] = [];
-          }
-
-          // Handle checkboxes in multiple fields
-          if ($(this).is(':checkbox')) {
-            if ($(this).is(':checked')) {
-              window['pn_customers_manager_window_vars']['form_field_' + element.name].push($(element).val());
-            } else {
-              // For unchecked checkboxes in multiple fields, push empty string to maintain array structure
-              window['pn_customers_manager_window_vars']['form_field_' + element.name].push('');
-            }
+          if ($(this).is('select')) {
+            // <select multiple> — .val() already returns a flat array
+            data[element.name] = $(element).val() || [];
           } else {
-            // For non-checkbox multiple fields, push the value as before
-            window['pn_customers_manager_window_vars']['form_field_' + element.name].push($(element).val());
-          }
+            if (!(typeof window['pn_customers_manager_window_vars']['form_field_' + element.name] !== 'undefined')) {
+              window['pn_customers_manager_window_vars']['form_field_' + element.name] = [];
+            }
 
-          data[element.name] = window['pn_customers_manager_window_vars']['form_field_' + element.name];
+            // Handle checkboxes in multiple fields
+            if ($(this).is(':checkbox')) {
+              if ($(this).is(':checked')) {
+                window['pn_customers_manager_window_vars']['form_field_' + element.name].push($(element).val());
+              } else {
+                // For unchecked checkboxes in multiple fields, push empty string to maintain array structure
+                window['pn_customers_manager_window_vars']['form_field_' + element.name].push('');
+              }
+            } else {
+              window['pn_customers_manager_window_vars']['form_field_' + element.name].push($(element).val());
+            }
+
+            data[element.name] = window['pn_customers_manager_window_vars']['form_field_' + element.name];
+          }
         } else {
           if ($(this).is(':checkbox')) {
             if ($(this).is(':checked')) {
@@ -181,9 +183,6 @@
       });
 
       $.post(ajax_url, data, function (response) {
-        console.log('data'); console.log(data);
-        console.log('response'); console.log(response);
-
         var response_json = JSON.parse(response);
 
         if (response_json['error_key'] == 'cm_pn_form_save_error_unlogged') {
@@ -214,14 +213,9 @@
         }
 
         // Check popup_close with multiple conditions
-        console.log('popup_close value:', response_json['popup_close'], 'type:', typeof response_json['popup_close']);
-        console.log('Full response:', response_json);
         if (response_json['popup_close'] === true || response_json['popup_close'] === 'true' || response_json['popup_close'] === 1 || response_json['popup_close'] === '1') {
-          console.log('Closing popup...');
           pn_customers_manager_Popups.close();
           $('.pn-customers-manager-menu-more-overlay').fadeOut('fast');
-        } else {
-          console.log('Not closing popup. popup_close is:', response_json['popup_close']);
         }
 
         if (response_json['check'] == 'post_check') {
@@ -439,13 +433,11 @@
                   pn_customers_manager_get_main_message(pn_customers_manager_i18n.an_error_has_occurred);
                 }
               } catch (e) {
-                console.log('Raw response:', response);
                 pn_customers_manager_get_main_message(pn_customers_manager_i18n.an_error_has_occurred);
               }
             },
             error: function (xhr, status, error) {
-              console.log('Response:', xhr.responseText);
-              console.log(pn_customers_manager_i18n.an_error_has_occurred);
+              pn_customers_manager_get_main_message(pn_customers_manager_i18n.an_error_has_occurred);
             }
           });
         },
@@ -663,7 +655,6 @@
           data.pn_customers_manager_ajax_nonce = pn_customers_manager_ajax.pn_customers_manager_ajax_nonce;
 
           $.post(ajax_url, data, function (response) {
-            console.log('data'); console.log(data); console.log('response'); console.log(response);
             var response_json = JSON.parse(response);
 
             if (response_json['error_key'] != '') {
@@ -744,7 +735,6 @@
           data.pn_customers_manager_ajax_nonce = pn_customers_manager_ajax.pn_customers_manager_ajax_nonce;
 
           $.post(ajax_url, data, function (response) {
-            console.log('data'); console.log(data); console.log('response'); console.log(response);
             var response_json = JSON.parse(response);
 
             if (response_json['error_key'] != '') {

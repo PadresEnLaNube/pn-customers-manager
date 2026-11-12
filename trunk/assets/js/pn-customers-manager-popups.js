@@ -18,6 +18,9 @@
   
         // Show popup - Remove any inline styles and add active class
         popupElement.removeClass('pn-customers-manager-display-none-soft').addClass('pn-customers-manager-popup-active').css('display', '');
+
+        // Mark body so other sections can react (e.g. hide behind the popup).
+        document.body.classList.add('pn-customers-manager-popup-open');
   
         // Ensure close button is present (unless ESC is disabled)
         var popupContent = popupElement.find('.pn-customers-manager-popup-content');

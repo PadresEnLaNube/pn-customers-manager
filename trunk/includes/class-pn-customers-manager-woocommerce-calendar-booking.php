@@ -373,7 +373,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				if (!is_array($selected_roles)) $selected_roles = [];
 				?>
 				<p class="form-field">
-					<label class="pn-cm-admin-main-label"><?php _e('Roles with special / member discount', 'pn-customers-manager'); ?></label>
+					<label class="pn-cm-admin-main-label"><?php esc_html_e('Roles with special / member discount', 'pn-customers-manager'); ?></label>
 					<select name="_pn_cm_woo_calendar_member_roles[]" multiple style="width:100%;min-height:100px;">
 						<?php foreach ($all_roles as $role_key => $role_name): ?>
 							<option value="<?php echo esc_attr($role_key); ?>" <?php echo in_array($role_key, $selected_roles) ? 'selected' : ''; ?>>
@@ -381,17 +381,17 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<span class="description"><?php _e('Select which user roles automatically get the special rate when logged in. Hold Ctrl/Cmd to select multiple.', 'pn-customers-manager'); ?></span>
+					<span class="description"><?php esc_html_e('Select which user roles automatically get the special rate when logged in. Hold Ctrl/Cmd to select multiple.', 'pn-customers-manager'); ?></span>
 				</p>
 			</div>
 
 			<!-- Precios por día suelto -->
 			<div class="options_group">
 				<p class="form-field pn-cm-admin-field-group">
-					<label class="pn-cm-admin-main-label"><?php _e('Single day price', 'pn-customers-manager'); ?></label>
+					<label class="pn-cm-admin-main-label"><?php esc_html_e('Single day price', 'pn-customers-manager'); ?></label>
 					<div class="pn-cm-admin-price-row">
 						<div class="pn-cm-admin-price-item">
-							<label class="pn-cm-admin-sub-label"><?php _e('Standard rate', 'pn-customers-manager'); ?></label>
+							<label class="pn-cm-admin-sub-label"><?php esc_html_e('Standard rate', 'pn-customers-manager'); ?></label>
 							<div class="pn-cm-calendar-input-with-suffix">
 								<input type="number" id="_pn_cm_woo_calendar_day_price" name="_pn_cm_woo_calendar_day_price"
 								       value="<?php echo esc_attr($day_price); ?>"
@@ -401,7 +401,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 						</div>
 						<div class="pn-cm-admin-price-item pn-cm-member-only-field" <?php echo !$enable_member ? 'style="display:none;"' : ''; ?>>
 							<label class="pn-cm-admin-sub-label pn-cm-member-price-title">
-								<?php _e('Single day price', 'pn-customers-manager'); ?> (<span class="pn-cm-member-label-text"><?php echo esc_html($member_label); ?></span>)
+								<?php esc_html_e('Single day price', 'pn-customers-manager'); ?> (<span class="pn-cm-member-label-text"><?php echo esc_html($member_label); ?></span>)
 							</label>
 							<div class="pn-cm-calendar-input-with-suffix">
 								<input type="number" id="_pn_cm_woo_calendar_member_day_price" name="_pn_cm_woo_calendar_member_day_price"
@@ -417,7 +417,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			<!-- Bloques -->
 			<div class="options_group pn-cm-calendar-weeks-section">
 				<p class="form-field">
-					<label class="pn-cm-calendar-section-title"><?php _e('Product calendar blocks', 'pn-customers-manager'); ?></label>
+					<label class="pn-cm-calendar-section-title"><?php esc_html_e('Product calendar blocks', 'pn-customers-manager'); ?></label>
 				</p>
 				<div id="pn-cm-calendar-weeks-repeater">
 					<?php
@@ -431,7 +431,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				<div class="pn-cm-calendar-add-wrap">
 					<button type="button" class="button button-primary" id="pn-cm-calendar-add-week">
 						<span class="dashicons dashicons-plus-alt2"></span>
-						<?php _e('Add block', 'pn-customers-manager'); ?>
+						<?php esc_html_e('Add block', 'pn-customers-manager'); ?>
 					</button>
 				</div>
 			</div>
@@ -460,9 +460,9 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		<div class="pn-cm-calendar-week-row" data-index="<?php echo esc_attr($index); ?>">
 			<div class="pn-cm-calendar-week-header">
 				<span class="pn-cm-calendar-week-handle dashicons dashicons-move"></span>
-				<span class="pn-cm-calendar-week-number">#<?php echo $n; ?></span>
+				<span class="pn-cm-calendar-week-number">#<?php echo esc_html($n); ?></span>
 				<span class="pn-cm-calendar-week-header-label">
-					<?php echo !empty($week['label']) ? esc_html($week['label']) : __('New block', 'pn-customers-manager'); ?>
+					<?php echo !empty($week['label']) ? esc_html($week['label']) : esc_html__('New block', 'pn-customers-manager'); ?>
 				</span>
 				<button type="button" class="pn-cm-calendar-remove-week" title="<?php esc_attr_e('Delete', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-trash"></span>
@@ -472,43 +472,43 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				<!-- ID + Etiqueta -->
 				<div class="pn-cm-calendar-row">
 					<div class="pn-cm-calendar-field">
-						<label class="pn-cm-admin-sub-label"><?php _e('Identifier', 'pn-customers-manager'); ?></label>
-						<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][id]"
+						<label class="pn-cm-admin-sub-label"><?php esc_html_e('Identifier', 'pn-customers-manager'); ?></label>
+						<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][id]"
 						       value="<?php echo esc_attr($week['id']); ?>"
 						       placeholder="bloque-1" />
-						<span class="pn-cm-calendar-field-hint"><?php _e('Internal use, no spaces', 'pn-customers-manager'); ?></span>
+						<span class="pn-cm-calendar-field-hint"><?php esc_html_e('Internal use, no spaces', 'pn-customers-manager'); ?></span>
 					</div>
 					<div class="pn-cm-calendar-field">
-						<label class="pn-cm-admin-sub-label"><?php _e('Display name', 'pn-customers-manager'); ?></label>
-						<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][label]"
+						<label class="pn-cm-admin-sub-label"><?php esc_html_e('Display name', 'pn-customers-manager'); ?></label>
+						<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][label]"
 						       value="<?php echo esc_attr($week['label']); ?>"
 						       placeholder="Bloque 1" class="pn-cm-calendar-label-input" />
 					</div>
 				</div>
 				<!-- Calendario interactivo -->
 				<div class="pn-cm-calendar-picker-section">
-					<label class="pn-cm-admin-sub-label"><?php _e('Dates', 'pn-customers-manager'); ?></label>
-					<span class="pn-cm-calendar-picker-hint"><?php _e('Click = select/deselect &middot; Shift+click = range &middot; Ctrl+click = add individual', 'pn-customers-manager'); ?></span>
+					<label class="pn-cm-admin-sub-label"><?php esc_html_e('Dates', 'pn-customers-manager'); ?></label>
+					<span class="pn-cm-calendar-picker-hint"><?php esc_html_e('Click = select/deselect &middot; Shift+click = range &middot; Ctrl+click = add individual', 'pn-customers-manager'); ?></span>
 					<div class="pn-cm-calendar-block-picker" data-dates="<?php echo esc_attr($dates_json); ?>"></div>
-					<input type="hidden" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][dates_json]"
+					<input type="hidden" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][dates_json]"
 					       class="pn-cm-calendar-dates-json" value="<?php echo esc_attr($dates_json); ?>" />
 					<div class="pn-cm-calendar-dates-preview"></div>
 				</div>
 				<!-- Configuración: Aforo + Precios + Descuento -->
 				<div class="pn-cm-calendar-config-grid">
 					<div class="pn-cm-calendar-field pn-cm-calendar-capacity-field" <?php echo $has_groups ? 'style="display:none;"' : ''; ?>>
-						<label class="pn-cm-admin-sub-label"><?php _e('Capacity/day', 'pn-customers-manager'); ?></label>
+						<label class="pn-cm-admin-sub-label"><?php esc_html_e('Capacity/day', 'pn-customers-manager'); ?></label>
 						<div class="pn-cm-calendar-input-with-suffix">
-							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][capacity]"
+							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][capacity]"
 							       value="<?php echo esc_attr($week['capacity']); ?>"
 							       placeholder="25" min="1" />
-							<span class="pn-cm-calendar-suffix"><?php _e('spots', 'pn-customers-manager'); ?></span>
+							<span class="pn-cm-calendar-suffix"><?php esc_html_e('spots', 'pn-customers-manager'); ?></span>
 						</div>
 					</div>
 					<div class="pn-cm-calendar-field">
-						<label class="pn-cm-admin-sub-label"><?php _e('Standard price', 'pn-customers-manager'); ?></label>
+						<label class="pn-cm-admin-sub-label"><?php esc_html_e('Standard price', 'pn-customers-manager'); ?></label>
 						<div class="pn-cm-calendar-input-with-suffix">
-							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][price]"
+							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][price]"
 							       value="<?php echo esc_attr($week['price']); ?>"
 							       placeholder="100.00" step="0.01" min="0" />
 							<span class="pn-cm-calendar-suffix">&euro;</span>
@@ -516,22 +516,22 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 					</div>
 					<div class="pn-cm-calendar-field pn-cm-member-only-field" <?php echo !$enable_member ? 'style="display:none;"' : ''; ?>>
 						<label class="pn-cm-admin-sub-label pn-cm-member-price-title">
-							<?php _e('Price', 'pn-customers-manager'); ?> (<span class="pn-cm-member-label-text"><?php echo esc_html($member_label); ?></span>)
+							<?php esc_html_e('Price', 'pn-customers-manager'); ?> (<span class="pn-cm-member-label-text"><?php echo esc_html($member_label); ?></span>)
 						</label>
 						<div class="pn-cm-calendar-input-with-suffix">
-							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][member_price]"
+							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][member_price]"
 							       value="<?php echo esc_attr($week['member_price']); ?>"
 							       placeholder="80.00" step="0.01" min="0" />
 							<span class="pn-cm-calendar-suffix">&euro;</span>
 						</div>
 					</div>
 					<div class="pn-cm-calendar-field">
-						<label class="pn-cm-admin-sub-label"><?php _e('Discount', 'pn-customers-manager'); ?></label>
+						<label class="pn-cm-admin-sub-label"><?php esc_html_e('Discount', 'pn-customers-manager'); ?></label>
 						<div class="pn-cm-calendar-discount-inputs">
-							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][discount]"
+							<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][discount]"
 							       value="<?php echo esc_attr($week['discount']); ?>"
 							       placeholder="0" step="0.01" min="0" class="pn-cm-calendar-discount-amount" />
-							<select name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][discount_type]" class="pn-cm-calendar-discount-type">
+							<select name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][discount_type]" class="pn-cm-calendar-discount-type">
 								<option value="percent" <?php selected($week['discount_type'], 'percent'); ?>>%</option>
 								<option value="fixed" <?php selected($week['discount_type'], 'fixed'); ?>>&euro;</option>
 							</select>
@@ -540,25 +540,25 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 				</div>
 				<?php if ($has_groups): ?>
 					<div class="pn-cm-calendar-capacity-note">
-						<span class="pn-cm-calendar-field-hint"><?php _e('Capacity is defined in each group', 'pn-customers-manager'); ?></span>
+						<span class="pn-cm-calendar-field-hint"><?php esc_html_e('Capacity is defined in each group', 'pn-customers-manager'); ?></span>
 					</div>
 				<?php endif; ?>
 				<!-- Grupos -->
 				<div class="pn-cm-calendar-groups-section">
-					<label class="pn-cm-calendar-groups-title"><?php _e('Activity groups', 'pn-customers-manager'); ?></label>
+					<label class="pn-cm-calendar-groups-title"><?php esc_html_e('Activity groups', 'pn-customers-manager'); ?></label>
 					<div class="pn-cm-calendar-groups-repeater">
 						<?php if (!empty($week['groups'])): ?>
 							<?php foreach ($week['groups'] as $gi => $group): ?>
-								<div class="pn-cm-calendar-group-row" data-group-index="<?php echo $gi; ?>">
-									<input type="hidden" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][groups][<?php echo $gi; ?>][id]"
+								<div class="pn-cm-calendar-group-row" data-group-index="<?php echo esc_attr($gi); ?>">
+									<input type="hidden" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][groups][<?php echo esc_attr($gi); ?>][id]"
 									       value="<?php echo esc_attr($group['id']); ?>" class="pn-cm-calendar-group-id" />
 									<div class="pn-cm-calendar-field">
-										<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][groups][<?php echo $gi; ?>][label]"
+										<input type="text" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][groups][<?php echo esc_attr($gi); ?>][label]"
 										       value="<?php echo esc_attr($group['label']); ?>"
 										       placeholder="<?php esc_attr_e('Group name', 'pn-customers-manager'); ?>" class="pn-cm-calendar-group-label" />
 									</div>
 									<div class="pn-cm-calendar-field pn-cm-calendar-field--narrow">
-										<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo $index; ?>][groups][<?php echo $gi; ?>][capacity]"
+										<input type="number" name="_pn_cm_woo_calendar_weeks[<?php echo esc_attr($index); ?>][groups][<?php echo esc_attr($gi); ?>][capacity]"
 										       value="<?php echo esc_attr($group['capacity']); ?>"
 										       placeholder="15" min="1" class="pn-cm-calendar-group-capacity" />
 									</div>
@@ -571,7 +571,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 					</div>
 					<button type="button" class="button pn-cm-calendar-add-group">
 						<span class="dashicons dashicons-plus-alt2"></span>
-						<?php _e('Add group', 'pn-customers-manager'); ?>
+						<?php esc_html_e('Add group', 'pn-customers-manager'); ?>
 					</button>
 				</div>
 			</div>
@@ -741,7 +741,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 
 		wp_enqueue_style(
 			'pn-cm-calendar-booking-css',
-			$plugin_url . 'assets/css/pn-cm-calendar-booking.css',
+			esc_url($plugin_url . 'assets/css/pn-cm-calendar-booking.css'),
 			[],
 			filemtime($plugin_dir . 'assets/css/pn-cm-calendar-booking.css')
 		);
@@ -1001,6 +1001,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			if (!isset($availability[$date]) || $availability[$date] < $qty) {
 				if (function_exists('wc_add_notice')) {
 					wc_add_notice(
+						// translators: %s is the booking date that has no available spots
 						sprintf(__('La fecha %s no tiene suficientes plazas disponibles.', 'pn-customers-manager'), $date),
 						'error'
 					);
@@ -1022,6 +1023,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 						if ($group_avail < $group_qty) {
 							if (function_exists('wc_add_notice')) {
 								wc_add_notice(
+									// translators: %s is the booking date that has no available spots in the selected group
 									sprintf(__('La fecha %s no tiene suficientes plazas disponibles en el grupo seleccionado.', 'pn-customers-manager'), $date),
 									'error'
 								);
@@ -1761,11 +1763,11 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		}
 
 		if (!$has_calendar_items) {
-			echo '<p>' . __('Este pedido no contiene productos de calendario.', 'pn-customers-manager') . '</p>';
+			echo '<p>' . esc_html__('Este pedido no contiene productos de calendario.', 'pn-customers-manager') . '</p>';
 			return;
 		}
 
-		echo $items_html;
+		echo wp_kses_post($items_html);
 	}
 
 	public function order_edit_scripts($hook)
@@ -1909,7 +1911,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 			if (!isset($simulated_availability[$date]) || $simulated_availability[$date] < $new_qty) {
 				wp_send_json_error([
 					'message' => sprintf(
-						__('La fecha %s no tiene suficientes plazas disponibles', 'pn-customers-manager'),
+						/* translators: %s is the booking date that has no available spots */
+					__('La fecha %s no tiene suficientes plazas disponibles', 'pn-customers-manager'),
 						$date
 					)
 				]);
@@ -1968,7 +1971,8 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_Calendar_Booking
 		$old_dates_str = implode(', ', $old_dates);
 		$new_dates_str = implode(', ', $new_dates);
 		$note = sprintf(
-			__('Fechas de calendario actualizadas por %s. Fechas anteriores: %s. Nuevas fechas: %s. Nuevo precio: %s', 'pn-customers-manager'),
+			/* translators: %1$s is the user display name, %2$s is the old dates, %3$s is the new dates, %4$s is the new price */
+		__('Fechas de calendario actualizadas por %1$s. Fechas anteriores: %2$s. Nuevas fechas: %3$s. Nuevo precio: %4$s', 'pn-customers-manager'),
 			wp_get_current_user()->display_name,
 			$old_dates_str,
 			$new_dates_str,

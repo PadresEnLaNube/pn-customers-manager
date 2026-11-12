@@ -2,12 +2,12 @@
 Contributors: felixmartinez, hamlet237
 Donate link: https://padresenlanube.com/
 Tags: crm, crm plugin, contact management, lead management, sales pipeline
-Requires at least: 3.0
-Tested up to: 7.0
-Stable tag: 1.2.95
+Requires at least: 5.9
+Tested up to: 7.1
+Stable tag: 1.2.165
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-A powerful CRM with AI WhatsApp/Instagram chat, sales funnels, funnel form builder, contact forms, email campaigns, budgets & invoices, mockup flow viewer, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, product calendar, solidarity purchases, and WooCommerce integration for WordPress.
+A powerful CRM with AI WhatsApp/Instagram chat, audio transcription, human support escalation, sales funnels, funnel form builder, CRM clients dashboard, activity log, Go High Level & Zoho CRM sync, contact forms, email campaigns, budgets & invoices with payments tracking, mockup flow viewer, social media links, referral system, CTA injection, WooCommerce CTA block, back-in-stock notifications, product calendar, solidarity purchases, and WooCommerce integration for WordPress.
 
 == Description ==
 
@@ -38,6 +38,68 @@ Whether you run an online store, a service-based business, an agency, or a membe
 * **Conversation Management Dashboard**: View, search, close, delete, and reset all WhatsApp and Instagram conversations from your admin panel and from the funnel builder. Full chat history with timestamps and role indicators.
 
 * **Debug Logging**: Enable or disable debug logging independently for WhatsApp AI and Instagram AI from the settings page. Logs are saved to `wp-content/uploads/pn-customers-manager-logs/`.
+
+* **Audio Transcription**: Automatically transcribe voice notes received via WhatsApp or Instagram and process them as text messages. Supports multiple transcription providers: OpenAI Whisper, Groq, and Deepgram. Configurable per-node with language setting for improved accuracy.
+
+* **Human Support Escalation**: Define situations (complaints, urgent requests, complex queries) where the AI automatically escalates to human support by sending an email to the support team. Each situation has a title, description for the AI, and custom instructions for how the bot should respond. Optionally pause AI responses after escalation.
+
+* **Follow-Up Tracking**: Configure follow-up listeners that monitor conversations for customer commitments (e.g., "I'll send the documents tomorrow"). When detected, the system automatically creates a reminder task in the CRM with configurable delay periods.
+
+* **Message Buffering**: 10-second response delay that buffers multiple consecutive messages from the same customer into a single AI request, making the bot feel more human and reducing unnecessary API calls.
+
+* **WhatsApp Scheduled Template Messages**: Schedule WhatsApp template messages for future delivery with automatic processing on incoming webhooks and WP-Cron fallback.
+
+* **Assistant Personality**: Define a global assistant personality (tone, emotional style, language register) separately from the system prompt. Can be overridden per node in the Funnel Builder.
+
+* **Early Webhook Verification**: WhatsApp webhook GET verification now runs at `init` priority 1, before REST API processing, to avoid output buffering issues that could cause Meta verification to fail.
+
+= CRM Clients Dashboard =
+
+* **Unified Client Pipeline**: A dedicated dashboard page that merges WordPress users and organizations into a single client view. Filter by stage, source, and search across all clients.
+
+* **Visual Stage Pipeline**: Interactive stage dots with color coding, tooltips, and click-to-change functionality. Stages are fully configurable with custom names, colors, and descriptions.
+
+* **Grid & List Views**: Switch between a card-based grid view and a compact list view. Cards show client name, email, phone, company, country flag, source badge, and stage pipeline.
+
+* **Country Detection**: Automatic country detection from phone number prefixes with flag display using bundled country flag assets.
+
+* **Stage Configuration**: Editable funnel states shared across Clients, Organizations, GHL, and Zoho integrations. Configure stage names, colors, descriptions, and enabled/disabled status from settings.
+
+* **Shortcode & Gutenberg Block**: Use `[pn-customers-manager-clients]` shortcode or the native Gutenberg block to embed the clients dashboard on any page.
+
+= Activity Log (Audit Trail) =
+
+* **Automatic Change Tracking**: Records every significant change made through the plugin — creating, updating, deleting organizations, budgets, invoices, funnels, mockup flows, settings changes, imports, exports, and status changes.
+
+* **Dashboard Section**: A searchable, filterable activity log section on the statistics page with action type icons, badges, timestamps, user attribution, and IP address tracking.
+
+* **Filtering & Search**: Filter by action type (created, updated, deleted, settings, status change, import, export) and object type (organization, budget, invoice, funnel, etc.). Full-text search across titles, descriptions, and user names.
+
+* **Pagination & Load More**: Paginated results with a "Load more" button and sort order toggle.
+
+= Go High Level (GHL) CRM Integration =
+
+* **Bidirectional Sync**: Sync organizations and WordPress users with Go High Level contacts via the GHL REST API. Push contacts to GHL and receive webhook updates.
+
+* **Conversation Mirroring**: WhatsApp conversations processed by the AI bot are automatically mirrored to GHL conversations, keeping both systems in sync.
+
+* **Field Mapping**: Automatic mapping of organization and user fields (name, email, phone, address, city, country, postal code) to GHL contact fields.
+
+* **Webhook Support**: Receive real-time contact updates from GHL via webhooks. Webhook URL is displayed in the funnel builder props panel for easy configuration.
+
+* **Connection Testing**: Built-in test connection button in settings to verify API key and location ID configuration.
+
+= Zoho CRM Integration =
+
+* **OAuth 2.0 Authentication**: Secure connection to Zoho CRM using OAuth 2.0 with automatic token refresh. Connect and disconnect directly from the settings page.
+
+* **Bidirectional Sync**: Sync organizations and WordPress users with Zoho CRM contacts. Push contacts to Zoho and receive webhook updates.
+
+* **Field Mapping**: Automatic mapping of organization and user fields to Zoho contact/account fields including custom field support.
+
+* **Multi-Region Support**: Works with all Zoho data centers (US, EU, IN, AU, CN, JP) with automatic API domain detection.
+
+* **Connection Testing**: Built-in test connection button that verifies OAuth tokens and displays the connected Zoho organization name.
 
 = WooCommerce Checkout Custom Fields =
 
@@ -119,6 +181,26 @@ Whether you run an online store, a service-based business, an agency, or a membe
 
 * **Inline Editing**: Admins can edit budget and invoice items with WYSIWYG rich text descriptions, reorder with drag-and-drop, add new items, upload images via wp.media, and manage status directly from the public-facing template without returning to the admin panel.
 
+* **Payments Tracking**: Record income and expense payments against budgets and invoices. Track payment date, amount, concept, category (client payment, worker, material, supply, other), recipient, method, notes, and client visibility. View payment history with running balance calculations.
+
+* **Invoice Expenses**: Invoices now support an Expense type alongside Income. Expense invoices include supplier invoice number, category, payment method, and editable subtotal fields. Separate default tax and IRPF rates for expenses in settings.
+
+* **IRPF Withholding Tax**: Support for IRPF (income tax withholding) on invoices, common for Spanish freelancers. Configurable default rate (15% standard, 7% new freelancers) with per-invoice override.
+
+* **Configurable Invoice Numbering**: Choose from multiple numbering formats (PREFIX-NUMBER, PREFIX-YEAR-NUMBER, YEAR-NUMBER, etc.) with configurable separator character, number padding, and prefix. Lock numbering format once invoices are issued to ensure correlative integrity. Year-based formats auto-reset on January 1st.
+
+* **Recurring Invoice Frequencies**: Recurring invoices now support monthly, quarterly, biannual, and yearly frequencies (previously only yearly). Configurable next billing date with automatic calculation.
+
+* **Invoice Payment Details**: New field for payment information (bank account, IBAN, payment instructions) shown on invoices.
+
+* **Invoice Footer Image**: Upload a custom footer image displayed at the bottom of the public invoice page.
+
+* **Invoice Terms & Conditions**: WYSIWYG editor for invoice-specific terms and conditions, with fallback to budget terms.
+
+* **Budget Paid Status**: Budgets now include a "Paid" status option in addition to Draft, Sent, Accepted, and Rejected.
+
+* **Global Financial Summary**: Budget and invoice list pages now display a financial summary chart showing totals by status.
+
 * **CSV Import/Export**: Bulk import and export budgets via CSV files. Includes a downloadable template with sample data, a multi-step import wizard with preview, and automatic organization name resolution.
 
 * **Default Content**: Configure default terms and conditions, client notes, and additional information in settings — automatically pre-filled when creating new budgets, with per-budget WYSIWYG overrides.
@@ -136,7 +218,7 @@ Whether you run an online store, a service-based business, an agency, or a membe
   * Priority and health scoring
   * Lead scoring system
   * Tags and notes for better organization
-  * Geographic data (country, region, city, address, postal code)
+  * Geographic data (country dropdown with 200+ countries and localized names, region, city, address, postal code)
   * Industry and segment classification
   * Team size and annual revenue tracking
 
@@ -273,6 +355,8 @@ A powerful form system that supports multiple field types:
 
 * **Settings Integration**: Enable/disable CTA globally, configure position, target post types, and content — all from the Marketing section in plugin settings.
 
+* **Polylang Translation Support**: When Polylang is active, configure separate CTA content for each language with automatic fallback to the default content.
+
 = WooCommerce CTA Block =
 
 * **Gutenberg Block**: A dedicated Call to Action Gutenberg block (`pn-customers-manager/woo-cta`) for promoting WooCommerce products, categories, tags, or the shop page directly in the editor.
@@ -341,12 +425,25 @@ A powerful form system that supports multiple field types:
 * `[pn_qr_manager]` — QR tickets management panel with built-in camera scanner, clickable table rows, and native popup integration (admin only, optional product_id parameter)
 * `[pn-customers-manager-mockup-flow]` — Mockup Flow interactive canvas viewer (loads via ?mockup_flow_id=ID)
 * `[pn-customers-manager-mockup-flow-list]` — List all mockup flows
+* `[pn-customers-manager-clients]` — CRM clients dashboard with stage pipeline, grid/list views, and filtering (also available as Gutenberg block)
 * `[pn-customers-manager-product-calendar]` — Interactive product calendar with date-sorted product excerpts
+
+= CRM Statistics Dashboard =
+
+* **CRM-Centric Analytics**: The statistics dashboard now displays CRM data (organizations, budgets, invoices, conversations, contact messages) instead of MailPn email data. Period selector with day, week, month, year, and all-time views.
+
+* **Activity Log Section**: The statistics page includes the Activity Log audit trail with filtering, search, and pagination.
+
+= Database Update System =
+
+* **Admin Notice**: When the plugin requires a database schema update, a styled admin notice appears with the current and required DB versions, an "Update database" button, a progress bar with step labels, and a success confirmation.
+
+* **Background Processing**: Database updates run via AJAX with visual progress feedback and automatic notice dismissal on completion.
 
 = Settings & Configuration =
 
 * Dedicated settings page in WordPress admin
-* API configuration for OpenAI, WhatsApp, Instagram, and social media platforms
+* API configuration for OpenAI, WhatsApp, Instagram, Go High Level, Zoho, and social media platforms
 * Built-in API connection testing tools
 * Settings export to JSON and import from JSON
 * Recommended plugins discovery with one-click install and activate

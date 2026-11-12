@@ -43,10 +43,10 @@ class PN_CUSTOMERS_MANAGER_Settings
       'block' => 'pn-customers-manager/social-media',
       'label' => 'Social Media',
     ],
-    'pn_customers_manager_page_mockup_flow' => [
-      'shortcode' => 'pn-customers-manager-mockup-flow',
-      'block' => null,
-      'label' => 'Mockup Flow',
+    'pn_customers_manager_page_clients' => [
+      'shortcode' => 'pn-customers-manager-clients',
+      'block' => 'pn-customers-manager/clients-list',
+      'label' => 'Clients',
     ],
   ];
 
@@ -60,25 +60,15 @@ class PN_CUSTOMERS_MANAGER_Settings
     $pn_customers_manager_options = [];
 
     // ── PAGES SECTION ──────────────────────────────────────────────────
+    // Auto-detect pages by shortcode/block content before rendering fields
+    PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_auto_detect_pages(self::pn_customers_manager_get_managed_pages());
+
     $pn_customers_manager_options['pn_customers_manager_pages_section_start'] = [
       'id' => 'pn_customers_manager_pages_section_start',
       'section' => 'start',
       'label' => __('Páginas', 'pn-customers-manager'),
       'description' => __('Page assignments for the CRM.', 'pn-customers-manager'),
     ];
-
-    // Page manager alerts (only show missing pages in this section)
-    ob_start();
-    PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_page_manager_alerts(self::pn_customers_manager_get_managed_pages());
-    $page_alerts_html = ob_get_clean();
-
-    if (!empty($page_alerts_html)) {
-      $pn_customers_manager_options['pn_customers_manager_page_alerts'] = [
-        'id' => 'pn_customers_manager_page_alerts',
-        'input' => 'html',
-        'html_content' => $page_alerts_html,
-      ];
-    }
 
     $pn_customers_manager_options['pn_customers_manager_commercial_crm_page'] = [
       'id' => 'pn_customers_manager_commercial_crm_page',
@@ -130,6 +120,15 @@ class PN_CUSTOMERS_MANAGER_Settings
       'description' => __('Page displaying social media links in Linktree style.', 'pn-customers-manager'),
       'shortcode' => 'pn-customers-manager-social-media',
       'page_option' => 'pn_customers_manager_social_media_page',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_page_clients'] = [
+      'id' => 'pn_customers_manager_page_clients',
+      'input' => 'page_manager',
+      'label' => __('Clients', 'pn-customers-manager'),
+      'description' => __('Page where CRM managers can view and manage the client pipeline.', 'pn-customers-manager'),
+      'shortcode' => 'pn-customers-manager-clients',
+      'page_option' => 'pn_customers_manager_page_clients',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_pages_section_end'] = [
@@ -583,8 +582,27 @@ class PN_CUSTOMERS_MANAGER_Settings
       'parent' => 'pn_customers_manager_cta_enabled',
       'parent_option' => 'on',
       'label' => __('CTA Content', 'pn-customers-manager'),
-      'description' => __('HTML content to inject. You can use any HTML including links, images, forms, etc.', 'pn-customers-manager'),
+      'description' => function_exists('pll_languages_list')
+        ? __('Default CTA content (fallback when no translation is set for the current language). You can use any HTML including links, images, forms, etc.', 'pn-customers-manager')
+        : __('HTML content to inject. You can use any HTML including links, images, forms, etc.', 'pn-customers-manager'),
     ];
+
+    if (function_exists('pll_languages_list')) {
+      $pll_languages = pll_languages_list(['fields' => 'slug']);
+      foreach ($pll_languages as $lang) {
+        $pn_customers_manager_options['pn_customers_manager_cta_content_' . $lang] = [
+          'id' => 'pn_customers_manager_cta_content_' . $lang,
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'editor',
+          'parent' => 'pn_customers_manager_cta_enabled',
+          'parent_option' => 'on',
+          // translators: %s is the language code in uppercase (e.g. "EN", "ES", "FR")
+          'label' => sprintf(__('CTA Content (%s)', 'pn-customers-manager'), strtoupper($lang)),
+          // translators: %s is the language code in uppercase (e.g. "EN", "ES", "FR")
+          'description' => sprintf(__('CTA content for %s. Leave empty to use the default CTA content.', 'pn-customers-manager'), strtoupper($lang)),
+        ];
+      }
+    }
 
     $pn_customers_manager_options['pn_customers_manager_cta_section_end'] = [
       'id' => 'pn_customers_manager_cta_section_end',
@@ -850,12 +868,12 @@ class PN_CUSTOMERS_MANAGER_Settings
       'description' => __('Configure budgets, invoices, and accounting settings.', 'pn-customers-manager'),
     ];
 
-    // Budgets & Invoices subsection
+    // Budgets subsection
     $pn_customers_manager_options['pn_customers_manager_budget_subsection_start'] = [
       'id' => 'pn_customers_manager_budget_subsection_start',
       'section' => 'start',
-      'label' => __('Budgets & Invoices', 'pn-customers-manager'),
-      'description' => __('Configure default values and company information for budget and invoice generation.', 'pn-customers-manager'),
+      'label' => __('Budgets', 'pn-customers-manager'),
+      'description' => __('Configure default values and company information for budget generation.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_budget_dashboard_link'] = [
@@ -909,7 +927,7 @@ class PN_CUSTOMERS_MANAGER_Settings
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'input',
       'type' => 'number',
-      'value' => '21',
+      'value' => '0',
       'label' => __('Default tax rate (%)', 'pn-customers-manager'),
       'description' => __('Default tax percentage applied to new budgets.', 'pn-customers-manager'),
     ];
@@ -1013,7 +1031,7 @@ class PN_CUSTOMERS_MANAGER_Settings
     $pn_customers_manager_options['pn_customers_manager_invoice_subsection_start'] = [
       'id' => 'pn_customers_manager_invoice_subsection_start',
       'section' => 'start',
-      'label' => __('Invoice settings', 'pn-customers-manager'),
+      'label' => __('Invoices', 'pn-customers-manager'),
       'description' => __('Invoice-specific defaults. Company info, currency, and tax rate are shared with budgets above.', 'pn-customers-manager'),
     ];
 
@@ -1033,6 +1051,26 @@ class PN_CUSTOMERS_MANAGER_Settings
       'description' => __('Slug used in the public invoice URL (e.g. yoursite.com/<strong>invoice</strong>/token). Save and flush permalinks after changing.', 'pn-customers-manager'),
     ];
 
+    $invoice_locked = get_option('pn_customers_manager_invoice_number_locked', '0') === '1';
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_number_format'] = [
+      'id' => 'pn_customers_manager_invoice_number_format',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'value' => 'prefix-number',
+      'label' => __('Invoice numbering format', 'pn-customers-manager'),
+      'description' => __('Choose the numbering pattern for new invoices. Spanish law (RD 1619/2012) requires correlative numbering without gaps within each series. <strong>Once invoices have been issued, changing this format will affect only new invoices — existing numbers are never modified.</strong> If you use a year-based format, the counter resets automatically on January 1st.', 'pn-customers-manager'),
+      'options' => [
+        'prefix-number'           => 'PREFIX-00001 (e.g. INV-00001)',
+        'prefix-year-number'      => 'PREFIX-YYYY-00001 (e.g. INV-2026-00001)',
+        'year-number'             => 'YYYY-00001 (e.g. 2026-00001)',
+        'prefix-year/number'      => 'PREFIX-YYYY/00001 (e.g. INV-2026/00001)',
+        'year/number'             => 'YYYY/00001 (e.g. 2026/00001)',
+        'prefix-yearmonth-number' => 'PREFIX-YYYYMM-00001 (e.g. INV-202610-00001)',
+      ],
+      'disabled' => $invoice_locked,
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_invoice_number_prefix'] = [
       'id' => 'pn_customers_manager_invoice_number_prefix',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
@@ -1040,7 +1078,46 @@ class PN_CUSTOMERS_MANAGER_Settings
       'type' => 'text',
       'value' => 'INV',
       'label' => __('Invoice number prefix', 'pn-customers-manager'),
-      'description' => __('Prefix for auto-generated invoice numbers (e.g. INV-00001).', 'pn-customers-manager'),
+      'description' => __('Prefix for auto-generated invoice numbers. Only used by formats that include PREFIX.', 'pn-customers-manager'),
+      'disabled' => $invoice_locked,
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_number_separator'] = [
+      'id' => 'pn_customers_manager_invoice_number_separator',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'value' => '-',
+      'label' => __('Separator', 'pn-customers-manager'),
+      'description' => __('Character between segments of the invoice number.', 'pn-customers-manager'),
+      'options' => [
+        '-' => '- (hyphen)',
+        '/' => '/ (slash)',
+        '.' => '. (dot)',
+      ],
+      'disabled' => $invoice_locked,
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_number_padding'] = [
+      'id' => 'pn_customers_manager_invoice_number_padding',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'value' => '5',
+      'label' => __('Number padding (digits)', 'pn-customers-manager'),
+      'description' => __('Minimum number of digits for the sequential number. E.g. padding 5 → 00001, padding 3 → 001.', 'pn-customers-manager'),
+      'options' => [
+        '2' => '2 (01)',
+        '3' => '3 (001)',
+        '4' => '4 (0001)',
+        '5' => '5 (00001)',
+        '6' => '6 (000001)',
+      ],
+      'disabled' => $invoice_locked,
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_number_preview'] = [
+      'id' => 'pn_customers_manager_invoice_number_preview',
+      'input' => 'html',
+      'html_content' => '<span class="description">' . __('Next invoice number preview:', 'pn-customers-manager') . ' <strong>' . esc_html(PN_CUSTOMERS_MANAGER_Post_Type_Invoice::pn_cm_invoice_preview_number()) . '</strong></span>',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_invoice_next_number'] = [
@@ -1051,6 +1128,26 @@ class PN_CUSTOMERS_MANAGER_Settings
       'value' => '1',
       'label' => __('Next invoice number', 'pn-customers-manager'),
       'description' => __('The next auto-incremented number to be assigned. This value increases automatically.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_reset_counter_block'] = [
+      'id' => 'pn_customers_manager_invoice_reset_counter_block',
+      'input' => 'html',
+      'html_content' => '<div class="pn-cm-invoice-reset-counter-wrapper" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'
+        . '<button type="button" id="pn-cm-invoice-reset-counter-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini"' . ($invoice_locked ? ' disabled style="opacity:.5;cursor:not-allowed;"' : '') . '>'
+        . '<i class="material-icons-outlined pn-customers-manager-vertical-align-middle" style="font-size:16px;">restart_alt</i> '
+        . esc_html__('Reset counter to 1', 'pn-customers-manager')
+        . '</button>'
+        . '<span id="pn-cm-invoice-reset-counter-msg" style="font-size:13px;"></span>'
+        . '</div>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_number_locked'] = [
+      'id' => 'pn_customers_manager_invoice_number_locked',
+      'input' => 'checkbox',
+      'value' => '0',
+      'label' => __('Lock numbering format', 'pn-customers-manager'),
+      'description' => __('When locked, the numbering format, prefix, separator, and padding cannot be changed. Lock this once you start issuing invoices to ensure correlative integrity as required by Spanish tax law. The sequential counter and year reset still work normally.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_invoice_default_due_days'] = [
@@ -1073,6 +1170,30 @@ class PN_CUSTOMERS_MANAGER_Settings
       'description' => __('Default tax percentage applied to new invoices. Leave empty to use the budget default.', 'pn-customers-manager'),
     ];
 
+    $pn_customers_manager_options['pn_customers_manager_invoice_irpf_enabled'] = [
+      'id' => 'pn_customers_manager_invoice_irpf_enabled',
+      'class' => 'pn-customers-manager-input',
+      'input' => 'checkbox',
+      'value' => '0',
+      'label' => __('Enable IRPF (withholding tax)', 'pn-customers-manager'),
+      'description' => __('Enable IRPF withholding tax on invoices. Common in Spain for freelancers and professionals.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_invoice_default_irpf_rate'] = [
+      'id' => 'pn_customers_manager_invoice_default_irpf_rate',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'value' => '15',
+      'label' => __('Default IRPF rate (%)', 'pn-customers-manager'),
+      'description' => __('Default IRPF withholding percentage for new invoices. Common rates: 15% (standard) or 7% (new freelancers, first 3 fiscal years).', 'pn-customers-manager'),
+      'min' => 0,
+      'max' => 100,
+      'step' => '0.01',
+      'parent' => 'pn_customers_manager_invoice_irpf_enabled',
+      'parent_option' => '1',
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_invoice_terms'] = [
       'id' => 'pn_customers_manager_invoice_terms',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
@@ -1089,8 +1210,65 @@ class PN_CUSTOMERS_MANAGER_Settings
       'description' => __('Default notes visible to the client, pre-filled when creating a new invoice.', 'pn-customers-manager'),
     ];
 
+    $pn_customers_manager_options['pn_customers_manager_invoice_payment_details'] = [
+      'id' => 'pn_customers_manager_invoice_payment_details',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Payment details', 'pn-customers-manager'),
+      'description' => __('Payment information shown on invoices (bank account, IBAN, payment instructions, etc.).', 'pn-customers-manager'),
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_invoice_subsection_end'] = [
       'id' => 'pn_customers_manager_invoice_subsection_end',
+      'section' => 'end',
+    ];
+
+    // Expense settings subsection
+    $pn_customers_manager_options['pn_customers_manager_expense_subsection_start'] = [
+      'id' => 'pn_customers_manager_expense_subsection_start',
+      'section' => 'start',
+      'label' => __('Expenses', 'pn-customers-manager'),
+      'description' => __('Settings for supplier invoices and expenses.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_expense_default_tax_rate'] = [
+      'id' => 'pn_customers_manager_expense_default_tax_rate',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'label' => __('Default tax rate for expenses (%)', 'pn-customers-manager'),
+      'placeholder' => __('e.g. 21', 'pn-customers-manager'),
+      'min' => 0,
+      'max' => 100,
+      'step' => '0.01',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_expense_irpf_enabled'] = [
+      'id' => 'pn_customers_manager_expense_irpf_enabled',
+      'class' => 'pn-customers-manager-checkbox',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Enable IRPF for expenses', 'pn-customers-manager'),
+      'description' => __('When enabled, an IRPF withholding rate field will be available on expenses.', 'pn-customers-manager'),
+      'value' => '1',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_expense_default_irpf_rate'] = [
+      'id' => 'pn_customers_manager_expense_default_irpf_rate',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'number',
+      'label' => __('Default IRPF rate for expenses (%)', 'pn-customers-manager'),
+      'placeholder' => __('e.g. 15', 'pn-customers-manager'),
+      'min' => 0,
+      'max' => 100,
+      'step' => '0.01',
+      'parent' => 'pn_customers_manager_expense_irpf_enabled',
+      'parent_option' => '1',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_expense_subsection_end'] = [
+      'id' => 'pn_customers_manager_expense_subsection_end',
       'section' => 'end',
     ];
 
@@ -1162,12 +1340,21 @@ class PN_CUSTOMERS_MANAGER_Settings
       'description' => __('<strong>How to get it:</strong><br>1. Go to <a href="https://platform.moonshot.cn/console/api-keys" target="_blank">Moonshot Platform</a>.<br>2. Create a new API key and paste it here.', 'pn-customers-manager'),
     ];
 
+    $pn_customers_manager_options['pn_customers_manager_whatsapp_assistant_personality'] = [
+      'id' => 'pn_customers_manager_whatsapp_assistant_personality',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'textarea',
+      'label' => __('Assistant personality', 'pn-customers-manager'),
+      'description' => __('Define how the assistant behaves: its tone, emotional style, language register, and personality traits. For example: friendly and warm, formal and professional, playful and casual, etc. This personality is applied globally and can be overridden per node in the Funnel Builder.', 'pn-customers-manager'),
+      'placeholder' => __('e.g. You are a friendly and warm assistant. You use a casual tone, show empathy, and always try to make the customer feel welcome. You use emojis sparingly and keep responses concise.', 'pn-customers-manager'),
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_whatsapp_system_prompt'] = [
       'id' => 'pn_customers_manager_whatsapp_system_prompt',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
       'input' => 'textarea',
       'label' => __('Default system prompt', 'pn-customers-manager'),
-      'description' => __('Base instructions the AI will receive before each conversation. Define the personality, tone and rules of the assistant here. This prompt can be overridden per node in the Funnel Builder.', 'pn-customers-manager'),
+      'description' => __('Base instructions the AI will receive before each conversation. Define specific rules, workflows, and operational guidelines here. This prompt can be overridden per node in the Funnel Builder.', 'pn-customers-manager'),
     ];
 
     $pn_customers_manager_options['pn_customers_manager_order_redirect_message'] = [
@@ -1206,6 +1393,77 @@ class PN_CUSTOMERS_MANAGER_Settings
       'label' => __('Test AI connection', 'pn-customers-manager'),
       'description' => __('Sends a test message to the selected AI provider to verify that the API Key and model work correctly. It will use the model and temperature configured above.', 'pn-customers-manager'),
       'html_content' => '<input type="button" id="pn-cm-openai-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Test AI', 'pn-customers-manager') . '" /><span id="pn-cm-openai-test-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_audio_transcription_enabled'] = [
+      'id' => 'pn_customers_manager_audio_transcription_enabled',
+      'class' => 'pn-customers-manager-input',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'label' => __('Enable audio transcription', 'pn-customers-manager'),
+      'description' => __('Automatically transcribe voice notes received via WhatsApp or Instagram and process them as text messages.', 'pn-customers-manager'),
+      'parent' => 'this',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_transcription_provider'] = [
+      'id' => 'pn_customers_manager_transcription_provider',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'label' => __('Transcription provider', 'pn-customers-manager'),
+      'description' => __('Select the speech-to-text provider for audio transcription.', 'pn-customers-manager'),
+      'options' => [
+        'openai'   => 'OpenAI Whisper',
+        'groq'     => 'Groq',
+        'deepgram' => 'Deepgram',
+      ],
+      'parent' => 'pn_customers_manager_audio_transcription_enabled',
+      'parent_option' => 'on',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_transcription_openai_key'] = [
+      'id' => 'pn_customers_manager_transcription_openai_key',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('OpenAI API Key', 'pn-customers-manager'),
+      'value' => get_option('pn_customers_manager_whatsapp_openai_key', ''),
+      'description' => __('<strong>How to get it:</strong><br>1. Go to <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>.<br>2. Click &laquo;Create new secret key&raquo;.<br>3. Copy the generated key (starts with <code>sk-</code>) and paste it here.', 'pn-customers-manager'),
+      'parent' => 'pn_customers_manager_transcription_provider',
+      'parent_option' => 'openai',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_groq_api_key'] = [
+      'id' => 'pn_customers_manager_groq_api_key',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Groq API Key', 'pn-customers-manager'),
+      'description' => __('Get your API key at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.', 'pn-customers-manager'),
+      'parent' => 'pn_customers_manager_transcription_provider',
+      'parent_option' => 'groq',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_deepgram_api_key'] = [
+      'id' => 'pn_customers_manager_deepgram_api_key',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Deepgram API Key', 'pn-customers-manager'),
+      'description' => __('Get your API key at <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>.', 'pn-customers-manager'),
+      'parent' => 'pn_customers_manager_transcription_provider',
+      'parent_option' => 'deepgram',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_transcription_language'] = [
+      'id' => 'pn_customers_manager_transcription_language',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Transcription language', 'pn-customers-manager'),
+      'description' => __('ISO 639-1 language code (e.g. <code>es</code>, <code>en</code>, <code>fr</code>). Optional — improves transcription accuracy.', 'pn-customers-manager'),
+      'placeholder' => 'es',
+      'parent' => 'pn_customers_manager_audio_transcription_enabled',
+      'parent_option' => 'on',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_openai_section_end'] = [
@@ -1302,6 +1560,100 @@ class PN_CUSTOMERS_MANAGER_Settings
       'type' => 'checkbox',
       'label' => __('Enable image debug log', 'pn-customers-manager'),
       'description' => __('Logs detailed image pipeline diagnostics to <code>wp-content/uploads/pn-customers-manager-logs/whatsapp-ai.log</code> (tagged <code>[IMG-DEBUG]</code>). Traces the entire flow: raw AI response, &lt;think&gt; tag stripping, hallucinated URL removal, auto-injection, image extraction, and WhatsApp media upload. Works independently of WP_DEBUG. <strong>Disable after diagnosing.</strong>', 'pn-customers-manager'),
+    ];
+
+    // ── Human Support Escalation ──
+    $pn_customers_manager_options['pn_customers_manager_wa_escalation_enabled'] = [
+      'id' => 'pn_customers_manager_wa_escalation_enabled',
+      'class' => 'pn-customers-manager-input',
+      'input' => 'input',
+      'type' => 'checkbox',
+      'value' => 'on',
+      'parent' => 'this',
+      'label' => __('Enable human support escalation', 'pn-customers-manager'),
+      'description' => __('When enabled, the AI bot will automatically send an email to the support team when the conversation matches any of the defined escalation situations.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_wa_escalation_situations_wrapper'] = [
+      'id' => 'pn_customers_manager_wa_escalation_situations_wrapper',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'html_multi',
+      'label' => __('Escalation situations', 'pn-customers-manager'),
+      'description' => __('Define situations where the AI should escalate to human support. The title is a short label and the description helps the AI understand when to trigger.', 'pn-customers-manager'),
+      'html_multi_fields' => [
+        [
+          'id' => 'pn_customers_manager_wa_escalation_titles',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'input',
+          'type' => 'text',
+          'placeholder' => __('Situation title (e.g. Complaint)', 'pn-customers-manager'),
+        ],
+        [
+          'id' => 'pn_customers_manager_wa_escalation_descriptions',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'textarea',
+          'placeholder' => __('Description for the AI (e.g. The customer expresses dissatisfaction or makes a complaint about a product or service)', 'pn-customers-manager'),
+        ],
+        [
+          'id' => 'pn_customers_manager_wa_escalation_instructions',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'textarea',
+          'placeholder' => __('Instructions for the bot (e.g. Apologize, reassure the customer, and tell them a team member will follow up shortly)', 'pn-customers-manager'),
+        ],
+        [
+          'id' => 'pn_customers_manager_wa_escalation_pause',
+          'class' => 'pn-customers-manager-input',
+          'input' => 'input',
+          'type' => 'checkbox',
+          'label' => __('Pause AI after escalation', 'pn-customers-manager'),
+        ],
+      ],
+      'parent' => 'pn_customers_manager_wa_escalation_enabled',
+      'parent_option' => 'on',
+    ];
+
+    $wa_escalation_user_options = [];
+    $wa_escalation_all_users = get_users([
+      'fields'  => ['ID', 'display_name', 'user_email'],
+      'orderby' => 'display_name',
+      'order'   => 'ASC',
+    ]);
+    foreach ($wa_escalation_all_users as $wa_escalation_user) {
+      if (empty($wa_escalation_user->user_email)) {
+        continue;
+      }
+      $wa_escalation_user_options[$wa_escalation_user->ID] = $wa_escalation_user->display_name . ' (' . $wa_escalation_user->user_email . ')';
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_wa_escalation_users'] = [
+      'id' => 'pn_customers_manager_wa_escalation_users',
+      'class' => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'multiple' => true,
+      'label' => __('Escalation notification recipients (platform users)', 'pn-customers-manager'),
+      'description' => __('Select platform users who will receive escalation notifications by email. Leave empty to use only external emails or the site admin email.', 'pn-customers-manager'),
+      'options' => $wa_escalation_user_options,
+      'parent' => 'pn_customers_manager_wa_escalation_enabled',
+      'parent_option' => 'on',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_wa_escalation_emails_wrapper'] = [
+      'id' => 'pn_customers_manager_wa_escalation_emails_wrapper',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'html_multi',
+      'label' => __('Escalation notification recipients (external emails)', 'pn-customers-manager'),
+      'description' => __('Add email addresses for people who are not registered users on this site.', 'pn-customers-manager'),
+      'html_multi_fields' => [
+        [
+          'id' => 'pn_customers_manager_wa_escalation_emails',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'input',
+          'type' => 'email',
+          'placeholder' => 'email@example.com',
+        ],
+      ],
+      'parent' => 'pn_customers_manager_wa_escalation_enabled',
+      'parent_option' => 'on',
     ];
 
     $pn_customers_manager_options['pn_customers_manager_whatsapp_section_end'] = [
@@ -1521,8 +1873,226 @@ class PN_CUSTOMERS_MANAGER_Settings
       'section' => 'end',
     ];
 
+    // ── Go High Level (nested subsection) ──
+    $pn_customers_manager_options['pn_customers_manager_ghl_section_start'] = [
+      'id' => 'pn_customers_manager_ghl_section_start',
+      'section' => 'start',
+      'label' => __('Go High Level', 'pn-customers-manager'),
+      'description' => __('Connect with Go High Level CRM to sync organizations and contacts bidirectionally.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_api_key'] = [
+      'id' => 'pn_customers_manager_ghl_api_key',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('API Key', 'pn-customers-manager'),
+      'description' => __('Enter your Go High Level Private Integration API Key. You can find it in GHL under Settings &gt; Business Profile &gt; Integrations, or create a Private Integration App in the Marketplace.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_location_id'] = [
+      'id' => 'pn_customers_manager_ghl_location_id',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Location ID', 'pn-customers-manager'),
+      'description' => __('Enter your GHL Location ID (also called Sub-Account ID). Required for all contact operations. Found in GHL under Settings &gt; Business Profile &gt; Overview, or in the URL when viewing a sub-account.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_test'] = [
+      'id' => 'pn_customers_manager_ghl_test',
+      'input' => 'html',
+      'label' => __('Test GHL connection', 'pn-customers-manager'),
+      'description' => __('Sends a test request to Go High Level to verify that the API Key and Location ID work correctly.', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-ghl-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Test connection', 'pn-customers-manager') . '" /><span id="pn-cm-ghl-test-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_sync_direction'] = [
+      'id' => 'pn_customers_manager_ghl_sync_direction',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'label' => __('Sync direction', 'pn-customers-manager'),
+      'description' => __('Choose the sync direction between WordPress and Go High Level.', 'pn-customers-manager'),
+      'options' => [
+        'both' => __('Both directions', 'pn-customers-manager'),
+        'push' => __('Push only (WP → GHL)', 'pn-customers-manager'),
+        'pull' => __('Pull only (GHL → WP)', 'pn-customers-manager'),
+      ],
+      'default' => 'both',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_push_all'] = [
+      'id' => 'pn_customers_manager_ghl_push_all',
+      'input' => 'html',
+      'label' => __('Push all to GHL', 'pn-customers-manager'),
+      'description' => __('Push all organizations and their contacts from WordPress to Go High Level. Existing GHL contacts will be updated, new ones will be created.', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-ghl-push-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Push all contacts', 'pn-customers-manager') . '" /><span id="pn-cm-ghl-push-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_pull_all'] = [
+      'id' => 'pn_customers_manager_ghl_pull_all',
+      'input' => 'html',
+      'label' => __('Pull all from GHL', 'pn-customers-manager'),
+      'description' => __('Pull all contacts from Go High Level into WordPress. Contacts with a company name will be created as organizations, others as WordPress users.', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-ghl-pull-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Pull all contacts', 'pn-customers-manager') . '" /><span id="pn-cm-ghl-pull-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_funnel_sync'] = [
+      'id' => 'pn_customers_manager_ghl_funnel_sync',
+      'class' => 'pn-customers-manager-checkbox',
+      'input' => 'checkbox',
+      'label' => __('Sync funnel status', 'pn-customers-manager'),
+      'description' => __('Sync funnel status with GHL opportunities. When an opportunity stage changes in GHL, the local funnel status updates. When funnel status changes locally, the GHL opportunity stage updates.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_wa_sync'] = [
+      'id' => 'pn_customers_manager_ghl_wa_sync',
+      'class' => 'pn-customers-manager-checkbox',
+      'input' => 'checkbox',
+      'label' => __('Sync WhatsApp conversations to GHL', 'pn-customers-manager'),
+      'description' => __('Sync WhatsApp messages to the GHL Conversations tab (inbound + outbound) instead of creating notes. Requires a Conversation Provider ID. Works regardless of sync direction setting.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_conversation_provider_id'] = [
+      'id' => 'pn_customers_manager_ghl_conversation_provider_id',
+      'input' => 'text',
+      'label' => __('Conversation Provider ID', 'pn-customers-manager'),
+      'description' => __('Internal GHL ID for the WhatsApp channel. Required for conversation sync. Found in GHL under Settings → Conversations → Phone Numbers.', 'pn-customers-manager'),
+      'parent' => 'pn_customers_manager_ghl_wa_sync/on',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_ghl_section_end'] = [
+      'id' => 'pn_customers_manager_ghl_section_end',
+      'section' => 'end',
+    ];
+
+    // ── Zoho CRM (nested subsection) ──
+    $pn_customers_manager_options['pn_customers_manager_zoho_section_start'] = [
+      'id' => 'pn_customers_manager_zoho_section_start',
+      'section' => 'start',
+      'label' => __('Zoho CRM', 'pn-customers-manager'),
+      'description' => __('Connect with Zoho CRM to sync organizations and contacts bidirectionally using OAuth 2.0.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_client_id'] = [
+      'id' => 'pn_customers_manager_zoho_client_id',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'text',
+      'label' => __('Client ID', 'pn-customers-manager'),
+      'description' => __('Enter your Zoho API Client ID. Create a Server-based Application in the Zoho API Console at api-console.zoho.com.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_client_secret'] = [
+      'id' => 'pn_customers_manager_zoho_client_secret',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'input',
+      'type' => 'password',
+      'label' => __('Client Secret', 'pn-customers-manager'),
+      'description' => __('Enter your Zoho API Client Secret.', 'pn-customers-manager'),
+    ];
+
+    // Connect / Disconnect button.
+    $zoho_connected = class_exists( 'PN_CUSTOMERS_MANAGER_Zoho' ) && PN_CUSTOMERS_MANAGER_Zoho::is_connected();
+    if ( $zoho_connected ) {
+      $zoho_btn_html = '<span style="color:#00a32a;font-weight:500">' . esc_html__('Connected', 'pn-customers-manager') . ' &#10003;</span>'
+        . ' <input type="button" id="pn-cm-zoho-disconnect-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Disconnect', 'pn-customers-manager') . '" style="margin-left:10px" />';
+    } else {
+      $zoho_oauth_url = class_exists( 'PN_CUSTOMERS_MANAGER_Zoho' ) ? PN_CUSTOMERS_MANAGER_Zoho::get_oauth_url() : '#';
+      $zoho_btn_html = '<a href="' . esc_url( $zoho_oauth_url ) . '" class="pn-customers-manager-btn pn-customers-manager-btn-mini">' . esc_html__('Connect Zoho', 'pn-customers-manager') . '</a>';
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_connect'] = [
+      'id' => 'pn_customers_manager_zoho_connect',
+      'input' => 'html',
+      'label' => __('Connection', 'pn-customers-manager'),
+      'description' => __('Authorize the plugin to access your Zoho CRM account.', 'pn-customers-manager'),
+      'html_content' => $zoho_btn_html,
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_sync_direction'] = [
+      'id' => 'pn_customers_manager_zoho_sync_direction',
+      'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input' => 'select',
+      'label' => __('Sync direction', 'pn-customers-manager'),
+      'description' => __('Choose the sync direction between WordPress and Zoho CRM.', 'pn-customers-manager'),
+      'options' => [
+        'both' => __('Both directions', 'pn-customers-manager'),
+        'push' => __('Push only (WP → Zoho)', 'pn-customers-manager'),
+        'pull' => __('Pull only (Zoho → WP)', 'pn-customers-manager'),
+      ],
+      'default' => 'both',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_test'] = [
+      'id' => 'pn_customers_manager_zoho_test',
+      'input' => 'html',
+      'label' => __('Test Zoho connection', 'pn-customers-manager'),
+      'description' => __('Sends a test request to Zoho CRM to verify the connection.', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-zoho-test-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Test connection', 'pn-customers-manager') . '" /><span id="pn-cm-zoho-test-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_push_all'] = [
+      'id' => 'pn_customers_manager_zoho_push_all',
+      'input' => 'html',
+      'label' => __('Push all to Zoho', 'pn-customers-manager'),
+      'description' => __('Push all organizations and their contacts from WordPress to Zoho CRM.', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-zoho-push-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Push all contacts', 'pn-customers-manager') . '" /><span id="pn-cm-zoho-push-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_pull_all'] = [
+      'id' => 'pn_customers_manager_zoho_pull_all',
+      'input' => 'html',
+      'label' => __('Pull all from Zoho', 'pn-customers-manager'),
+      'description' => __('Pull all contacts from Zoho CRM into WordPress.', 'pn-customers-manager'),
+      'html_content' => '<input type="button" id="pn-cm-zoho-pull-btn" class="pn-customers-manager-btn pn-customers-manager-btn-mini" value="' . esc_attr__('Pull all contacts', 'pn-customers-manager') . '" /><span id="pn-cm-zoho-pull-result" class="pn-customers-manager-ml-10"></span>',
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_funnel_sync'] = [
+      'id' => 'pn_customers_manager_zoho_funnel_sync',
+      'class' => 'pn-customers-manager-checkbox',
+      'input' => 'checkbox',
+      'label' => __('Sync funnel status', 'pn-customers-manager'),
+      'description' => __('Sync funnel status with Zoho deals. When a deal stage changes in Zoho, the local funnel status updates. When funnel status changes locally, the Zoho deal stage updates.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_zoho_section_end'] = [
+      'id' => 'pn_customers_manager_zoho_section_end',
+      'section' => 'end',
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_api_parent_section_end'] = [
       'id' => 'pn_customers_manager_api_parent_section_end',
+      'section' => 'end',
+    ];
+
+    // ── CPT FIELDS PARENT SECTION ──────────────────────────────────
+    $pn_customers_manager_options['pn_customers_manager_cpt_fields_parent_section_start'] = [
+      'id' => 'pn_customers_manager_cpt_fields_parent_section_start',
+      'section' => 'start',
+      'label' => __('CPT Fields', 'pn-customers-manager'),
+      'description' => __('Choose which fields are visible on each custom post type edit screen.', 'pn-customers-manager'),
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_cpt_fields_config'] = [
+      'id' => 'pn_customers_manager_cpt_fields_config',
+      'label' => '',
+      'input' => 'html',
+      'html_content' => self::pn_customers_manager_render_cpt_fields_editor(),
+    ];
+
+    // Whitelist-only entry: the actual hidden input is rendered inside the CPT
+    // fields editor above; this key must exist in the options array so it passes
+    // the allowed-options check on save, but must NOT render a second input.
+    $pn_customers_manager_options['pn_customers_manager_funnel_states_config'] = [
+      'id' => 'pn_customers_manager_funnel_states_config',
+      'input' => 'html',
+      'html_content' => '',
+      'skip_save' => true,
+    ];
+
+    $pn_customers_manager_options['pn_customers_manager_cpt_fields_parent_section_end'] = [
+      'id' => 'pn_customers_manager_cpt_fields_parent_section_end',
       'section' => 'end',
     ];
 
@@ -1582,6 +2152,34 @@ class PN_CUSTOMERS_MANAGER_Settings
     ];
 
     // ── General Settings ──
+    // ── Client Stages (visual config editor) ──
+    $pn_customers_manager_options['pn_customers_manager_client_stages_config'] = [
+      'id' => 'pn_customers_manager_client_stages_config',
+      'label' => '',
+      'input' => 'html',
+      'html_content' => self::pn_customers_manager_render_client_stages_editor(),
+    ];
+
+    // Default client stage dropdown — populated dynamically from funnel states / client stages.
+    $pn_cm_stage_choices = [];
+    if ( class_exists( 'PN_CUSTOMERS_MANAGER_Clients' ) ) {
+      foreach ( PN_CUSTOMERS_MANAGER_Clients::get_stages_config() as $sc ) {
+        $pn_cm_stage_choices[ $sc['name'] ] = $sc['name'];
+      }
+    }
+    if ( empty( $pn_cm_stage_choices ) ) {
+      $pn_cm_stage_choices = [ 'New' => 'New' ];
+    }
+
+    $pn_customers_manager_options['pn_customers_manager_default_client_stage'] = [
+      'id'          => 'pn_customers_manager_default_client_stage',
+      'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+      'input'       => 'select',
+      'options'     => $pn_cm_stage_choices,
+      'label'       => __( 'Default stage for new contacts', 'pn-customers-manager' ),
+      'description' => __( 'The stage automatically assigned to new contacts when they are created (manual, GHL sync, Zoho sync, WhatsApp, etc.).', 'pn-customers-manager' ),
+    ];
+
     $pn_customers_manager_options['pn_customers_manager_allow_crm_indexing'] = [
       'id' => 'pn_customers_manager_allow_crm_indexing',
       'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
@@ -1653,6 +2251,465 @@ class PN_CUSTOMERS_MANAGER_Settings
   }
 
   /**
+   * Returns the registry of toggleable fields per CPT.
+   *
+   * @return array
+   */
+  public static function pn_customers_manager_get_cpt_fields_registry() {
+    return [
+      'pn_cm_organization' => [
+        'label' => __('Organizations', 'pn-customers-manager'),
+        'groups' => [
+          __('Basic organization data', 'pn-customers-manager') => [
+            'pn_cm_organization_contacts_block' => __('Linked contacts', 'pn-customers-manager'),
+            'pn_cm_organization_legal_name' => __('Legal name', 'pn-customers-manager'),
+            'pn_cm_organization_trade_name' => __('Trade name', 'pn-customers-manager'),
+            'pn_cm_organization_segment' => __('Segment', 'pn-customers-manager'),
+            'pn_cm_organization_industry' => __('Industry', 'pn-customers-manager'),
+            'pn_cm_organization_team_size' => __('Team size', 'pn-customers-manager'),
+            'pn_cm_organization_annual_revenue' => __('Annual revenue', 'pn-customers-manager'),
+            'pn_cm_organization_phone' => __('Primary phone', 'pn-customers-manager'),
+            'pn_cm_organization_email' => __('Primary email', 'pn-customers-manager'),
+            'pn_cm_organization_website' => __('Website', 'pn-customers-manager'),
+            'pn_cm_organization_linkedin' => __('LinkedIn profile', 'pn-customers-manager'),
+            'pn_cm_organization_country' => __('Country', 'pn-customers-manager'),
+            'pn_cm_organization_region' => __('Region / State', 'pn-customers-manager'),
+            'pn_cm_organization_city' => __('City', 'pn-customers-manager'),
+            'pn_cm_organization_address' => __('Address', 'pn-customers-manager'),
+            'pn_cm_organization_postal_code' => __('Postal code', 'pn-customers-manager'),
+          ],
+          __('Legal & Corporate', 'pn-customers-manager') => [
+            'pn_cm_organization_cif' => __('CIF / NIF', 'pn-customers-manager'),
+            'pn_cm_organization_vies' => __('VIES (EU VAT number)', 'pn-customers-manager'),
+            'pn_cm_organization_registered_office' => __('Registered office', 'pn-customers-manager'),
+            'pn_cm_organization_cnae' => __('CNAE (primary activity)', 'pn-customers-manager'),
+            'pn_cm_organization_corporate_purpose' => __('Corporate purpose', 'pn-customers-manager'),
+          ],
+          __('Advanced CRM fields', 'pn-customers-manager') => [
+            'pn_cm_organization_fiscal_id' => __('Tax ID (VAT / EIN)', 'pn-customers-manager'),
+            'pn_cm_organization_lead_source' => __('Lead source', 'pn-customers-manager'),
+            'pn_cm_organization_lifecycle_stage' => __('Lifecycle stage', 'pn-customers-manager'),
+            'pn_cm_organization_pipeline_stage' => __('Pipeline stage', 'pn-customers-manager'),
+            'pn_cm_organization_priority' => __('Commercial priority', 'pn-customers-manager'),
+            'pn_cm_organization_health' => __('Account health', 'pn-customers-manager'),
+            'pn_cm_organization_lead_score' => __('Lead score', 'pn-customers-manager'),
+            'pn_cm_organization_owner' => __('Primary owner', 'pn-customers-manager'),
+            'pn_cm_organization_collaborators' => __('Assigned collaborators', 'pn-customers-manager'),
+            'pn_cm_organization_last_contact_date' => __('Last contact', 'pn-customers-manager'),
+            'pn_cm_organization_last_contact_channel' => __('Last contact channel', 'pn-customers-manager'),
+            'pn_cm_organization_next_action' => __('Next agreed step', 'pn-customers-manager'),
+            'pn_cm_organization_billing_email' => __('Billing email', 'pn-customers-manager'),
+            'pn_cm_organization_billing_phone' => __('Billing phone', 'pn-customers-manager'),
+            'pn_cm_organization_billing_address' => __('Billing address', 'pn-customers-manager'),
+            'pn_cm_organization_tags' => __('Tags', 'pn-customers-manager'),
+            'pn_cm_organization_notes' => __('Internal notes', 'pn-customers-manager'),
+          ],
+          __('Commercial funnel', 'pn-customers-manager') => [
+            'pn_cm_organization_funnel_id' => __('Assigned funnel', 'pn-customers-manager'),
+            'pn_cm_organization_funnel_stage' => __('Current stage', 'pn-customers-manager'),
+            'pn_cm_organization_funnel_status' => __('Funnel status', 'pn-customers-manager'),
+          ],
+        ],
+      ],
+      'pn_cm_budget' => [
+        'label' => __('Budgets', 'pn-customers-manager'),
+        'groups' => [
+          __('Budget details', 'pn-customers-manager') => [
+            'pn_cm_budget_organization_id' => __('Organization', 'pn-customers-manager'),
+            'pn_cm_budget_date' => __('Date', 'pn-customers-manager'),
+            'pn_cm_budget_valid_until' => __('Valid until', 'pn-customers-manager'),
+            'pn_cm_budget_status' => __('Status', 'pn-customers-manager'),
+            'pn_cm_budget_tax_rate' => __('Tax rate', 'pn-customers-manager'),
+            'pn_cm_budget_discount_rate' => __('Discount rate', 'pn-customers-manager'),
+          ],
+          __('Notes', 'pn-customers-manager') => [
+            'pn_cm_budget_notes' => __('Internal notes', 'pn-customers-manager'),
+            'pn_cm_budget_client_notes' => __('Client notes', 'pn-customers-manager'),
+            'pn_cm_budget_conditions' => __('Terms and conditions', 'pn-customers-manager'),
+            'pn_cm_budget_others' => __('Additional information', 'pn-customers-manager'),
+          ],
+          __('Footer image', 'pn-customers-manager') => [
+            'pn_cm_budget_footer_image' => __('Footer image', 'pn-customers-manager'),
+          ],
+        ],
+      ],
+      'pn_cm_invoice' => [
+        'label' => __('Invoices', 'pn-customers-manager'),
+        'groups' => [
+          __('Invoice details', 'pn-customers-manager') => [
+            'pn_cm_invoice_type' => __('Type', 'pn-customers-manager'),
+            'pn_cm_invoice_organization_id' => __('Organization', 'pn-customers-manager'),
+            'pn_cm_invoice_supplier_number' => __('Supplier invoice number', 'pn-customers-manager'),
+            'pn_cm_invoice_category' => __('Category', 'pn-customers-manager'),
+            'pn_cm_invoice_payment_method' => __('Payment method', 'pn-customers-manager'),
+            'pn_cm_invoice_date' => __('Date', 'pn-customers-manager'),
+            'pn_cm_invoice_due_date' => __('Due date', 'pn-customers-manager'),
+            'pn_cm_invoice_status' => __('Status', 'pn-customers-manager'),
+            'pn_cm_invoice_tax_rate' => __('Tax rate', 'pn-customers-manager'),
+            'pn_cm_invoice_discount_rate' => __('Discount rate', 'pn-customers-manager'),
+            'pn_cm_invoice_irpf_rate' => __('IRPF withholding rate', 'pn-customers-manager'),
+            'pn_cm_invoice_expense_subtotal' => __('Subtotal (expense)', 'pn-customers-manager'),
+          ],
+          __('Notes', 'pn-customers-manager') => [
+            'pn_cm_invoice_notes' => __('Internal notes', 'pn-customers-manager'),
+            'pn_cm_invoice_client_notes' => __('Client notes', 'pn-customers-manager'),
+            'pn_cm_invoice_conditions' => __('Terms and conditions', 'pn-customers-manager'),
+          ],
+          __('Recurring invoice', 'pn-customers-manager') => [
+            'pn_cm_invoice_recurring' => __('Enable annual recurring billing', 'pn-customers-manager'),
+          ],
+          __('Footer image', 'pn-customers-manager') => [
+            'pn_cm_invoice_footer_image' => __('Footer image', 'pn-customers-manager'),
+          ],
+        ],
+      ],
+      'pn_cm_funnel' => [
+        'label' => __('Funnels', 'pn-customers-manager'),
+        'groups' => [
+          __('Funnel details', 'pn-customers-manager') => [
+            'pn_cm_funnel_date' => __('Funnel date', 'pn-customers-manager'),
+            'pn_cm_funnel_time' => __('Funnel time', 'pn-customers-manager'),
+            'pn_cm_funnel_multimedia' => __('Multimedia content', 'pn-customers-manager'),
+          ],
+        ],
+      ],
+      'customers' => [
+        'label' => __('Customers', 'pn-customers-manager'),
+        'groups' => [
+          __('Personal information', 'pn-customers-manager') => [
+            'first_name' => __('First name', 'pn-customers-manager'),
+            'last_name' => __('Last name', 'pn-customers-manager'),
+            'user_email' => __('Email', 'pn-customers-manager'),
+            'pn_cm_user_phone' => __('Phone', 'pn-customers-manager'),
+            'pn_cm_user_mobile' => __('Mobile phone', 'pn-customers-manager'),
+            'pn_cm_user_whatsapp' => __('WhatsApp', 'pn-customers-manager'),
+            'pn_cm_user_company' => __('Company', 'pn-customers-manager'),
+            'pn_cm_user_position' => __('Position / Job title', 'pn-customers-manager'),
+          ],
+          __('Address', 'pn-customers-manager') => [
+            'pn_cm_user_country' => __('Country', 'pn-customers-manager'),
+            'pn_cm_user_region' => __('Region / State', 'pn-customers-manager'),
+            'pn_cm_user_city' => __('City', 'pn-customers-manager'),
+            'pn_cm_user_address' => __('Address', 'pn-customers-manager'),
+            'pn_cm_user_postal_code' => __('Postal code', 'pn-customers-manager'),
+          ],
+          __('Social & Web', 'pn-customers-manager') => [
+            'pn_cm_user_website' => __('Website', 'pn-customers-manager'),
+            'pn_cm_user_linkedin' => __('LinkedIn profile', 'pn-customers-manager'),
+            'pn_cm_user_facebook' => __('Facebook', 'pn-customers-manager'),
+            'pn_cm_user_twitter' => __('Twitter / X', 'pn-customers-manager'),
+            'pn_cm_user_instagram' => __('Instagram', 'pn-customers-manager'),
+          ],
+          __('CRM fields', 'pn-customers-manager') => [
+            'pn_cm_user_stage' => __('Client stage', 'pn-customers-manager'),
+            'pn_cm_user_source' => __('Lead source', 'pn-customers-manager'),
+            'pn_cm_user_priority' => __('Priority', 'pn-customers-manager'),
+            'pn_cm_user_tags' => __('Tags', 'pn-customers-manager'),
+            'pn_cm_user_notes' => __('Internal notes', 'pn-customers-manager'),
+            'pn_cm_user_last_contact' => __('Last contact date', 'pn-customers-manager'),
+          ],
+        ],
+      ],
+      'funnel_states' => [
+        'label'  => __('Funnel States', 'pn-customers-manager'),
+        'custom_renderer' => 'pn_customers_manager_render_funnel_states_editor',
+      ],
+    ];
+  }
+
+  /**
+   * Renders the CPT fields editor tabbed UI for the settings page.
+   *
+   * @return string
+   */
+  public static function pn_customers_manager_render_cpt_fields_editor() {
+    $registry = self::pn_customers_manager_get_cpt_fields_registry();
+    $config = json_decode(get_option('pn_customers_manager_cpt_fields_config', '{}'), true);
+    if (!is_array($config)) {
+      $config = [];
+    }
+
+    $html = '<div class="pn-cm-cpt-fields-editor pn-customers-manager-tabs-wrapper">';
+
+    // Tab nav
+    $html .= '<div class="pn-customers-manager-tabs">';
+    $first = true;
+    foreach ($registry as $cpt_key => $cpt_data) {
+      $active = $first ? ' active' : '';
+      $html .= '<button type="button" class="pn-customers-manager-tab-links' . $active . '" data-pn-customers-manager-id="pn-cm-cpt-panel-' . esc_attr($cpt_key) . '">' . esc_html($cpt_data['label']) . '</button>';
+      $first = false;
+    }
+    $html .= '</div>';
+
+    // Tab panels
+    $first = true;
+    foreach ($registry as $cpt_key => $cpt_data) {
+      $hidden = $first ? '' : ' pn-customers-manager-display-none';
+      $html .= '<div class="pn-customers-manager-tab-content pn-cm-cpt-fields-panel' . $hidden . '" id="pn-cm-cpt-panel-' . esc_attr($cpt_key) . '">';
+
+      // Custom renderer for special tabs (e.g. funnel states).
+      if ( ! empty( $cpt_data['custom_renderer'] ) && method_exists( __CLASS__, $cpt_data['custom_renderer'] ) ) {
+        $html .= call_user_func( [ __CLASS__, $cpt_data['custom_renderer'] ] );
+      } else {
+        $html .= '<div class="pn-cm-cpt-fields-grid">';
+        foreach ($cpt_data['groups'] as $group_label => $fields) {
+          $html .= '<div class="pn-cm-cpt-fields-group-header">' . esc_html($group_label) . '</div>';
+          foreach ($fields as $field_id => $field_label) {
+            $checked = !isset($config[$cpt_key][$field_id]) || $config[$cpt_key][$field_id] !== '0';
+            $html .= '<label class="pn-cm-cpt-field-item">';
+            $html .= '<label class="pn-customers-manager-switch pn-cm-cpt-field-switch">';
+            $html .= '<input type="checkbox" class="pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-cm-cpt-field-checkbox" data-cpt="' . esc_attr($cpt_key) . '" data-field="' . esc_attr($field_id) . '"' . ($checked ? ' checked' : '') . '>';
+            $html .= '<span class="pn-customers-manager-slider pn-customers-manager-round"></span>';
+            $html .= '</label>';
+            $html .= '<span>' . esc_html($field_label) . '</span>';
+            $html .= '</label>';
+          }
+        }
+        $html .= '</div>';
+      }
+
+      $html .= '</div>';
+      $first = false;
+    }
+
+    // Hidden input to store JSON config
+    $html .= '<input type="hidden" name="pn_customers_manager_cpt_fields_config" id="pn-cm-cpt-fields-config-data" value="' . esc_attr(wp_json_encode($config)) . '">';
+    $html .= '</div>';
+
+    // JS for tab switching and config serialization is output via wp_add_inline_script
+    // in the settings page rendering (see pn_customers_manager_enqueue_cpt_fields_js).
+
+    return $html;
+  }
+
+  /**
+   * Render the client stages visual editor for settings.
+   *
+   * @return string HTML for the stages editor.
+   */
+  private static function pn_customers_manager_render_client_stages_editor() {
+    $config = [];
+    if ( class_exists( 'PN_CUSTOMERS_MANAGER_Clients' ) ) {
+      $config = PN_CUSTOMERS_MANAGER_Clients::get_stages_config();
+    }
+    if ( empty( $config ) ) {
+      $config = [
+        [ 'name' => 'New',         'color' => '#6c757d', 'description' => '' ],
+        [ 'name' => 'Contacted',   'color' => '#0d6efd', 'description' => '' ],
+        [ 'name' => 'Qualified',   'color' => '#6f42c1', 'description' => '' ],
+        [ 'name' => 'Proposal',    'color' => '#fd7e14', 'description' => '' ],
+        [ 'name' => 'Negotiation', 'color' => '#e83e8c', 'description' => '' ],
+        [ 'name' => 'Won',         'color' => '#198754', 'description' => '' ],
+        [ 'name' => 'Lost',        'color' => '#dc3545', 'description' => '' ],
+      ];
+    }
+
+    $html = '<div id="pn-cm-stages-editor" class="pn-cm-stages-editor">';
+    $html .= '<h4 style="margin:0 0 12px;">' . esc_html__( 'Client stages', 'pn-customers-manager' ) . '</h4>';
+    $html .= '<p style="margin:0 0 12px;color:#787c82;font-size:13px;">' . esc_html__( 'Define the pipeline stages for the Clients dashboard. Each stage has a name, color, and optional description shown as tooltip.', 'pn-customers-manager' ) . '</p>';
+    $html .= '<div id="pn-cm-stages-rows">';
+    foreach ( $config as $i => $stage ) {
+      $html .= self::pn_customers_manager_render_stage_row( $i, $stage );
+    }
+    $html .= '</div>';
+    $html .= '<button type="button" id="pn-cm-stages-add" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent" style="margin-top:8px;"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle" style="font-size:16px;">add</i> ' . esc_html__( 'Add stage', 'pn-customers-manager' ) . '</button>';
+    $html .= '<input type="hidden" name="pn_customers_manager_client_stages_config" id="pn-cm-stages-config-data" value="' . esc_attr( wp_json_encode( $config ) ) . '">';
+    $html .= '</div>';
+
+    return $html;
+  }
+
+  /**
+   * Render a single stage row for the stages editor.
+   *
+   * @param int   $index Row index.
+   * @param array $stage Stage data with name, color, description.
+   * @return string HTML.
+   */
+  private static function pn_customers_manager_render_stage_row( $index, $stage ) {
+    $html  = '<div class="pn-cm-stages-row" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">';
+    $html .= '<input type="color" class="pn-cm-stages-color" value="' . esc_attr( $stage['color'] ) . '" style="width:36px;height:36px;padding:2px;border:1px solid #c3c4c7;border-radius:4px;cursor:pointer;" title="' . esc_attr__( 'Color', 'pn-customers-manager' ) . '">';
+    $html .= '<input type="text" class="pn-cm-stages-name" value="' . esc_attr( $stage['name'] ) . '" placeholder="' . esc_attr__( 'Stage name', 'pn-customers-manager' ) . '" style="flex:1;min-width:100px;max-width:200px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">';
+    $html .= '<input type="text" class="pn-cm-stages-desc" value="' . esc_attr( isset( $stage['description'] ) ? $stage['description'] : '' ) . '" placeholder="' . esc_attr__( 'Description (tooltip)', 'pn-customers-manager' ) . '" style="flex:2;min-width:150px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">';
+    $html .= '<button type="button" class="pn-cm-stages-remove" style="background:none;border:none;cursor:pointer;color:#cc1016;padding:4px;display:flex;" title="' . esc_attr__( 'Remove', 'pn-customers-manager' ) . '"><i class="material-icons-outlined" style="font-size:18px;">delete</i></button>';
+    $html .= '</div>';
+    return $html;
+  }
+
+  /**
+   * Get funnel states configuration from the database or return defaults.
+   *
+   * @return array Array of states, each with id, name, color, description, enabled.
+   */
+  public static function pn_customers_manager_get_funnel_states_config() {
+    $config = json_decode( get_option( 'pn_customers_manager_funnel_states_config', '' ), true );
+    if ( ! empty( $config ) && is_array( $config ) ) {
+      return $config;
+    }
+    return [
+      [ 'id' => 'not_started', 'name' => __( 'Not started', 'pn-customers-manager' ),            'color' => '#6c757d', 'description' => '', 'enabled' => true ],
+      [ 'id' => 'in_progress', 'name' => __( 'In progress', 'pn-customers-manager' ),            'color' => '#0d6efd', 'description' => '', 'enabled' => true ],
+      [ 'id' => 'stalled',     'name' => __( 'Stalled / needs attention', 'pn-customers-manager' ), 'color' => '#fd7e14', 'description' => '', 'enabled' => true ],
+      [ 'id' => 'won',         'name' => __( 'Won', 'pn-customers-manager' ),                    'color' => '#198754', 'description' => '', 'enabled' => true ],
+      [ 'id' => 'lost',        'name' => __( 'Lost', 'pn-customers-manager' ),                   'color' => '#dc3545', 'description' => '', 'enabled' => true ],
+    ];
+  }
+
+  /**
+   * Resolve an external stage identifier to a local funnel state ID.
+   *
+   * Matches first by exact state ID, then by case-insensitive name.
+   * Returns empty string if no match is found.
+   *
+   * @param string $stage_id   External stage ID (e.g. GHL pipelineStageId).
+   * @param string $stage_name External stage name for fallback matching.
+   * @return string Local funnel state ID or empty string.
+   */
+  public static function resolve_funnel_state_id( $stage_id = '', $stage_name = '' ) {
+    $states = self::pn_customers_manager_get_funnel_states_config();
+
+    // 1. Match by exact state ID.
+    foreach ( $states as $state ) {
+      if ( ! empty( $state['enabled'] ) && $state['id'] === $stage_id ) {
+        return $state['id'];
+      }
+    }
+
+    // 2. Match by name (case-insensitive).
+    if ( ! empty( $stage_name ) ) {
+      $stage_name_lower = strtolower( trim( $stage_name ) );
+      foreach ( $states as $state ) {
+        if ( ! empty( $state['enabled'] ) && strtolower( trim( $state['name'] ) ) === $stage_name_lower ) {
+          return $state['id'];
+        }
+      }
+    }
+
+    return '';
+  }
+
+  /**
+   * Render the funnel states visual editor for the CPT Fields settings tab.
+   *
+   * @return string HTML.
+   */
+  private static function pn_customers_manager_render_funnel_states_editor() {
+    $config = self::pn_customers_manager_get_funnel_states_config();
+
+    // Check which integrations are configured.
+    $ghl_key  = get_option( 'pn_customers_manager_ghl_api_key', '' );
+    $ghl_loc  = get_option( 'pn_customers_manager_ghl_location_id', '' );
+    $ghl_ok   = ! empty( $ghl_key ) && ! empty( $ghl_loc );
+    $zoho_tok = get_option( 'pn_customers_manager_zoho_access_token', '' );
+    $zoho_ok  = ! empty( $zoho_tok );
+
+    $html  = '<div id="pn-cm-fstates-editor" class="pn-cm-stages-editor">';
+    $html .= '<h4 style="margin:0 0 12px;">' . esc_html__( 'Funnel States', 'pn-customers-manager' ) . '</h4>';
+    $html .= '<p style="margin:0 0 12px;color:#787c82;font-size:13px;">' . esc_html__( 'Define the funnel statuses available for organizations. Toggle each state on/off, set a color and an optional description.', 'pn-customers-manager' ) . '</p>';
+
+    // Sync buttons row.
+    if ( $ghl_ok || $zoho_ok ) {
+      $html .= '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
+      if ( $ghl_ok ) {
+        $html .= '<button type="button" id="pn-cm-fstates-sync-ghl" class="pn-customers-manager-btn pn-customers-manager-btn-mini" style="display:inline-flex;align-items:center;gap:4px;">';
+        $html .= '<i class="material-icons-outlined" style="font-size:16px;">sync</i> ';
+        $html .= esc_html__( 'Sync from GHL', 'pn-customers-manager' );
+        $html .= '</button>';
+      }
+      if ( $zoho_ok ) {
+        $html .= '<button type="button" id="pn-cm-fstates-sync-zoho" class="pn-customers-manager-btn pn-customers-manager-btn-mini" style="display:inline-flex;align-items:center;gap:4px;">';
+        $html .= '<i class="material-icons-outlined" style="font-size:16px;">sync</i> ';
+        $html .= esc_html__( 'Sync from Zoho', 'pn-customers-manager' );
+        $html .= '</button>';
+      }
+      $html .= '</div>';
+    }
+
+    $html .= '<div id="pn-cm-fstates-rows">';
+    foreach ( $config as $state ) {
+      $html .= self::pn_customers_manager_render_fstate_row( $state );
+    }
+    $html .= '</div>';
+    $html .= '<button type="button" id="pn-cm-fstates-add" class="pn-customers-manager-btn pn-customers-manager-btn-mini pn-customers-manager-btn-transparent" style="margin-top:8px;"><i class="material-icons-outlined pn-customers-manager-vertical-align-middle" style="font-size:16px;">add</i> ' . esc_html__( 'Add state', 'pn-customers-manager' ) . '</button>';
+    $html .= '<input type="hidden" name="pn_customers_manager_funnel_states_config" id="pn-cm-fstates-config-data" value="' . esc_attr( wp_json_encode( $config ) ) . '">';
+    $html .= '</div>';
+
+    return $html;
+  }
+
+  /**
+   * Render a single funnel state row.
+   *
+   * @param array $state State data with id, name, color, description, enabled.
+   * @return string HTML.
+   */
+  private static function pn_customers_manager_render_fstate_row( $state ) {
+    $enabled = ! empty( $state['enabled'] );
+    $id      = isset( $state['id'] ) ? $state['id'] : sanitize_title( $state['name'] );
+
+    $html  = '<div class="pn-cm-fstates-row" style="margin-bottom:8px;">';
+    // Toggle + name row
+    $html .= '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
+    $html .= '<label class="pn-customers-manager-switch" style="flex-shrink:0;">';
+    $html .= '<input type="checkbox" class="pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-cm-fstates-enabled"' . ( $enabled ? ' checked' : '' ) . '>';
+    $html .= '<span class="pn-customers-manager-slider pn-customers-manager-round"></span>';
+    $html .= '</label>';
+    $html .= '<input type="text" class="pn-cm-fstates-name" value="' . esc_attr( $state['name'] ) . '" placeholder="' . esc_attr__( 'State name', 'pn-customers-manager' ) . '" style="flex:1;min-width:120px;max-width:220px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">';
+    $html .= '<input type="hidden" class="pn-cm-fstates-id" value="' . esc_attr( $id ) . '">';
+    $html .= '<button type="button" class="pn-cm-fstates-remove" style="background:none;border:none;cursor:pointer;color:#cc1016;padding:4px;display:flex;" title="' . esc_attr__( 'Remove', 'pn-customers-manager' ) . '"><i class="material-icons-outlined" style="font-size:18px;">delete</i></button>';
+    $html .= '</div>';
+    // Editable fields (shown when enabled)
+    $html .= '<div class="pn-cm-fstates-fields" style="' . ( $enabled ? 'display:flex;' : 'display:none;' ) . 'align-items:center;gap:8px;padding-left:52px;">';
+    $html .= '<input type="color" class="pn-cm-fstates-color" value="' . esc_attr( $state['color'] ) . '" style="width:36px;height:36px;padding:2px;border:1px solid #c3c4c7;border-radius:4px;cursor:pointer;" title="' . esc_attr__( 'Color', 'pn-customers-manager' ) . '">';
+    $html .= '<input type="text" class="pn-cm-fstates-desc" value="' . esc_attr( isset( $state['description'] ) ? $state['description'] : '' ) . '" placeholder="' . esc_attr__( 'Description', 'pn-customers-manager' ) . '" style="flex:1;min-width:150px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">';
+    $html .= '</div>';
+    $html .= '</div>';
+    return $html;
+  }
+
+  /**
+   * Filters CPT metabox fields based on the CPT fields config.
+   *
+   * @param array  $fields    The fields array from get_fields_meta().
+   * @param string $post_type The CPT slug (e.g. 'pn_cm_organization').
+   * @return array Filtered fields.
+   */
+  public static function pn_customers_manager_filter_cpt_fields($fields, $post_type) {
+    $config = json_decode(get_option('pn_customers_manager_cpt_fields_config', '{}'), true);
+    if (empty($config[$post_type])) {
+      return $fields;
+    }
+
+    $cpt_config = $config[$post_type];
+    $filtered = [];
+
+    foreach ($fields as $key => $field) {
+      // Always keep: section markers, hidden fields, nonce fields, form markers, skip_save html blocks
+      if (isset($field['section'])) {
+        $filtered[$key] = $field;
+        continue;
+      }
+      if (isset($field['type']) && in_array($field['type'], ['hidden', 'nonce'], true)) {
+        $filtered[$key] = $field;
+        continue;
+      }
+      if (!empty($field['skip_save']) && $field['input'] === 'html' && !isset($cpt_config[$key])) {
+        $filtered[$key] = $field;
+        continue;
+      }
+
+      // If field is in the config and disabled, skip it
+      if (isset($cpt_config[$key]) && $cpt_config[$key] === '0') {
+        continue;
+      }
+
+      $filtered[$key] = $field;
+    }
+
+    return $filtered;
+  }
+
+  /**
    * Administrator menu.
    *
    * @since    1.0.0
@@ -1695,15 +2752,15 @@ class PN_CUSTOMERS_MANAGER_Settings
       [$this, 'pn_customers_manager_options'],
     );
 
-    // Add Funnels menu (Funnel Builder visual canvas)
-    if (current_user_can('edit_pn_cm_funnel')) {
+    // Add Clients submenu
+    if (current_user_can('pn_cm_manage_crm') || current_user_can('manage_options')) {
       add_submenu_page(
         'pn_customers_manager_options',
-        esc_html__('Funnels', 'pn-customers-manager'),
-        esc_html__('Funnels', 'pn-customers-manager'),
-        'edit_pn_cm_funnel',
-        'pn_customers_manager_funnel_builder',
-        ['PN_CUSTOMERS_MANAGER_Funnel_Builder', 'render_page']
+        esc_html__('Clients', 'pn-customers-manager'),
+        esc_html__('Clients', 'pn-customers-manager'),
+        'pn_cm_manage_crm',
+        'pn_customers_manager_clients',
+        ['PN_CUSTOMERS_MANAGER_Clients', 'render_page']
       );
     }
 
@@ -1718,17 +2775,64 @@ class PN_CUSTOMERS_MANAGER_Settings
       );
     }
 
+    // Add Funnels menu (Funnel Builder visual canvas)
+    if (current_user_can('edit_pn_cm_funnel')) {
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Funnels', 'pn-customers-manager'),
+        esc_html__('Funnels', 'pn-customers-manager'),
+        'edit_pn_cm_funnel',
+        'pn_customers_manager_funnel_builder',
+        ['PN_CUSTOMERS_MANAGER_Funnel_Builder', 'render_page']
+      );
+    }
+
+    // Add Commercial Agents submenu
+    if (current_user_can('pn_cm_manage_crm')) {
+      $pending_commercial = PN_CUSTOMERS_MANAGER_Commercial::get_pending_count();
+      $commercial_badge = $pending_commercial > 0
+        ? ' <span class="awaiting-mod pn-customers-manager-menu-badge">' . esc_html($pending_commercial) . '</span>'
+        : '';
+
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Commercial Agents', 'pn-customers-manager'),
+        esc_html__('Commercial Agents', 'pn-customers-manager') . $commercial_badge,
+        'pn_cm_manage_crm',
+        'pn_customers_manager_commercial_agents',
+        ['PN_CUSTOMERS_MANAGER_Commercial', 'render_admin_commercial_agents']
+      );
+    }
+
+    // Add Contact Messages submenu
+    if (current_user_can('pn_cm_manage_crm')) {
+      $unread = PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count();
+      $badge = $unread > 0
+        ? ' <span class="awaiting-mod pn-customers-manager-menu-badge">' . esc_html($unread) . '</span>'
+        : '';
+
+      add_submenu_page(
+        'pn_customers_manager_options',
+        esc_html__('Messages', 'pn-customers-manager'),
+        esc_html__('Messages', 'pn-customers-manager') . $badge,
+        'pn_cm_manage_crm',
+        'pn_customers_manager_contact_messages',
+        ['PN_CUSTOMERS_MANAGER_Contact_Messages', 'render_page']
+      );
+    }
+
     // Add Accounting parent menu (only if user can access budgets or invoices)
     if (current_user_can('edit_pn_cm_budget') || current_user_can('edit_pn_cm_invoice')) {
+      $accounting_cap = current_user_can('edit_pn_cm_budget') ? 'edit_pn_cm_budget' : 'edit_pn_cm_invoice';
+      $accounting_redirect = current_user_can('edit_pn_cm_budget') ? 'pn_cm_budget' : 'pn_cm_invoice';
       add_submenu_page(
         'pn_customers_manager_options',
         esc_html__('Accounting', 'pn-customers-manager'),
         esc_html__('Accounting', 'pn-customers-manager'),
-        'edit_pn_cm_budget',
+        $accounting_cap,
         'pn_customers_manager_accounting',
-        function () {
-          // Redirect to budgets by default
-          echo '<script>window.location.href = "' . esc_url(admin_url('edit.php?post_type=pn_cm_budget')) . '";</script>';
+        function () use ($accounting_redirect) {
+          echo '<script>window.location.href = "' . esc_url(admin_url('edit.php?post_type=' . $accounting_redirect)) . '";</script>';
         }
       );
     }
@@ -1752,23 +2856,6 @@ class PN_CUSTOMERS_MANAGER_Settings
         '&nbsp;&nbsp;&nbsp;&nbsp;' . esc_html__('Invoices', 'pn-customers-manager'),
         'edit_pn_cm_invoice',
         'edit.php?post_type=pn_cm_invoice'
-      );
-    }
-
-    // Add Commercial Agents submenu
-    if (current_user_can('pn_cm_manage_crm')) {
-      $pending_commercial = PN_CUSTOMERS_MANAGER_Commercial::get_pending_count();
-      $commercial_badge = $pending_commercial > 0
-        ? ' <span class="awaiting-mod pn-customers-manager-menu-badge">' . esc_html($pending_commercial) . '</span>'
-        : '';
-
-      add_submenu_page(
-        'pn_customers_manager_options',
-        esc_html__('Commercial Agents', 'pn-customers-manager'),
-        esc_html__('Commercial Agents', 'pn-customers-manager') . $commercial_badge,
-        'pn_cm_manage_crm',
-        'pn_customers_manager_commercial_agents',
-        ['PN_CUSTOMERS_MANAGER_Commercial', 'render_admin_commercial_agents']
       );
     }
 
@@ -1809,23 +2896,6 @@ class PN_CUSTOMERS_MANAGER_Settings
       );
     }
 
-    // Add Contact Messages submenu
-    if (current_user_can('pn_cm_manage_crm')) {
-      $unread = PN_CUSTOMERS_MANAGER_Contact_Messages::get_unread_count();
-      $badge = $unread > 0
-        ? ' <span class="awaiting-mod pn-customers-manager-menu-badge">' . esc_html($unread) . '</span>'
-        : '';
-
-      add_submenu_page(
-        'pn_customers_manager_options',
-        esc_html__('Messages', 'pn-customers-manager'),
-        esc_html__('Messages', 'pn-customers-manager') . $badge,
-        'pn_cm_manage_crm',
-        'pn_customers_manager_contact_messages',
-        ['PN_CUSTOMERS_MANAGER_Contact_Messages', 'render_page']
-      );
-    }
-
     // Add Mail Statistics submenu
     if (current_user_can('pn_cm_manage_crm')) {
       add_submenu_page(
@@ -1852,6 +2922,134 @@ class PN_CUSTOMERS_MANAGER_Settings
                             </div>
                             <?php endif; ?>
                             <h1 class="pn-customers-manager-mb-30"><?php esc_html_e('PN Customers Manager Settings', 'pn-customers-manager'); ?></h1>
+
+                            <?php
+                            // ── Configuration summary blocks (AI Toolkits style) ──
+
+                            // Block 1: AI Providers
+                            $ai_model = get_option('pn_customers_manager_whatsapp_ai_model', '');
+                            $ai_model_label = $ai_model ?: __('Not configured', 'pn-customers-manager');
+                            $has_openai_key = ! empty(get_option('pn_customers_manager_whatsapp_openai_key'));
+                            $has_deepseek_key = ! empty(get_option('pn_customers_manager_deepseek_api_key'));
+                            $has_qwen_key = ! empty(get_option('pn_customers_manager_qwen_api_key'));
+                            $has_moonshot_key = ! empty(get_option('pn_customers_manager_moonshot_api_key'));
+                            $ai_keys_count = (int) $has_openai_key + (int) $has_deepseek_key + (int) $has_qwen_key + (int) $has_moonshot_key;
+                            $ai_status = $ai_keys_count > 0 ? 'active' : 'inactive';
+
+                            // Block 2: WhatsApp
+                            $wa_token = get_option('pn_customers_manager_whatsapp_access_token');
+                            $wa_phone_id = get_option('pn_customers_manager_whatsapp_phone_number_id');
+                            $wa_ai_enabled = get_option('pn_customers_manager_whatsapp_ai_auto_reply', '') === 'on';
+                            $wa_status = ! empty($wa_token) && ! empty($wa_phone_id) ? 'active' : 'inactive';
+
+                            // Block 3: Budgets & Invoices
+                            $budget_currency = get_option('pn_customers_manager_budget_currency', 'EUR');
+                            $budget_tax = get_option('pn_customers_manager_budget_tax_rate', '');
+                            $invoice_prefix = get_option('pn_customers_manager_invoice_prefix', '');
+                            $invoice_format = get_option('pn_customers_manager_invoice_number_format', '');
+                            $accounting_status = ( ! empty($budget_currency) ) ? 'active' : 'inactive';
+
+                            // Block 4: Integrations (GHL / Zoho)
+                            $ghl_key = get_option('pn_customers_manager_ghl_api_key');
+                            $zoho_client_id = get_option('pn_customers_manager_zoho_client_id');
+                            $ghl_active = ! empty($ghl_key);
+                            $zoho_active = ! empty($zoho_client_id);
+                            $integrations_status = ($ghl_active || $zoho_active) ? 'active' : 'inactive';
+                            ?>
+                            <div class="pn-cm-config-blocks pn-customers-manager-mb-30">
+
+                              <div class="pn-cm-config-block pn-cm-config-block-<?php echo esc_attr($ai_status); ?>">
+                                <div class="pn-cm-config-block-header pn-customers-manager-toggle">
+                                  <h3 class="pn-cm-config-block-title"><i class="material-icons-outlined">psychology</i> <?php esc_html_e('AI Providers', 'pn-customers-manager'); ?></h3>
+                                  <i class="material-icons-outlined pn-cm-config-block-arrow">add</i>
+                                </div>
+                                <div class="pn-cm-config-block-body pn-customers-manager-toggle-content pn-customers-manager-display-none-soft">
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('Default Model:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo esc_html($ai_model_label); ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('API Keys:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo esc_html($ai_keys_count . ' ' . __('configured', 'pn-customers-manager')); ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label">OpenAI:</span>
+                                    <span class="pn-cm-config-block-value"><?php echo $has_openai_key ? esc_html__('Configured', 'pn-customers-manager') : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not set', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label">DeepSeek:</span>
+                                    <span class="pn-cm-config-block-value"><?php echo $has_deepseek_key ? esc_html__('Configured', 'pn-customers-manager') : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not set', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="pn-cm-config-block pn-cm-config-block-<?php echo esc_attr($wa_status); ?>">
+                                <div class="pn-cm-config-block-header pn-customers-manager-toggle">
+                                  <h3 class="pn-cm-config-block-title"><i class="material-icons-outlined">chat</i> WhatsApp</h3>
+                                  <i class="material-icons-outlined pn-cm-config-block-arrow">add</i>
+                                </div>
+                                <div class="pn-cm-config-block-body pn-customers-manager-toggle-content pn-customers-manager-display-none-soft">
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('Access Token:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo ! empty($wa_token) ? esc_html__('Configured', 'pn-customers-manager') : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not set', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('Phone Number ID:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo ! empty($wa_phone_id) ? esc_html($wa_phone_id) : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not set', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('AI Auto-reply:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo $wa_ai_enabled ? esc_html__('Enabled', 'pn-customers-manager') : esc_html__('Disabled', 'pn-customers-manager'); ?></span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="pn-cm-config-block pn-cm-config-block-<?php echo esc_attr($accounting_status); ?>">
+                                <div class="pn-cm-config-block-header pn-customers-manager-toggle">
+                                  <h3 class="pn-cm-config-block-title"><i class="material-icons-outlined">receipt_long</i> <?php esc_html_e('Budgets & Invoices', 'pn-customers-manager'); ?></h3>
+                                  <i class="material-icons-outlined pn-cm-config-block-arrow">add</i>
+                                </div>
+                                <div class="pn-cm-config-block-body pn-customers-manager-toggle-content pn-customers-manager-display-none-soft">
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('Currency:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo esc_html($budget_currency); ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('Tax Rate:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo ! empty($budget_tax) ? esc_html($budget_tax . '%') : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not set', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('Invoice Prefix:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo ! empty($invoice_prefix) ? esc_html($invoice_prefix) : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not set', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                  <?php if ( ! empty($invoice_format) ): ?>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label"><?php esc_html_e('Number Format:', 'pn-customers-manager'); ?></span>
+                                    <span class="pn-cm-config-block-value"><?php echo esc_html($invoice_format); ?></span>
+                                  </div>
+                                  <?php endif; ?>
+                                </div>
+                              </div>
+
+                              <div class="pn-cm-config-block pn-cm-config-block-<?php echo esc_attr($integrations_status); ?>">
+                                <div class="pn-cm-config-block-header pn-customers-manager-toggle">
+                                  <h3 class="pn-cm-config-block-title"><i class="material-icons-outlined">sync</i> <?php esc_html_e('Integrations', 'pn-customers-manager'); ?></h3>
+                                  <i class="material-icons-outlined pn-cm-config-block-arrow">add</i>
+                                </div>
+                                <div class="pn-cm-config-block-body pn-customers-manager-toggle-content pn-customers-manager-display-none-soft">
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label">GoHighLevel:</span>
+                                    <span class="pn-cm-config-block-value"><?php echo $ghl_active ? esc_html__('Configured', 'pn-customers-manager') : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not configured', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                  <div class="pn-cm-config-block-item">
+                                    <span class="pn-cm-config-block-label">Zoho CRM:</span>
+                                    <span class="pn-cm-config-block-value"><?php echo $zoho_active ? esc_html__('Configured', 'pn-customers-manager') : '<span class="pn-cm-config-block-value-muted">' . esc_html__('Not configured', 'pn-customers-manager') . '</span>'; ?></span>
+                                  </div>
+                                </div>
+                              </div>
+
+                            </div>
+
                             <?php // Page alerts are now shown only in the Pages section ?>
                             <div class="pn-customers-manager-options-fields pn-customers-manager-mb-30 pn-customers-manager-settings-pb-80">
                               <form action="" method="post" id="pn-customers-manager-form-setting" class="pn-customers-manager-form pn-customers-manager-p-30">
@@ -1953,7 +3151,7 @@ class PN_CUSTOMERS_MANAGER_Settings
                                   $pn_is_rec = in_array($pn_slug, $pn_recommended, true);
                                   ?>
                                           <div class="pn-cm-rp-card" data-slug="<?php echo esc_attr($pn_slug); ?>">
-                                            <div class="pn-cm-rp-icon"><?php echo $pn_pl['icon']; ?></div>
+                                            <div class="pn-cm-rp-icon"><?php echo wp_kses($pn_pl['icon'], array('svg' => array('xmlns' => true, 'viewbox' => true, 'class' => true, 'width' => true, 'height' => true, 'fill' => true), 'path' => array('d' => true, 'fill' => true), 'circle' => array('cx' => true, 'cy' => true, 'r' => true, 'fill' => true), 'rect' => array('x' => true, 'y' => true, 'width' => true, 'height' => true, 'fill' => true, 'rx' => true))); ?></div>
                                             <div class="pn-cm-rp-info">
                                               <div class="pn-cm-rp-name">
                                                 <?php echo esc_html($pn_pl['name']); ?>
@@ -2023,6 +3221,187 @@ class PN_CUSTOMERS_MANAGER_Settings
                             true
                           );
 
+                          // CPT Fields: config serialization on form submit
+                          wp_add_inline_script('pn-customers-manager-settings-footer',
+                            'document.addEventListener("DOMContentLoaded",function(){' .
+                            'var form=document.getElementById("pn-customers-manager-form-setting");' .
+                            'if(form){form.addEventListener("submit",function(){' .
+                            'var cfg={};' .
+                            'document.querySelectorAll(".pn-cm-cpt-field-checkbox").forEach(function(cb){' .
+                            'var cpt=cb.dataset.cpt,fld=cb.dataset.field;' .
+                            'if(!cfg[cpt])cfg[cpt]={};' .
+                            'cfg[cpt][fld]=cb.checked?"1":"0";' .
+                            '});' .
+                            'document.getElementById("pn-cm-cpt-fields-config-data").value=JSON.stringify(cfg);' .
+                            '});}' .
+                            '});'
+                          );
+
+                          // Client stages editor: add/remove rows + serialize on submit
+                          wp_add_inline_script('pn-customers-manager-settings-footer',
+                            '(function(){' .
+                            'var container=document.getElementById("pn-cm-stages-rows");' .
+                            'var addBtn=document.getElementById("pn-cm-stages-add");' .
+                            'var hiddenInput=document.getElementById("pn-cm-stages-config-data");' .
+                            'if(!container||!addBtn||!hiddenInput)return;' .
+                            'function makeRow(color,name,desc){' .
+                              'var d=document.createElement("div");d.className="pn-cm-stages-row";' .
+                              'd.style.cssText="display:flex;align-items:center;gap:8px;margin-bottom:6px;";' .
+                              'd.innerHTML=\'<input type="color" class="pn-cm-stages-color" value="\'+color+\'" style="width:36px;height:36px;padding:2px;border:1px solid #c3c4c7;border-radius:4px;cursor:pointer;">\'' .
+                              '+\'<input type="text" class="pn-cm-stages-name" value="\'+name.replace(/"/g,"&quot;")+\'" placeholder="Stage name" style="flex:1;min-width:100px;max-width:200px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">\'' .
+                              '+\'<input type="text" class="pn-cm-stages-desc" value="\'+desc.replace(/"/g,"&quot;")+\'" placeholder="Description" style="flex:2;min-width:150px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">\'' .
+                              '+\'<button type="button" class="pn-cm-stages-remove" style="background:none;border:none;cursor:pointer;color:#cc1016;padding:4px;display:flex;"><i class="material-icons-outlined" style="font-size:18px;">delete</i></button>\';' .
+                              'return d;' .
+                            '}' .
+                            'addBtn.addEventListener("click",function(){' .
+                              'var colors=["#6c757d","#0d6efd","#6f42c1","#fd7e14","#e83e8c","#198754","#dc3545"];' .
+                              'var idx=container.children.length;' .
+                              'container.appendChild(makeRow(colors[idx%colors.length],"",""));' .
+                            '});' .
+                            'container.addEventListener("click",function(e){' .
+                              'var btn=e.target.closest(".pn-cm-stages-remove");' .
+                              'if(btn)btn.closest(".pn-cm-stages-row").remove();' .
+                            '});' .
+                            'var form=document.getElementById("pn-customers-manager-form-setting");' .
+                            'if(form){form.addEventListener("submit",function(){' .
+                              'var rows=container.querySelectorAll(".pn-cm-stages-row");' .
+                              'var cfg=[];' .
+                              'rows.forEach(function(r){' .
+                                'var n=r.querySelector(".pn-cm-stages-name").value.trim();' .
+                                'if(!n)return;' .
+                                'cfg.push({name:n,color:r.querySelector(".pn-cm-stages-color").value,description:r.querySelector(".pn-cm-stages-desc").value.trim()});' .
+                              '});' .
+                              'hiddenInput.value=JSON.stringify(cfg);' .
+                            '});}' .
+                            '})();'
+                          );
+
+                          // Funnel states editor: toggle fields, add/remove rows, serialize on submit
+                          wp_add_inline_script('pn-customers-manager-settings-footer',
+                            '(function(){' .
+                            'var container=document.getElementById("pn-cm-fstates-rows");' .
+                            'var addBtn=document.getElementById("pn-cm-fstates-add");' .
+                            'var hiddenInput=document.getElementById("pn-cm-fstates-config-data");' .
+                            'if(!container||!addBtn||!hiddenInput)return;' .
+                            // Toggle fields visibility when checkbox changes
+                            'container.addEventListener("change",function(e){' .
+                              'var cb=e.target.closest(".pn-cm-fstates-enabled");' .
+                              'if(!cb)return;' .
+                              'var row=cb.closest(".pn-cm-fstates-row");' .
+                              'var fields=row.querySelector(".pn-cm-fstates-fields");' .
+                              'if(cb.checked){fields.style.display="flex";}' .
+                              'else{fields.style.display="none";}' .
+                            '});' .
+                            // Add new row
+                            'addBtn.addEventListener("click",function(){' .
+                              'var colors=["#6c757d","#0d6efd","#6f42c1","#fd7e14","#e83e8c","#198754","#dc3545"];' .
+                              'var idx=container.children.length;' .
+                              'var d=document.createElement("div");d.className="pn-cm-fstates-row";' .
+                              'd.style.cssText="margin-bottom:8px;";' .
+                              'd.innerHTML=' .
+                                '\'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">\'' .
+                                '+\'<label class="pn-customers-manager-switch" style="flex-shrink:0;"><input type="checkbox" class="pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-cm-fstates-enabled" checked><span class="pn-customers-manager-slider pn-customers-manager-round"></span></label>\'' .
+                                '+\'<input type="text" class="pn-cm-fstates-name" value="" placeholder="' . esc_attr__( 'State name', 'pn-customers-manager' ) . '" style="flex:1;min-width:120px;max-width:220px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">\'' .
+                                '+\'<input type="hidden" class="pn-cm-fstates-id" value="">\'' .
+                                '+\'<button type="button" class="pn-cm-fstates-remove" style="background:none;border:none;cursor:pointer;color:#cc1016;padding:4px;display:flex;" title="' . esc_attr__( 'Remove', 'pn-customers-manager' ) . '"><i class="material-icons-outlined" style="font-size:18px;">delete</i></button>\'' .
+                                '+\'</div>\'' .
+                                '+\'<div class="pn-cm-fstates-fields" style="display:flex;align-items:center;gap:8px;padding-left:52px;">\'' .
+                                '+\'<input type="color" class="pn-cm-fstates-color" value="\'+colors[idx%colors.length]+\'" style="width:36px;height:36px;padding:2px;border:1px solid #c3c4c7;border-radius:4px;cursor:pointer;">\'' .
+                                '+\'<input type="text" class="pn-cm-fstates-desc" value="" placeholder="' . esc_attr__( 'Description', 'pn-customers-manager' ) . '" style="flex:1;min-width:150px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">\'' .
+                                '+\'</div>\';' .
+                              'container.appendChild(d);' .
+                            '});' .
+                            // Remove row
+                            'container.addEventListener("click",function(e){' .
+                              'var btn=e.target.closest(".pn-cm-fstates-remove");' .
+                              'if(btn)btn.closest(".pn-cm-fstates-row").remove();' .
+                            '});' .
+                            // Serialize on form submit
+                            'var form=document.getElementById("pn-customers-manager-form-setting");' .
+                            'if(form){form.addEventListener("submit",function(){' .
+                              'var rows=container.querySelectorAll(".pn-cm-fstates-row");' .
+                              'var cfg=[];' .
+                              'rows.forEach(function(r){' .
+                                'var n=r.querySelector(".pn-cm-fstates-name").value.trim();' .
+                                'if(!n)return;' .
+                                'var id=r.querySelector(".pn-cm-fstates-id").value.trim();' .
+                                'if(!id)id=n.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");' .
+                                'cfg.push({' .
+                                  'id:id,' .
+                                  'name:n,' .
+                                  'color:r.querySelector(".pn-cm-fstates-color").value,' .
+                                  'description:r.querySelector(".pn-cm-fstates-desc").value.trim(),' .
+                                  'enabled:r.querySelector(".pn-cm-fstates-enabled").checked' .
+                                '});' .
+                              '});' .
+                              'hiddenInput.value=JSON.stringify(cfg);' .
+                            '});}' .
+                            '})();'
+                          );
+
+                          // Funnel states sync buttons (GHL / Zoho)
+                          wp_add_inline_script('pn-customers-manager-settings-footer',
+                            '(function($){' .
+                            'var container=document.getElementById("pn-cm-fstates-rows");' .
+                            'if(!container)return;' .
+
+                            // Helper to build a row DOM element from state data.
+                            'function buildRow(s){' .
+                              'var d=document.createElement("div");d.className="pn-cm-fstates-row";' .
+                              'd.style.cssText="margin-bottom:8px;";' .
+                              'var esc=function(v){return $("<span>").text(v).html();};' .
+                              'd.innerHTML=' .
+                                '\'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">\'' .
+                                '+\'<label class="pn-customers-manager-switch" style="flex-shrink:0;"><input type="checkbox" class="pn-customers-manager-checkbox pn-customers-manager-checkbox-switch pn-cm-fstates-enabled" checked><span class="pn-customers-manager-slider pn-customers-manager-round"></span></label>\'' .
+                                '+\'<input type="text" class="pn-cm-fstates-name" value="\'+esc(s.name)+\'" style="flex:1;min-width:120px;max-width:220px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">\'' .
+                                '+\'<input type="hidden" class="pn-cm-fstates-id" value="\'+esc(s.id)+\'">\'' .
+                                '+\'<button type="button" class="pn-cm-fstates-remove" style="background:none;border:none;cursor:pointer;color:#cc1016;padding:4px;display:flex;"><i class="material-icons-outlined" style="font-size:18px;">delete</i></button>\'' .
+                                '+\'</div>\'' .
+                                '+\'<div class="pn-cm-fstates-fields" style="display:flex;align-items:center;gap:8px;padding-left:52px;">\'' .
+                                '+\'<input type="color" class="pn-cm-fstates-color" value="\'+esc(s.color)+\'" style="width:36px;height:36px;padding:2px;border:1px solid #c3c4c7;border-radius:4px;cursor:pointer;">\'' .
+                                '+\'<input type="text" class="pn-cm-fstates-desc" value="\'+esc(s.description||"")+\'" style="flex:1;min-width:150px;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;font-size:13px;">\'' .
+                                '+\'</div>\';' .
+                              'return d;' .
+                            '}' .
+
+                            // Generic sync handler.
+                            'function syncStates(ajaxType,btn){' .
+                              'var origHtml=btn.innerHTML;' .
+                              'btn.disabled=true;btn.innerHTML=\'<i class="material-icons-outlined" style="font-size:16px;">hourglass_empty</i> ' . esc_attr__( 'Syncing...', 'pn-customers-manager' ) . '\';' .
+                              'var fd=new FormData();' .
+                              'fd.append("action","pn_customers_manager_ajax");' .
+                              'fd.append("pn_customers_manager_ajax_nonce","' . esc_attr( wp_create_nonce( 'pn-customers-manager-nonce' ) ) . '");' .
+                              'fd.append("pn_customers_manager_ajax_type",ajaxType);' .
+                              'fetch(ajaxurl,{method:"POST",credentials:"same-origin",body:fd})' .
+                              '.then(function(r){return r.json();})' .
+                              '.then(function(res){' .
+                                'btn.disabled=false;btn.innerHTML=origHtml;' .
+                                'if(res.error_key){alert(res.error_content||"Error");return;}' .
+                                'if(!res.states||!res.states.length){alert("' . esc_attr__( 'No stages found.', 'pn-customers-manager' ) . '");return;}' .
+                                'var existing={};' .
+                                'container.querySelectorAll(".pn-cm-fstates-id").forEach(function(el){' .
+                                  'if(el.value)existing[el.value]=true;' .
+                                '});' .
+                                'var added=0;' .
+                                'res.states.forEach(function(s){' .
+                                  'if(!existing[s.id]){container.appendChild(buildRow(s));added++;}' .
+                                '});' .
+                                'if(added===0){alert("' . esc_attr__( 'All stages already exist.', 'pn-customers-manager' ) . '");}' .
+                              '})' .
+                              '.catch(function(err){btn.disabled=false;btn.innerHTML=origHtml;alert(err.message||"Error");});' .
+                            '}' .
+
+                            // Bind GHL button.
+                            'var ghlBtn=document.getElementById("pn-cm-fstates-sync-ghl");' .
+                            'if(ghlBtn){ghlBtn.addEventListener("click",function(){syncStates("pn_cm_ghl_get_pipeline_stages",ghlBtn);});}' .
+
+                            // Bind Zoho button.
+                            'var zohoBtn=document.getElementById("pn-cm-fstates-sync-zoho");' .
+                            'if(zohoBtn){zohoBtn.addEventListener("click",function(){syncStates("pn_cm_zoho_get_deal_stages",zohoBtn);});}' .
+
+                            '})(jQuery);'
+                          );
+
                           // AI provider: show only the API key field matching the selected model
                           $pn_cm_model_key_map = wp_json_encode(PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_model_to_key_option_map());
                           $pn_cm_api_key_ids   = wp_json_encode([
@@ -2046,6 +3425,51 @@ class PN_CUSTOMERS_MANAGER_Settings
                             '}' .
                             '$(document).ready(function(){toggleKey();});' .
                             '$(document).on("change","#pn_customers_manager_whatsapp_ai_model",toggleKey);' .
+                            // Sync the duplicate OpenAI key field for transcription with the main one.
+                            'var $main=$("#pn_customers_manager_whatsapp_openai_key");' .
+                            'var $mirror=$("#pn_customers_manager_transcription_openai_key");' .
+                            '$main.on("input change",function(){$mirror.val(this.value);});' .
+                            '$mirror.on("input change",function(){$main.val(this.value);});' .
+                            '})(jQuery);'
+                          );
+
+                          // Invoice counter reset button + format-change hint.
+                          $pn_cm_reset_i18n = [
+                            'confirm'       => __('Reset the invoice counter to 1? This does not affect existing invoices.', 'pn-customers-manager'),
+                            'resetting'     => __('Resetting...', 'pn-customers-manager'),
+                            'done'          => __('Counter reset to 1.', 'pn-customers-manager'),
+                            'error'         => __('Error.', 'pn-customers-manager'),
+                            'formatChanged' => __('Numbering format changed — consider resetting the counter if you are starting a new series.', 'pn-customers-manager'),
+                          ];
+                          wp_add_inline_script('pn-customers-manager-settings-footer',
+                            '(function($){' .
+                            'var ri18n=' . wp_json_encode($pn_cm_reset_i18n) . ';' .
+                            '$("#pn-cm-invoice-reset-counter-btn").on("click",function(){' .
+                              'var $b=$(this),$m=$("#pn-cm-invoice-reset-counter-msg");' .
+                              'if($b.prop("disabled"))return;' .
+                              'if(!confirm(ri18n.confirm))return;' .
+                              '$b.prop("disabled",true);' .
+                              '$m.text(ri18n.resetting).css("color","#666");' .
+                              '$.post(pn_customers_manager_ajax.ajax_url,{' .
+                                'action:"pn_customers_manager_ajax",' .
+                                'pn_customers_manager_ajax_type:"pn_cm_invoice_reset_counter",' .
+                                'pn_customers_manager_ajax_nonce:pn_customers_manager_ajax.pn_customers_manager_ajax_nonce' .
+                              '},function(r){' .
+                                'if(r&&r.error_key===""){' .
+                                  '$m.text(ri18n.done).css("color","#2e7d32");' .
+                                  '$("#pn_customers_manager_invoice_next_number").val("1");' .
+                                '}else{' .
+                                  '$m.text(r.error_content||ri18n.error).css("color","#c62828");' .
+                                '}' .
+                                '$b.prop("disabled",false);' .
+                              '},"json").fail(function(){' .
+                                '$m.text(ri18n.error).css("color","#c62828");' .
+                                '$b.prop("disabled",false);' .
+                              '});' .
+                            '});' .
+                            '$("#pn_customers_manager_invoice_number_format").on("change",function(){' .
+                              '$("#pn-cm-invoice-reset-counter-msg").text(ri18n.formatChanged).css("color","#e65100");' .
+                            '});' .
                             '})(jQuery);'
                           );
 
@@ -2097,11 +3521,8 @@ class PN_CUSTOMERS_MANAGER_Settings
       return;
     }
 
-    // Run pending schema upgrades on plugin updates (no re-activation needed).
-    if (get_option('pn_customers_manager_db_version', '0') !== PN_CUSTOMERS_MANAGER_DB_VERSION) {
-      require_once PN_CUSTOMERS_MANAGER_DIR . 'includes/class-pn-customers-manager-activator.php';
-      PN_CUSTOMERS_MANAGER_Activator::pn_customers_manager_create_tables();
-    }
+    // Database schema upgrades are now handled via an admin notice with a
+    // manual "Update database" button (see pn_customers_manager_db_update_notice).
 
     // Keep projections cron aligned with the configured frequency.
     if (function_exists('pn_customers_manager_reschedule_projections_cron')) {

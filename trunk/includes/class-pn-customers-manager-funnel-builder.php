@@ -41,6 +41,17 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       $canvas_data = get_post_meta($funnel_id, self::CANVAS_META_KEY, true);
       if (!$canvas_data) {
         $canvas_data = '';
+      } elseif (json_decode($canvas_data, true) === null) {
+        $repaired = preg_replace_callback('/[\x00-\x1f\x7f]/', function($m) {
+          $c = $m[0];
+          if ($c === "\n") return '\\n';
+          if ($c === "\r") return '\\r';
+          if ($c === "\t") return '\\t';
+          return sprintf('\\u%04x', ord($c));
+        }, $canvas_data);
+        if (json_decode($repaired, true) !== null) {
+          $canvas_data = $repaired;
+        }
       }
     }
 
@@ -62,30 +73,19 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
               </option>
             <?php endforeach; ?>
           </select>
-          <input
-            type="text"
-            id="pn-cm-fb-new-funnel-name"
-            class="pn-cm-fb-input-new-funnel"
-            placeholder="<?php esc_attr_e('Funnel name', 'pn-customers-manager'); ?>"
-            style="margin-left: 8px;"
-          />
-          <button
-            type="button"
-            id="pn-cm-fb-btn-create"
-            class="pn-cm-fb-btn pn-cm-fb-btn-transparent"
-          >
-            <span class="material-icons-outlined" style="font-size: 18px;">add</span>
-            <?php esc_html_e('Create', 'pn-customers-manager'); ?>
-          </button>
         </div>
         <div class="pn-cm-fb-topbar-right">
-          <button type="button" id="pn-cm-fb-btn-delete" class="pn-cm-fb-btn pn-cm-fb-btn-transparent" <?php echo !$funnel ? 'disabled' : ''; ?>>
-            <span class="material-icons-outlined">delete_outline</span>
-            <?php esc_html_e('Delete', 'pn-customers-manager'); ?>
+          <button type="button" id="pn-cm-fb-btn-create" class="pn-cm-fb-topbar-icon-btn" title="<?php esc_attr_e('New funnel', 'pn-customers-manager'); ?>">
+            <span class="material-icons-outlined">add</span>
           </button>
-          <button type="button" id="pn-cm-fb-btn-save" class="pn-cm-fb-btn pn-cm-fb-btn-primary" <?php echo !$funnel ? 'disabled' : ''; ?>>
+          <button type="button" id="pn-cm-fb-btn-rename" class="pn-cm-fb-topbar-icon-btn" title="<?php esc_attr_e('Rename funnel', 'pn-customers-manager'); ?>" <?php echo !$funnel ? 'disabled' : ''; ?>>
+            <span class="material-icons-outlined">edit</span>
+          </button>
+          <button type="button" id="pn-cm-fb-btn-delete" class="pn-cm-fb-topbar-icon-btn pn-cm-fb-topbar-icon-btn--danger" title="<?php esc_attr_e('Delete funnel', 'pn-customers-manager'); ?>" <?php echo !$funnel ? 'disabled' : ''; ?>>
+            <span class="material-icons-outlined">delete_outline</span>
+          </button>
+          <button type="button" id="pn-cm-fb-btn-save" class="pn-cm-fb-topbar-icon-btn pn-cm-fb-topbar-icon-btn--primary" title="<?php esc_attr_e('Save', 'pn-customers-manager'); ?>" <?php echo !$funnel ? 'disabled' : ''; ?>>
             <span class="material-icons-outlined">save</span>
-            <?php esc_html_e('Save', 'pn-customers-manager'); ?>
           </button>
         </div>
       </div>
@@ -159,10 +159,6 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
 
           <div class="pn-cm-fb-sidebar-section">
             <div class="pn-cm-fb-sidebar-heading"><?php esc_html_e('Follow-up', 'pn-customers-manager'); ?></div>
-            <div class="pn-cm-fb-element" draggable="true" data-type="follow_up" data-subtype="email_sequence">
-              <span class="material-icons-outlined">forward_to_inbox</span>
-              <span><?php esc_html_e('Email sequence', 'pn-customers-manager'); ?></span>
-            </div>
             <div class="pn-cm-fb-element" draggable="true" data-type="follow_up" data-subtype="retargeting">
               <span class="material-icons-outlined">replay</span>
               <span>Retargeting</span>
@@ -170,6 +166,18 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
             <div class="pn-cm-fb-element" draggable="true" data-type="follow_up" data-subtype="automation">
               <span class="material-icons-outlined">smart_toy</span>
               <span><?php esc_html_e('Automation', 'pn-customers-manager'); ?></span>
+            </div>
+          </div>
+
+          <div class="pn-cm-fb-sidebar-section">
+            <div class="pn-cm-fb-sidebar-heading"><?php esc_html_e('Automations', 'pn-customers-manager'); ?></div>
+            <div class="pn-cm-fb-element" draggable="true" data-type="follow_up" data-subtype="ghl_new_contact">
+              <span class="material-icons-outlined">webhook</span>
+              <span><?php esc_html_e('GHL New Contact', 'pn-customers-manager'); ?></span>
+            </div>
+            <div class="pn-cm-fb-element" draggable="true" data-type="follow_up" data-subtype="zoho_new_contact">
+              <span class="material-icons-outlined">webhook</span>
+              <span><?php esc_html_e('Zoho New Contact', 'pn-customers-manager'); ?></span>
             </div>
           </div>
 
@@ -202,6 +210,14 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
             <div class="pn-cm-fb-element" draggable="true" data-type="communication" data-subtype="call">
               <span class="material-icons-outlined">call</span>
               <span><?php esc_html_e('Call', 'pn-customers-manager'); ?></span>
+            </div>
+            <div class="pn-cm-fb-element" draggable="true" data-type="communication" data-subtype="send_email">
+              <span class="material-icons-outlined">email</span>
+              <span>Email</span>
+            </div>
+            <div class="pn-cm-fb-element" draggable="true" data-type="communication" data-subtype="email_sequence">
+              <span class="material-icons-outlined">forward_to_inbox</span>
+              <span><?php esc_html_e('Email sequence', 'pn-customers-manager'); ?></span>
             </div>
           </div>
 
@@ -248,6 +264,17 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           </button>
           <!-- Zoom controls -->
           <div class="pn-cm-fb-zoom-controls">
+            <button type="button" id="pn-cm-fb-multi-select" class="pn-cm-fb-zoom-btn" title="<?php esc_attr_e('Multi-select', 'pn-customers-manager'); ?>">
+              <span class="material-icons-outlined">select_all</span>
+            </button>
+            <span class="pn-cm-fb-zoom-separator"></span>
+            <button type="button" id="pn-cm-fb-undo" class="pn-cm-fb-zoom-btn" title="<?php esc_attr_e('Undo', 'pn-customers-manager'); ?> (Ctrl+Z)" disabled>
+              <span class="material-icons-outlined">undo</span>
+            </button>
+            <button type="button" id="pn-cm-fb-redo" class="pn-cm-fb-zoom-btn" title="<?php esc_attr_e('Redo', 'pn-customers-manager'); ?> (Ctrl+Shift+Z)" disabled>
+              <span class="material-icons-outlined">redo</span>
+            </button>
+            <span class="pn-cm-fb-zoom-separator"></span>
             <button type="button" id="pn-cm-fb-zoom-out" class="pn-cm-fb-zoom-btn" title="<?php esc_attr_e('Zoom out', 'pn-customers-manager'); ?>">
               <span class="material-icons-outlined">remove</span>
             </button>
@@ -291,6 +318,19 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
                 <div class="pn-cm-fb-props-shortcode-row">
                   <input type="text" id="pn-cm-fb-props-shortcode" class="pn-cm-fb-prop-input pn-cm-fb-props-shortcode-input" readonly />
                   <button type="button" id="pn-cm-fb-props-shortcode-copy" class="pn-cm-fb-btn pn-customers-manager-btn-copy" data-pn-customers-manager-copy-text="" title="<?php esc_attr_e('Copy', 'pn-customers-manager'); ?>">
+                    <span class="material-icons-outlined">content_copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Webhook URL quick-copy (shown for ghl/zoho nodes) -->
+            <div id="pn-cm-fb-props-webhook-wrap" style="display:none;">
+              <div class="pn-cm-fb-prop-group">
+                <label class="pn-cm-fb-prop-label"><?php esc_html_e('Webhook URL', 'pn-customers-manager'); ?></label>
+                <div class="pn-cm-fb-props-shortcode-row">
+                  <input type="text" id="pn-cm-fb-props-webhook-url" class="pn-cm-fb-prop-input pn-cm-fb-props-shortcode-input" readonly />
+                  <button type="button" id="pn-cm-fb-props-webhook-copy" class="pn-cm-fb-btn pn-customers-manager-btn-copy" data-pn-customers-manager-copy-text="" title="<?php esc_attr_e('Copy', 'pn-customers-manager'); ?>">
                     <span class="material-icons-outlined">content_copy</span>
                   </button>
                 </div>
@@ -368,10 +408,10 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
     <div class="pn-customers-manager-popup-overlay pn-customers-manager-display-none-soft"></div>
 
     <!-- Settings Popup (generic plugin popup) -->
-    <div id="pn-cm-fb-settings-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-medium pn-customers-manager-display-none-soft" data-pn-customers-manager-popup-disable-esc="true" data-pn-customers-manager-popup-disable-overlay-close="true">
+    <div id="pn-cm-fb-settings-popup" class="pn-customers-manager-popup pn-customers-manager-popup-size-full-size pn-customers-manager-display-none-soft" data-pn-customers-manager-popup-disable-esc="true" data-pn-customers-manager-popup-disable-overlay-close="true">
       <div class="pn-customers-manager-p-30">
         <div style="display:flex;align-items:center;justify-content:space-between;" class="pn-customers-manager-mb-20">
-          <h3 class="pn-customers-manager-mt-0 pn-customers-manager-mb-0"><?php esc_html_e('Settings', 'pn-customers-manager'); ?></h3>
+          <h3 id="pn-cm-fb-settings-popup-title" class="pn-customers-manager-mt-0 pn-customers-manager-mb-0"><?php esc_html_e('Settings', 'pn-customers-manager'); ?></h3>
           <button type="button" id="pn-cm-fb-settings-popup-close" class="pn-customers-manager-popup-close-wrapper"><i class="material-icons-outlined">close</i></button>
         </div>
         <div class="pn-customers-manager-popup-content">
@@ -431,11 +471,19 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'whatsapp'  => !empty($whatsapp_token) && !empty($whatsapp_phone),
         'openai'    => $has_ai_key,
         'instagram' => !empty($instagram_token) && !empty($instagram_page),
+        'ghl'       => !empty(get_option('pn_customers_manager_ghl_api_key', '')),
+        'zoho'      => class_exists('PN_CUSTOMERS_MANAGER_Zoho') && PN_CUSTOMERS_MANAGER_Zoho::is_connected(),
       ],
       'apiLinks'   => [
         'whatsapp'  => $settings_url . '&section=pn_customers_manager_api_section_start.pn_customers_manager_whatsapp_section_start',
         'openai'    => $settings_url . '&section=pn_customers_manager_api_section_start.pn_customers_manager_openai_section_start',
         'instagram' => $settings_url . '&section=pn_customers_manager_api_section_start.pn_customers_manager_instagram_section_start',
+        'ghl'       => $settings_url . '&section=pn_customers_manager_api_section_start.pn_customers_manager_ghl_section_start',
+        'zoho'      => $settings_url . '&section=pn_customers_manager_api_section_start.pn_customers_manager_zoho_section_start',
+      ],
+      'webhookUrls' => [
+        'ghl'  => class_exists('PN_CUSTOMERS_MANAGER_GHL') ? PN_CUSTOMERS_MANAGER_GHL::get_webhook_url() : '',
+        'zoho' => class_exists('PN_CUSTOMERS_MANAGER_Zoho') ? PN_CUSTOMERS_MANAGER_Zoho::get_webhook_url() : '',
       ],
       'i18n'       => [
         'saved'              => __('Funnel saved successfully.', 'pn-customers-manager'),
@@ -465,6 +513,10 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'confirmReset'       => __('Reset this conversation? All messages will be cleared.', 'pn-customers-manager'),
         'funnelNameRequired' => __('Funnel name is required.', 'pn-customers-manager'),
         'createError'        => __('Error creating funnel.', 'pn-customers-manager'),
+        'renamePrompt'       => __('Enter the new funnel name:', 'pn-customers-manager'),
+        'renameSuccess'      => __('Funnel renamed successfully.', 'pn-customers-manager'),
+        'renameError'        => __('Error renaming funnel.', 'pn-customers-manager'),
+        'newFunnelPrompt'    => __('Enter the name for the new funnel:', 'pn-customers-manager'),
         'deleteFunnelConfirm'=> __('Are you sure you want to delete this funnel? This action cannot be undone.', 'pn-customers-manager'),
         'deleteError'        => __('Error deleting funnel.', 'pn-customers-manager'),
         'deleteSuccess'      => __('Funnel deleted successfully.', 'pn-customers-manager'),
@@ -480,6 +532,8 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'formOptValue'       => __('Value', 'pn-customers-manager'),
         'formOptLabel'       => __('Label', 'pn-customers-manager'),
         'formAddOption'      => __('Add option', 'pn-customers-manager'),
+        // translators: %d is the number of selected elements to delete
+        'confirmDeleteMulti' => __('Delete %d selected elements?', 'pn-customers-manager'),
       ],
     ]);
   }
@@ -527,7 +581,13 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       exit;
     }
 
-    update_post_meta($funnel_id, self::CANVAS_META_KEY, $canvas_json);
+    // Re-encode through wp_json_encode with UNESCAPED_UNICODE to preserve
+    // emojis and other multi-byte characters properly.
+    if ($decoded !== null) {
+      $canvas_json = wp_json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
+    update_post_meta($funnel_id, self::CANVAS_META_KEY, wp_slash($canvas_json));
 
     echo wp_json_encode([
       'error_key' => '',
@@ -560,12 +620,24 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
     }
 
     $canvas_data = get_post_meta($funnel_id, self::CANVAS_META_KEY, true);
+    if (!empty($canvas_data) && json_decode($canvas_data, true) === null) {
+      $repaired = preg_replace_callback('/[\x00-\x1f\x7f]/', function($m) {
+        $c = $m[0];
+        if ($c === "\n") return '\\n';
+        if ($c === "\r") return '\\r';
+        if ($c === "\t") return '\\t';
+        return sprintf('\\u%04x', ord($c));
+      }, $canvas_data);
+      if (json_decode($repaired, true) !== null) {
+        $canvas_data = $repaired;
+      }
+    }
 
     echo wp_json_encode([
       'error_key'   => '',
       'canvas_data' => $canvas_data ?: '',
       'title'       => $funnel->post_title,
-    ]);
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     exit;
   }
 
@@ -661,6 +733,59 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
     echo wp_json_encode([
       'error_key' => '',
       'success'   => true,
+    ]);
+    exit;
+  }
+
+  /**
+   * AJAX: Rename funnel.
+   */
+  public static function ajax_rename_funnel() {
+    if (!current_user_can('edit_pn_cm_funnel')) {
+      echo wp_json_encode([
+        'error_key'     => 'no_permission',
+        'error_content' => esc_html__('You do not have permission to edit funnels.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    $funnel_id   = isset($_POST['funnel_id']) ? intval($_POST['funnel_id']) : 0;
+    $funnel_name = isset($_POST['funnel_name']) ? sanitize_text_field(wp_unslash($_POST['funnel_name'])) : '';
+
+    if (!$funnel_id || empty($funnel_name)) {
+      echo wp_json_encode([
+        'error_key'     => 'missing_data',
+        'error_content' => esc_html__('Funnel ID and name are required.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    $funnel = get_post($funnel_id);
+    if (!$funnel || $funnel->post_type !== 'pn_cm_funnel') {
+      echo wp_json_encode([
+        'error_key'     => 'invalid_funnel',
+        'error_content' => esc_html__('Invalid funnel.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    $result = wp_update_post([
+      'ID'         => $funnel_id,
+      'post_title' => $funnel_name,
+    ]);
+
+    if (is_wp_error($result)) {
+      echo wp_json_encode([
+        'error_key'     => 'rename_failed',
+        'error_content' => esc_html__('Failed to rename funnel.', 'pn-customers-manager'),
+      ]);
+      exit;
+    }
+
+    echo wp_json_encode([
+      'error_key'   => '',
+      'success'     => true,
+      'funnel_name' => $funnel_name,
     ]);
     exit;
   }
@@ -939,6 +1064,118 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       ];
     }
 
+    // GHL New Contact specific fields
+    if ($subtype === 'ghl_new_contact') {
+      $fields[] = [
+        'id'           => 'ghl_heading_settings',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('GHL New Contact', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'           => 'ghl_webhook_url_display',
+        'input'        => 'html',
+        'html_content' => '<div style="margin-bottom:12px"><label class="pn-customers-manager-label">' . esc_html__('Webhook URL', 'pn-customers-manager') . '</label>'
+          . '<div style="display:flex;gap:8px;align-items:center">'
+          . '<input type="text" class="pn-customers-manager-input pn-customers-manager-width-80-percent" readonly style="margin-bottom:0;font-size:12px;font-family:monospace" value="' . esc_attr(class_exists('PN_CUSTOMERS_MANAGER_GHL') ? PN_CUSTOMERS_MANAGER_GHL::get_webhook_url() : '') . '" />'
+          . '<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-copy" data-pn-customers-manager-copy-text="' . esc_attr(class_exists('PN_CUSTOMERS_MANAGER_GHL') ? PN_CUSTOMERS_MANAGER_GHL::get_webhook_url() : '') . '" style="white-space:nowrap;padding:10px 16px;font-size:13px" title="' . esc_attr__('Copy', 'pn-customers-manager') . '"><i class="material-icons-outlined" style="font-size:18px;vertical-align:middle">content_copy</i></button>'
+          . '</div>'
+          . '<p class="description" style="margin-top:4px">' . esc_html__('Configure this URL as a webhook in your GHL account to receive new contacts.', 'pn-customers-manager') . '</p>'
+          . '</div>',
+      ];
+      $fields[] = [
+        'id'     => 'ghl_save_to_wp',
+        'class'  => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'  => 'input',
+        'type'   => 'checkbox',
+        'label'  => __('Save contact to WordPress', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'     => 'ghl_send_email',
+        'class'  => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'  => 'input',
+        'type'   => 'checkbox',
+        'label'  => __('Send notification email', 'pn-customers-manager'),
+        'parent' => 'this',
+      ];
+      $fields[] = [
+        'id'              => 'ghl_notify_email',
+        'class'           => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'           => 'input',
+        'type'            => 'email',
+        'label'           => __('Notification email', 'pn-customers-manager'),
+        'placeholder'     => 'admin@example.com',
+        'parent'          => 'ghl_send_email',
+        'parent_option'   => 'on',
+      ];
+      $fields[] = [
+        'id'              => 'ghl_notify_subject',
+        'class'           => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'           => 'input',
+        'type'            => 'text',
+        'label'           => __('Email subject', 'pn-customers-manager'),
+        'placeholder'     => __('New GHL Contact: {name}', 'pn-customers-manager'),
+        'description'     => __('Use {name} as a placeholder for the contact name.', 'pn-customers-manager'),
+        'parent'          => 'ghl_send_email',
+        'parent_option'   => 'on',
+      ];
+    }
+
+    // Zoho New Contact specific fields
+    if ($subtype === 'zoho_new_contact') {
+      $fields[] = [
+        'id'           => 'zoho_heading_settings',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Zoho New Contact', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'           => 'zoho_webhook_url_display',
+        'input'        => 'html',
+        'html_content' => '<div style="margin-bottom:12px"><label class="pn-customers-manager-label">' . esc_html__('Webhook URL', 'pn-customers-manager') . '</label>'
+          . '<div style="display:flex;gap:8px;align-items:center">'
+          . '<input type="text" class="pn-customers-manager-input pn-customers-manager-width-80-percent" readonly style="margin-bottom:0;font-size:12px;font-family:monospace" value="' . esc_attr(class_exists('PN_CUSTOMERS_MANAGER_Zoho') ? PN_CUSTOMERS_MANAGER_Zoho::get_webhook_url() : '') . '" />'
+          . '<button type="button" class="pn-customers-manager-btn pn-customers-manager-btn-copy" data-pn-customers-manager-copy-text="' . esc_attr(class_exists('PN_CUSTOMERS_MANAGER_Zoho') ? PN_CUSTOMERS_MANAGER_Zoho::get_webhook_url() : '') . '" style="white-space:nowrap;padding:10px 16px;font-size:13px" title="' . esc_attr__('Copy', 'pn-customers-manager') . '"><i class="material-icons-outlined" style="font-size:18px;vertical-align:middle">content_copy</i></button>'
+          . '</div>'
+          . '<p class="description" style="margin-top:4px">' . esc_html__('Configure this URL as a webhook in your Zoho CRM account to receive new contacts.', 'pn-customers-manager') . '</p>'
+          . '</div>',
+      ];
+      $fields[] = [
+        'id'     => 'zoho_save_to_wp',
+        'class'  => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'  => 'input',
+        'type'   => 'checkbox',
+        'label'  => __('Save contact to WordPress', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'     => 'zoho_send_email',
+        'class'  => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'  => 'input',
+        'type'   => 'checkbox',
+        'label'  => __('Send notification email', 'pn-customers-manager'),
+        'parent' => 'this',
+      ];
+      $fields[] = [
+        'id'              => 'zoho_notify_email',
+        'class'           => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'           => 'input',
+        'type'            => 'email',
+        'label'           => __('Notification email', 'pn-customers-manager'),
+        'placeholder'     => 'admin@example.com',
+        'parent'          => 'zoho_send_email',
+        'parent_option'   => 'on',
+      ];
+      $fields[] = [
+        'id'              => 'zoho_notify_subject',
+        'class'           => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'           => 'input',
+        'type'            => 'text',
+        'label'           => __('Email subject', 'pn-customers-manager'),
+        'placeholder'     => __('New Zoho Contact: {name}', 'pn-customers-manager'),
+        'description'     => __('Use {name} as a placeholder for the contact name.', 'pn-customers-manager'),
+        'parent'          => 'zoho_send_email',
+        'parent_option'   => 'on',
+      ];
+    }
+
     // WhatsApp AI specific fields
     if ($subtype === 'whatsapp_ai') {
       $fields[] = [
@@ -949,6 +1186,21 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       ];
 
       $fields[] = [
+        'id'          => 'wa_welcome_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Welcome message', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Message sent when starting the conversation...', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'wa_error_fallback_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Error fallback message', 'pn-customers-manager'),
+        'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Sorry, I cannot respond right now. Please try again later.', 'pn-customers-manager'),
+      ];
+      $fields[] = [
         'id'          => 'wa_system_prompt',
         'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input'       => 'textarea',
@@ -956,45 +1208,216 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'placeholder' => esc_attr__('Override the global prompt for this node...', 'pn-customers-manager'),
       ];
       $fields[] = [
+        'id'          => 'wa_assistant_personality',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Assistant personality', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Override the global personality for this node...', 'pn-customers-manager'),
+        'description' => __('Tone, emotional style, language register, and personality traits.', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'           => 'wa_heading_template',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Meta message templates', 'pn-customers-manager') . '</h4><p style="margin:0 0 8px;font-size:12px;color:#666">' . sprintf(
+          /* translators: %s: URL to Meta Business Suite template manager */
+          __('Send pre-approved WhatsApp template messages with configurable triggers. Manage your templates in <a href="%s" target="_blank">Meta Business Suite</a>.', 'pn-customers-manager'),
+          'https://business.facebook.com/latest/whatsapp_manager/message_templates'
+        ) . '</p>',
+      ];
+      $fields[] = [
+        'id'          => 'wa_meta_templates_enabled',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Enable Meta message templates', 'pn-customers-manager'),
+        'description' => __('Configure one or more pre-approved templates with different trigger conditions.', 'pn-customers-manager'),
+        'parent'      => 'this',
+      ];
+      $fields[] = [
+        'id'                => 'wa_meta_templates',
+        'class'             => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'             => 'html_multi',
+        'label'             => __('Templates', 'pn-customers-manager'),
+        'description'       => __('Each row is a pre-approved template. Set the trigger to control when it is sent automatically.', 'pn-customers-manager'),
+        'parent'            => 'wa_meta_templates_enabled',
+        'parent_option'     => 'on',
+        'html_multi_fields' => [
+          [
+            'id'          => 'wa_meta_template_name',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'text',
+            'label'       => __('Template name', 'pn-customers-manager'),
+            'placeholder' => 'true_atalaya_wa_welcome',
+          ],
+          [
+            'id'          => 'wa_meta_template_language',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'text',
+            'label'       => __('Language code', 'pn-customers-manager'),
+            'placeholder' => 'es',
+          ],
+          [
+            'id'          => 'wa_meta_template_description',
+            'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+            'input'       => 'textarea',
+            'label'       => __('Description / preview', 'pn-customers-manager'),
+            'placeholder' => __('What this template says (for your reference)', 'pn-customers-manager'),
+          ],
+          [
+            'id'    => 'wa_meta_template_use_vars',
+            'class' => 'pn-customers-manager-checkbox',
+            'input' => 'checkbox',
+            'label' => __('Use dynamic variables', 'pn-customers-manager'),
+          ],
+          [
+            'id'      => 'wa_meta_template_vars_mode',
+            'class'   => 'pn-customers-manager-select',
+            'input'   => 'select',
+            'label'   => __('Variables mode', 'pn-customers-manager'),
+            'parent'        => 'wa_meta_template_use_vars',
+            'parent_option' => 'on',
+            'options' => [
+              'numbers' => __('By numbers ({{1}}, {{2}}, {{3}}...)', 'pn-customers-manager'),
+              'names'   => __('By names ({{display_name}}, {{email}}...)', 'pn-customers-manager'),
+            ],
+          ],
+          [
+            'id'          => 'wa_meta_template_vars_config',
+            'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+            'input'       => 'template_vars_builder',
+            'label'       => __('Variables configuration', 'pn-customers-manager'),
+            'description' => __('Configure the variables for this template. The order matters: variables will be sent to Meta in the order shown below.', 'pn-customers-manager'),
+            'parent'        => 'wa_meta_template_use_vars',
+            'parent_option' => 'on',
+          ],
+          [
+            'id'      => 'wa_meta_template_trigger',
+            'class'   => 'pn-customers-manager-select',
+            'input'   => 'select',
+            'type'    => 'select',
+            'label'   => __('Trigger', 'pn-customers-manager'),
+            'options' => [
+              'on_registration' => __('Immediately on registration', 'pn-customers-manager'),
+              'after_delay'     => __('After a delay from registration', 'pn-customers-manager'),
+              'on_inactivity'   => __('On client inactivity', 'pn-customers-manager'),
+              'manual'          => __('Manual only', 'pn-customers-manager'),
+            ],
+          ],
+          [
+            'id'          => 'wa_meta_template_delay',
+            'class'       => 'pn-customers-manager-input pn-cm-template-delay-field',
+            'input'       => 'input',
+            'type'        => 'number',
+            'label'       => __('Delay amount', 'pn-customers-manager'),
+            'placeholder' => '30',
+            'min'         => 1,
+          ],
+          [
+            'id'      => 'wa_meta_template_delay_unit',
+            'class'   => 'pn-customers-manager-select pn-cm-template-delay-field',
+            'input'   => 'select',
+            'type'    => 'select',
+            'label'   => __('Delay unit', 'pn-customers-manager'),
+            'options' => [
+              'minutes' => __('Minutes', 'pn-customers-manager'),
+              'hours'   => __('Hours', 'pn-customers-manager'),
+              'days'    => __('Days', 'pn-customers-manager'),
+            ],
+          ],
+        ],
+      ];
+
+      $fields[] = [
+        'id'          => 'wa_audio_transcription_enabled',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Enable audio transcription', 'pn-customers-manager'),
+        'description' => __('Automatically transcribe voice notes and process them as text messages.', 'pn-customers-manager'),
+        'parent'      => 'this',
+      ];
+
+      $transcription_providers = PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_transcription_providers();
+      $provider_options = [];
+      foreach ($transcription_providers as $key => $p) {
+        $provider_options[$key] = $p['label'];
+      }
+      $fields[] = [
+        'id'            => 'wa_transcription_provider',
+        'class'         => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+        'input'         => 'select',
+        'type'          => 'select',
+        'label'         => __('Transcription provider', 'pn-customers-manager'),
+        'options'       => $provider_options,
+        'parent'        => 'wa_audio_transcription_enabled',
+        'parent_option' => 'on',
+      ];
+      // Per-provider API key warnings (only rendered when the key is missing)
+      $settings_url = add_query_arg([
+        'page'    => 'pn_customers_manager_options',
+        'section' => 'pn_customers_manager_api_parent_section_start.pn_customers_manager_openai_section_start',
+      ], admin_url('admin.php'));
+      $wa_key_warning = '<div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:6px;background:#fef3c7;color:#92400e;font-size:13px">'
+        . '<span class="material-icons-outlined" style="font-size:16px">warning</span>'
+        . '%s — '
+        . '<a href="' . esc_url($settings_url) . '" target="_blank" style="color:#92400e;font-weight:500">'
+        . esc_html__('Configure in Settings', 'pn-customers-manager') . '</a></div>';
+
+      foreach ($transcription_providers as $pkey => $prov) {
+        $key_value = get_option($prov['key_option'], '');
+        if (empty($key_value)) {
+          $fields[] = [
+            'id'            => 'wa_transcription_warn_' . $pkey,
+            'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+            'input'         => 'html',
+            'html_content'  => sprintf($wa_key_warning, sprintf(
+              /* translators: %s: provider name */
+              esc_html__('%s API key not configured', 'pn-customers-manager'),
+              esc_html($prov['label'])
+            )),
+            'parent'        => 'wa_transcription_provider',
+            'parent_option' => $pkey,
+          ];
+        }
+      }
+
+      $fields[] = [
+        'id'            => 'wa_transcription_language',
+        'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'         => 'input',
+        'type'          => 'text',
+        'label'         => __('Transcription language', 'pn-customers-manager'),
+        'placeholder'   => 'es',
+        'description'   => __('ISO 639-1 code (e.g. <code>es</code>, <code>en</code>). Optional — improves accuracy.', 'pn-customers-manager'),
+        'parent'        => 'wa_audio_transcription_enabled',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'            => 'wa_transcription_settings_link',
+        'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'         => 'html',
+        'html_content'  => '<a href="' . esc_url($settings_url) . '" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--pn-customers-manager-color-main,#4f46e5)">'
+          . '<span class="material-icons-outlined" style="font-size:16px">settings</span>'
+          . esc_html__('Configure API keys in Settings', 'pn-customers-manager')
+          . '</a>',
+        'parent'        => 'wa_audio_transcription_enabled',
+        'parent_option' => 'on',
+      ];
+
+      // ── Context ──
+      $fields[] = [
+        'id'           => 'wa_heading_context',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Context', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
         'id'    => 'wa_company_info',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'editor',
         'label' => __('Company information', 'pn-customers-manager'),
         'description' => __('Name, description, address, contact details, etc.', 'pn-customers-manager'),
-      ];
-      if (class_exists('WooCommerce')) {
-        $fields[] = [
-          'id'          => 'wa_wc_shipping_zones',
-          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-          'input'       => 'input',
-          'type'        => 'checkbox',
-          'label'       => __('Use WooCommerce shipping zones', 'pn-customers-manager'),
-          'description' => __('When a customer asks about shipping and provides a postal code, the plugin bypasses the AI model and uses WooCommerce\'s own shipping functions to match the correct zone and calculate the available methods and prices. The response is sent directly to the customer, ensuring accurate rates and preventing the model from picking the wrong zone or re-asking for the postal code. Configured shipping zones are also passed to the AI model as fallback context for any other shipping-related questions.', 'pn-customers-manager'),
-          'parent'      => 'this',
-        ];
-        $fields[] = [
-          'id'          => 'wa_require_postal_code',
-          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-          'input'       => 'input',
-          'type'        => 'checkbox',
-          'label'       => __('Always request postal code', 'pn-customers-manager'),
-          'description' => __('The AI will always ask for the postal code before quoting a shipping cost.', 'pn-customers-manager'),
-          'parent'      => 'this',
-        ];
-      }
-      $fields[] = [
-        'id'    => 'wa_shipping_info',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'editor',
-        'label' => __('Additional shipping information', 'pn-customers-manager'),
-        'description' => __('Extra shipping details: delivery times, special conditions, etc.', 'pn-customers-manager'),
-      ];
-      $fields[] = [
-        'id'    => 'wa_schedule_info',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'editor',
-        'label' => __('Opening hours', 'pn-customers-manager'),
-        'description' => __('Business hours, weekdays, weekends, holidays, etc.', 'pn-customers-manager'),
       ];
       $fields[] = [
         'id'          => 'wa_knowledge_base',
@@ -1005,6 +1428,151 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'description' => __('Additional information the AI will use as reference to respond.', 'pn-customers-manager'),
       ];
 
+      // ── Follow-up tracking ──
+      $fields[] = [
+        'id'           => 'wa_heading_followup',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Follow-up tracking', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'          => 'wa_enable_followup_tracking',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Enable follow-up tracking', 'pn-customers-manager'),
+        'description' => __('The AI will detect patterns in the conversation that require a follow-up action (e.g. watch a video, write a review, check a document) and tag them with a hidden marker so the system can schedule a reminder.', 'pn-customers-manager'),
+        'parent'      => 'this',
+      ];
+      $fields[] = [
+        'id'                => 'wa_followup_listeners',
+        'class'             => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'             => 'html_multi',
+        'label'             => __('Follow-up listeners', 'pn-customers-manager'),
+        'description'       => __('Define the actions the AI should detect. Each listener has a key (used internally), a label describing the action, and a delay before the reminder is sent.', 'pn-customers-manager'),
+        'parent'            => 'wa_enable_followup_tracking',
+        'parent_option'     => 'on',
+        'html_multi_fields' => [
+          [
+            'id'          => 'wa_followup_key',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'text',
+            'label'       => __('Key', 'pn-customers-manager'),
+            'placeholder' => __('e.g. watch_video', 'pn-customers-manager'),
+          ],
+          [
+            'id'          => 'wa_followup_label',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'text',
+            'label'       => __('Description', 'pn-customers-manager'),
+            'placeholder' => __('e.g. Customer should watch the tutorial video', 'pn-customers-manager'),
+          ],
+          [
+            'id'          => 'wa_followup_delay',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'number',
+            'label'       => __('Delay', 'pn-customers-manager'),
+            'placeholder' => '24',
+            'min'         => 1,
+          ],
+          [
+            'id'      => 'wa_followup_delay_unit',
+            'class'   => 'pn-customers-manager-select',
+            'input'   => 'select',
+            'type'    => 'select',
+            'label'   => __('Unit', 'pn-customers-manager'),
+            'options' => [
+              'hours'  => __('Hours', 'pn-customers-manager'),
+              'days'   => __('Days', 'pn-customers-manager'),
+              'weeks'  => __('Weeks', 'pn-customers-manager'),
+              'months' => __('Months', 'pn-customers-manager'),
+            ],
+          ],
+        ],
+      ];
+
+      // ── Bot schedule ──
+      $fields[] = [
+        'id'           => 'wa_heading_schedule',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Bot schedule', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'          => 'wa_schedule_enabled',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Enable message scheduling', 'pn-customers-manager'),
+        'description' => __('When enabled, bot messages will only be sent during the configured time windows. Messages outside these windows are queued and delivered at the next allowed slot.', 'pn-customers-manager'),
+        'parent'      => 'this',
+      ];
+      $fields[] = [
+        'id'           => 'wa_schedule_days',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => self::render_schedule_days_html(),
+        'parent'        => 'wa_schedule_enabled',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'          => 'wa_schedule_offhours_message_enabled',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Send custom message outside scheduled hours', 'pn-customers-manager'),
+        'description' => __('When enabled, the bot will send a custom message to clients who initiate a conversation outside the scheduled hours, instead of staying silent.', 'pn-customers-manager'),
+        'parent'        => 'wa_schedule_enabled',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'          => 'wa_schedule_offhours_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Off-hours message', 'pn-customers-manager'),
+        'placeholder' => __('e.g. Thanks for reaching out! We are currently outside our business hours. We will get back to you as soon as possible.', 'pn-customers-manager'),
+        'parent'        => 'wa_schedule_offhours_message_enabled',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'          => 'wa_schedule_allow_client_initiated',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Allow bot to respond when client initiates', 'pn-customers-manager'),
+        'description' => __('When enabled, the bot responds normally outside scheduled hours if it is the client who initiates the conversation. Mutually exclusive with the custom off-hours message option.', 'pn-customers-manager'),
+        'parent'        => 'wa_schedule_enabled',
+        'parent_option' => 'on',
+      ];
+
+      // ── CRM sync ──
+      $fields[] = [
+        'id'           => 'wa_heading_crm_sync',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('CRM sync', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'          => 'wa_sync_ghl',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Sync with GoHighLevel', 'pn-customers-manager'),
+        'description' => __('Save conversation interactions, extracted tasks, and follow-up reminders to GoHighLevel via the API. Requires a valid GHL API key in the Integration settings.', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'wa_sync_zoho',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Sync with Zoho CRM', 'pn-customers-manager'),
+        'description' => __('Save conversation interactions, extracted tasks, and follow-up reminders to Zoho CRM via the API. Requires a valid Zoho connection in the Integration settings.', 'pn-customers-manager'),
+      ];
+
+      // ── Include automatic content ──
       $fields[] = [
         'id'           => 'wa_heading_auto',
         'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
@@ -1237,13 +1805,53 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           'parent'        => 'wa_enable_special_orders',
           'parent_option' => 'on',
         ];
+        // Shipping fields (under WooCommerce products)
+        $fields[] = [
+          'id'          => 'wa_wc_shipping_zones',
+          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'       => 'input',
+          'type'        => 'checkbox',
+          'label'       => __('Use WooCommerce shipping zones', 'pn-customers-manager'),
+          'description' => __('When a customer asks about shipping and provides a postal code, the plugin bypasses the AI model and uses WooCommerce\'s own shipping functions to match the correct zone and calculate the available methods and prices. The response is sent directly to the customer, ensuring accurate rates and preventing the model from picking the wrong zone or re-asking for the postal code. Configured shipping zones are also passed to the AI model as fallback context for any other shipping-related questions.', 'pn-customers-manager'),
+          'parent'      => 'wa_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'          => 'wa_require_postal_code',
+          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'       => 'input',
+          'type'        => 'checkbox',
+          'label'       => __('Always request postal code', 'pn-customers-manager'),
+          'description' => __('The AI will always ask for the postal code before quoting a shipping cost.', 'pn-customers-manager'),
+          'parent'      => 'wa_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'    => 'wa_shipping_info',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'editor',
+          'label' => __('Additional shipping information', 'pn-customers-manager'),
+          'description' => __('Extra shipping details: delivery times, special conditions, etc.', 'pn-customers-manager'),
+          'parent'      => 'wa_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'          => 'wa_schedule_info',
+          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'       => 'editor',
+          'label'       => __('Opening hours', 'pn-customers-manager'),
+          'description' => __('Business hours, weekdays, weekends, holidays, etc.', 'pn-customers-manager'),
+          'parent'      => 'wa_include_woo',
+          'parent_option' => 'on',
+        ];
       }
 
+      // ── Model configuration ──
       $fields[] = [
         'id'           => 'wa_divider_model',
         'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input'        => 'html',
-        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee">',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Model configuration', 'pn-customers-manager') . '</h4>',
       ];
 
       $fields[] = [
@@ -1265,21 +1873,6 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'step'        => 0.1,
         'placeholder' => '0.7',
       ];
-      $fields[] = [
-        'id'          => 'wa_welcome_message',
-        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input'       => 'editor',
-        'label'       => __('Welcome message', 'pn-customers-manager'),
-        'placeholder' => esc_attr__('Message sent when starting the conversation...', 'pn-customers-manager'),
-      ];
-      $fields[] = [
-        'id'          => 'wa_error_fallback_message',
-        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input'       => 'editor',
-        'label'       => __('Error fallback message', 'pn-customers-manager'),
-        'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
-        'placeholder' => esc_attr__('Sorry, I cannot respond right now. Please try again later.', 'pn-customers-manager'),
-      ];
     }
 
     // Instagram AI specific fields
@@ -1292,6 +1885,21 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
       ];
 
       $fields[] = [
+        'id'          => 'ig_welcome_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Welcome message', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Message sent when starting the conversation...', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'ig_error_fallback_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Error fallback message', 'pn-customers-manager'),
+        'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Sorry, I cannot respond right now. Please try again later.', 'pn-customers-manager'),
+      ];
+      $fields[] = [
         'id'          => 'ig_system_prompt',
         'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input'       => 'textarea',
@@ -1299,45 +1907,106 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'placeholder' => esc_attr__('Override the global prompt for this node...', 'pn-customers-manager'),
       ];
       $fields[] = [
+        'id'          => 'ig_assistant_personality',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Assistant personality', 'pn-customers-manager'),
+        'placeholder' => esc_attr__('Override the global personality for this node...', 'pn-customers-manager'),
+        'description' => __('Tone, emotional style, language register, and personality traits.', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'ig_audio_transcription_enabled',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Enable audio transcription', 'pn-customers-manager'),
+        'description' => __('Automatically transcribe voice notes and process them as text messages.', 'pn-customers-manager'),
+        'parent'      => 'this',
+      ];
+
+      if (!isset($transcription_providers)) {
+        $transcription_providers = PN_CUSTOMERS_MANAGER_WhatsApp_AI::get_transcription_providers();
+        $provider_options = [];
+        foreach ($transcription_providers as $key => $p) {
+          $provider_options[$key] = $p['label'];
+        }
+      }
+      $fields[] = [
+        'id'            => 'ig_transcription_provider',
+        'class'         => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+        'input'         => 'select',
+        'type'          => 'select',
+        'label'         => __('Transcription provider', 'pn-customers-manager'),
+        'options'       => $provider_options,
+        'parent'        => 'ig_audio_transcription_enabled',
+        'parent_option' => 'on',
+      ];
+
+      $ig_key_warning = '<div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:6px;background:#fef3c7;color:#92400e;font-size:13px">'
+        . '<span class="material-icons-outlined" style="font-size:16px">warning</span>'
+        . '%s — '
+        . '<a href="' . esc_url($settings_url) . '" target="_blank" style="color:#92400e;font-weight:500">'
+        . esc_html__('Configure in Settings', 'pn-customers-manager') . '</a></div>';
+
+      foreach ($transcription_providers as $pkey => $prov) {
+        $key_value = get_option($prov['key_option'], '');
+        if (empty($key_value)) {
+          $fields[] = [
+            'id'            => 'ig_transcription_warn_' . $pkey,
+            'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+            'input'         => 'html',
+            'html_content'  => sprintf($ig_key_warning, sprintf(
+              /* translators: %s: provider name */
+              esc_html__('%s API key not configured', 'pn-customers-manager'),
+              esc_html($prov['label'])
+            )),
+            'parent'        => 'ig_transcription_provider',
+            'parent_option' => $pkey,
+          ];
+        }
+      }
+
+      $fields[] = [
+        'id'            => 'ig_transcription_language',
+        'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'         => 'input',
+        'type'          => 'text',
+        'label'         => __('Transcription language', 'pn-customers-manager'),
+        'placeholder'   => 'es',
+        'description'   => __('ISO 639-1 code (e.g. <code>es</code>, <code>en</code>). Optional — improves accuracy.', 'pn-customers-manager'),
+        'parent'        => 'ig_audio_transcription_enabled',
+        'parent_option' => 'on',
+      ];
+      if (!isset($settings_url)) {
+        $settings_url = add_query_arg([
+          'page'    => 'pn_customers_manager_options',
+          'section' => 'pn_customers_manager_api_parent_section_start.pn_customers_manager_openai_section_start',
+        ], admin_url('admin.php'));
+      }
+      $fields[] = [
+        'id'            => 'ig_transcription_settings_link',
+        'class'         => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'         => 'html',
+        'html_content'  => '<a href="' . esc_url($settings_url) . '" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--pn-customers-manager-color-main,#4f46e5)">'
+          . '<span class="material-icons-outlined" style="font-size:16px">settings</span>'
+          . esc_html__('Configure API keys in Settings', 'pn-customers-manager')
+          . '</a>',
+        'parent'        => 'ig_audio_transcription_enabled',
+        'parent_option' => 'on',
+      ];
+
+      // ── Context ──
+      $fields[] = [
+        'id'           => 'ig_heading_context',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Context', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
         'id'    => 'ig_company_info',
         'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input' => 'editor',
         'label' => __('Company information', 'pn-customers-manager'),
         'description' => __('Name, description, address, contact details, etc.', 'pn-customers-manager'),
-      ];
-      if (class_exists('WooCommerce')) {
-        $fields[] = [
-          'id'          => 'ig_wc_shipping_zones',
-          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-          'input'       => 'input',
-          'type'        => 'checkbox',
-          'label'       => __('Use WooCommerce shipping zones', 'pn-customers-manager'),
-          'description' => __('When a customer asks about shipping and provides a postal code, the plugin bypasses the AI model and uses WooCommerce\'s own shipping functions to match the correct zone and calculate the available methods and prices. The response is sent directly to the customer, ensuring accurate rates and preventing the model from picking the wrong zone or re-asking for the postal code. Configured shipping zones are also passed to the AI model as fallback context for any other shipping-related questions.', 'pn-customers-manager'),
-          'parent'      => 'this',
-        ];
-        $fields[] = [
-          'id'          => 'ig_require_postal_code',
-          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-          'input'       => 'input',
-          'type'        => 'checkbox',
-          'label'       => __('Always request postal code', 'pn-customers-manager'),
-          'description' => __('The AI will always ask for the postal code before quoting a shipping cost.', 'pn-customers-manager'),
-          'parent'      => 'this',
-        ];
-      }
-      $fields[] = [
-        'id'    => 'ig_shipping_info',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'editor',
-        'label' => __('Additional shipping information', 'pn-customers-manager'),
-        'description' => __('Extra shipping details: delivery times, special conditions, etc.', 'pn-customers-manager'),
-      ];
-      $fields[] = [
-        'id'    => 'ig_schedule_info',
-        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input' => 'editor',
-        'label' => __('Opening hours', 'pn-customers-manager'),
-        'description' => __('Business hours, weekdays, weekends, holidays, etc.', 'pn-customers-manager'),
       ];
       $fields[] = [
         'id'          => 'ig_knowledge_base',
@@ -1348,6 +2017,151 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'description' => __('Additional information the AI will use as reference to respond.', 'pn-customers-manager'),
       ];
 
+      // ── Follow-up tracking ──
+      $fields[] = [
+        'id'           => 'ig_heading_followup',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Follow-up tracking', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'          => 'ig_enable_followup_tracking',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Enable follow-up tracking', 'pn-customers-manager'),
+        'description' => __('The AI will detect patterns in the conversation that require a follow-up action (e.g. watch a video, write a review, check a document) and tag them with a hidden marker so the system can schedule a reminder.', 'pn-customers-manager'),
+        'parent'      => 'this',
+      ];
+      $fields[] = [
+        'id'                => 'ig_followup_listeners',
+        'class'             => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'             => 'html_multi',
+        'label'             => __('Follow-up listeners', 'pn-customers-manager'),
+        'description'       => __('Define the actions the AI should detect. Each listener has a key (used internally), a label describing the action, and a delay before the reminder is sent.', 'pn-customers-manager'),
+        'parent'            => 'ig_enable_followup_tracking',
+        'parent_option'     => 'on',
+        'html_multi_fields' => [
+          [
+            'id'          => 'ig_followup_key',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'text',
+            'label'       => __('Key', 'pn-customers-manager'),
+            'placeholder' => __('e.g. watch_video', 'pn-customers-manager'),
+          ],
+          [
+            'id'          => 'ig_followup_label',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'text',
+            'label'       => __('Description', 'pn-customers-manager'),
+            'placeholder' => __('e.g. Customer should watch the tutorial video', 'pn-customers-manager'),
+          ],
+          [
+            'id'          => 'ig_followup_delay',
+            'class'       => 'pn-customers-manager-input',
+            'input'       => 'input',
+            'type'        => 'number',
+            'label'       => __('Delay', 'pn-customers-manager'),
+            'placeholder' => '24',
+            'min'         => 1,
+          ],
+          [
+            'id'      => 'ig_followup_delay_unit',
+            'class'   => 'pn-customers-manager-select',
+            'input'   => 'select',
+            'type'    => 'select',
+            'label'   => __('Unit', 'pn-customers-manager'),
+            'options' => [
+              'hours'  => __('Hours', 'pn-customers-manager'),
+              'days'   => __('Days', 'pn-customers-manager'),
+              'weeks'  => __('Weeks', 'pn-customers-manager'),
+              'months' => __('Months', 'pn-customers-manager'),
+            ],
+          ],
+        ],
+      ];
+
+      // ── Bot schedule ──
+      $fields[] = [
+        'id'           => 'ig_heading_schedule',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Bot schedule', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'          => 'ig_schedule_enabled',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Enable message scheduling', 'pn-customers-manager'),
+        'description' => __('When enabled, bot messages will only be sent during the configured time windows.', 'pn-customers-manager'),
+        'parent'      => 'this',
+      ];
+      $fields[] = [
+        'id'           => 'ig_schedule_days',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => self::render_schedule_days_html('ig'),
+        'parent'        => 'ig_schedule_enabled',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'          => 'ig_schedule_offhours_message_enabled',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Send custom message outside scheduled hours', 'pn-customers-manager'),
+        'description' => __('When enabled, the bot will send a custom message to clients who initiate a conversation outside the scheduled hours, instead of staying silent.', 'pn-customers-manager'),
+        'parent'        => 'ig_schedule_enabled',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'          => 'ig_schedule_offhours_message',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Off-hours message', 'pn-customers-manager'),
+        'placeholder' => __('e.g. Thanks for reaching out! We are currently outside our business hours. We will get back to you as soon as possible.', 'pn-customers-manager'),
+        'parent'        => 'ig_schedule_offhours_message_enabled',
+        'parent_option' => 'on',
+      ];
+      $fields[] = [
+        'id'          => 'ig_schedule_allow_client_initiated',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Allow bot to respond when client initiates', 'pn-customers-manager'),
+        'description' => __('When enabled, the bot responds normally outside scheduled hours if it is the client who initiates the conversation. Mutually exclusive with the custom off-hours message option.', 'pn-customers-manager'),
+        'parent'        => 'ig_schedule_enabled',
+        'parent_option' => 'on',
+      ];
+
+      // ── CRM sync ──
+      $fields[] = [
+        'id'           => 'ig_heading_crm_sync',
+        'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('CRM sync', 'pn-customers-manager') . '</h4>',
+      ];
+      $fields[] = [
+        'id'          => 'ig_sync_ghl',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Sync with GoHighLevel', 'pn-customers-manager'),
+        'description' => __('Save conversation interactions, extracted tasks, and follow-up reminders to GoHighLevel via the API. Requires a valid GHL API key in the Integration settings.', 'pn-customers-manager'),
+      ];
+      $fields[] = [
+        'id'          => 'ig_sync_zoho',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'checkbox',
+        'label'       => __('Sync with Zoho CRM', 'pn-customers-manager'),
+        'description' => __('Save conversation interactions, extracted tasks, and follow-up reminders to Zoho CRM via the API. Requires a valid Zoho connection in the Integration settings.', 'pn-customers-manager'),
+      ];
+
+      // ── Include automatic content ──
       $fields[] = [
         'id'           => 'ig_heading_auto',
         'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
@@ -1506,13 +2320,53 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
           'parent'        => 'ig_enable_special_orders',
           'parent_option' => 'on',
         ];
+        // Shipping fields (under WooCommerce products)
+        $fields[] = [
+          'id'          => 'ig_wc_shipping_zones',
+          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'       => 'input',
+          'type'        => 'checkbox',
+          'label'       => __('Use WooCommerce shipping zones', 'pn-customers-manager'),
+          'description' => __('When a customer asks about shipping and provides a postal code, the plugin bypasses the AI model and uses WooCommerce\'s own shipping functions to match the correct zone and calculate the available methods and prices. The response is sent directly to the customer, ensuring accurate rates and preventing the model from picking the wrong zone or re-asking for the postal code. Configured shipping zones are also passed to the AI model as fallback context for any other shipping-related questions.', 'pn-customers-manager'),
+          'parent'      => 'ig_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'          => 'ig_require_postal_code',
+          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'       => 'input',
+          'type'        => 'checkbox',
+          'label'       => __('Always request postal code', 'pn-customers-manager'),
+          'description' => __('The AI will always ask for the postal code before quoting a shipping cost.', 'pn-customers-manager'),
+          'parent'      => 'ig_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'    => 'ig_shipping_info',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'editor',
+          'label' => __('Additional shipping information', 'pn-customers-manager'),
+          'description' => __('Extra shipping details: delivery times, special conditions, etc.', 'pn-customers-manager'),
+          'parent'      => 'ig_include_woo',
+          'parent_option' => 'on',
+        ];
+        $fields[] = [
+          'id'          => 'ig_schedule_info',
+          'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input'       => 'editor',
+          'label'       => __('Opening hours', 'pn-customers-manager'),
+          'description' => __('Business hours, weekdays, weekends, holidays, etc.', 'pn-customers-manager'),
+          'parent'      => 'ig_include_woo',
+          'parent_option' => 'on',
+        ];
       }
 
+      // ── Model configuration ──
       $fields[] = [
         'id'           => 'ig_divider_model',
         'class'        => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
         'input'        => 'html',
-        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee">',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Model configuration', 'pn-customers-manager') . '</h4>',
       ];
 
       $fields[] = [
@@ -1534,24 +2388,239 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
         'step'        => 0.1,
         'placeholder' => '0.7',
       ];
+    }
+
+    // Send Email (communication node) specific fields
+    if ($subtype === 'send_email') {
       $fields[] = [
-        'id'          => 'ig_welcome_message',
-        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input'       => 'editor',
-        'label'       => __('Welcome message', 'pn-customers-manager'),
-        'placeholder' => esc_attr__('Message sent when starting the conversation...', 'pn-customers-manager'),
+        'id'           => 'es_heading_settings',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Email', 'pn-customers-manager') . '</h4>',
       ];
-      $fields[] = [
-        'id'          => 'ig_error_fallback_message',
+
+      $mailpn_active = class_exists('PN_CUSTOMERS_MANAGER_Email_Campaigns') && PN_CUSTOMERS_MANAGER_Email_Campaigns::is_mailpn_active();
+
+      if ($mailpn_active) {
+        $fields[] = [
+          'id'      => 'es_send_mode',
+          'class'   => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+          'input'   => 'select',
+          'type'    => 'select',
+          'label'   => __('Send mode', 'pn-customers-manager'),
+          'parent'  => 'this',
+          'options' => [
+            'mailpn_template' => __('MAILPN template', 'pn-customers-manager'),
+            'manual'          => __('Manual', 'pn-customers-manager'),
+          ],
+        ];
+
+        $templates = PN_CUSTOMERS_MANAGER_Email_Campaigns::get_mail_templates();
+        $template_options = ['' => '-- ' . __('Select template', 'pn-customers-manager') . ' --'];
+        foreach ($templates as $tid => $title) {
+          $template_options[$tid] = $title;
+        }
+
+        $fields[] = [
+          'id'      => 'es_mailpn_template',
+          'class'   => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+          'input'   => 'select',
+          'type'    => 'select',
+          'label'   => __('Template', 'pn-customers-manager'),
+          'options' => $template_options,
+          'parent'  => 'es_send_mode',
+          'parent_option' => 'mailpn_template',
+        ];
+      }
+
+      $manual_parent = $mailpn_active ? ['parent' => 'es_send_mode', 'parent_option' => 'manual'] : [];
+
+      $fields[] = array_merge([
+        'id'          => 'es_from_name',
         'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
-        'input'       => 'editor',
-        'label'       => __('Error fallback message', 'pn-customers-manager'),
-        'description' => __('Message sent to the customer when the AI model cannot respond (API error, timeout, invalid key, etc.). Leave empty to use the default message.', 'pn-customers-manager'),
-        'placeholder' => esc_attr__('Sorry, I cannot respond right now. Please try again later.', 'pn-customers-manager'),
+        'input'       => 'input',
+        'type'        => 'text',
+        'label'       => __('From name', 'pn-customers-manager'),
+        'placeholder' => get_bloginfo('name'),
+      ], $manual_parent);
+
+      $fields[] = array_merge([
+        'id'          => 'es_from_email',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'email',
+        'label'       => __('From email', 'pn-customers-manager'),
+        'placeholder' => get_option('admin_email'),
+      ], $manual_parent);
+
+      $fields[] = array_merge([
+        'id'          => 'es_subject',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'text',
+        'label'       => __('Email subject', 'pn-customers-manager'),
+        'placeholder' => __('Welcome, {name}!', 'pn-customers-manager'),
+      ], $manual_parent);
+
+      $fields[] = array_merge([
+        'id'          => 'es_body',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'textarea',
+        'label'       => __('Email body', 'pn-customers-manager'),
+        'placeholder' => __('Write the email content here...', 'pn-customers-manager'),
+      ], $manual_parent);
+
+      $fields[] = [
+        'id'           => 'es_placeholders_info',
+        'input'        => 'html',
+        'html_content' => '<p class="description" style="margin-top:0">'
+          . esc_html__('Available placeholders:', 'pn-customers-manager')
+          . ' <code>{name}</code>, <code>{email}</code>, <code>{phone}</code></p>',
+      ];
+    }
+
+    // Email Sequence (communication node) specific fields
+    if ($subtype === 'email_sequence') {
+      $fields[] = [
+        'id'           => 'es_heading_settings',
+        'input'        => 'html',
+        'html_content' => '<hr style="margin:16px 0;border:none;border-top:1px solid #eee"><h4 style="margin:0 0 8px">' . esc_html__('Email sequence', 'pn-customers-manager') . '</h4>',
+      ];
+
+      $mailpn_active = class_exists('PN_CUSTOMERS_MANAGER_Email_Campaigns') && PN_CUSTOMERS_MANAGER_Email_Campaigns::is_mailpn_active();
+
+      if ($mailpn_active) {
+        $fields[] = [
+          'id'      => 'es_send_mode',
+          'class'   => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+          'input'   => 'select',
+          'type'    => 'select',
+          'label'   => __('Send mode', 'pn-customers-manager'),
+          'parent'  => 'this',
+          'options' => [
+            'mailpn_template' => __('MAILPN template', 'pn-customers-manager'),
+            'manual'          => __('Manual', 'pn-customers-manager'),
+          ],
+        ];
+
+        $templates = PN_CUSTOMERS_MANAGER_Email_Campaigns::get_mail_templates();
+        $template_options = ['' => '-- ' . __('Select template', 'pn-customers-manager') . ' --'];
+        foreach ($templates as $tid => $title) {
+          $template_options[$tid] = $title;
+        }
+
+        $fields[] = [
+          'id'    => 'es_mailpn_templates_multi',
+          'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+          'input' => 'html_multi',
+          'label' => __('Templates', 'pn-customers-manager'),
+          'parent'        => 'es_send_mode',
+          'parent_option' => 'mailpn_template',
+          'html_multi_fields' => [
+            [
+              'id'      => 'es_mailpn_template_id',
+              'class'   => 'pn-customers-manager-select pn-customers-manager-width-100-percent',
+              'input'   => 'select',
+              'type'    => 'select',
+              'label'   => __('Template', 'pn-customers-manager'),
+              'options' => $template_options,
+            ],
+          ],
+        ];
+      }
+
+      $manual_parent = $mailpn_active ? ['parent' => 'es_send_mode', 'parent_option' => 'manual'] : [];
+
+      $fields[] = array_merge([
+        'id'          => 'es_from_name',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'text',
+        'label'       => __('From name', 'pn-customers-manager'),
+        'placeholder' => get_bloginfo('name'),
+      ], $manual_parent);
+
+      $fields[] = array_merge([
+        'id'          => 'es_from_email',
+        'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input'       => 'input',
+        'type'        => 'email',
+        'label'       => __('From email', 'pn-customers-manager'),
+        'placeholder' => get_option('admin_email'),
+      ], $manual_parent);
+
+      $fields[] = array_merge([
+        'id'    => 'es_emails_multi',
+        'class' => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+        'input' => 'html_multi',
+        'label' => __('Emails', 'pn-customers-manager'),
+        'html_multi_fields' => [
+          [
+            'id'          => 'es_email_subject',
+            'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+            'input'       => 'input',
+            'type'        => 'text',
+            'label'       => __('Subject', 'pn-customers-manager'),
+            'placeholder' => __('Welcome, {name}!', 'pn-customers-manager'),
+          ],
+          [
+            'id'          => 'es_email_body',
+            'class'       => 'pn-customers-manager-input pn-customers-manager-width-100-percent',
+            'input'       => 'textarea',
+            'label'       => __('Body', 'pn-customers-manager'),
+            'placeholder' => __('Write the email content here...', 'pn-customers-manager'),
+          ],
+        ],
+      ], $manual_parent);
+
+      $fields[] = [
+        'id'           => 'es_placeholders_info',
+        'input'        => 'html',
+        'html_content' => '<p class="description" style="margin-top:0">'
+          . esc_html__('Available placeholders:', 'pn-customers-manager')
+          . ' <code>{name}</code>, <code>{email}</code>, <code>{phone}</code></p>',
       ];
     }
 
     return $fields;
+  }
+
+  /**
+   * Render the schedule days grid HTML for the bot schedule settings.
+   *
+   * @return string
+   */
+  private static function render_schedule_days_html($prefix = 'wa') {
+    $days = [
+      'mon' => __('Mon', 'pn-customers-manager'),
+      'tue' => __('Tue', 'pn-customers-manager'),
+      'wed' => __('Wed', 'pn-customers-manager'),
+      'thu' => __('Thu', 'pn-customers-manager'),
+      'fri' => __('Fri', 'pn-customers-manager'),
+      'sat' => __('Sat', 'pn-customers-manager'),
+      'sun' => __('Sun', 'pn-customers-manager'),
+    ];
+
+    $field_id = esc_attr($prefix . '_schedule_days');
+
+    $html = '<div class="pn-cm-schedule-grid" data-prefix="' . esc_attr($prefix) . '" style="margin-top:8px">';
+    $html .= '<input type="hidden" name="' . $field_id . '" id="' . $field_id . '" value="" />';
+
+    foreach ($days as $key => $label) {
+      $html .= '<div class="pn-cm-schedule-day-row" data-day="' . esc_attr($key) . '">';
+      $html .= '<label class="pn-cm-schedule-day-btn">';
+      $html .= '<input type="checkbox" class="pn-cm-schedule-day-toggle" data-day="' . esc_attr($key) . '" />';
+      $html .= '<span>' . esc_html($label) . '</span>';
+      $html .= '</label>';
+      $html .= '<input type="time" class="pn-cm-schedule-from" data-day="' . esc_attr($key) . '" value="09:00" />';
+      $html .= '<span class="pn-cm-schedule-separator">–</span>';
+      $html .= '<input type="time" class="pn-cm-schedule-to" data-day="' . esc_attr($key) . '" value="20:00" />';
+      $html .= '</div>';
+    }
+
+    $html .= '<p style="margin:8px 0 0;color:#666;font-size:12px">' . esc_html__('Times are in the contact\'s local timezone, inferred from their phone country code.', 'pn-customers-manager') . '</p>';
+    $html .= '</div>';
+
+    return $html;
   }
 
   /**
@@ -1569,15 +2638,29 @@ class PN_CUSTOMERS_MANAGER_Funnel_Builder {
     $allowed_html['input']  = [
       'type' => true, 'id' => true, 'class' => true, 'style' => true,
       'value' => true, 'readonly' => true, 'name' => true, 'placeholder' => true, 'title' => true,
+      'checked' => true, 'data-day' => true,
+    ];
+    $allowed_html['label'] = [
+      'class' => true, 'style' => true, 'for' => true,
     ];
     $allowed_html['button'] = [
       'type' => true, 'id' => true, 'class' => true, 'style' => true, 'title' => true,
     ];
+    // Allow data attributes on div for schedule grid
+    if (isset($allowed_html['div'])) {
+      $allowed_html['div']['data-prefix'] = true;
+      $allowed_html['div']['data-day']    = true;
+    } else {
+      $allowed_html['div'] = [
+        'class' => true, 'id' => true, 'style' => true,
+        'data-prefix' => true, 'data-day' => true,
+      ];
+    }
 
     ob_start();
     foreach ($fields as $field) {
-      // HTML-only fields (dividers, headings): output directly
-      if (isset($field['input']) && $field['input'] === 'html') {
+      // HTML-only fields without parent (dividers, headings): output directly
+      if (isset($field['input']) && $field['input'] === 'html' && empty($field['parent'])) {
         echo wp_kses($field['html_content'], $allowed_html);
         continue;
       }

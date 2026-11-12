@@ -175,7 +175,9 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Funnel {
    * @since    1.0.0
    */
   public function pn_cm_funnel_meta_box_function($post) {
-    foreach (self::pn_cm_funnel_get_fields_meta() as $pn_customers_manager_field) {
+    $fields = self::pn_cm_funnel_get_fields_meta();
+    $fields = PN_CUSTOMERS_MANAGER_Settings::pn_customers_manager_filter_cpt_fields($fields, 'pn_cm_funnel');
+    foreach ($fields as $pn_customers_manager_field) {
       if (!is_null(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_field, 'post', $post->ID))) {
         echo wp_kses(PN_CUSTOMERS_MANAGER_Forms::pn_customers_manager_input_wrapper_builder($pn_customers_manager_field, 'post', $post->ID), PN_CUSTOMERS_MANAGER_KSES);
       }
@@ -462,7 +464,7 @@ class PN_CUSTOMERS_MANAGER_Post_Type_Funnel {
 
     ob_start();
     ?>
-      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_funnel-list pn-customers-manager-mb-50">
+      <div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_funnel-list pn-customers-manager-mb-100 pn-customers-manager-pb-100">
         <div class="pn-customers-manager-cpt-search-container pn-customers-manager-mb-20 pn-customers-manager-text-align-right">
           <div class="pn-customers-manager-cpt-search-wrapper">
             <input type="text" class="pn-customers-manager-cpt-search-input pn-customers-manager-input pn-customers-manager-display-none" placeholder="<?php esc_attr_e('Filter...', 'pn-customers-manager'); ?>" />

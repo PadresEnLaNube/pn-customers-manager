@@ -33,7 +33,7 @@ class PN_CUSTOMERS_MANAGER_WooCommerce_iCal_Download {
 				'url'         => isset($_GET['url']) ? esc_url_raw($_GET['url']) : ''
 			));
 
-			echo $ics->to_string();
+			echo $ics->to_string(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- ICS calendar data output with Content-Type: text/calendar header; inputs are sanitized above.
 			exit;
 		}
 	}

@@ -69,9 +69,13 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 	{
 		wp_enqueue_media();
 
+		// Tooltips assets
+		wp_enqueue_style('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-tooltips.css', [], PN_CUSTOMERS_MANAGER_VERSION);
+		wp_enqueue_script('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-tooltips.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
+
 		// Mockup Flow assets
 		wp_enqueue_style('pn-customers-manager-mockup-flow', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-mockup-flow.css', [], PN_CUSTOMERS_MANAGER_VERSION);
-		wp_enqueue_script('pn-customers-manager-mockup-flow-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-mockup-flow.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
+		wp_enqueue_script('pn-customers-manager-mockup-flow-admin', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-mockup-flow.js', ['jquery', 'pn-customers-manager-tooltips'], PN_CUSTOMERS_MANAGER_VERSION, true);
 
 		$canvas_data = get_post_meta($post->ID, 'pn_cm_mockup_flow_canvas_data', true);
 		if (empty($canvas_data)) {
@@ -131,20 +135,17 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 		?>
 		<div class="pn-cm-mf-admin-wrap">
 			<div class="pn-cm-mf-toolbar">
-				<button type="button" class="button pn-cm-mf-btn-add-mockup" title="<?php esc_attr_e('Add Mockup', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-add-mockup pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Add Mockup', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-format-image"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Add Mockup', 'pn-customers-manager'); ?></span>
 				</button>
-				<button type="button" class="button pn-cm-mf-btn-add-label" title="<?php esc_attr_e('Add Label', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-add-label pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Add Label', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-text"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Add Label', 'pn-customers-manager'); ?></span>
 				</button>
-				<button type="button" class="button pn-cm-mf-btn-connect" title="<?php esc_attr_e('Connect', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-connect pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Connect', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-arrow-right-alt"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Connect', 'pn-customers-manager'); ?></span>
 				</button>
 				<span class="pn-cm-mf-connect-status" style="display:none;"></span>
-				<button type="button" class="button pn-cm-mf-btn-cancel-connect" style="display:none;">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-cancel-connect" style="display:none;">
 					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Cancel', 'pn-customers-manager'); ?></span>
 				</button>
 				<div class="pn-cm-mf-toolbar-spacer"></div>
@@ -153,21 +154,21 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 					<input type="text" class="pn-cm-mf-project-name-input" placeholder="<?php esc_attr_e('Project name', 'pn-customers-manager'); ?>" />
 				</div>
 				<span class="pn-cm-mf-zoom-display">100%</span>
-				<button type="button" class="button pn-cm-mf-btn-export" title="<?php esc_attr_e('Export JSON', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-download-all pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Download all mockups', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-download"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Export', 'pn-customers-manager'); ?></span>
 				</button>
-				<button type="button" class="button pn-cm-mf-btn-import" title="<?php esc_attr_e('Import JSON', 'pn-customers-manager'); ?>">
-					<span class="dashicons dashicons-upload"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Import', 'pn-customers-manager'); ?></span>
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-export pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Export JSON', 'pn-customers-manager'); ?>">
+					<span class="dashicons dashicons-database-export"></span>
+				</button>
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-import pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Import JSON', 'pn-customers-manager'); ?>">
+					<span class="dashicons dashicons-database-import"></span>
 				</button>
 				<input type="file" class="pn-cm-mf-import-file" accept=".json" style="display:none;" />
-				<button type="button" class="button pn-cm-mf-btn-fullscreen" title="<?php esc_attr_e('Fullscreen', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-fullscreen pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Fullscreen', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-fullscreen-alt"></span>
 				</button>
-				<button type="button" class="button button-primary pn-cm-mf-btn-save" title="<?php esc_attr_e('Save', 'pn-customers-manager'); ?>">
+				<button type="button" class="button button-primary pn-cm-mf-btn-save pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Save', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-saved"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Save', 'pn-customers-manager'); ?></span>
 				</button>
 			</div>
 			<div class="pn-cm-mf-body">
@@ -321,13 +322,17 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 
 		$is_admin_editor = current_user_can('manage_options');
 
+		// Tooltips assets
+		wp_enqueue_style('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-tooltips.css', [], PN_CUSTOMERS_MANAGER_VERSION);
+		wp_enqueue_script('pn-customers-manager-tooltips', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-tooltips.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
+
 		// Popup assets
 		wp_enqueue_style('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-popups.css', [], PN_CUSTOMERS_MANAGER_VERSION);
 		wp_enqueue_script('pn-customers-manager-popups', PN_CUSTOMERS_MANAGER_URL . 'assets/js/pn-customers-manager-popups.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
 
 		// Mockup Flow assets
 		wp_enqueue_style('pn-customers-manager-mockup-flow', PN_CUSTOMERS_MANAGER_URL . 'assets/css/pn-customers-manager-mockup-flow.css', [], PN_CUSTOMERS_MANAGER_VERSION);
-		wp_enqueue_script('pn-customers-manager-mockup-flow-public', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-mockup-flow.js', ['jquery'], PN_CUSTOMERS_MANAGER_VERSION, true);
+		wp_enqueue_script('pn-customers-manager-mockup-flow-public', PN_CUSTOMERS_MANAGER_URL . 'assets/js/admin/pn-customers-manager-mockup-flow.js', ['jquery', 'pn-customers-manager-tooltips'], PN_CUSTOMERS_MANAGER_VERSION, true);
 
 		// Dashicons for zoom control buttons
 		wp_enqueue_style('dashicons');
@@ -429,20 +434,17 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 		<?php if ($is_admin_editor) : ?>
 		<div id="<?php echo esc_attr($unique_id); ?>" class="pn-cm-mf-admin-wrap pn-cm-mf-public-wrap" data-mockup-flow-id="<?php echo esc_attr($id); ?>">
 			<div class="pn-cm-mf-toolbar">
-				<button type="button" class="button pn-cm-mf-btn-add-mockup" title="<?php esc_attr_e('Add Mockup', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-add-mockup pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Add Mockup', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-format-image"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Add Mockup', 'pn-customers-manager'); ?></span>
 				</button>
-				<button type="button" class="button pn-cm-mf-btn-add-label" title="<?php esc_attr_e('Add Label', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-add-label pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Add Label', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-text"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Add Label', 'pn-customers-manager'); ?></span>
 				</button>
-				<button type="button" class="button pn-cm-mf-btn-connect" title="<?php esc_attr_e('Connect', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-connect pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Connect', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-arrow-right-alt"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Connect', 'pn-customers-manager'); ?></span>
 				</button>
 				<span class="pn-cm-mf-connect-status" style="display:none;"></span>
-				<button type="button" class="button pn-cm-mf-btn-cancel-connect" style="display:none;">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-cancel-connect" style="display:none;">
 					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Cancel', 'pn-customers-manager'); ?></span>
 				</button>
 				<div class="pn-cm-mf-toolbar-spacer"></div>
@@ -451,21 +453,21 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 					<input type="text" class="pn-cm-mf-project-name-input" placeholder="<?php esc_attr_e('Project name', 'pn-customers-manager'); ?>" />
 				</div>
 				<span class="pn-cm-mf-zoom-display">100%</span>
-				<button type="button" class="button pn-cm-mf-btn-export" title="<?php esc_attr_e('Export JSON', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-download-all pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Download all mockups', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-download"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Export', 'pn-customers-manager'); ?></span>
 				</button>
-				<button type="button" class="button pn-cm-mf-btn-import" title="<?php esc_attr_e('Import JSON', 'pn-customers-manager'); ?>">
-					<span class="dashicons dashicons-upload"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Import', 'pn-customers-manager'); ?></span>
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-export pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Export JSON', 'pn-customers-manager'); ?>">
+					<span class="dashicons dashicons-database-export"></span>
+				</button>
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-import pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Import JSON', 'pn-customers-manager'); ?>">
+					<span class="dashicons dashicons-database-import"></span>
 				</button>
 				<input type="file" class="pn-cm-mf-import-file" accept=".json" style="display:none;" />
-				<button type="button" class="button pn-cm-mf-btn-fullscreen" title="<?php esc_attr_e('Fullscreen', 'pn-customers-manager'); ?>">
+				<button type="button" class="button pn-cm-mf-btn pn-cm-mf-btn-fullscreen pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Fullscreen', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-fullscreen-alt"></span>
 				</button>
-				<button type="button" class="button button-primary pn-cm-mf-btn-save" title="<?php esc_attr_e('Save', 'pn-customers-manager'); ?>">
+				<button type="button" class="button button-primary pn-cm-mf-btn-save pn-customers-manager-tooltip" data-pn-customers-manager-tooltip="<?php esc_attr_e('Save', 'pn-customers-manager'); ?>">
 					<span class="dashicons dashicons-saved"></span>
-					<span class="pn-cm-mf-btn-text"><?php esc_html_e('Save', 'pn-customers-manager'); ?></span>
 				</button>
 			</div>
 			<div class="pn-cm-mf-body">
@@ -651,18 +653,18 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 	{
 		$post_id = !empty($_POST['post_id']) ? absint($_POST['post_id']) : 0;
 		if (!$post_id) {
-			wp_die(__('Invalid request.', 'pn-customers-manager'));
+			wp_die(esc_html__('Invalid request.', 'pn-customers-manager'));
 		}
 
 		$post = get_post($post_id);
 		if (!$post || $post->post_type !== 'pn_cm_mockup_flow') {
-			wp_die(__('Mockup Flow not found.', 'pn-customers-manager'));
+			wp_die(esc_html__('Mockup Flow not found.', 'pn-customers-manager'));
 		}
 
 		$canvas_json = get_post_meta($post_id, 'pn_cm_mockup_flow_canvas_data', true);
 		$data = json_decode($canvas_json, true);
 		if (!is_array($data) || empty($data['mockups'])) {
-			wp_die(__('No mockups found.', 'pn-customers-manager'));
+			wp_die(esc_html__('No mockups found.', 'pn-customers-manager'));
 		}
 
 		// Sort by order
@@ -700,7 +702,7 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 		}
 
 		if (empty($files)) {
-			wp_die(__('No images to download.', 'pn-customers-manager'));
+			wp_die(esc_html__('No images to download.', 'pn-customers-manager'));
 		}
 
 		// ZIP filename: use projectName from canvas data, fallback to post title
@@ -710,7 +712,7 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 
 		$zip = new \ZipArchive();
 		if ($zip->open($tmp_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-			wp_die(__('Could not create ZIP file.', 'pn-customers-manager'));
+			wp_die(esc_html__('Could not create ZIP file.', 'pn-customers-manager'));
 		}
 
 		foreach ($files as $f) {
@@ -735,9 +737,10 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 		header('Expires: 0');
 
 		if ($file_size > 0) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Streaming ZIP file download to browser.
 			readfile($tmp_file);
 		}
-		unlink($tmp_file);
+		wp_delete_file($tmp_file);
 		exit;
 	}
 
@@ -907,7 +910,7 @@ class PN_CUSTOMERS_MANAGER_Mockup_Flow
 
 		ob_start();
 		?>
-		<div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_mockup_flow-list pn-customers-manager-mb-50 pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mb-100">
+		<div class="pn-customers-manager-cpt-list pn-customers-manager-pn_cm_mockup_flow-list pn-customers-manager-max-width-1000 pn-customers-manager-margin-auto pn-customers-manager-mb-100 pn-customers-manager-pb-100">
 			<div class="pn-customers-manager-cpt-search-container pn-customers-manager-mb-20 pn-customers-manager-text-align-right">
 				<div class="pn-customers-manager-cpt-search-wrapper">
 					<input type="text" class="pn-customers-manager-cpt-search-input pn-customers-manager-input pn-customers-manager-display-none" placeholder="<?php esc_attr_e('Filter...', 'pn-customers-manager'); ?>" />

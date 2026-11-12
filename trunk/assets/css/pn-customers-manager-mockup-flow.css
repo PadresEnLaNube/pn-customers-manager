@@ -23,13 +23,53 @@
 	flex-shrink: 0;
 }
 
-.pn-cm-mf-toolbar .button .dashicons {
-	font-size: 16px;
-	width: 16px;
-	height: 16px;
+/* Minimalist toolbar buttons (icon-only, no border, transparent background) */
+.pn-cm-mf-toolbar .button.pn-cm-mf-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	min-height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: #666;
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s;
+}
+
+.pn-cm-mf-toolbar .button.pn-cm-mf-btn:hover {
+	background: rgba(10, 108, 186, 0.1);
+	color: #0a6cba;
+}
+
+.pn-cm-mf-toolbar .button.pn-cm-mf-btn .dashicons {
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
 	line-height: 1;
 	vertical-align: middle;
-	margin-right: 2px;
+	margin: 0;
+}
+
+/* Hide button text labels on minimalist buttons */
+.pn-cm-mf-toolbar .button.pn-cm-mf-btn .pn-cm-mf-btn-text {
+	display: none;
+}
+
+/* Save button keeps primary color with slight transparency */
+.pn-cm-mf-toolbar .button.button-primary.pn-cm-mf-btn-save {
+	background: rgba(10, 108, 186, 0.1);
+	color: #0a6cba;
+	border: none;
+}
+
+.pn-cm-mf-toolbar .button.button-primary.pn-cm-mf-btn-save:hover {
+	background: rgba(10, 108, 186, 0.18);
+	color: #0a6cba;
 }
 
 .pn-cm-mf-toolbar-spacer {
@@ -463,6 +503,8 @@
 	color: #fff;
 }
 
+/* Download button downloading state */
+.pn-cm-mf-btn-download-all.pn-cm-mf-downloading,
 .pn-cm-mf-download-all-btn.pn-cm-mf-downloading {
 	pointer-events: none;
 	opacity: 0.6;
@@ -1172,37 +1214,38 @@
 }
 
 /* ── Front-end toolbar buttons (fallback when wp-admin CSS is not loaded) */
-.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button {
+.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button.pn-cm-mf-btn {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	padding: 4px 12px;
-	font-size: 13px;
-	line-height: 2;
-	border: 1px solid var(--pn-customers-manager-color-main, #0073aa);
-	border-radius: 3px;
-	background: #f6f7f7;
-	color: var(--pn-customers-manager-color-main, #0073aa);
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	min-height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: #666;
 	cursor: pointer;
 	text-decoration: none;
-	white-space: nowrap;
+	transition: background 0.2s, color 0.2s;
 }
 
-.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button:hover {
-	background: var(--pn-customers-manager-color-main-grey, #f0f0f1);
-	border-color: var(--pn-customers-manager-color-main, #0073aa);
-	color: var(--pn-customers-manager-color-main-alt, #006799);
+.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button.pn-cm-mf-btn:hover {
+	background: rgba(10, 108, 186, 0.1);
+	color: #0a6cba;
 }
 
-.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button.button-primary {
-	background: var(--pn-customers-manager-color-main, #0073aa);
-	border-color: var(--pn-customers-manager-color-main, #0073aa);
-	color: #fff;
+.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button.button-primary.pn-cm-mf-btn-save {
+	background: rgba(10, 108, 186, 0.1);
+	color: #0a6cba;
+	border: none;
 }
 
-.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button.button-primary:hover {
-	background: var(--pn-customers-manager-color-main-alt, #006799);
-	border-color: var(--pn-customers-manager-color-main-alt, #006799);
+.pn-cm-mf-public-wrap .pn-cm-mf-toolbar .button.button-primary.pn-cm-mf-btn-save:hover {
+	background: rgba(10, 108, 186, 0.18);
+	color: #0a6cba;
 }
 
 /* ── Touch action (prevent browser gestures on canvas) ── */
@@ -1237,10 +1280,7 @@
 		padding: 6px 8px;
 	}
 
-	/* Hide button text labels, show only icons */
-	.pn-cm-mf-toolbar .button .pn-cm-mf-btn-text {
-		display: none;
-	}
+	/* Button text already hidden by minimalist styles */
 
 	.pn-cm-mf-project-name-wrap {
 		order: 99;
@@ -1253,16 +1293,18 @@
 		width: auto;
 	}
 
-	.pn-cm-mf-toolbar .button .dashicons {
-		margin-right: 0;
+	/* Larger touch targets for toolbar buttons on tablet */
+	.pn-cm-mf-toolbar .button.pn-cm-mf-btn {
+		min-width: 40px;
+		min-height: 40px;
+		width: 40px;
+		height: 40px;
 	}
 
-	/* Larger touch targets for toolbar buttons */
-	.pn-cm-mf-toolbar .button {
-		min-width: 36px;
-		min-height: 36px;
-		padding: 6px 8px;
-		justify-content: center;
+	.pn-cm-mf-toolbar .button.pn-cm-mf-btn .dashicons {
+		font-size: 22px;
+		width: 22px;
+		height: 22px;
 	}
 
 	/* Zoom controls: slightly smaller on tablet */
@@ -1354,17 +1396,18 @@
 		gap: 3px;
 	}
 
-	.pn-cm-mf-toolbar .button {
-		min-width: 32px;
-		min-height: 32px;
-		padding: 4px 6px;
-		font-size: 11px;
+	/* Keep standard size on phone */
+	.pn-cm-mf-toolbar .button.pn-cm-mf-btn {
+		min-width: 36px;
+		min-height: 36px;
+		width: 36px;
+		height: 36px;
 	}
 
-	.pn-cm-mf-toolbar .button .dashicons {
-		font-size: 14px;
-		width: 14px;
-		height: 14px;
+	.pn-cm-mf-toolbar .button.pn-cm-mf-btn .dashicons {
+		font-size: 18px;
+		width: 18px;
+		height: 18px;
 	}
 
 	.pn-cm-mf-project-name-wrap {

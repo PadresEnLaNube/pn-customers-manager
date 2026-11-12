@@ -1,5 +1,5 @@
 /**
- * PN Customers Manager — MailPn Statistics Dashboard JS
+ * PN Customers Manager — CRM Statistics Dashboard JS
  *
  * Handles Chart.js rendering, AJAX period switching,
  * stat-card popup modals, and chart updates.
@@ -12,9 +12,9 @@
 
   // Chart instances
   var chartCombined = null;
-  var chartSent = null;
-  var chartOpened = null;
-  var chartClicked = null;
+  var chartOrganizations = null;
+  var chartBudgets = null;
+  var chartInvoices = null;
 
   /* ──────────────────────────────────
      Initialisation
@@ -147,12 +147,12 @@
     if (!data || !data.labels) return;
 
     renderCombinedChart(data);
-    renderBarChart('pn-cm-ms-chart-sent', data.labels, data.sent, 'rgba(63, 81, 181, 0.7)', 'rgba(63, 81, 181, 0.15)', 'sent');
-    renderBarChart('pn-cm-ms-chart-opened', data.labels, data.opened, 'rgba(0, 150, 136, 0.7)', 'rgba(0, 150, 136, 0.15)', 'opened');
-    renderBarChart('pn-cm-ms-chart-clicked', data.labels, data.clicked, 'rgba(255, 152, 0, 0.7)', 'rgba(255, 152, 0, 0.15)', 'clicked');
+    renderBarChart('pn-cm-ms-chart-organizations', data.labels, data.organizations, 'rgba(59, 130, 246, 0.7)', 'organizations');
+    renderBarChart('pn-cm-ms-chart-budgets', data.labels, data.budgets, 'rgba(245, 158, 11, 0.7)', 'budgets');
+    renderBarChart('pn-cm-ms-chart-invoices', data.labels, data.invoices, 'rgba(139, 92, 246, 0.7)', 'invoices');
   }
 
-  /* Combined line chart (sent + opened + clicked) */
+  /* Combined line chart (organizations + budgets + invoices) */
   function renderCombinedChart(data) {
     var ctx = document.getElementById('pn-cm-ms-chart-combined');
     if (!ctx) return;
@@ -167,10 +167,10 @@
         labels: data.labels,
         datasets: [
           {
-            label: i18n.sent || 'Sent',
-            data: data.sent,
-            borderColor: '#3f51b5',
-            backgroundColor: 'rgba(63, 81, 181, 0.08)',
+            label: i18n.organizations || 'Organizations',
+            data: data.organizations,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
             fill: true,
             tension: 0.3,
             pointRadius: 3,
@@ -178,10 +178,10 @@
             borderWidth: 2,
           },
           {
-            label: i18n.opened || 'Opened',
-            data: data.opened,
-            borderColor: '#009688',
-            backgroundColor: 'rgba(0, 150, 136, 0.08)',
+            label: i18n.budgets || 'Budgets',
+            data: data.budgets,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
             fill: true,
             tension: 0.3,
             pointRadius: 3,
@@ -189,10 +189,10 @@
             borderWidth: 2,
           },
           {
-            label: i18n.clicked || 'Clicks',
-            data: data.clicked,
-            borderColor: '#ff9800',
-            backgroundColor: 'rgba(255, 152, 0, 0.08)',
+            label: i18n.invoices || 'Invoices',
+            data: data.invoices,
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.08)',
             fill: true,
             tension: 0.3,
             pointRadius: 3,
@@ -232,14 +232,14 @@
   }
 
   /* Individual bar charts */
-  function renderBarChart(canvasId, labels, data, bgColor, bgColorLight, type) {
+  function renderBarChart(canvasId, labels, data, bgColor, type) {
     var ctx = document.getElementById(canvasId);
     if (!ctx) return;
 
     // Destroy previous instance
-    if (type === 'sent' && chartSent) { chartSent.destroy(); }
-    if (type === 'opened' && chartOpened) { chartOpened.destroy(); }
-    if (type === 'clicked' && chartClicked) { chartClicked.destroy(); }
+    if (type === 'organizations' && chartOrganizations) { chartOrganizations.destroy(); }
+    if (type === 'budgets' && chartBudgets) { chartBudgets.destroy(); }
+    if (type === 'invoices' && chartInvoices) { chartInvoices.destroy(); }
 
     var chart = new Chart(ctx.getContext('2d'), {
       type: 'bar',
@@ -281,8 +281,8 @@
     });
 
     // Store reference
-    if (type === 'sent') { chartSent = chart; }
-    if (type === 'opened') { chartOpened = chart; }
-    if (type === 'clicked') { chartClicked = chart; }
+    if (type === 'organizations') { chartOrganizations = chart; }
+    if (type === 'budgets') { chartBudgets = chart; }
+    if (type === 'invoices') { chartInvoices = chart; }
   }
 })(jQuery);
